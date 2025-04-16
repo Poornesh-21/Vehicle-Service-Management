@@ -1,0 +1,2492 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Albany Motors - Customer Management</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+  <!-- Google Fonts - Baloo Bhaijaan 2 -->
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<style>
+  :root {
+    --dutch-white: #EFFBBB; /* Dutch White */
+    --secondary-color: #722F37; /* Wine */
+    --text-dark: #2D2D2D;
+    --text-light: #FFFFFF;
+    --accent-gold: #D4AF37;
+    --bg-light: #F8F9FA;
+    --light-gray: #e9ecef;
+    --medium-gray: #adb5bd;
+    --dark-gray: #495057;
+    --danger: #ef5350;
+    --warning: #ffca28;
+    --success: #66bb6a;
+    --info: #42a5f5;
+
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 8px rgba(0,0,0,0.1);
+    --shadow-lg: 0 8px 16px rgba(0,0,0,0.1);
+    --shadow-xl: 0 12px 24px rgba(0,0,0,0.15);
+
+    --radius-sm: 0.25rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 1rem;
+
+    --transition: all 0.3s ease;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body, html {
+    font-family: 'Baloo Bhaijaan 2', sans-serif;
+    background-color: #f8f9fa;
+    color: var(--text-dark);
+    min-height: 100vh;
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    z-index: -1;
+  }
+
+  /* Scrollbar Styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--light-gray);
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--secondary-color);
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #8a3943;
+  }
+
+  .app-container {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+  }
+
+  /* Sidebar Styles */
+  .sidebar {
+    width: 280px;
+    background: linear-gradient(145deg, #722F37 0%, #5e262e 100%);
+    color: var(--text-light);
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-xl);
+  }
+
+  .sidebar-header {
+    padding: 1.75rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .sidebar-header h2 {
+    margin-bottom: 0;
+    font-weight: 700;
+    color: var(--text-light);
+    font-size: 1.75rem;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  }
+
+  .sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem 0;
+  }
+
+  .nav-section {
+    margin-bottom: 1.5rem;
+  }
+
+  .nav-section-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 0.75rem 1.5rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 600;
+  }
+
+  .sidebar-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .sidebar-menu-item {
+    padding: 0 0.75rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .sidebar-menu-link {
+    display: flex;
+    align-items: center;
+    padding: 0.85rem 1rem;
+    color: rgba(255, 255, 255, 0.95);
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    transition: var(--transition);
+    position: relative;
+  }
+
+  .sidebar-menu-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-light);
+  }
+
+  .sidebar-menu-link.active {
+    background-color: var(--dutch-white);
+    color: var(--secondary-color);
+    font-weight: 600;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .sidebar-menu-link.active::before {
+    content: '';
+    position: absolute;
+    left: -0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 2rem;
+    width: 4px;
+    background-color: #d6e297;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  }
+
+  .sidebar-menu-link i {
+    width: 1.5rem;
+    text-align: center;
+    font-size: 1.1rem;
+    margin-right: 0.75rem;
+  }
+
+  .sidebar-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .user-info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .user-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text-light);
+  }
+
+  .user-role {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .logout-btn {
+    padding: 0.5rem 1rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: var(--radius-md);
+    color: var(--text-light);
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .logout-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  /* Main Content Styles */
+  .main-content {
+    flex: 1;
+    margin-left: 280px;
+    padding: 2rem;
+    transition: var(--transition);
+    color: var(--text-dark);
+  }
+
+  /* Header Styles */
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    background-color: transparent;
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+    position: relative;
+  }
+
+  .header-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .header-left h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--secondary-color);
+    margin-bottom: 0.5rem;
+    position: relative;
+    letter-spacing: 1px;
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.1);
+  }
+
+  .header-subtitle {
+    font-size: 1rem;
+    color: var(--medium-gray);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 1rem;
+  }
+
+  /* Premium Button */
+  .btn-premium {
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-lg);
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: var(--transition);
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    box-shadow: var(--shadow-md);
+    cursor: pointer;
+  }
+
+  .btn-premium.primary {
+    background: linear-gradient(145deg, #722F37 0%, #5e262e 100%);
+    color: white;
+  }
+
+  .btn-premium.primary:hover {
+    box-shadow: 0 6px 15px rgba(114, 47, 55, 0.3);
+    transform: translateY(-2px);
+  }
+
+  .btn-premium.secondary {
+    background-color: var(--bg-light);
+    color: var(--secondary-color);
+    border: 1px solid var(--light-gray);
+  }
+
+  .btn-premium.secondary:hover {
+    background-color: var(--light-gray);
+    border-color: var(--secondary-color);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  /* Search Box */
+  .search-box {
+    position: relative;
+    max-width: 400px;
+    margin-bottom: 2rem;
+  }
+
+  .search-input {
+    padding: 1rem 1rem 1rem 3rem;
+    border: 1px solid var(--light-gray);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    font-size: 1rem;
+    color: var(--text-dark);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 4px rgba(114, 47, 55, 0.1);
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--medium-gray);
+    pointer-events: none;
+  }
+
+  /* Filters Section */
+  .filters-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .filter-pills {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .filter-pill {
+    padding: 0.5rem 1rem;
+    background-color: var(--bg-light);
+    border: 1px solid var(--light-gray);
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--dark-gray);
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .filter-pill:hover {
+    background-color: var(--light-gray);
+  }
+
+  .filter-pill.active {
+    background-color: var(--secondary-color);
+    color: white;
+    border-color: var(--secondary-color);
+  }
+
+  .sort-dropdown .dropdown-toggle {
+    padding: 0.5rem 1rem;
+    background-color: var(--bg-light);
+    border: 1px solid var(--light-gray);
+    border-radius: var(--radius-md);
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--dark-gray);
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .sort-dropdown .dropdown-toggle:hover,
+  .sort-dropdown .dropdown-toggle:focus {
+    background-color: var(--light-gray);
+    border-color: var(--medium-gray);
+  }
+
+  .sort-dropdown .dropdown-menu {
+    border: none;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    padding: 0.5rem;
+    min-width: 10rem;
+  }
+
+  .sort-dropdown .dropdown-item {
+    padding: 0.6rem 1rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.9rem;
+    color: var(--dark-gray);
+    transition: var(--transition);
+  }
+
+  .sort-dropdown .dropdown-item:hover {
+    background-color: rgba(114, 47, 55, 0.1);
+    color: var(--secondary-color);
+  }
+
+  .sort-dropdown .dropdown-item.active {
+    background-color: var(--secondary-color);
+    color: white;
+  }
+
+  /* Customers Table */
+  .customers-table-container {
+    background-color: white;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    margin-bottom: 2rem;
+  }
+
+  .customers-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+  }
+
+  .customers-table th {
+    background-color: var(--bg-light);
+    color: var(--dark-gray);
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 1.25rem 1rem;
+    border-bottom: 1px solid var(--light-gray);
+    text-align: left;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .customers-table td {
+    padding: 1.25rem 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--light-gray);
+    font-size: 0.95rem;
+  }
+
+  .customers-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .customers-table tbody tr {
+    transition: var(--transition);
+    cursor: pointer;
+  }
+
+  .customers-table tbody tr:hover {
+    background-color: rgba(114, 47, 55, 0.05);
+  }
+
+  /* Customer Cell Styles */
+  .customer-cell {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .customer-avatar {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background-color: var(--dutch-white);
+    color: var(--secondary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .customer-info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .customer-name {
+    font-weight: 600;
+    color: var(--secondary-color);
+    margin-bottom: 0.25rem;
+  }
+
+  .customer-email {
+    font-size: 0.85rem;
+    color: var(--medium-gray);
+  }
+
+  /* Membership Badge */
+  .membership-badge {
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .membership-badge.standard {
+    background-color: rgba(66, 165, 245, 0.15);
+    color: var(--info);
+  }
+
+  .membership-badge.premium {
+    background: linear-gradient(to right, rgba(212, 175, 55, 0.2), rgba(212, 175, 55, 0.3));
+    color: #b8860b;
+  }
+
+  /* Phone Number Style */
+  .phone-number {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--dark-gray);
+    font-size: 0.9rem;
+  }
+
+  .phone-number i {
+    color: var(--secondary-color);
+    font-size: 0.85rem;
+  }
+
+  /* Last Service Date */
+  .last-service {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--dark-gray);
+    font-size: 0.9rem;
+  }
+
+  .last-service i {
+    color: var(--secondary-color);
+    font-size: 0.85rem;
+  }
+
+  /* Pagination */
+  .pagination-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+  }
+
+  .pagination {
+    display: flex;
+    gap: 0.35rem;
+    background-color: white;
+    border-radius: 50px;
+    padding: 0.5rem;
+    box-shadow: var(--shadow-lg);
+  }
+
+  .page-item .page-link {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: var(--dark-gray);
+    font-weight: 500;
+    border: none;
+    transition: var(--transition);
+    background-color: transparent;
+  }
+
+  .page-item .page-link:hover {
+    background-color: var(--light-gray);
+  }
+
+  .page-item.active .page-link {
+    background-color: var(--secondary-color);
+    color: white;
+    box-shadow: var(--shadow-md);
+  }
+
+  .page-item.disabled .page-link {
+    color: var(--medium-gray);
+    pointer-events: none;
+    opacity: 0.6;
+  }
+
+  /* Customer Details Modal - Premium Design */
+  .premium-modal {
+    --modal-padding: 0;
+  }
+
+  .premium-modal .modal-content {
+    border: none;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+    position: relative;
+  }
+
+  .premium-modal .modal-header {
+    background: linear-gradient(145deg, #722F37 0%, #5e262e 100%);
+    color: white;
+    padding: 1.75rem 2rem;
+    border-bottom: none;
+    position: relative;
+  }
+
+  .premium-modal .modal-title {
+    font-weight: 700;
+    font-size: 1.35rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .premium-modal .modal-title i {
+    width: 2.5rem;
+    height: 2.5rem;
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+  }
+
+  .premium-modal .modal-body {
+    padding: 0;
+  }
+
+  .premium-modal .modal-body-inner {
+    padding: 2.5rem;
+  }
+
+  .premium-modal .modal-footer {
+    padding: 1.5rem 2.5rem;
+    border-top: 1px solid var(--light-gray);
+    background-color: rgba(248, 249, 250, 0.5);
+  }
+
+  .premium-modal .btn-close {
+    color: white;
+    opacity: 0.8;
+    box-shadow: none;
+    width: 2rem;
+    height: 2rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .premium-modal .btn-close:hover {
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  /* Customer profile tabs */
+  .profile-tabs {
+    background-color: var(--bg-light);
+    display: flex;
+    padding: 0 2.5rem;
+    border-bottom: 1px solid var(--light-gray);
+  }
+
+  .profile-tab {
+    padding: 1.25rem 1.5rem;
+    font-weight: 600;
+    color: var(--dark-gray);
+    position: relative;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .profile-tab:hover {
+    color: var(--secondary-color);
+  }
+
+  .profile-tab.active {
+    color: var(--secondary-color);
+  }
+
+  .profile-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background-color: var(--secondary-color);
+  }
+
+  .tab-content {
+    display: none;
+  }
+
+  .tab-content.active {
+    display: block;
+  }
+
+  .customer-profile {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--light-gray);
+    flex-wrap: wrap;
+  }
+
+  .profile-section {
+    flex: 1;
+    min-width: 260px;
+  }
+
+  .profile-avatar {
+    width: 6rem;
+    height: 6rem;
+    border-radius: 50%;
+    background-color: var(--dutch-white);
+    color: var(--secondary-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+  }
+
+  .profile-detail {
+    margin-bottom: 1.25rem;
+  }
+
+  .profile-label {
+    font-size: 0.85rem;
+    color: var(--medium-gray);
+    margin-bottom: 0.35rem;
+  }
+
+  .profile-value {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--text-dark);
+  }
+
+  .section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--secondary-color);
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .section-title i {
+    color: var(--secondary-color);
+  }
+
+  .service-history-section {
+    margin-bottom: 2rem;
+  }
+
+  .service-history-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background-color: white;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+  }
+
+  .service-history-table th {
+    padding: 1rem;
+    font-size: 0.9rem;
+    color: var(--dark-gray);
+    background-color: var(--bg-light);
+    font-weight: 600;
+    text-align: left;
+    border-bottom: 1px solid var(--light-gray);
+  }
+
+  .service-history-table td {
+    padding: 1rem;
+    font-size: 0.9rem;
+    border-bottom: 1px solid var(--light-gray);
+    vertical-align: middle;
+  }
+
+  .service-history-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .service-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  .service-status.completed {
+    background-color: rgba(102, 187, 106, 0.15);
+    color: var(--success);
+  }
+
+  .service-status.in-progress {
+    background-color: rgba(33, 150, 243, 0.15);
+    color: #1976d2;
+  }
+
+  .service-status.pending {
+    background-color: rgba(255, 193, 7, 0.15);
+    color: #ffa000;
+  }
+
+  .form-section {
+    margin-bottom: 2rem;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--dark-gray);
+  }
+
+  .form-control {
+    display: block;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--text-dark);
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid var(--light-gray);
+    border-radius: var(--radius-md);
+    transition: var(--transition);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .form-control:focus {
+    color: var(--text-dark);
+    background-color: #fff;
+    border-color: var(--secondary-color);
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(114, 47, 55, 0.25);
+  }
+
+  .form-select {
+    display: block;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: var(--text-dark);
+    background-color: #fff;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 16px 12px;
+    border: 1px solid var(--light-gray);
+    border-radius: var(--radius-md);
+    appearance: none;
+    transition: var(--transition);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .form-select:focus {
+    border-color: var(--secondary-color);
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(114, 47, 55, 0.25);
+  }
+
+  /* Premium Modal Buttons */
+  .premium-btn {
+    padding: 0.85rem 1.75rem;
+    border-radius: var(--radius-lg);
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    position: relative;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    z-index: 1;
+  }
+
+  .premium-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.1);
+    z-index: -1;
+    transition: width 0.4s ease;
+  }
+
+  .premium-btn:hover::before {
+    width: 100%;
+  }
+
+  .premium-btn:active {
+    transform: scale(0.98);
+  }
+
+  .premium-btn.primary {
+    background: linear-gradient(145deg, #722F37 0%, #5e262e 100%);
+    color: white;
+  }
+
+  .premium-btn.primary:hover {
+    box-shadow: 0 8px 25px rgba(114, 47, 55, 0.35);
+    transform: translateY(-2px);
+  }
+
+  .premium-btn.secondary {
+    background-color: var(--bg-light);
+    color: var(--secondary-color);
+    border: 1px solid rgba(114, 47, 55, 0.2);
+  }
+
+  .premium-btn.secondary:hover {
+    background-color: rgba(114, 47, 55, 0.05);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .premium-btn.danger {
+    background: linear-gradient(145deg, #ef5350 0%, #d32f2f 100%);
+    color: white;
+  }
+
+  .premium-btn.danger:hover {
+    box-shadow: 0 8px 25px rgba(211, 47, 47, 0.35);
+    transform: translateY(-2px);
+  }
+
+  /* Creative Albany Spinner */
+  .spinner-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+  }
+
+  .spinner-overlay.show {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .spinner-container {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    perspective: 300px;
+  }
+
+  .albany-spinner {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    animation: spin 3s infinite cubic-bezier(0.68, -0.55, 0.27, 1.55);
+  }
+
+  .spinner-letter {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 72px;
+    font-weight: 800;
+    color: var(--secondary-color);
+    text-shadow: 0 0 5px rgba(114, 47, 55, 0.3);
+    backface-visibility: hidden;
+    transform: rotateY(0deg) translateZ(60px);
+    font-family: 'Baloo Bhaijaan 2', sans-serif;
+  }
+
+  .spinner-circle {
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    width: calc(100% + 20px);
+    height: calc(100% + 20px);
+    border-radius: 50%;
+    border: 4px solid transparent;
+    border-top-color: var(--secondary-color);
+    border-bottom-color: var(--dutch-white);
+    animation: spin-reverse 1.5s linear infinite;
+  }
+
+  .spinner-circle:nth-child(2) {
+    top: -5px;
+    left: -5px;
+    width: calc(100% + 10px);
+    height: calc(100% + 10px);
+    border-top-color: var(--dutch-white);
+    border-bottom-color: var(--secondary-color);
+    animation-duration: 2s;
+  }
+
+  .spinner-text {
+    position: absolute;
+    bottom: -40px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--secondary-color);
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotateY(0deg);
+    }
+    25% {
+      transform: rotateY(90deg);
+    }
+    50% {
+      transform: rotateY(180deg);
+    }
+    75% {
+      transform: rotateY(270deg);
+    }
+    100% {
+      transform: rotateY(360deg);
+    }
+  }
+
+  @keyframes spin-reverse {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* Confirmation Modal */
+  .confirmation-modal .modal-content {
+    border: none;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+    text-align: center;
+  }
+
+  .confirmation-modal .modal-body {
+    padding: 3rem 2rem;
+    position: relative;
+  }
+
+  .confirmation-icon {
+    width: 90px;
+    height: 90px;
+    background: linear-gradient(145deg, #66BB6A, #43A047);
+    border-radius: 50%;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.75rem;
+    margin: 0 auto 1.5rem;
+    box-shadow: 0 10px 20px rgba(102, 187, 106, 0.3);
+  }
+
+  .confirmation-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 1rem;
+  }
+
+  .confirmation-message {
+    font-size: 1.1rem;
+    color: #555;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+  }
+
+  .confirmation-btn {
+    padding: 0.85rem 2.5rem;
+    background: linear-gradient(145deg, #722F37 0%, #5e262e 100%);
+    color: white;
+    border: none;
+    border-radius: var(--radius-lg);
+    font-size: 1rem;
+    font-weight: 600;
+    box-shadow: var(--shadow-md);
+    transition: var(--transition);
+  }
+
+  .confirmation-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(114, 47, 55, 0.35);
+  }
+
+  /* Responsive Styles */
+  @media (max-width: 991.98px) {
+    .sidebar {
+      width: 5rem;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .sidebar-header h2,
+    .sidebar-menu-link span,
+    .user-info,
+    .nav-section-title,
+    .logout-btn span {
+      display: none;
+    }
+
+    .sidebar-menu-link {
+      justify-content: center;
+      padding: 0.75rem;
+    }
+
+    .sidebar-menu-link i {
+      margin-right: 0;
+      font-size: 1.25rem;
+    }
+
+    .sidebar-menu-link.active::before {
+      left: -0.5rem;
+    }
+
+    .sidebar-footer {
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .logout-btn {
+      padding: 0.5rem;
+      justify-content: center;
+    }
+
+    .main-content {
+      margin-left: 5rem;
+    }
+
+    .page-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+
+    .header-left h1 {
+      font-size: 2rem;
+    }
+
+    .filters-section {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+
+  @media (max-width: 767.98px) {
+    .sidebar {
+      width: 0;
+      transform: translateX(-100%);
+    }
+
+    .sidebar.active {
+      width: 280px;
+      transform: translateX(0);
+    }
+
+    .sidebar.active .sidebar-header h2,
+    .sidebar.active .sidebar-menu-link span,
+    .sidebar.active .user-info,
+    .sidebar.active .nav-section-title,
+    .sidebar.active .logout-btn span {
+      display: block;
+    }
+
+    .sidebar.active .sidebar-menu-link {
+      justify-content: flex-start;
+      padding: 0.85rem 1rem;
+    }
+
+    .sidebar.active .sidebar-menu-link i {
+      margin-right: 0.75rem;
+    }
+
+    .sidebar.active .sidebar-footer {
+      justify-content: space-between;
+      padding: 1rem 1.5rem;
+    }
+
+    .sidebar.active .logout-btn {
+      padding: 0.5rem 1rem;
+      justify-content: center;
+    }
+
+    .main-content {
+      margin-left: 0;
+    }
+
+    .mobile-menu-toggle {
+      display: block;
+      position: fixed;
+      top: 1rem;
+      left: 1rem;
+      z-index: 1050;
+      width: 3rem;
+      height: 3rem;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #722F37 0%, #5e262e 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      box-shadow: var(--shadow-md);
+      cursor: pointer;
+    }
+
+    .page-header {
+      padding-top: 4rem;
+    }
+
+    .customers-table-container {
+      overflow-x: auto;
+    }
+
+    .customers-table {
+      min-width: 1000px;
+    }
+  }
+
+  @media (max-width: 575.98px) {
+    .main-content {
+      padding: 1rem;
+    }
+
+    .page-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .header-left h1 {
+      font-size: 1.75rem;
+    }
+
+    .action-buttons {
+      flex-direction: column;
+      gap: 0.75rem;
+      width: 100%;
+    }
+
+    .btn-premium {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .search-box {
+      max-width: 100%;
+    }
+
+    .customer-profile {
+      gap: 1rem;
+    }
+
+    .profile-section {
+      flex: 100%;
+      min-width: 100%;
+    }
+  }
+
+</style>
+<body>
+<!-- Creative Albany Spinner Overlay -->
+<div class="spinner-overlay" id="spinnerOverlay">
+  <div class="spinner-container">
+    <div class="albany-spinner">
+      <div class="spinner-letter">A</div>
+      <div class="spinner-circle"></div>
+      <div class="spinner-circle"></div>
+    </div>
+    <div class="spinner-text">Loading...</div>
+  </div>
+</div>
+
+<!-- Mobile Menu Toggle Button (for small screens) -->
+<button class="mobile-menu-toggle" id="mobileMenuToggle">
+  <i class="fas fa-bars"></i>
+</button>
+
+<div class="app-container">
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h2>Albany</h2>
+    </div>
+
+    <div class="sidebar-content">
+      <div class="nav-section">
+        <div class="nav-section-title">Main</div>
+        <ul class="sidebar-menu">
+          <li class="sidebar-menu-item">
+            <a th:href="@{/admin/dashboard}" class="sidebar-menu-link">
+              <i class="fas fa-tachometer-alt"></i>
+              <span>Dashboard</span>
+            </a>
+
+        </ul>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">Management</div>
+        <ul class="sidebar-menu">
+          <li class="sidebar-menu-item">
+            <a th:href="@{/admin/service-requests}" class="sidebar-menu-link">
+              <i class="fas fa-clipboard-list"></i>
+              <span>Service Requests</span>
+            </a>
+          </li>
+          <li class="sidebar-menu-item">
+            <a href="#" class="sidebar-menu-link">
+              <i class="fas fa-car"></i>
+              <span>Vehicles</span>
+            </a>
+          </li>
+          <li class="sidebar-menu-item">
+            <a th:href="@{/admin/customers}" class="sidebar-menu-link active">
+              <i class="fas fa-users"></i>
+              <span>Customers</span>
+            </a>
+          </li>
+          <li class="sidebar-menu-item">
+            <a th:href="@{/admin/service-advisors}" class="sidebar-menu-link">
+              <i class="fas fa-user-tie"></i>
+              <span>Service Advisors</span>
+            </a>
+          </li>
+          <li class="sidebar-menu-item">
+            <a th:href="@{/admin/inventory}" class="sidebar-menu-link">
+              <i class="fas fa-boxes"></i>
+              <span>Inventory</span>
+            </a>
+          </li>
+
+          <li class="sidebar-menu-item">
+            <a href="#" class="sidebar-menu-link">
+              <i class="fas fa-tools"></i>
+              <span>Work Items</span>
+            </a>
+          </li>
+          <li class="sidebar-menu-item">
+            <a href="#" class="sidebar-menu-link">
+              <i class="fas fa-file-invoice-dollar"></i>
+              <span>Invoices</span>
+            </a>
+          </li>
+          <li class="sidebar-menu-item">
+            <a href="#" class="sidebar-menu-link">
+              <i class="fas fa-rupee-sign"></i>
+              <span>Payments</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-name">Arthur Morgan</div>
+        <div class="user-role">Administrator</div>
+      </div>
+      <button class="logout-btn">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="main-content">
+    <!-- Page Header -->
+    <header class="page-header">
+      <div class="header-left">
+        <h1>Customer Management</h1>
+        <div class="header-subtitle">
+          <i class="fas fa-users"></i>
+          Manage customer profiles and service history
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button class="btn-premium primary" id="addCustomerBtn">
+          <i class="fas fa-user-plus"></i>
+          Add New Customer
+        </button>
+      </div>
+    </header>
+
+    <!-- Success Alert -->
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+      <i class="fas fa-check-circle me-2"></i> <span th:text="${success}"></span>
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- Search Box -->
+    <div class="search-box">
+      <input type="text" class="search-input" id="customerSearch" placeholder="Search for customers by name, email, or phone...">
+      <i class="fas fa-search search-icon"></i>
+    </div>
+
+    <!-- Filters Section -->
+    <section class="filters-section">
+      <div class="filter-pills">
+        <div class="filter-pill active">All Customers</div>
+        <div class="filter-pill">Premium Members</div>
+        <div class="filter-pill">Standard Members</div>
+      </div>
+
+      <div class="dropdown sort-dropdown">
+        <button class="dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="fas fa-sort"></i>
+          Sort by: Name
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="sortDropdown">
+          <li><a class="dropdown-item active" href="#">Name</a></li>
+          <li><a class="dropdown-item" href="#">Date Joined</a></li>
+          <li><a class="dropdown-item" href="#">Last Service</a></li>
+          <li><a class="dropdown-item" href="#">Total Services</a></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Customers Table -->
+    <section class="customers-table-container">
+      <table class="customers-table">
+        <thead>
+        <tr>
+          <th>Customer</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Membership</th>
+          <th>Total Services</th>
+          <th>Last Service</th>
+        </tr>
+        </thead>
+        <tbody>
+        <!-- Loop through customers from the database -->
+        <tr th:each="customer : ${customers}" th:data-customer-id="${customer.customerId}" class="customer-row">
+          <td>
+            <div class="customer-cell">
+              <div class="customer-avatar" th:text="${#strings.substring(customer.firstName,0,1) + #strings.substring(customer.lastName,0,1)}">JD</div>
+              <div class="customer-info">
+                <div class="customer-name" th:text="${customer.firstName + ' ' + customer.lastName}">John Doe</div>
+              </div>
+            </div>
+          </td>
+          <td th:text="${customer.email}">john.doe@example.com</td>
+          <td>
+                                <span class="phone-number">
+                                    <i class="fas fa-phone-alt"></i>
+                                    <span th:text="${customer.phoneNumber}">+91 98765 43210</span>
+                                </span>
+          </td>
+          <td>
+                                <span th:class="${customer.membershipStatus == 'Premium' ? 'membership-badge premium' : 'membership-badge standard'}">
+                                    <i th:class="${customer.membershipStatus == 'Premium' ? 'fas fa-crown' : 'fas fa-user'}"></i>
+                                    <span th:text="${customer.membershipStatus}">Premium</span>
+                                </span>
+          </td>
+          <td th:text="${customer.totalServices ?: 0}">12</td>
+          <td>
+                                <span class="last-service">
+                                    <i class="fas fa-calendar-day"></i>
+                                    <span th:text="${customer.lastServiceDate != null ? #temporals.format(customer.lastServiceDate, 'MMM dd, yyyy') : 'No service yet'}">Mar 15, 2025</span>
+                                </span>
+          </td>
+        </tr>
+
+        <!-- If no customers exist, show a message -->
+        <tr th:if="${#lists.isEmpty(customers)}">
+          <td colspan="6" class="text-center py-4">
+            <div class="no-data-message">
+              <i class="fas fa-users fa-3x mb-3 text-muted"></i>
+              <h4>No customers found</h4>
+              <p class="text-muted">Add your first customer to get started</p>
+            </div>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Pagination -->
+    <nav class="pagination-container">
+      <ul class="pagination">
+        <li class="page-item disabled">
+          <a class="page-link" href="#" aria-label="Previous">
+            <i class="fas fa-chevron-left"></i>
+          </a>
+        </li>
+        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+        <li class="page-item"><a class="page-link" href="#">2</a></li>
+        <li class="page-item"><a class="page-link" href="#">3</a></li>
+        <li class="page-item">
+          <a class="page-link" href="#" aria-label="Next">
+            <i class="fas fa-chevron-right"></i>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </main>
+</div>
+
+<!-- Customer Details Modal -->
+<div class="modal fade premium-modal" id="customerDetailsModal" tabindex="-1" aria-labelledby="customerDetailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="customerDetailsModalLabel">
+          <i class="fas fa-user"></i>
+          <span>Customer Details</span>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="profile-tabs">
+        <div class="profile-tab active" data-tab="info">Personal Info</div>
+        <div class="profile-tab" data-tab="services">Service History</div>
+      </div>
+
+      <div class="modal-body">
+        <!-- Personal Info Tab -->
+        <div class="tab-content active" id="info-tab">
+          <div class="modal-body-inner">
+            <!-- Customer Profile -->
+            <div class="customer-profile">
+              <div class="profile-section">
+                <div class="profile-avatar" id="viewCustomerInitials">JD</div>
+                <div class="profile-detail">
+                  <div class="profile-label">Full Name</div>
+                  <div class="profile-value" id="viewCustomerName">John Doe</div>
+                </div>
+                <div class="profile-detail">
+                  <div class="profile-label">Email</div>
+                  <div class="profile-value" id="viewCustomerEmail">john.doe@example.com</div>
+                </div>
+                <div class="profile-detail">
+                  <div class="profile-label">Phone</div>
+                  <div class="profile-value" id="viewCustomerPhone">+91 98765 43210</div>
+                </div>
+              </div>
+
+              <div class="profile-section">
+                <div class="profile-detail">
+                  <div class="profile-label">Address</div>
+                  <div class="profile-value" id="viewCustomerAddress">123 Main St, Anytown, CA 12345</div>
+                </div>
+                <div class="profile-detail">
+                  <div class="profile-label">Membership</div>
+                  <div class="profile-value" id="viewCustomerMembership">Premium</div>
+                </div>
+                <div class="profile-detail">
+                  <div class="profile-label">Total Services</div>
+                  <div class="profile-value" id="viewCustomerServices">12</div>
+                </div>
+                <div class="profile-detail">
+                  <div class="profile-label">Last Service Date</div>
+                  <div class="profile-value" id="viewCustomerLastService">March 15, 2025</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Service History Tab -->
+        <div class="tab-content" id="services-tab">
+          <div class="modal-body-inner">
+            <div class="service-history-section">
+              <table class="service-history-table">
+                <thead>
+                <tr>
+                  <th>Vehicle</th>
+                  <th>Service Type</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Amount</th>
+                </tr>
+                </thead>
+                <tbody id="serviceHistoryTableBody">
+                <!-- Service history will be loaded dynamically -->
+                <tr>
+                  <td colspan="5" class="text-center py-4">
+                    <div class="no-data-message">
+                      <i class="fas fa-tools fa-3x mb-3 text-muted"></i>
+                      <h4>No service history found</h4>
+                      <p class="text-muted">This customer has not had any services yet</p>
+                    </div>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="premium-btn secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="premium-btn primary" id="editCustomerFromDetailsBtn">Edit Customer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Customer Modal -->
+<div class="modal fade premium-modal" id="addCustomerModal" tabindex="-1" aria-labelledby="addCustomerModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addCustomerModalLabel">
+          <i class="fas fa-user-plus"></i>
+          Add New Customer
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-body-inner">
+          <form id="addCustomerForm">
+            <div class="form-section">
+              <h4 class="section-title">
+                <i class="fas fa-user"></i>
+                Personal Information
+              </h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="firstName" class="form-label">First Name *</label>
+                  <input type="text" class="form-control" id="firstName" name="firstName" required>
+                </div>
+                <div class="form-group">
+                  <label for="lastName" class="form-label">Last Name *</label>
+                  <input type="text" class="form-control" id="lastName" name="lastName" required>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="email" class="form-label">Email Address *</label>
+                  <input type="email" class="form-control" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                  <label for="phone" class="form-label">Phone Number *</label>
+                  <input type="tel" class="form-control" id="phone" name="phoneNumber" required>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h4 class="section-title">
+                <i class="fas fa-home"></i>
+                Address Information
+              </h4>
+              <div class="form-group">
+                <label for="street" class="form-label">Street Address</label>
+                <input type="text" class="form-control" id="street" name="street">
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="city" class="form-label">City</label>
+                  <input type="text" class="form-control" id="city" name="city">
+                </div>
+                <div class="form-group">
+                  <label for="state" class="form-label">State</label>
+                  <input type="text" class="form-control" id="state" name="state">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="postalCode" class="form-label">Postal Code</label>
+                <input type="text" class="form-control" id="postalCode" name="postalCode">
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h4 class="section-title">
+                <i class="fas fa-crown"></i>
+                Membership Information
+              </h4>
+              <div class="form-group">
+                <label for="membershipStatus" class="form-label">Membership Status</label>
+                <select class="form-select" id="membershipStatus" name="membershipStatus">
+                  <option value="Standard">Standard</option>
+                  <option value="Premium">Premium</option>
+                </select>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="premium-btn secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="premium-btn primary" id="saveCustomerBtn">Add Customer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Customer Modal -->
+<div class="modal fade premium-modal" id="editCustomerModal" tabindex="-1" aria-labelledby="editCustomerModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editCustomerModalLabel">
+          <i class="fas fa-user-edit"></i>
+          Edit Customer
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-body-inner">
+          <form id="editCustomerForm">
+            <input type="hidden" id="editCustomerId" name="customerId">
+            <input type="hidden" id="editUserId" name="userId">
+            <div class="form-section">
+              <h4 class="section-title">
+                <i class="fas fa-user"></i>
+                Personal Information
+              </h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="editFirstName" class="form-label">First Name *</label>
+                  <input type="text" class="form-control" id="editFirstName" name="firstName" required>
+                </div>
+                <div class="form-group">
+                  <label for="editLastName" class="form-label">Last Name *</label>
+                  <input type="text" class="form-control" id="editLastName" name="lastName" required>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="editEmail" class="form-label">Email Address *</label>
+                  <input type="email" class="form-control" id="editEmail" name="email" required>
+                </div>
+                <div class="form-group">
+                  <label for="editPhone" class="form-label">Phone Number *</label>
+                  <input type="tel" class="form-control" id="editPhone" name="phoneNumber" required>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h4 class="section-title">
+                <i class="fas fa-home"></i>
+                Address Information
+              </h4>
+              <div class="form-group">
+                <label for="editStreet" class="form-label">Street Address</label>
+                <input type="text" class="form-control" id="editStreet" name="street">
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="editCity" class="form-label">City</label>
+                  <input type="text" class="form-control" id="editCity" name="city">
+                </div>
+                <div class="form-group">
+                  <label for="editState" class="form-label">State</label>
+                  <input type="text" class="form-control" id="editState" name="state">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="editPostalCode" class="form-label">Postal Code</label>
+                <input type="text" class="form-control" id="editPostalCode" name="postalCode">
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h4 class="section-title">
+                <i class="fas fa-crown"></i>
+                Membership Information
+              </h4>
+              <div class="form-group">
+                <label for="editMembershipStatus" class="form-label">Membership Status</label>
+                <select class="form-select" id="editMembershipStatus" name="membershipStatus">
+                  <option value="Standard">Standard</option>
+                  <option value="Premium">Premium</option>
+                </select>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="premium-btn secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="premium-btn primary" id="updateCustomerBtn">Update Customer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Success Confirmation Modal -->
+<div class="modal fade confirmation-modal" id="successModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-body">
+        <div class="confirmation-icon">
+          <i class="fas fa-check"></i>
+        </div>
+        <h3 class="confirmation-title" id="confirmationTitle">Success!</h3>
+        <p class="confirmation-message" id="confirmationMessage">The operation was completed successfully.</p>
+        <button type="button" class="confirmation-btn" data-bs-dismiss="modal">Continue</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- jQuery and Bootstrap JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+
+<!-- Custom JS -->
+<script th:inline="javascript">
+  // Wait for DOM to be loaded
+  document.addEventListener('DOMContentLoaded', function() {
+    // Toggle mobile menu
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const sidebar = document.getElementById('sidebar');
+
+    if (mobileMenuToggle) {
+      mobileMenuToggle.addEventListener('click', function() {
+        sidebar.classList.toggle('active');
+      });
+    }
+
+    // Show spinner function
+    function showSpinner() {
+      const spinner = document.getElementById('spinnerOverlay');
+      spinner.classList.add('show');
+    }
+
+    // Hide spinner function
+    function hideSpinner() {
+      const spinner = document.getElementById('spinnerOverlay');
+      setTimeout(() => {
+        spinner.classList.remove('show');
+      }, 800); // Minimum show time for spinner
+    }
+
+    // Success confirmation modal function
+    function showConfirmation(title, message) {
+      document.getElementById('confirmationTitle').textContent = title;
+      document.getElementById('confirmationMessage').textContent = message;
+      const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+      successModal.show();
+    }
+
+    // Get token from storage
+    function getToken() {
+      return localStorage.getItem("jwt-token") || sessionStorage.getItem("jwt-token");
+    }
+
+    // Check if token exists, redirect to login if not
+    const token = getToken();
+    if (!token) {
+      console.warn("No authentication token found");
+      window.location.href = '/admin/login?error=session_expired';
+    }
+
+    // Fix sidebar navigation links
+    document.querySelectorAll('.sidebar-menu-link').forEach(link => {
+      const href = link.getAttribute('href');
+
+      // Ensure links have correct admin prefix if needed
+      if (href && !href.startsWith('/admin/') && !href.startsWith('#')) {
+        link.setAttribute('href', '/admin' + href);
+      }
+
+      // Remove any token parameters if present
+      if (href && href.includes('token=')) {
+        const url = new URL(href, window.location.origin);
+        url.searchParams.delete('token');
+        link.setAttribute('href', url.pathname + url.search);
+      }
+
+      // Set active state for current page
+      if (window.location.pathname.includes(href)) {
+        link.classList.add('active');
+      }
+    });
+
+    // Filter pills functionality
+    const filterPills = document.querySelectorAll('.filter-pill');
+    filterPills.forEach(pill => {
+      pill.addEventListener('click', function() {
+        // Remove active class from all pills
+        filterPills.forEach(p => p.classList.remove('active'));
+
+        // Add active class to clicked pill
+        this.classList.add('active');
+
+        // Filter customers based on selected filter
+        const filter = this.textContent.trim();
+        const rows = document.querySelectorAll('.customer-row');
+
+        rows.forEach(row => {
+          if (filter === 'All Customers') {
+            row.style.display = '';
+          } else if (filter === 'Premium Members') {
+            const membershipBadge = row.querySelector('.membership-badge');
+            if (membershipBadge && membershipBadge.classList.contains('premium')) {
+              row.style.display = '';
+            } else {
+              row.style.display = 'none';
+            }
+          } else if (filter === 'Standard Members') {
+            const membershipBadge = row.querySelector('.membership-badge');
+            if (membershipBadge && membershipBadge.classList.contains('standard')) {
+              row.style.display = '';
+            } else {
+              row.style.display = 'none';
+            }
+          }
+        });
+      });
+    });
+
+    // Search functionality
+    const searchInput = document.getElementById('customerSearch');
+    if (searchInput) {
+      searchInput.addEventListener('keyup', function() {
+        const searchTerm = this.value.toLowerCase();
+        const rows = document.querySelectorAll('.customer-row');
+
+        rows.forEach(row => {
+          const customerName = row.querySelector('.customer-name').textContent.toLowerCase();
+          const email = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+          const phone = row.querySelector('.phone-number').textContent.toLowerCase();
+
+          if (customerName.includes(searchTerm) || email.includes(searchTerm) || phone.includes(searchTerm)) {
+            row.style.display = '';
+          } else {
+            row.style.display = 'none';
+          }
+        });
+      });
+    }
+
+    // Profile tabs functionality
+    const profileTabs = document.querySelectorAll('.profile-tab');
+    profileTabs.forEach(tab => {
+      tab.addEventListener('click', function() {
+        // Get the tab ID
+        const tabId = this.getAttribute('data-tab');
+
+        // Remove active class from all tabs and tab contents
+        profileTabs.forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+        // Add active class to clicked tab and corresponding content
+        this.classList.add('active');
+        document.getElementById(`${tabId}-tab`).classList.add('active');
+      });
+    });
+
+    // Make table rows clickable to open customer details
+    const customerRows = document.querySelectorAll('.customer-row');
+    customerRows.forEach(row => {
+      row.addEventListener('click', function() {
+        const customerId = this.getAttribute('data-customer-id');
+
+        // Show spinner before loading customer details
+        showSpinner();
+
+        // Fetch customer details from the server
+        fetch(`/admin/api/customers/${customerId}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + getToken()
+          }
+        })
+                .then(response => {
+                  if (!response.ok) {
+                    throw new Error(`Server responded with status: ${response.status}`);
+                  }
+                  return response.json();
+                })
+                .then(customer => {
+                  // Populate customer details modal
+                  populateCustomerDetails(customer);
+
+                  // Hide spinner
+                  hideSpinner();
+
+                  // Open customer details modal
+                  const customerDetailsModal = new bootstrap.Modal(document.getElementById('customerDetailsModal'));
+                  customerDetailsModal.show();
+                })
+                .catch(error => {
+                  console.error('Error fetching customer details:', error);
+                  hideSpinner();
+                  alert('Failed to load customer details. Please try again.');
+                });
+      });
+    });
+
+    function populateCustomerDetails(customer) {
+      // Set customer profile details
+      document.getElementById('viewCustomerInitials').textContent = getInitials(customer.firstName, customer.lastName);
+      document.getElementById('viewCustomerName').textContent = `${customer.firstName} ${customer.lastName}`;
+      document.getElementById('viewCustomerEmail').textContent = customer.email;
+      document.getElementById('viewCustomerPhone').textContent = customer.phoneNumber || 'Not provided';
+
+      const address = [customer.street, customer.city, customer.state, customer.postalCode]
+              .filter(part => part && part.trim() !== '')
+              .join(', ');
+      document.getElementById('viewCustomerAddress').textContent = address || 'Not provided';
+
+      document.getElementById('viewCustomerMembership').textContent = customer.membershipStatus || 'Standard';
+      document.getElementById('viewCustomerServices').textContent = customer.totalServices || '0';
+      document.getElementById('viewCustomerLastService').textContent = customer.lastServiceDate
+              ? new Date(customer.lastServiceDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+              : 'No service yet';
+
+      // Store customer ID for edit functionality
+      document.getElementById('editCustomerFromDetailsBtn').setAttribute('data-customer-id', customer.customerId);
+    }
+
+    function getInitials(firstName, lastName) {
+      const firstInitial = firstName && firstName.length > 0 ? firstName.charAt(0).toUpperCase() : '';
+      const lastInitial = lastName && lastName.length > 0 ? lastName.charAt(0).toUpperCase() : '';
+      return firstInitial + lastInitial;
+    }
+
+    // Add Customer button handler
+    const addCustomerBtn = document.getElementById('addCustomerBtn');
+    if (addCustomerBtn) {
+      addCustomerBtn.addEventListener('click', function() {
+        // Reset form
+        document.getElementById('addCustomerForm').reset();
+
+        // Show add customer modal
+        const addCustomerModal = new bootstrap.Modal(document.getElementById('addCustomerModal'));
+        addCustomerModal.show();
+      });
+    }
+
+    // Save Customer button handler
+    const saveCustomerBtn = document.getElementById('saveCustomerBtn');
+    if (saveCustomerBtn) {
+      saveCustomerBtn.addEventListener('click', function() {
+        const form = document.getElementById('addCustomerForm');
+
+        // Basic form validation
+        const firstName = document.getElementById('firstName').value;
+        const lastName = document.getElementById('lastName').value;
+        const email = document.getElementById('email').value;
+        const phone = document.getElementById('phone').value;
+
+        if (!firstName || !lastName || !email || !phone) {
+          alert('Please fill in all required fields.');
+          return;
+        }
+
+        // Show spinner during processing
+        showSpinner();
+
+        // Prepare form data
+        const formData = {
+          firstName: firstName,
+          lastName: lastName,
+          email: email,
+          phoneNumber: phone,
+          street: document.getElementById('street').value,
+          city: document.getElementById('city').value,
+          state: document.getElementById('state').value,
+          postalCode: document.getElementById('postalCode').value,
+          membershipStatus: document.getElementById('membershipStatus').value,
+          isActive: true
+        };
+
+        // Submit form data to the server with correct endpoint and token
+        fetch('/admin/api/customers', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + getToken()
+          },
+          body: JSON.stringify(formData)
+        })
+                .then(response => {
+                  if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                  }
+                  return response.json();
+                })
+                .then(data => {
+                  // Hide spinner
+                  hideSpinner();
+
+                  // Close modal
+                  const modal = bootstrap.Modal.getInstance(document.getElementById('addCustomerModal'));
+                  modal.hide();
+
+                  // Show success confirmation
+                  showConfirmation('Customer Added', 'The customer has been successfully added to the system.');
+
+                  // Reset form
+                  form.reset();
+
+                  // Refresh the page to show the new customer
+                  setTimeout(() => {
+                    window.location.reload();
+                  }, 1500);
+                })
+                .catch(error => {
+                  console.error('Error adding customer:', error);
+                  hideSpinner();
+                  alert('Failed to add customer. Please try again.');
+                });
+      });
+    }
+
+    // Edit Customer button handler from customer details
+    const editCustomerFromDetailsBtn = document.getElementById('editCustomerFromDetailsBtn');
+    if (editCustomerFromDetailsBtn) {
+      editCustomerFromDetailsBtn.addEventListener('click', function() {
+        const customerId = this.getAttribute('data-customer-id');
+
+        // Show spinner
+        showSpinner();
+
+        // Fetch customer data for editing with updated endpoint
+        fetch(`/admin/api/customers/${customerId}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + getToken()
+          }
+        })
+                .then(response => {
+                  if (!response.ok) {
+                    throw new Error(`Server responded with status: ${response.status}`);
+                  }
+                  return response.json();
+                })
+                .then(customer => {
+                  // Hide spinner
+                  hideSpinner();
+
+                  // Close customer details modal
+                  const detailsModal = bootstrap.Modal.getInstance(document.getElementById('customerDetailsModal'));
+                  detailsModal.hide();
+
+                  // Populate edit form with customer data
+                  document.getElementById('editCustomerId').value = customer.customerId;
+                  document.getElementById('editUserId').value = customer.userId;
+                  document.getElementById('editFirstName').value = customer.firstName;
+                  document.getElementById('editLastName').value = customer.lastName;
+                  document.getElementById('editEmail').value = customer.email;
+                  document.getElementById('editPhone').value = customer.phoneNumber;
+                  document.getElementById('editStreet').value = customer.street;
+                  document.getElementById('editCity').value = customer.city;
+                  document.getElementById('editState').value = customer.state;
+                  document.getElementById('editPostalCode').value = customer.postalCode;
+                  document.getElementById('editMembershipStatus').value = customer.membershipStatus;
+
+                  // Show edit customer modal
+                  const editModal = new bootstrap.Modal(document.getElementById('editCustomerModal'));
+                  editModal.show();
+                })
+                .catch(error => {
+                  console.error('Error fetching customer details for editing:', error);
+                  hideSpinner();
+                  alert('Failed to load customer details for editing. Please try again.');
+                });
+      });
+    }
+
+    // Update Customer button handler
+    const updateCustomerBtn = document.getElementById('updateCustomerBtn');
+    if (updateCustomerBtn) {
+      updateCustomerBtn.addEventListener('click', function() {
+        // Basic form validation
+        const firstName = document.getElementById('editFirstName').value;
+        const lastName = document.getElementById('editLastName').value;
+        const email = document.getElementById('editEmail').value;
+        const phone = document.getElementById('editPhone').value;
+
+        if (!firstName || !lastName || !email || !phone) {
+          alert('Please fill in all required fields.');
+          return;
+        }
+
+        // Get customer ID
+        const customerId = document.getElementById('editCustomerId').value;
+
+        // Show spinner
+        showSpinner();
+
+        // Prepare form data
+        const formData = {
+          customerId: customerId,
+          userId: document.getElementById('editUserId').value,
+          firstName: firstName,
+          lastName: lastName,
+          email: email,
+          phoneNumber: phone,
+          street: document.getElementById('editStreet').value,
+          city: document.getElementById('editCity').value,
+          state: document.getElementById('editState').value,
+          postalCode: document.getElementById('editPostalCode').value,
+          membershipStatus: document.getElementById('editMembershipStatus').value,
+          isActive: true
+        };
+
+        // Submit form data to the server with corrected endpoint
+        fetch(`/admin/api/customers/${customerId}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + getToken()
+          },
+          body: JSON.stringify(formData)
+        })
+                .then(response => {
+                  if (!response.ok) {
+                    throw new Error(`Server responded with status: ${response.status}`);
+                  }
+                  return response.json();
+                })
+                .then(data => {
+                  // Hide spinner
+                  hideSpinner();
+
+                  // Close modal
+                  const modal = bootstrap.Modal.getInstance(document.getElementById('editCustomerModal'));
+                  modal.hide();
+
+                  // Show success confirmation
+                  showConfirmation('Customer Updated', 'The customer information has been successfully updated.');
+
+                  // Refresh the page to show the updated customer
+                  setTimeout(() => {
+                    window.location.reload();
+                  }, 1500);
+                })
+                .catch(error => {
+                  console.error('Error updating customer:', error);
+                  hideSpinner();
+                  alert('Failed to update customer. Please try again.');
+                });
+      });
+    }
+
+    // Logout handler
+    document.querySelector('.logout-btn').addEventListener('click', function(e) {
+      e.preventDefault();
+
+      // Clear storage
+      localStorage.removeItem("jwt-token");
+      sessionStorage.removeItem("jwt-token");
+
+      // Redirect to logout
+      window.location.href = '/admin/logout';
+    });
+
+    // Load customers on page load
+    function loadCustomers() {
+      showSpinner();
+
+      fetch('/admin/api/customers', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + getToken()
+        }
+      })
+              .then(response => {
+                if (!response.ok) {
+                  if (response.status === 401) {
+                    window.location.href = '/admin/login?error=session_expired';
+                    throw new Error('Session expired');
+                  }
+                  throw new Error(`Server responded with status: ${response.status}`);
+                }
+                return response.json();
+              })
+              .then(customers => {
+                hideSpinner();
+
+                if (customers && customers.length > 0) {
+                  // Populate the table with customers
+                  populateCustomersTable(customers);
+                }
+              })
+              .catch(error => {
+                console.error('Error loading customers:', error);
+                hideSpinner();
+
+                if (error.message !== 'Session expired') {
+                  alert('Failed to load customers. Please refresh and try again.');
+                }
+              });
+    }
+
+    function populateCustomersTable(customers) {
+      const tableBody = document.querySelector('.customers-table tbody');
+
+      // Clear any existing rows except the empty message row
+      const existingRows = tableBody.querySelectorAll('tr:not(.empty-row)');
+      existingRows.forEach(row => row.remove());
+
+      // Hide empty message if we have customers
+      const emptyRow = tableBody.querySelector('.empty-row');
+      if (emptyRow) {
+        emptyRow.style.display = customers.length > 0 ? 'none' : '';
+      }
+
+      // Add customer rows
+      customers.forEach(customer => {
+        const row = document.createElement('tr');
+        row.className = 'customer-row';
+        row.setAttribute('data-customer-id', customer.customerId);
+
+        const initials = getInitials(customer.firstName, customer.lastName);
+        const membershipClass = customer.membershipStatus === 'Premium' ? 'premium' : 'standard';
+        const membershipIcon = customer.membershipStatus === 'Premium' ? 'fas fa-crown' : 'fas fa-user';
+
+        row.innerHTML = `
+        <td>
+          <div class="customer-cell">
+            <div class="customer-avatar">${initials}</div>
+            <div class="customer-info">
+              <div class="customer-name">${customer.firstName} ${customer.lastName}</div>
+            </div>
+          </div>
+        </td>
+        <td>${customer.email}</td>
+        <td>
+          <span class="phone-number">
+            <i class="fas fa-phone-alt"></i>
+            <span>${customer.phoneNumber || 'Not provided'}</span>
+          </span>
+        </td>
+        <td>
+          <span class="membership-badge ${membershipClass}">
+            <i class="${membershipIcon}"></i>
+            <span>${customer.membershipStatus || 'Standard'}</span>
+          </span>
+        </td>
+        <td>${customer.totalServices || 0}</td>
+        <td>
+          <span class="last-service">
+            <i class="fas fa-calendar-day"></i>
+            <span>${customer.lastServiceDate
+                ? new Date(customer.lastServiceDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                : 'No service yet'
+        }</span>
+          </span>
+        </td>
+      `;
+
+        tableBody.appendChild(row);
+
+        // Add click event to the new row
+        row.addEventListener('click', function() {
+          const customerId = this.getAttribute('data-customer-id');
+
+          // Show spinner
+          showSpinner();
+
+          // Fetch customer details
+          fetch(`/admin/api/customers/${customerId}`, {
+            headers: {
+              'Authorization': 'Bearer ' + getToken(),
+              'Content-Type': 'application/json'
+            }
+          })
+                  .then(response => response.json())
+                  .then(customer => {
+                    // Populate modal
+                    populateCustomerDetails(customer);
+
+                    // Hide spinner
+                    hideSpinner();
+
+                    // Show modal
+                    const modal = new bootstrap.Modal(document.getElementById('customerDetailsModal'));
+                    modal.show();
+                  })
+                  .catch(error => {
+                    console.error('Error fetching customer details:', error);
+                    hideSpinner();
+                    alert('Failed to load customer details. Please try again.');
+                  });
+        });
+      });
+    }
+
+    // Try to load customers if we're on the customers page
+    if (window.location.pathname.includes('/admin/customers')) {
+      // Check if we have existing customers in the table
+      const existingCustomers = document.querySelectorAll('.customer-row');
+      if (existingCustomers.length === 0) {
+        // Only load if we don't have customers already rendered from server-side
+        loadCustomers();
+      }
+    }
+  });
+</script>
+</body>
+</html>

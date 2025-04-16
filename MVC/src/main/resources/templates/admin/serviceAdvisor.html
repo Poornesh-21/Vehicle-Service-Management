@@ -1,0 +1,3417 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Albany Motors - Service Advisor Management</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+  <!-- Google Fonts - Baloo Bhaijaan 2 -->
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<style>
+  :root {
+    --dutch-white: #EFFBBB; /* Dutch White */
+    --dutch-white-light: #f5ffd4;
+    --dutch-white-dark: #d6e297;
+    --dutch-white-darker: #bfca85;
+    --wine: #722F37;
+    --wine-light: #8a3943;
+    --wine-dark: #5e262e;
+    --wine-darker: #491d23;
+    --wine-gradient: linear-gradient(145deg, #722F37 0%, #5e262e 100%);
+    --wine-gradient-hover: linear-gradient(145deg, #8a3943 0%, #722F37 100%);
+    --dutch-white-gradient: linear-gradient(145deg, #EFFFBB 0%, #d6e297 100%);
+    --white: #ffffff;
+    --light-bg: #f8f9fa;
+    --light-gray: #e9ecef;
+    --medium-gray: #adb5bd;
+    --dark-gray: #495057;
+    --danger: #ef5350;
+    --warning: #ffca28;
+    --success: #66bb6a;
+    --info: #42a5f5;
+
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 8px rgba(0,0,0,0.1);
+    --shadow-lg: 0 8px 16px rgba(0,0,0,0.1);
+    --shadow-xl: 0 12px 24px rgba(0,0,0,0.15);
+
+    --radius-sm: 0.25rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 1rem;
+
+    --transition: all 0.3s ease;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body, html {
+    font-family: 'Baloo Bhaijaan 2', sans-serif;
+    background-color: #f0f2f5;
+    color: var(--dark-gray);
+    min-height: 100vh;
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Scrollbar Styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--light-gray);
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--wine);
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--wine-light);
+  }
+
+  .app-container {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+  }
+
+  /* Sidebar Styles - Fixed visibility issues */
+  .sidebar {
+    width: 280px;
+    background: var(--wine-gradient);
+    color: var(--white);
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow-xl);
+  }
+
+  .sidebar-header {
+    padding: 1.75rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .sidebar-header h2 {
+    margin-bottom: 0;
+    font-weight: 700;
+    color: var(--white); /* Fixed visibility issue */
+    font-size: 1.75rem;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); /* Added for better visibility */
+  }
+
+  .sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem 0;
+  }
+
+  .sidebar-content::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  .sidebar-content::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .sidebar-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .nav-section {
+    margin-bottom: 1.5rem;
+  }
+
+  .nav-section-title {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 0.75rem 1.5rem;
+    color: rgba(255, 255, 255, 0.8); /* Improved visibility */
+    font-weight: 600;
+  }
+
+  .sidebar-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .sidebar-menu-item {
+    padding: 0 0.75rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .sidebar-menu-link {
+    display: flex;
+    align-items: center;
+    padding: 0.85rem 1rem;
+    color: rgba(255, 255, 255, 0.95); /* Improved visibility */
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    transition: var(--transition);
+    position: relative;
+  }
+
+  .sidebar-menu-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--white);
+  }
+
+  .sidebar-menu-link.active {
+    background-color: var(--dutch-white-light);
+    color: var(--wine);
+    font-weight: 600;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .sidebar-menu-link.active::before {
+    content: '';
+    position: absolute;
+    left: -0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 2rem;
+    width: 4px;
+    background-color: var(--dutch-white-dark);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  }
+
+  .sidebar-menu-link i {
+    width: 1.5rem;
+    text-align: center;
+    font-size: 1.1rem;
+    margin-right: 0.75rem;
+  }
+
+  .sidebar-menu-link span {
+    font-size: 1rem;
+    font-weight: 500;
+    color: inherit; /* Ensures text inherits color properly */
+  }
+
+  .sidebar-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .user-info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .user-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--white);
+  }
+
+  .user-role {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.8); /* Improved visibility */
+  }
+
+  .logout-btn {
+    padding: 0.5rem 1rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: var(--radius-md);
+    color: var(--white);
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .logout-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  /* Main Content Styles */
+  .main-content {
+    flex: 1;
+    margin-left: 280px;
+    padding: 2rem;
+    transition: var(--transition);
+    color: var(--dark-gray);
+  }
+
+  /* Header Styles */
+  .page-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    margin-bottom: 2rem;
+    background-color: transparent;
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+    position: relative;
+    text-align: center;
+  }
+
+  .header-left {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .header-left h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--wine);
+    margin-bottom: 0.5rem;
+    position: relative;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.1);
+  }
+
+  .current-date {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.5rem;
+    background-color: var(--wine);
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 500;
+    color: white;
+    margin-top: 0.5rem;
+    box-shadow: 0 4px 10px rgba(114, 47, 55, 0.3);
+  }
+
+  .current-date i {
+    color: var(--dutch-white-light);
+  }
+
+  /* Action Bar */
+  .action-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2.5rem;
+    padding: 1rem 0;
+  }
+
+  .action-btns {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  /* Premium Modern Search Input */
+  .search-container {
+    position: relative;
+    flex: 1;
+    max-width: 500px;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 1.2rem 4rem 1.2rem 1.5rem;
+    background-color: var(--white);
+    border: none;
+    border-radius: var(--radius-lg);
+    color: var(--dark-gray);
+    font-size: 1rem;
+    transition: var(--transition);
+    box-shadow: var(--shadow-lg);
+    font-weight: 500;
+  }
+
+  .search-input:focus {
+    outline: none;
+    box-shadow: 0 10px 25px rgba(114, 47, 55, 0.2);
+  }
+
+  .search-input::placeholder {
+    color: var(--medium-gray);
+    font-weight: 400;
+  }
+
+  .search-btn {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3rem;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--wine-gradient);
+    color: var(--white);
+    border: none;
+    border-radius: 50%;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: var(--shadow-md);
+  }
+
+  .search-btn:hover {
+    background: var(--wine-gradient-hover);
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* Premium Button */
+  .btn-premium {
+    padding: 1rem 2rem;
+    border-radius: var(--radius-lg);
+    font-size: 1rem;
+    font-weight: 600;
+    transition: var(--transition);
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    box-shadow: var(--shadow-lg);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+  }
+
+  .btn-premium::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.1);
+    transition: all 0.4s ease;
+    z-index: -1;
+  }
+
+  .btn-premium:hover::after {
+    width: 100%;
+  }
+
+  .btn-premium.primary {
+    background: var(--wine-gradient);
+    color: white;
+  }
+
+  .btn-premium.primary:hover {
+    box-shadow: 0 10px 20px rgba(114, 47, 55, 0.3);
+    transform: translateY(-2px);
+  }
+
+  .btn-premium.secondary {
+    background-color: var(--white);
+    color: var(--wine);
+  }
+
+  .btn-premium.secondary:hover {
+    background-color: var(--light-bg);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+  }
+
+  .btn-premium.danger {
+    background: linear-gradient(145deg, #ef5350, #d32f2f);
+    color: white;
+  }
+
+  .btn-premium.danger:hover {
+    box-shadow: 0 10px 20px rgba(211, 47, 47, 0.3);
+    transform: translateY(-2px);
+  }
+
+  /* Advisor Cards Grid */
+  .advisors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+
+  /* Advisor Card Design - Professional Portfolio Style */
+  .advisor-card {
+    background-color: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    transition: var(--transition);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  .advisor-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-xl);
+  }
+
+  /* Fixed Professional Image Frame */
+  .advisor-image-container {
+    position: relative;
+    width: 100%;
+    height: 260px;
+    overflow: hidden;
+  }
+
+  .advisor-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: var(--transition);
+  }
+
+  .advisor-card:hover .advisor-image {
+    transform: scale(1.05);
+  }
+
+  /* Improved service advisor ID badge */
+  .advisor-id-badge {
+    position: absolute;
+    top: 1.25rem;
+    right: 1.25rem;
+    background-color: var(--white);
+    color: var(--wine);
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 0.5rem 1rem;
+    border-radius: 50px;
+    z-index: 10;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    letter-spacing: 0.5px;
+  }
+
+  .advisor-id-badge i {
+    color: var(--wine);
+    font-size: 0.9rem;
+  }
+
+  .advisor-content {
+    padding: 2rem 1.5rem 1.5rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  .advisor-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .advisor-name {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.35rem;
+    color: var(--wine-dark);
+  }
+
+  .advisor-title {
+    font-size: 0.95rem;
+    color: var(--medium-gray);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .advisor-title i {
+    color: var(--wine);
+    font-size: 0.85rem;
+  }
+
+  .advisor-details {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    margin-bottom: auto;
+  }
+
+  .detail-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .detail-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--light-bg);
+    color: var(--wine);
+    font-size: 0.9rem;
+    flex-shrink: 0;
+    box-shadow: var(--shadow-sm);
+  }
+
+  .detail-text {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .detail-label {
+    font-size: 0.8rem;
+    color: var(--medium-gray);
+    margin-bottom: 0.2rem;
+  }
+
+  .detail-value {
+    font-size: 0.95rem;
+    color: var(--dark-gray);
+    font-weight: 500;
+  }
+
+  .advisor-workload {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--light-gray);
+  }
+
+  .workload-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    align-items: center;
+  }
+
+  .workload-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--dark-gray);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .workload-title i {
+    color: var(--wine);
+  }
+
+  .workload-percent {
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  .workload-percent.low {
+    color: var(--success);
+  }
+
+  .workload-percent.medium {
+    color: var(--warning);
+  }
+
+  .workload-percent.high {
+    color: var(--danger);
+  }
+
+  .progress {
+    height: 0.6rem;
+    border-radius: 1rem;
+    background-color: var(--light-gray);
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+    overflow: hidden;
+    margin-bottom: 0.75rem;
+  }
+
+  .progress-bar {
+    height: 100%;
+    border-radius: 1rem;
+    transition: width 0.5s ease;
+  }
+
+  .progress-bar.low {
+    background: linear-gradient(145deg, #66BB6A, #43A047);
+  }
+
+  .progress-bar.medium {
+    background: linear-gradient(145deg, #FFCA28, #FFB300);
+  }
+
+  .progress-bar.high {
+    background: linear-gradient(145deg, #EF5350, #E53935);
+  }
+
+  .workload-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+  }
+
+  .active-services {
+    color: var(--medium-gray);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .active-services i {
+    color: var(--wine);
+    font-size: 0.8rem;
+  }
+
+  .advisor-actions {
+    display: flex;
+    margin-top: 1.5rem;
+    gap: 0.75rem;
+  }
+
+  .advisor-actions button {
+    flex: 1;
+    padding: 0.75rem;
+    border: none;
+    border-radius: var(--radius-lg);
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .advisor-actions button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .btn-view {
+    background-color: var(--wine);
+    color: var(--white);
+  }
+
+  .btn-view:hover {
+    background-color: var(--wine-light);
+  }
+
+  .btn-edit {
+    background-color: var(--light-bg);
+    color: var(--info);
+  }
+
+  .btn-edit:hover {
+    background-color: rgba(66, 165, 245, 0.1);
+  }
+
+  .btn-fire {
+    background-color: var(--light-bg);
+    color: var(--danger);
+  }
+
+  .btn-fire:hover {
+    background-color: rgba(239, 83, 80, 0.1);
+  }
+
+  /* Modal Styles - Premium Modern Design */
+  .modal-premium .modal-content {
+    border: none;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+  }
+
+  .modal-premium .modal-header {
+    background: var(--wine-gradient);
+    color: white;
+    border-bottom: none;
+    padding: 2rem;
+    position: relative;
+  }
+
+  .modal-premium .modal-title {
+    font-weight: 700;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .modal-premium .modal-title i {
+    width: 2.5rem;
+    height: 2.5rem;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+  }
+
+  .modal-premium .modal-body {
+    padding: 2.5rem;
+  }
+
+  .modal-premium .modal-footer {
+    padding: 1.5rem 2.5rem;
+    border-top: 1px solid var(--light-gray);
+  }
+
+  .modal-premium .btn-close {
+    background: rgba(255, 255, 255, 0.2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23FFF'%3E%3Cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3E%3C/svg%3E") center/1em auto no-repeat;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    opacity: 0.8;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+
+  .modal-premium .btn-close:hover {
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+
+  /* Form Styles - Modern Premium */
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.75rem;
+    margin-bottom: 1.75rem;
+  }
+
+  .form-group {
+    margin-bottom: 1.75rem;
+  }
+
+  .form-group:last-child {
+    margin-bottom: 0;
+  }
+
+  .form-label {
+    display: block;
+    margin-bottom: 0.65rem;
+    font-weight: 500;
+    color: var(--dark-gray);
+    font-size: 0.9rem;
+  }
+
+  .form-control, .form-select {
+    width: 100%;
+    padding: 0.85rem 1.25rem;
+    background-color: var(--light-bg);
+    border: 2px solid transparent;
+    border-radius: var(--radius-lg);
+    color: var(--dark-gray);
+    font-size: 0.95rem;
+    transition: var(--transition);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .input-with-icon {
+    position: relative;
+  }
+
+  .input-with-icon .form-control,
+  .input-with-icon .form-select {
+    padding-left: 3rem;
+  }
+
+  .input-icon {
+    position: absolute;
+    left: 1.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--medium-gray);
+  }
+
+  .form-control:focus, .form-select:focus {
+    outline: none;
+    border-color: var(--wine-light);
+    box-shadow: 0 0 0 4px rgba(114, 47, 55, 0.1);
+    background-color: var(--white);
+  }
+
+  /* File upload area */
+  .file-upload-area {
+    background-color: var(--light-bg);
+    border: 2px dashed var(--medium-gray);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-bottom: 1.75rem;
+  }
+
+  .file-upload-area:hover {
+    border-color: var(--wine);
+    background-color: rgba(114, 47, 55, 0.05);
+  }
+
+  .upload-icon {
+    font-size: 2.5rem;
+    color: var(--medium-gray);
+    margin-bottom: 1rem;
+  }
+
+  .upload-text {
+    font-size: 1rem;
+    color: var(--dark-gray);
+    margin-bottom: 0.5rem;
+  }
+
+  .upload-hint {
+    font-size: 0.8rem;
+    color: var(--medium-gray);
+  }
+
+  /* File upload preview */
+  .image-preview {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 0 auto 1rem;
+    position: relative;
+    box-shadow: var(--shadow-md);
+    background-color: var(--light-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .image-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .image-placeholder {
+    font-size: 2.5rem;
+    color: var(--medium-gray);
+  }
+
+  .remove-image {
+    position: absolute;
+    top: 0.25rem;
+    right: 0.25rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    background-color: rgba(239, 83, 80, 0.9);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: var(--transition);
+    z-index: 5;
+    opacity: 0;
+  }
+
+  .image-preview:hover .remove-image {
+    opacity: 1;
+  }
+
+  .upload-success-message {
+    color: var(--success);
+    font-size: 0.85rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  /* Vehicles Modal */
+  .vehicle-card {
+    background-color: var(--white);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    margin-bottom: 1rem;
+    transition: var(--transition);
+  }
+
+  .vehicle-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .vehicle-icon {
+    width: 3.5rem;
+    height: 3.5rem;
+    background-color: var(--dutch-white-light);
+    color: var(--wine);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .vehicle-info {
+    flex: 1;
+  }
+
+  .vehicle-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--wine-dark);
+    margin-bottom: 0.35rem;
+  }
+
+  .vehicle-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .vehicle-detail {
+    font-size: 0.85rem;
+    color: var(--medium-gray);
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .vehicle-detail i {
+    color: var(--wine);
+    font-size: 0.8rem;
+  }
+
+  .vehicle-status {
+    padding: 0.4rem 1rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  .vehicle-status.progress {
+    background-color: rgba(66, 165, 245, 0.1);
+    color: var(--info);
+    height: auto;
+  }
+
+  .vehicle-status.completed {
+    background-color: rgba(102, 187, 106, 0.1);
+    color: var(--success);
+  }
+
+  .vehicle-status.pending {
+    background-color: rgba(255, 202, 40, 0.1);
+    color: var(--warning);
+  }
+
+  /* Enhanced Success Modal */
+  .success-modal .modal-content {
+    border: none;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    overflow: hidden;
+    background-color: var(--white);
+    position: relative;
+  }
+
+  .success-modal .modal-body {
+    padding: 3.5rem 2.5rem;
+    text-align: center;
+    position: relative;
+  }
+
+  .success-modal .modal-body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 15px;
+    background: var(--wine-gradient);
+  }
+
+  .success-icon-container {
+    margin-bottom: 2rem;
+    position: relative;
+    display: inline-flex;
+  }
+
+  .success-icon-wrapper {
+    width: 8rem;
+    height: 8rem;
+    border-radius: 50%;
+    background: linear-gradient(145deg, rgba(102, 187, 106, 0.15), rgba(102, 187, 106, 0.05));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    position: relative;
+    animation: pulse 1.5s infinite ease-in-out;
+  }
+
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(102, 187, 106, 0.6);
+    }
+    70% {
+      box-shadow: 0 0 0 15px rgba(102, 187, 106, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(102, 187, 106, 0);
+    }
+  }
+
+  .success-icon {
+    width: 6rem;
+    height: 6rem;
+    border-radius: 50%;
+    background-color: var(--success);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    box-shadow: 0 10px 30px rgba(102, 187, 106, 0.3);
+    animation: scale-in 0.5s ease-out;
+  }
+
+  @keyframes scale-in {
+    0% {
+      transform: scale(0);
+    }
+    80% {
+      transform: scale(1.1);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  .success-modal .success-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--dark-gray);
+    margin-bottom: 1rem;
+    font-family: 'Baloo Bhaijaan 2', sans-serif;
+  }
+
+  .success-modal .success-message {
+    font-size: 1.1rem;
+    color: var(--medium-gray);
+    margin-bottom: 2rem;
+    line-height: 1.6;
+    max-width: 80%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .success-modal .continue-btn {
+    padding: 1rem 3rem;
+    font-size: 1.1rem;
+    border-radius: var(--radius-lg);
+    background: var(--wine-gradient);
+    color: white;
+    border: none;
+    font-weight: 600;
+    transition: var(--transition);
+    box-shadow: var(--shadow-lg);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .success-modal .continue-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(114, 47, 55, 0.2);
+  }
+
+  /* Loading spinner */
+  .spinner-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(5px);
+  }
+
+  .spinner-content {
+    text-align: center;
+    padding: 2rem;
+    background-color: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    max-width: 80%;
+    width: 300px;
+  }
+
+  .spinner {
+    width: 4rem;
+    height: 4rem;
+    border: 5px solid rgba(114, 47, 55, 0.1);
+    border-top-color: var(--wine);
+    border-radius: 50%;
+    margin: 0 auto 1.5rem;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .spinner-text {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--dark-gray);
+    margin: 0;
+  }
+
+  /* Footer */
+  .app-footer {
+    margin-top: 3rem;
+    padding-bottom: 2rem;
+  }
+
+  .footer-content {
+    background: var(--wine-gradient);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-lg);
+    color: white;
+    text-align: center;
+  }
+
+  .footer-text {
+    margin: 0;
+    font-size: 0.95rem;
+    opacity: 0.9;
+  }
+
+  .footer-brand {
+    font-weight: 600;
+    color: var(--dutch-white-light);
+  }
+
+  /* NEW TERMINATION MODAL STYLES */
+  /* Premium Termination Modal Styling */
+  .termination-modal .modal-content {
+    border: none;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+    background-color: #fff;
+  }
+
+  .termination-modal .modal-header {
+    background: linear-gradient(145deg, #ef5350 0%, #d32f2f 100%);
+    color: white;
+    padding: 1.5rem 2rem;
+    border-bottom: none;
+    position: relative;
+  }
+
+  .termination-modal .modal-title {
+    font-weight: 700;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: 'Baloo Bhaijaan 2', sans-serif;
+  }
+
+  .termination-modal .modal-title i {
+    width: 2.5rem;
+    height: 2.5rem;
+    background-color: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(5px);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .termination-modal .modal-body {
+    padding: 2.5rem 2.5rem;
+    position: relative;
+  }
+
+  .termination-modal .modal-footer {
+    padding: 1.5rem 2.5rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    justify-content: space-between;
+  }
+
+  /* Icon Design - Premium Animation */
+  .termination-icon-wrapper {
+    width: 8rem;
+    height: 8rem;
+    position: relative;
+    margin: 0 auto 2.5rem;
+  }
+
+  .termination-icon-ring {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px solid rgba(239, 83, 80, 0.2);
+    position: absolute;
+    animation: pulse 2s infinite ease-in-out;
+  }
+
+  .termination-icon {
+    width: 6rem;
+    height: 6rem;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #ef5350, #d32f2f);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    box-shadow: 0 10px 30px rgba(239, 83, 80, 0.3);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .termination-content {
+    text-align: center;
+  }
+
+  .termination-warning-label {
+    display: inline-block;
+    padding: 0.5rem 1.5rem;
+    background-color: rgba(239, 83, 80, 0.1);
+    color: #d32f2f;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 50px;
+    margin-bottom: 1rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    box-shadow: 0 2px 8px rgba(239, 83, 80, 0.15);
+  }
+
+  .termination-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 1.5rem;
+    font-family: 'Baloo Bhaijaan 2', sans-serif;
+  }
+
+  /* Advisor Highlight - Enhanced */
+  .advisor-highlight {
+    display: inline-flex;
+    align-items: center;
+    background-color: #f8f9fa;
+    padding: 1rem 1.5rem;
+    border-radius: var(--radius-lg);
+    margin: 1.5rem 0;
+    gap: 1.25rem;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    transition: all 0.3s ease;
+  }
+
+  .advisor-highlight:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  }
+
+  .advisor-highlight-avatar {
+    width: 3.5rem;
+    height: 3.5rem;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #ef5350, #d32f2f);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(239, 83, 80, 0.3);
+  }
+
+  .advisor-highlight-info {
+    text-align: left;
+  }
+
+  .advisor-highlight-name {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.25rem;
+  }
+
+  .advisor-highlight-id {
+    font-size: 0.85rem;
+    color: #6c757d;
+  }
+
+  .termination-description {
+    color: #495057;
+    margin: 1.5rem auto;
+    font-size: 1rem;
+    line-height: 1.6;
+    max-width: 90%;
+    text-align: center;
+  }
+
+  /* Premium Checklist */
+  .termination-checklist {
+    background-color: #f8f9fa;
+    padding: 1.75rem;
+    border-radius: var(--radius-lg);
+    margin: 1.5rem 0;
+    text-align: left;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.03);
+  }
+
+  .termination-checklist-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .termination-checklist-title i {
+    color: #d32f2f;
+  }
+
+  .termination-checklist-items {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .termination-checklist-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    font-size: 0.95rem;
+    color: #495057;
+  }
+
+  .check-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    background-color: rgba(239, 83, 80, 0.15);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #d32f2f;
+    font-size: 0.7rem;
+    flex-shrink: 0;
+    margin-top: 0.2rem;
+  }
+
+  /* Premium Button Styles */
+  .termination-btn-cancel {
+    padding: 0.85rem 1.5rem;
+    background-color: #f8f9fa;
+    color: #495057;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: var(--radius-lg);
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  }
+
+  .termination-btn-cancel:hover {
+    background-color: #e9ecef;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  }
+
+  .termination-btn-confirm {
+    padding: 0.85rem 1.5rem;
+    background: linear-gradient(145deg, #ef5350, #d32f2f);
+    color: white;
+    border: none;
+    border-radius: var(--radius-lg);
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(239, 83, 80, 0.3);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .termination-btn-confirm:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(239, 83, 80, 0.4);
+  }
+
+  .termination-btn-back {
+    padding: 0.85rem 1.5rem;
+    background-color: #f8f9fa;
+    color: #495057;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: var(--radius-lg);
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  }
+
+  .termination-btn-back:hover {
+    background-color: #e9ecef;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  }
+
+  .termination-btn-final {
+    padding: 0.85rem 1.5rem;
+    background: linear-gradient(145deg, #d32f2f, #b71c1c);
+    color: white;
+    border: none;
+    border-radius: var(--radius-lg);
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(183, 28, 28, 0.3);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .termination-btn-final:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(183, 28, 28, 0.4);
+  }
+
+  /* Step 2 Verification Styles */
+  .password-verification-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .verification-icon {
+    width: 4.5rem;
+    height: 4.5rem;
+    background: linear-gradient(145deg, #5c6bc0, #3f51b5);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    border-radius: 50%;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 8px 20px rgba(63, 81, 181, 0.3);
+  }
+
+  .verification-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #333;
+    margin-bottom: 1rem;
+    font-family: 'Baloo Bhaijaan 2', sans-serif;
+  }
+
+  .verification-description {
+    color: #495057;
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+    max-width: 90%;
+  }
+
+  .verification-description .employee-name {
+    font-weight: 600;
+    color: #d32f2f;
+  }
+
+  .password-group {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  .password-group .form-label {
+    text-align: left;
+    display: block;
+    margin-bottom: 0.65rem;
+    font-weight: 500;
+    color: #333;
+    font-size: 0.95rem;
+  }
+
+  .password-group .input-with-icon {
+    position: relative;
+  }
+
+  .password-group .form-control {
+    width: 100%;
+    padding: 1rem 3rem 1rem 3rem;
+    background-color: #f8f9fa;
+    border: 2px solid transparent;
+    border-radius: var(--radius-lg);
+    color: #333;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  }
+
+  .password-group .form-control:focus {
+    border-color: #3f51b5;
+    background-color: white;
+    box-shadow: 0 5px 15px rgba(63, 81, 181, 0.15);
+  }
+
+  .password-group .input-icon {
+    position: absolute;
+    left: 1.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+  }
+
+  .password-toggle {
+    position: absolute;
+    right: 1.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0;
+    transition: all 0.3s ease;
+  }
+
+  .password-toggle:hover {
+    color: #3f51b5;
+  }
+
+  .password-error {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #d32f2f;
+    font-size: 0.85rem;
+    margin-top: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    background-color: rgba(239, 83, 80, 0.1);
+    border-radius: var(--radius-md);
+  }
+
+  /* Alert styles */
+  .custom-alert {
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-lg);
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    box-shadow: var(--shadow-md);
+  }
+
+  .custom-alert.error {
+    background-color: rgba(239, 83, 80, 0.1);
+    border-left: 4px solid var(--danger);
+    color: #c62828;
+  }
+
+  .custom-alert.success {
+    background-color: rgba(102, 187, 106, 0.1);
+    border-left: 4px solid var(--success);
+    color: #2e7d32;
+  }
+
+  .custom-alert.warning {
+    background-color: rgba(255, 202, 40, 0.1);
+    border-left: 4px solid var(--warning);
+    color: #f57f17;
+  }
+
+  .alert-icon {
+    font-size: 1.5rem;
+  }
+
+  .alert-content {
+    flex: 1;
+  }
+
+  .alert-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    font-size: 1rem;
+  }
+
+  .alert-message {
+    font-size: 0.9rem;
+    opacity: 0.9;
+  }
+
+  /* Mobile menu toggle */
+  .mobile-menu-toggle {
+    display: none;
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 1060;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background: var(--wine-gradient);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 12px rgba(114, 47, 55, 0.25);
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .mobile-menu-toggle:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(114, 47, 55, 0.3);
+  }
+
+  /* Animation for the success modal */
+  @keyframes slideInUp {
+    from {
+      transform: translate3d(0, 40px, 0);
+      opacity: 0;
+    }
+    to {
+      transform: translate3d(0, 0, 0);
+      opacity: 1;
+    }
+  }
+
+  .success-animation {
+    animation: slideInUp 0.4s ease-out forwards;
+  }
+
+  /* Responsive Design */
+  @media (max-width: 991.98px) {
+    .sidebar {
+      width: 5rem;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .sidebar-header h2,
+    .sidebar-menu-link span,
+    .user-info,
+    .nav-section-title,
+    .logout-btn span {
+      display: none;
+    }
+
+    .sidebar-menu-link {
+      justify-content: center;
+      padding: 0.75rem;
+    }
+
+    .sidebar-menu-link i {
+      margin-right: 0;
+      font-size: 1.25rem;
+    }
+
+    .sidebar-menu-link.active::before {
+      left: -0.5rem;
+    }
+
+    .sidebar-footer {
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .logout-btn {
+      padding: 0.5rem;
+      justify-content: center;
+    }
+
+    .main-content {
+      margin-left: 5rem;
+    }
+
+    .page-header {
+      padding-top: 1rem;
+      padding-bottom: 1rem;
+    }
+
+    .header-left h1 {
+      font-size: 2rem;
+    }
+
+    .action-bar {
+      flex-direction: column;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+
+    .action-btns {
+      width: 100%;
+      justify-content: space-between;
+    }
+
+    .search-container {
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .advisors-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 767.98px) {
+    .advisors-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .form-row {
+      grid-template-columns: 1fr;
+      gap: 0;
+    }
+  }
+
+  @media (max-width: 575.98px) {
+    .mobile-menu-toggle {
+      display: flex;
+    }
+
+    .sidebar {
+      width: 0;
+      transform: translateX(-100%);
+    }
+
+    .sidebar.active {
+      width: 16rem;
+      transform: translateX(0);
+    }
+
+    .sidebar.active .sidebar-header h2,
+    .sidebar.active .sidebar-menu-link span,
+    .sidebar.active .user-info,
+    .sidebar.active .nav-section-title,
+    .sidebar.active .logout-btn span {
+      display: block;
+    }
+
+    .sidebar.active .sidebar-menu-link {
+      justify-content: flex-start;
+      padding: 0.85rem 1rem;
+    }
+
+    .sidebar.active .sidebar-menu-link i {
+      margin-right: 0.75rem;
+    }
+
+    .sidebar.active .logout-btn {
+      padding: 0.5rem 1rem;
+      justify-content: space-between;
+    }
+
+    .main-content {
+      margin-left: 0;
+      padding: 1.5rem;
+    }
+
+    .page-header {
+      margin-top: 3rem;
+    }
+
+    .header-left h1 {
+      font-size: 1.75rem;
+    }
+
+    .current-date {
+      font-size: 0.9rem;
+      padding: 0.4rem 1.2rem;
+    }
+
+    .btn-premium {
+      padding: 0.75rem 1.5rem;
+      font-size: 0.9rem;
+    }
+
+    .advisor-actions {
+      flex-direction: column;
+    }
+  }
+</style>
+<body>
+<div class="app-container">
+  <!-- Mobile Menu Toggle Button (for small screens) -->
+  <button class="mobile-menu-toggle" id="mobileMenuToggle">
+    <i class="fas fa-bars"></i>
+  </button>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h2>Albany</h2>
+    </div>
+
+    <div class="sidebar-content">
+      <div class="nav-section">
+        <div class="nav-section-title">Main</div>
+        <ul class="sidebar-menu">
+          <li class="sidebar-menu-item">
+            <a th:href="@{/admin/dashboard}" class="sidebar-menu-link">
+              <i class="fas fa-tachometer-alt"></i>
+              <span>Dashboard</span>
+            </a>
+
+        </ul>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">Management</div>
+        <ul class="sidebar-menu">
+          <li class="sidebar-menu-item">
+            <a th:href="@{/admin/service-requests}" class="sidebar-menu-link">
+              <i class="fas fa-clipboard-list"></i>
+              <span>Service Requests</span>
+            </a>
+          </li>
+          <li class="sidebar-menu-item">
+            <a href="#" class="sidebar-menu-link">
+              <i class="fas fa-car"></i>
+              <span>Vehicles</span>
+            </a>
+          </li>
+          <li class="sidebar-menu-item">
+            <a th:href="@{/admin/customers}" class="sidebar-menu-link active">
+              <i class="fas fa-users"></i>
+              <span>Customers</span>
+            </a>
+          </li>
+          <li class="sidebar-menu-item">
+            <a th:href="@{/admin/service-advisors}" class="sidebar-menu-link">
+              <i class="fas fa-user-tie"></i>
+              <span>Service Advisors</span>
+            </a>
+          </li>
+          <li class="sidebar-menu-item">
+            <a th:href="@{/admin/inventory}" class="sidebar-menu-link">
+              <i class="fas fa-boxes"></i>
+              <span>Inventory</span>
+            </a>
+          </li>
+
+          <li class="sidebar-menu-item">
+            <a href="#" class="sidebar-menu-link">
+              <i class="fas fa-tools"></i>
+              <span>Work Items</span>
+            </a>
+          </li>
+          <li class="sidebar-menu-item">
+            <a href="#" class="sidebar-menu-link">
+              <i class="fas fa-file-invoice-dollar"></i>
+              <span>Invoices</span>
+            </a>
+          </li>
+          <li class="sidebar-menu-item">
+            <a href="#" class="sidebar-menu-link">
+              <i class="fas fa-rupee-sign"></i>
+              <span>Payments</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-name">Arthur Morgan</div>
+        <div class="user-role">Administrator</div>
+      </div>
+      <button class="logout-btn">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Page Header -->
+    <header class="page-header">
+      <div class="header-left">
+        <h1>Service Advisor Management</h1>
+        <div class="current-date">
+          <i class="far fa-calendar-alt"></i>
+          <span id="current-date">Loading date...</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Error/Success Alerts -->
+    <div id="alertContainer">
+      <!-- Will be populated dynamically if needed -->
+      <div th:if="${apiError}" class="custom-alert error">
+        <div class="alert-icon">
+          <i class="fas fa-exclamation-circle"></i>
+        </div>
+        <div class="alert-content">
+          <div class="alert-title">Error</div>
+          <div class="alert-message" th:text="${apiError}">Error message will appear here</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Bar -->
+    <section class="action-bar">
+      <div class="search-container">
+        <input type="text" id="searchInput" class="search-input" placeholder="Search by name, department, or specialization...">
+        <button class="search-btn">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+
+      <div class="action-btns">
+        <button class="btn-premium primary" data-bs-toggle="modal" data-bs-target="#addAdvisorModal">
+          <i class="fas fa-plus"></i>
+          Add Advisor
+        </button>
+      </div>
+    </section>
+
+    <!-- Advisors Grid - Portfolio Style -->
+    <section class="advisors-grid" id="advisorsGrid">
+      <!-- Will be populated dynamically with JavaScript -->
+
+      <!-- Loading placeholder shown until data is loaded -->
+      <div id="loadingPlaceholder" class="text-center py-5">
+        <div class="spinner"></div>
+        <h5 class="mt-3">Loading service advisors...</h5>
+      </div>
+
+      <!-- Empty state message - shown when no advisors exist -->
+      <div id="emptyState" class="text-center py-5" style="display: none;">
+        <i class="fas fa-user-tie fa-3x text-muted mb-3"></i>
+        <h5>No service advisors found</h5>
+        <p class="text-muted">Add your first service advisor to get started</p>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-content">
+        <p class="footer-text">
+          &copy; 2025 <span class="footer-brand">Albany</span>. All Rights Reserved.
+        </p>
+      </div>
+    </footer>
+  </main>
+</div>
+
+<!-- Add Advisor Modal -->
+<div class="modal fade modal-premium" id="addAdvisorModal" tabindex="-1" aria-labelledby="addAdvisorModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addAdvisorModalLabel">
+          <i class="fas fa-user-plus"></i>
+          Add New Service Advisor
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="addAdvisorForm">
+          <!-- Profile Image Upload -->
+          <div class="text-center mb-4">
+            <div class="image-preview">
+              <div class="image-placeholder">
+                <i class="fas fa-user-tie"></i>
+              </div>
+              <div class="remove-image">
+                <i class="fas fa-times"></i>
+              </div>
+            </div>
+            <div class="upload-success-message d-none">
+              <i class="fas fa-check-circle"></i> Image uploaded successfully
+            </div>
+            <label for="profileImage" class="file-upload-area">
+              <div class="upload-icon">
+                <i class="fas fa-cloud-upload-alt"></i>
+              </div>
+              <h5 class="upload-text">Click to upload profile photo</h5>
+              <p class="upload-hint">Supports JPG, PNG. Max size 5MB.</p>
+              <input type="file" id="profileImage" name="profileImage" accept="image/*" class="d-none" />
+            </label>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="firstName">First Name <span class="text-danger">*</span></label>
+              <div class="input-with-icon">
+                <i class="fas fa-user input-icon"></i>
+                <input type="text" class="form-control" id="firstName" name="firstName" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="lastName">Last Name <span class="text-danger">*</span></label>
+              <div class="input-with-icon">
+                <i class="fas fa-user input-icon"></i>
+                <input type="text" class="form-control" id="lastName" name="lastName" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="email">Email Address <span class="text-danger">*</span></label>
+              <div class="input-with-icon">
+                <i class="fas fa-envelope input-icon"></i>
+                <input type="email" class="form-control" id="email" name="email" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="phone">Phone Number <span class="text-danger">*</span></label>
+              <div class="input-with-icon">
+                <i class="fas fa-phone-alt input-icon"></i>
+                <input type="tel" class="form-control" id="phone" name="phoneNumber" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="password">Password <span class="text-danger">*</span></label>
+              <div class="input-with-icon">
+                <i class="fas fa-lock input-icon"></i>
+                <input type="password" class="form-control" id="password" name="password" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="confirmPassword">Confirm Password <span class="text-danger">*</span></label>
+              <div class="input-with-icon">
+                <i class="fas fa-lock input-icon"></i>
+                <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="department">Department</label>
+              <div class="input-with-icon">
+                <i class="fas fa-building input-icon"></i>
+                <select class="form-select" id="department" name="department">
+                  <option value="Service Department">Service Department</option>
+                  <option value="Maintenance">Maintenance</option>
+                  <option value="Repairs">Repairs</option>
+                  <option value="Diagnostics">Diagnostics</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="specialization">Specialization</label>
+              <div class="input-with-icon">
+                <i class="fas fa-wrench input-icon"></i>
+                <select class="form-select" id="specialization" name="specialization">
+                  <option value="Vehicle Diagnostics">Vehicle Diagnostics</option>
+                  <option value="Engine Repairs">Engine Repairs</option>
+                  <option value="Body Work">Body Work</option>
+                  <option value="Electrical Systems">Electrical Systems</option>
+                  <option value="General Maintenance">General Maintenance</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-premium secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times"></i>
+          Cancel
+        </button>
+        <button type="button" id="addAdvisorBtn" class="btn-premium primary">
+          <i class="fas fa-save"></i>
+          Register New Advisor
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Advisor Modal -->
+<div class="modal fade modal-premium" id="editAdvisorModal" tabindex="-1" aria-labelledby="editAdvisorModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editAdvisorModalLabel">
+          <i class="fas fa-user-edit"></i>
+          Edit Service Advisor
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editAdvisorForm">
+          <input type="hidden" id="editAdvisorId" name="advisorId" value="">
+          <input type="hidden" id="editUserId" name="userId" value="">
+
+          <!-- Current Profile Image - No Upload Option -->
+          <div class="text-center mb-4">
+            <div class="image-preview">
+              <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="Advisor Profile" id="currentProfileImage">
+            </div>
+            <div class="upload-success-message">
+              <i class="fas fa-check-circle"></i> Current profile image
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="editFirstName">First Name <span class="text-danger">*</span></label>
+              <div class="input-with-icon">
+                <i class="fas fa-user input-icon"></i>
+                <input type="text" class="form-control" id="editFirstName" name="firstName" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="editLastName">Last Name <span class="text-danger">*</span></label>
+              <div class="input-with-icon">
+                <i class="fas fa-user input-icon"></i>
+                <input type="text" class="form-control" id="editLastName" name="lastName" required>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="editEmail">Email Address <span class="text-danger">*</span></label>
+              <div class="input-with-icon">
+                <i class="fas fa-envelope input-icon"></i>
+                <input type="email" class="form-control" id="editEmail" name="email" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="editPhone">Phone Number <span class="text-danger">*</span></label>
+              <div class="input-with-icon">
+                <i class="fas fa-phone-alt input-icon"></i>
+                <input type="tel" class="form-control" id="editPhone" name="phoneNumber" required>
+              </div>
+            </div>
+          </div>
+
+          <!-- Password field without confirmation -->
+          <div class="form-group">
+            <label class="form-label" for="editPassword">Set New Password <span class="text-muted">(leave blank to keep current password)</span></label>
+            <div class="input-with-icon">
+              <i class="fas fa-lock input-icon"></i>
+              <input type="password" class="form-control" id="editPassword" name="password" placeholder="Enter new password if you wish to change it">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="editDepartment">Department</label>
+              <div class="input-with-icon">
+                <i class="fas fa-building input-icon"></i>
+                <select class="form-select" id="editDepartment" name="department">
+                  <option value="Service Department">Service Department</option>
+                  <option value="Maintenance">Maintenance</option>
+                  <option value="Repairs">Repairs</option>
+                  <option value="Diagnostics">Diagnostics</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="editSpecialization">Specialization</label>
+              <div class="input-with-icon">
+                <i class="fas fa-wrench input-icon"></i>
+                <select class="form-select" id="editSpecialization" name="specialization">
+                  <option value="Vehicle Diagnostics">Vehicle Diagnostics</option>
+                  <option value="Engine Repairs">Engine Repairs</option>
+                  <option value="Body Work">Body Work</option>
+                  <option value="Electrical Systems">Electrical Systems</option>
+                  <option value="General Maintenance">General Maintenance</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-premium secondary" data-bs-dismiss="modal">
+          <i class="fas fa-times"></i>
+          Cancel
+        </button>
+        <button type="button" id="updateAdvisorBtn" class="btn-premium primary">
+          <i class="fas fa-save"></i>
+          Update Advisor Information
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Termination Modal with Password Confirmation -->
+<div class="modal fade termination-modal" id="fireAdvisorModal" tabindex="-1" aria-labelledby="fireAdvisorModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <!-- Step 1: Initial Termination Screen -->
+      <div id="terminationStep1">
+        <div class="modal-header">
+          <h5 class="modal-title" id="fireAdvisorModalLabel">
+            <i class="fas fa-user-slash"></i>
+            Employment Termination
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="termination-icon-wrapper">
+            <div class="termination-icon-ring"></div>
+            <div class="termination-icon">
+              <i class="fas fa-user-slash"></i>
+            </div>
+          </div>
+
+          <div class="termination-content">
+            <span class="termination-warning-label">Action Required</span>
+            <h4 class="termination-title">Confirm Employment Termination</h4>
+
+            <div class="advisor-highlight">
+              <div class="advisor-highlight-avatar" id="fireAvatarInitial">VM</div>
+              <div class="advisor-highlight-info">
+                <div class="advisor-highlight-name" id="fireAdvisorName">Advisor Name</div>
+                <div class="advisor-highlight-id" id="fireAdvisorIdDisplay">SA-1023</div>
+              </div>
+            </div>
+
+            <p class="termination-description">
+              You are initiating the process to terminate employment. This action will revoke all system access and privileges.
+            </p>
+
+            <div class="termination-checklist">
+              <div class="termination-checklist-title">
+                <i class="fas fa-clipboard-check"></i> Termination Checklist
+              </div>
+              <div class="termination-checklist-items">
+                <div class="termination-checklist-item">
+                  <div class="check-icon">
+                    <i class="fas fa-check"></i>
+                  </div>
+                  <div>All in-progress services will need to be reassigned</div>
+                </div>
+                <div class="termination-checklist-item">
+                  <div class="check-icon">
+                    <i class="fas fa-check"></i>
+                  </div>
+                  <div>System credentials will be revoked immediately</div>
+                </div>
+                <div class="termination-checklist-item">
+                  <div class="check-icon">
+                    <i class="fas fa-check"></i>
+                  </div>
+                  <div>This action cannot be undone</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <input type="hidden" id="fireAdvisorId" value="">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="termination-btn-cancel" data-bs-dismiss="modal">
+            <i class="fas fa-times"></i>
+            Cancel Request
+          </button>
+          <button type="button" id="proceedTerminationBtn" class="termination-btn-confirm">
+            <i class="fas fa-arrow-right"></i>
+            Proceed
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 2: Password Confirmation Screen -->
+      <div id="terminationStep2" style="display: none;">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="fas fa-shield-alt"></i>
+            Verification Required
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="password-verification-container">
+            <div class="verification-icon">
+              <i class="fas fa-lock"></i>
+            </div>
+
+            <h4 class="verification-title">Admin Password Verification</h4>
+
+            <p class="verification-description">
+              For security purposes, please enter your administrator password to confirm the termination of <span class="employee-name" id="confirmAdvisorName">Advisor Name</span>.
+            </p>
+
+            <div class="form-group password-group">
+              <label for="adminPassword" class="form-label">Admin Password</label>
+              <div class="input-with-icon">
+                <i class="fas fa-lock input-icon"></i>
+                <input type="password" class="form-control" id="adminPassword" placeholder="Enter your password" required>
+                <button type="button" class="password-toggle" id="togglePassword">
+                  <i class="fas fa-eye"></i>
+                </button>
+              </div>
+              <div class="password-error" id="passwordError" style="display: none;">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>Incorrect password. Please try again.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="termination-btn-back" id="backToStep1">
+            <i class="fas fa-arrow-left"></i>
+            Back
+          </button>
+          <button type="button" id="confirmTerminationBtn" class="termination-btn-final">
+            <i class="fas fa-user-slash"></i>
+            Confirm Termination
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Vehicles Under Service Modal -->
+<div class="modal fade modal-premium" id="vehiclesModal" tabindex="-1" aria-labelledby="vehiclesModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="vehiclesModalLabel">
+          <i class="fas fa-car-side"></i>
+          Vehicles Assigned to <span id="advisorName">Advisor Name</span>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="advisorVehicles">
+          <!-- Will be populated dynamically -->
+          <div class="text-center py-4" id="vehiclesLoading">
+            <div class="spinner" style="margin: 0 auto;"></div>
+            <p class="mt-3">Loading vehicles...</p>
+          </div>
+
+          <div class="text-center py-4" id="noVehiclesMessage" style="display: none;">
+            <i class="fas fa-car fa-3x text-muted mb-3"></i>
+            <h5>No vehicles assigned</h5>
+            <p class="text-muted">This service advisor currently has no vehicles assigned.</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-premium primary" data-bs-dismiss="modal">
+          <i class="fas fa-check"></i>
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade success-modal" id="successModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content success-animation">
+      <div class="modal-body">
+        <div class="success-icon-container">
+          <div class="success-icon-wrapper">
+            <div class="success-icon">
+              <i class="fas fa-check"></i>
+            </div>
+          </div>
+        </div>
+        <h3 class="success-title">Operation Successful!</h3>
+        <p class="success-message" id="successMessage">The requested action has been completed successfully.</p>
+        <button type="button" class="continue-btn" data-bs-dismiss="modal">
+          <i class="fas fa-check-circle"></i>
+          Continue
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading Spinner -->
+<div class="spinner-container" id="loadingSpinner" style="display: none;">
+  <div class="spinner-content">
+    <div class="spinner"></div>
+    <p class="spinner-text" id="loadingText">Processing your request...</p>
+  </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  // Wait for DOM to be loaded
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize the application
+    initializeApp();
+
+    // Setup event listeners
+    setupEventListeners();
+
+    // Load service advisors
+    loadServiceAdvisors();
+  });
+
+  // ----------------------------------------
+  // Global variables
+  // ----------------------------------------
+
+  let serviceAdvisors = []; // Will store the list of service advisors
+
+  // ----------------------------------------
+  // App Initialization
+  // ----------------------------------------
+
+  function initializeApp() {
+    // Display current date
+    displayCurrentDate();
+
+    // Setup mobile menu toggle
+    setupMobileMenu();
+
+    // Setup logout functionality
+    setupLogout();
+  }
+
+  function displayCurrentDate() {
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    const today = new Date();
+    document.getElementById('current-date').textContent = today.toLocaleDateString('en-US', options);
+  }
+
+  function setupMobileMenu() {
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    const sidebar = document.getElementById('sidebar');
+
+    if (mobileMenuToggle) {
+      mobileMenuToggle.addEventListener('click', function() {
+        sidebar.classList.toggle('active');
+      });
+    }
+  }
+
+  function setupLogout() {
+    document.getElementById('logoutBtn').addEventListener('click', function() {
+      // Clear storage
+      localStorage.removeItem("jwt-token");
+      sessionStorage.removeItem("jwt-token");
+
+      // Redirect to logout
+      window.location.href = '/admin/logout';
+    });
+  }
+
+  // ----------------------------------------
+  // Event Listeners
+  // ----------------------------------------
+
+  function setupEventListeners() {
+    // Add advisor form submission
+    setupAddAdvisorForm();
+
+    // Edit advisor form submission
+    setupEditAdvisorForm();
+
+    // Fire advisor functionality
+    setupFireAdvisorModal();
+
+    // View vehicles modal
+    setupVehiclesModal();
+
+    // Search functionality
+    setupSearch();
+
+    // Profile image upload
+    setupProfileImageUpload();
+  }
+
+  function setupSearch() {
+    const searchInput = document.getElementById('searchInput');
+    searchInput.addEventListener('keyup', function() {
+      const searchTerm = this.value.toLowerCase();
+
+      // If no search term, show all advisors
+      if (!searchTerm) {
+        renderAdvisors(serviceAdvisors);
+        return;
+      }
+
+      // Filter advisors based on search term
+      const filteredAdvisors = serviceAdvisors.filter(advisor => {
+        const fullName = `${advisor.firstName} ${advisor.lastName}`.toLowerCase();
+        const department = advisor.department ? advisor.department.toLowerCase() : '';
+        const specialization = advisor.specialization ? advisor.specialization.toLowerCase() : '';
+        const email = advisor.email ? advisor.email.toLowerCase() : '';
+
+        return fullName.includes(searchTerm) ||
+                department.includes(searchTerm) ||
+                specialization.includes(searchTerm) ||
+                email.includes(searchTerm);
+      });
+
+      // Render filtered advisors
+      renderAdvisors(filteredAdvisors);
+    });
+  }
+
+  function setupProfileImageUpload() {
+    const profileImageInput = document.getElementById('profileImage');
+
+    if (profileImageInput) {
+      profileImageInput.addEventListener('change', function(e) {
+        if (e.target.files.length > 0) {
+          const file = e.target.files[0];
+
+          // Check file size (max 5MB)
+          if (file.size > 5 * 1024 * 1024) {
+            showAlert('error', 'File size must be less than 5MB');
+            return;
+          }
+
+          // Check file type
+          if (!file.type.match('image.*')) {
+            showAlert('error', 'Only image files are allowed');
+            return;
+          }
+
+          // Show preview
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            const imagePlaceholder = document.querySelector('.image-placeholder');
+            const imagePreview = document.querySelector('.image-preview');
+            const successMessage = document.querySelector('.upload-success-message');
+
+            // Create or update image element
+            let imgElement = imagePreview.querySelector('img');
+            if (!imgElement) {
+              imgElement = document.createElement('img');
+              imagePreview.appendChild(imgElement);
+            }
+
+            imgElement.src = e.target.result;
+            imagePlaceholder.style.display = 'none';
+            successMessage.classList.remove('d-none');
+          };
+
+          reader.readAsDataURL(file);
+        }
+      });
+
+      // Remove image functionality
+      const removeImageBtn = document.querySelector('.remove-image');
+      if (removeImageBtn) {
+        removeImageBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+
+          const imagePlaceholder = document.querySelector('.image-placeholder');
+          const imagePreview = document.querySelector('.image-preview');
+          const successMessage = document.querySelector('.upload-success-message');
+          const imgElement = imagePreview.querySelector('img');
+
+          if (imgElement) {
+            imgElement.remove();
+          }
+
+          imagePlaceholder.style.display = 'flex';
+          successMessage.classList.add('d-none');
+          profileImageInput.value = '';
+        });
+      }
+    }
+  }
+
+  // ----------------------------------------
+  // API Interaction Functions
+  // ----------------------------------------
+
+  function getToken() {
+    return sessionStorage.getItem('jwt-token') || localStorage.getItem('jwt-token');
+  }
+
+  function loadServiceAdvisors() {
+    showSpinner('Loading service advisors...');
+
+    // FIXED URL - The correct endpoint path
+    fetch('/admin/service-advisors/api/advisors', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + getToken(),
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+            .then(response => {
+              if (response.status === 401) {
+                window.location.href = '/admin/login?error=session_expired';
+                throw new Error('Session expired');
+              }
+
+              if (!response.ok) {
+                throw new Error(`Server responded with status: ${response.status}`);
+              }
+
+              return response.json();
+            })
+            .then(data => {
+              hideSpinner();
+
+              // Store the service advisors in the global variable
+              serviceAdvisors = Array.isArray(data) ? data : [];
+
+              // Render the service advisors
+              renderAdvisors(serviceAdvisors);
+            })
+            .catch(error => {
+              hideSpinner();
+              console.error('Error loading service advisors:', error);
+
+              if (error.message !== 'Session expired') {
+                showAlert('error', 'Failed to load service advisors. Please refresh and try again.');
+              }
+
+              // Show empty state
+              document.getElementById('loadingPlaceholder').style.display = 'none';
+              document.getElementById('emptyState').style.display = 'block';
+            });
+  }
+
+  // This function is essential for displaying the service advisors
+  function renderAdvisors(advisors) {
+    const container = document.getElementById('advisorsGrid');
+
+    // Hide loading placeholder
+    document.getElementById('loadingPlaceholder').style.display = 'none';
+
+    // Clear any existing content (except loading and empty state)
+    const advisorCards = container.querySelectorAll('.advisor-card');
+    advisorCards.forEach(card => card.remove());
+
+    // If no advisors found, show empty state
+    if (!advisors || advisors.length === 0) {
+      document.getElementById('emptyState').style.display = 'block';
+      return;
+    }
+
+    // Hide empty state if we have advisors
+    document.getElementById('emptyState').style.display = 'none';
+
+    // Create and append advisor cards
+    advisors.forEach(advisor => {
+      const advisorCard = createAdvisorCard(advisor);
+      container.appendChild(advisorCard);
+    });
+  }
+
+  function createAdvisorCard(advisor) {
+    // Create a DOM element from HTML string
+    const tempDiv = document.createElement('div');
+
+    // Determine workload class
+    const workloadClass = advisor.workloadPercentage < 40 ? 'low' :
+            (advisor.workloadPercentage < 70 ? 'medium' : 'high');
+
+    // Format advisor ID
+    const formattedId = advisor.formattedId || `SA-${String(advisor.advisorId).padStart(3, '0')}`;
+
+    // Get advisor initials
+    const firstInitial = advisor.firstName ? advisor.firstName.charAt(0) : '';
+    const lastInitial = advisor.lastName ? advisor.lastName.charAt(0) : '';
+    const initials = firstInitial + lastInitial;
+
+    tempDiv.innerHTML = `
+    <div class="advisor-card">
+      <div class="advisor-image-container">
+        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="Service Advisor" class="advisor-image">
+        <div class="advisor-id-badge">
+          <i class="fas fa-id-badge"></i>
+          <span>${formattedId}</span>
+        </div>
+      </div>
+      <div class="advisor-content">
+        <div class="advisor-header">
+          <h3 class="advisor-name">${advisor.firstName} ${advisor.lastName}</h3>
+          <div class="advisor-title">
+            <i class="fas fa-tools"></i>
+            <span>${advisor.specialization || 'General Service Advisor'}</span>
+          </div>
+        </div>
+
+        <div class="advisor-details">
+          <div class="detail-item">
+            <div class="detail-icon">
+              <i class="fas fa-building"></i>
+            </div>
+            <div class="detail-text">
+              <div class="detail-label">Department</div>
+              <div class="detail-value">${advisor.department || 'Service Department'}</div>
+            </div>
+          </div>
+
+          <div class="detail-item">
+            <div class="detail-icon">
+              <i class="fas fa-phone-alt"></i>
+            </div>
+            <div class="detail-text">
+              <div class="detail-label">Contact</div>
+              <div class="detail-value">${advisor.phoneNumber || 'Not provided'}</div>
+            </div>
+          </div>
+
+          <div class="detail-item">
+            <div class="detail-icon">
+              <i class="fas fa-envelope"></i>
+            </div>
+            <div class="detail-text">
+              <div class="detail-label">Email</div>
+              <div class="detail-value">${advisor.email}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="advisor-workload">
+          <div class="workload-header">
+            <div class="workload-title">
+              <i class="fas fa-tasks"></i>
+              Current Workload
+            </div>
+            <div class="workload-percent ${workloadClass}">${advisor.workloadPercentage}%</div>
+          </div>
+          <div class="progress">
+            <div class="progress-bar ${workloadClass}" style="width: ${advisor.workloadPercentage}%"></div>
+          </div>
+          <div class="workload-info">
+            <div class="active-services">
+              <i class="fas fa-car-side"></i>
+              <span>${advisor.activeServices} ${advisor.activeServices === 1 ? 'vehicle' : 'vehicles'} in service</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="advisor-actions">
+          <button class="btn-view" data-bs-toggle="modal" data-bs-target="#vehiclesModal"
+                  data-advisor-id="${advisor.advisorId}"
+                  data-advisor-name="${advisor.firstName} ${advisor.lastName}">
+            <i class="fas fa-eye"></i> View Vehicles
+          </button>
+          <button class="btn-edit" data-bs-toggle="modal" data-bs-target="#editAdvisorModal"
+                  data-advisor-id="${advisor.advisorId}">
+            <i class="fas fa-edit"></i> Edit
+          </button>
+          <button class="btn-fire" data-bs-toggle="modal" data-bs-target="#fireAdvisorModal"
+                  data-advisor-id="${advisor.advisorId}"
+                  data-advisor-name="${advisor.firstName} ${advisor.lastName}"
+                  data-advisor-initials="${initials}">
+            <i class="fas fa-user-slash"></i> Fire
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+    return tempDiv.firstElementChild;
+  }
+
+  function loadSampleVehicles() {
+    const vehiclesContainer = document.getElementById('advisorVehicles');
+
+    // Sample vehicle data
+    const vehicles = [
+      {
+        name: 'Toyota Camry',
+        registration: 'KA01MH4759',
+        owner: 'Ramesh Joshi',
+        status: 'progress'
+      },
+      {
+        name: 'Honda City',
+        registration: 'MH02AB7841',
+        owner: 'Priya Sharma',
+        status: 'progress'
+      }
+    ];
+
+    // Create vehicle cards
+    vehicles.forEach(vehicle => {
+      const vehicleCard = document.createElement('div');
+      vehicleCard.className = 'vehicle-card';
+      vehicleCard.innerHTML = `
+      <div class="vehicle-icon">
+        <i class="fas fa-car"></i>
+      </div>
+      <div class="vehicle-info">
+        <h4 class="vehicle-name">${vehicle.name}</h4>
+        <div class="vehicle-details">
+          <div class="vehicle-detail"><i class="fas fa-id-card"></i> Reg: ${vehicle.registration}</div>
+          <div class="vehicle-detail"><i class="fas fa-user"></i> Owner: ${vehicle.owner}</div>
+        </div>
+      </div>
+      <div class="vehicle-status ${vehicle.status}">
+        <i class="fas fa-spinner"></i> In Progress
+      </div>
+    `;
+
+      vehiclesContainer.appendChild(vehicleCard);
+    });
+  }
+
+  function setupAddAdvisorForm() {
+    document.getElementById('addAdvisorBtn').addEventListener('click', function() {
+      // Validate form
+      const form = document.getElementById('addAdvisorForm');
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      // Check if passwords match
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+
+      if (password !== confirmPassword) {
+        showAlert('error', 'Passwords do not match!');
+        return;
+      }
+
+      // Collect form data
+      const formData = {
+        firstName: document.getElementById('firstName').value,
+        lastName: document.getElementById('lastName').value,
+        email: document.getElementById('email').value,
+        phoneNumber: document.getElementById('phone').value,
+        password: password,
+        department: document.getElementById('department').value,
+        specialization: document.getElementById('specialization').value
+      };
+
+      // Show loading spinner
+      showSpinner('Creating new service advisor...');
+
+      // Submit form data via AJAX - FIXED URL
+      fetch('/admin/service-advisors', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + getToken(),
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify(formData)
+      })
+              .then(response => {
+                if (response.status === 401) {
+                  window.location.href = '/admin/login?error=session_expired';
+                  throw new Error('Session expired');
+                }
+
+                if (!response.ok) {
+                  throw new Error(`Server responded with status: ${response.status}`);
+                }
+
+                return response.json();
+              })
+              .then(newAdvisor => {
+                hideSpinner();
+
+                // Close the modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addAdvisorModal'));
+                modal.hide();
+
+                // Reset the form
+                form.reset();
+
+                // Show success message
+                showSuccessModal('Service advisor created successfully!');
+
+                // Add the new advisor to the list and refresh the display
+                serviceAdvisors.push(newAdvisor);
+                renderAdvisors(serviceAdvisors);
+              })
+              .catch(error => {
+                hideSpinner();
+                console.error('Error creating service advisor:', error);
+
+                if (error.message !== 'Session expired') {
+                  showAlert('error', 'Failed to create service advisor. Please try again.');
+                }
+              });
+    });
+  }
+
+  function setupEditAdvisorForm() {
+    // Handle clicking the edit button
+    document.addEventListener('click', function(e) {
+      if (e.target.classList.contains('btn-edit') || e.target.closest('.btn-edit')) {
+        const button = e.target.classList.contains('btn-edit') ? e.target : e.target.closest('.btn-edit');
+        const advisorId = button.getAttribute('data-advisor-id');
+
+        // Find the advisor in our cached list
+        const advisor = serviceAdvisors.find(a => a.advisorId == advisorId);
+
+        if (advisor) {
+          // Populate form fields
+          populateEditForm(advisor);
+        } else {
+          // Fetch advisor details from API if not found in cache
+          fetchAdvisorDetails(advisorId);
+        }
+      }
+    });
+
+    // Handle form submission
+    document.getElementById('updateAdvisorBtn').addEventListener('click', function() {
+      // Validate form
+      const form = document.getElementById('editAdvisorForm');
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
+
+      // Get advisor ID
+      const advisorId = document.getElementById('editAdvisorId').value;
+
+      // Collect form data
+      const formData = {
+        advisorId: advisorId,
+        userId: document.getElementById('editUserId').value,
+        firstName: document.getElementById('editFirstName').value,
+        lastName: document.getElementById('editLastName').value,
+        email: document.getElementById('editEmail').value,
+        phoneNumber: document.getElementById('editPhone').value,
+        department: document.getElementById('editDepartment').value,
+        specialization: document.getElementById('editSpecialization').value
+      };
+
+      // Add password if provided
+      const password = document.getElementById('editPassword').value;
+      if (password) {
+        formData.password = password;
+      }
+
+      // Show loading spinner
+      showSpinner('Updating service advisor...');
+
+      // Submit form data via AJAX - FIXED URL
+      fetch(`/admin/service-advisors/${advisorId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + getToken(),
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify(formData)
+      })
+              .then(response => {
+                if (response.status === 401) {
+                  window.location.href = '/admin/login?error=session_expired';
+                  throw new Error('Session expired');
+                }
+
+                if (!response.ok) {
+                  throw new Error(`Server responded with status: ${response.status}`);
+                }
+
+                return response.json();
+              })
+              .then(updatedAdvisor => {
+                hideSpinner();
+
+                // Close the modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('editAdvisorModal'));
+                modal.hide();
+
+                // Show success message
+                showSuccessModal('Service advisor updated successfully!');
+
+                // Update the advisor in the list and refresh the display
+                const index = serviceAdvisors.findIndex(a => a.advisorId == advisorId);
+                if (index !== -1) {
+                  serviceAdvisors[index] = updatedAdvisor;
+                } else {
+                  serviceAdvisors.push(updatedAdvisor);
+                }
+
+                renderAdvisors(serviceAdvisors);
+              })
+              .catch(error => {
+                hideSpinner();
+                console.error('Error updating service advisor:', error);
+
+                if (error.message !== 'Session expired') {
+                  showAlert('error', 'Failed to update service advisor. Please try again.');
+                }
+              });
+    });
+  }
+
+  function populateEditForm(advisor) {
+    document.getElementById('editAdvisorId').value = advisor.advisorId;
+    document.getElementById('editUserId').value = advisor.userId;
+    document.getElementById('editFirstName').value = advisor.firstName;
+    document.getElementById('editLastName').value = advisor.lastName;
+    document.getElementById('editEmail').value = advisor.email;
+    document.getElementById('editPhone').value = advisor.phoneNumber || '';
+    document.getElementById('editDepartment').value = advisor.department;
+    document.getElementById('editSpecialization').value = advisor.specialization;
+
+    // Clear password field
+    document.getElementById('editPassword').value = '';
+  }
+
+  function fetchAdvisorDetails(advisorId) {
+    showSpinner('Loading advisor details...');
+
+    // FIXED URL for fetching a single advisor
+    fetch(`/admin/service-advisors/${advisorId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + getToken(),
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+            .then(response => {
+              if (response.status === 401) {
+                window.location.href = '/admin/login?error=session_expired';
+                throw new Error('Session expired');
+              }
+
+              if (!response.ok) {
+                throw new Error(`Server responded with status: ${response.status}`);
+              }
+
+              return response.json();
+            })
+            .then(advisor => {
+              hideSpinner();
+
+              // Populate form fields
+              populateEditForm(advisor);
+
+              // Add to cache
+              const index = serviceAdvisors.findIndex(a => a.advisorId == advisorId);
+              if (index !== -1) {
+                serviceAdvisors[index] = advisor;
+              } else {
+                serviceAdvisors.push(advisor);
+              }
+            })
+            .catch(error => {
+              hideSpinner();
+              console.error('Error fetching advisor details:', error);
+
+              if (error.message !== 'Session expired') {
+                showAlert('error', 'Failed to load advisor details. Please try again.');
+              }
+            });
+  }
+
+  function setupFireAdvisorModal() {
+    // Populate fire modal when fire button is clicked
+    document.addEventListener('click', function(e) {
+      if (e.target.classList.contains('btn-fire') || e.target.closest('.btn-fire')) {
+        const button = e.target.classList.contains('btn-fire') ? e.target : e.target.closest('.btn-fire');
+        const advisorId = button.getAttribute('data-advisor-id');
+        const advisorName = button.getAttribute('data-advisor-name');
+        const advisorInitials = button.getAttribute('data-advisor-initials');
+        const formattedId = `SA-${String(advisorId).padStart(3, '0')}`;
+
+        // Set values in the modal
+        document.getElementById('fireAdvisorId').value = advisorId;
+        document.getElementById('fireAdvisorName').textContent = advisorName;
+        document.getElementById('confirmAdvisorName').textContent = advisorName;
+        document.getElementById('fireAdvisorIdDisplay').textContent = formattedId;
+        document.getElementById('fireAvatarInitial').textContent = advisorInitials;
+
+        // Reset modal state
+        document.getElementById('terminationStep1').style.display = 'block';
+        document.getElementById('terminationStep2').style.display = 'none';
+        document.getElementById('adminPassword').value = '';
+        document.getElementById('passwordError').style.display = 'none';
+      }
+    });
+
+    // Toggle password visibility
+    document.getElementById('togglePassword').addEventListener('click', function() {
+      const passwordInput = document.getElementById('adminPassword');
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        this.innerHTML = '<i class="fas fa-eye-slash"></i>';
+      } else {
+        passwordInput.type = 'password';
+        this.innerHTML = '<i class="fas fa-eye"></i>';
+      }
+    });
+
+    // Step 1 to Step 2
+    document.getElementById('proceedTerminationBtn').addEventListener('click', function() {
+      document.getElementById('terminationStep1').style.display = 'none';
+      document.getElementById('terminationStep2').style.display = 'block';
+    });
+
+    // Step 2 to Step 1
+    document.getElementById('backToStep1').addEventListener('click', function() {
+      document.getElementById('terminationStep2').style.display = 'none';
+      document.getElementById('terminationStep1').style.display = 'block';
+    });
+
+    // Confirm termination
+    document.getElementById('confirmTerminationBtn').addEventListener('click', function() {
+      const password = document.getElementById('adminPassword').value;
+
+      // Simple password validation for demo
+      // In a real application, this should be validated on the server
+      if (password === 'admin@albany') {
+        const advisorId = document.getElementById('fireAdvisorId').value;
+
+        // Show loading spinner
+        showSpinner('Processing termination...');
+
+        // FIXED URL for firing an advisor
+        fetch(`/admin/service-advisors/${advisorId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': 'Bearer ' + getToken(),
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        })
+                .then(response => {
+                  if (response.status === 401) {
+                    window.location.href = '/admin/login?error=session_expired';
+                    throw new Error('Session expired');
+                  }
+
+                  if (!response.ok) {
+                    throw new Error(`Server responded with status: ${response.status}`);
+                  }
+
+                  hideSpinner();
+
+                  // Close the modal
+                  const modal = bootstrap.Modal.getInstance(document.getElementById('fireAdvisorModal'));
+                  modal.hide();
+
+                  // Show success message
+                  showSuccessModal('Service advisor has been terminated successfully.');
+
+                  // Remove the advisor from the list and refresh the display
+                  serviceAdvisors = serviceAdvisors.filter(a => a.advisorId != advisorId);
+                  renderAdvisors(serviceAdvisors);
+                })
+                .catch(error => {
+                  hideSpinner();
+                  console.error('Error terminating service advisor:', error);
+
+                  if (error.message !== 'Session expired') {
+                    showAlert('error', 'Failed to terminate service advisor. Please try again.');
+                  }
+                });
+      } else {
+        // Show error message
+        document.getElementById('passwordError').style.display = 'flex';
+        document.getElementById('adminPassword').classList.add('shake');
+
+        // Remove shake class after animation completes
+        setTimeout(() => {
+          document.getElementById('adminPassword').classList.remove('shake');
+        }, 500);
+      }
+    });
+  }
+
+  function setupVehiclesModal() {
+    // Handle clicking the view vehicles button
+    document.addEventListener('click', function(e) {
+      if (e.target.classList.contains('btn-view') || e.target.closest('.btn-view')) {
+        const button = e.target.classList.contains('btn-view') ? e.target : e.target.closest('.btn-view');
+        const advisorId = button.getAttribute('data-advisor-id');
+        const advisorName = button.getAttribute('data-advisor-name');
+
+        // Set advisor name in modal
+        document.getElementById('advisorName').textContent = advisorName;
+
+        // Show loading indicator
+        document.getElementById('vehiclesLoading').style.display = 'block';
+        document.getElementById('noVehiclesMessage').style.display = 'none';
+
+        // Clear previous vehicles
+        const vehiclesContainer = document.getElementById('advisorVehicles');
+        const vehicleCards = vehiclesContainer.querySelectorAll('.vehicle-card');
+        vehicleCards.forEach(card => card.remove());
+
+        // In a real application, load vehicles from API
+        // For demo purposes, we'll simulate loading and show sample vehicles
+        setTimeout(() => {
+          document.getElementById('vehiclesLoading').style.display = 'none';
+
+          // For demo purposes: show sample vehicles for Advisor ID 1, no vehicles for others
+          if (advisorId == 1) {
+            loadSampleVehicles();
+          } else {
+            document.getElementById('noVehiclesMessage').style.display = 'block';
+          }
+        }, 1000);
+      }
+    });
+  }
+
+  // ----------------------------------------
+  // UI Helper Functions
+  // ----------------------------------------
+
+  function showSpinner(message = 'Processing...') {
+    document.getElementById('loadingText').textContent = message;
+    document.getElementById('loadingSpinner').style.display = 'flex';
+  }
+
+  function hideSpinner() {
+    document.getElementById('loadingSpinner').style.display = 'none';
+  }
+
+  function showAlert(type, message, duration = 5000) {
+    // Create alert element
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `custom-alert ${type}`;
+
+    // Set icon based on type
+    let icon = 'info-circle';
+    if (type === 'error') icon = 'exclamation-circle';
+    if (type === 'success') icon = 'check-circle';
+    if (type === 'warning') icon = 'exclamation-triangle';
+
+    // Set alert content
+    alertDiv.innerHTML = `
+    <div class="alert-icon">
+      <i class="fas fa-${icon}"></i>
+    </div>
+    <div class="alert-content">
+      <div class="alert-title">${type.charAt(0).toUpperCase() + type.slice(1)}</div>
+      <div class="alert-message">${message}</div>
+    </div>
+  `;
+
+    // Add to container
+    const alertContainer = document.getElementById('alertContainer');
+    alertContainer.appendChild(alertDiv);
+
+    // Apply entrance animation
+    alertDiv.style.animation = 'slideInUp 0.4s ease-out forwards';
+
+    // Auto-remove after duration
+    setTimeout(() => {
+      // Apply exit animation
+      alertDiv.style.animation = 'slideInUp 0.4s ease-out forwards reverse';
+
+      // Remove after animation completes
+      setTimeout(() => {
+        alertDiv.remove();
+      }, 400);
+    }, duration);
+  }
+
+  function showSuccessModal(message) {
+    document.getElementById('successMessage').textContent = message;
+    const modal = new bootstrap.Modal(document.getElementById('successModal'));
+    modal.show();
+  }
+
+  // Add this function to handle token authentication for all pages
+  function setupAuthentication() {
+    // Get token from storage
+    const tokenFromStorage = localStorage.getItem("jwt-token") || sessionStorage.getItem("jwt-token");
+
+    if (tokenFromStorage) {
+      console.log("Token found in storage");
+
+      // Check if current URL already has a token parameter
+      const currentUrl = new URL(window.location.href);
+      const urlToken = currentUrl.searchParams.get('token');
+
+      // If URL doesn't have the token, update all navigation links
+      if (!urlToken) {
+        // Add token to all sidebar navigation links
+        document.querySelectorAll('.sidebar-menu-link').forEach(link => {
+          const href = link.getAttribute('href');
+          if (href && !href.includes('token=')) {
+            const separator = href.includes('?') ? '&' : '?';
+            link.setAttribute('href', href + separator + 'token=' + encodeURIComponent(tokenFromStorage));
+          }
+        });
+      }
+    } else {
+      console.warn("No token found in storage");
+      // If no token is found, redirect to login
+      window.location.href = '/admin/login?error=session_expired';
+    }
+  }
+
+  // Initialize authentication on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    setupAuthentication();
+  });
+</script>
+</body>
+</html>

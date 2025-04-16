@@ -1,0 +1,2799 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Albany Motors - Inventory Management</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts - Baloo Bhaijaan 2 -->
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --dutch-white: #EFFBBB; /* Dutch White */
+            --dutch-white-light: #f5ffd4;
+            --dutch-white-dark: #d6e297;
+            --dutch-white-darker: #bfca85;
+            --wine: #722F37; /* Wine */
+            --wine-light: #8a3943;
+            --wine-dark: #5e262e;
+            --wine-darker: #491d23;
+            --wine-gradient: linear-gradient(145deg, #722F37 0%, #5e262e 100%);
+            --wine-gradient-hover: linear-gradient(145deg, #8a3943 0%, #722F37 100%);
+            --dutch-white-gradient: linear-gradient(145deg, #EFFFBB 0%, #d6e297 100%);
+            --white: #ffffff;
+            --light-bg: #f8f9fa;
+            --light-gray: #e9ecef;
+            --medium-gray: #adb5bd;
+            --dark-gray: #495057;
+            --danger: #ef5350;
+            --warning: #ffca28;
+            --success: #66bb6a;
+            --info: #42a5f5;
+
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 8px rgba(0,0,0,0.1);
+            --shadow-lg: 0 8px 16px rgba(0,0,0,0.1);
+            --shadow-xl: 0 12px 24px rgba(0,0,0,0.15);
+
+            --radius-sm: 0.25rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 1rem;
+
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            font-family: 'Baloo Bhaijaan 2', sans-serif;
+            background-color: #f8f9fa;
+            color: var(--dark-gray);
+            min-height: 100vh;
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--light-gray);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--wine);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--wine-light);
+        }
+
+        .app-container {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 280px;
+            background: var(--wine-gradient);
+            color: var(--white);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .sidebar-header {
+            padding: 1.75rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sidebar-header h2 {
+            margin-bottom: 0;
+            font-weight: 700;
+            color: var(--white);
+            font-size: 1.75rem;
+            letter-spacing: 0.5px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem 0;
+        }
+
+        .sidebar-content::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar-content::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar-content::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .nav-section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0.75rem 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 600;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-menu-item {
+            padding: 0 0.75rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .sidebar-menu-link {
+            display: flex;
+            align-items: center;
+            padding: 0.85rem 1rem;
+            color: rgba(255, 255, 255, 0.95);
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .sidebar-menu-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--white);
+        }
+
+        .sidebar-menu-link.active {
+            background-color: var(--dutch-white-light);
+            color: var(--wine);
+            font-weight: 600;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .sidebar-menu-link.active::before {
+            content: '';
+            position: absolute;
+            left: -0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 2rem;
+            width: 4px;
+            background-color: var(--dutch-white-dark);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+        }
+
+        .sidebar-menu-link i {
+            width: 1.5rem;
+            text-align: center;
+            font-size: 1.1rem;
+            margin-right: 0.75rem;
+        }
+
+        .sidebar-menu-link span {
+            font-size: 1rem;
+            font-weight: 500;
+            color: inherit;
+        }
+
+        .sidebar-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--white);
+        }
+
+        .user-role {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .logout-btn {
+            padding: 0.5rem 1rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: var(--radius-md);
+            color: var(--white);
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .logout-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+            transition: var(--transition);
+            color: var(--dark-gray);
+        }
+
+        /* Header Styles */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            background-color: transparent;
+            padding: 0;
+            border-radius: 0;
+            box-shadow: none;
+            position: relative;
+        }
+
+        .header-left {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .header-left h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--wine);
+            margin-bottom: 0.5rem;
+            position: relative;
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 0 rgba(0,0,0,0.1);
+        }
+
+        .header-subtitle {
+            font-size: 1rem;
+            color: var(--medium-gray);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        /* Premium Button */
+        .btn-premium {
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-lg);
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: var(--transition);
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: var(--shadow-md);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .btn-premium::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: all 0.4s ease;
+            z-index: -1;
+        }
+
+        .btn-premium:hover::after {
+            width: 100%;
+        }
+
+        .btn-premium.primary {
+            background: var(--wine-gradient);
+            color: white;
+        }
+
+        .btn-premium.primary:hover {
+            box-shadow: 0 6px 15px rgba(114, 47, 55, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn-premium.secondary {
+            background-color: var(--white);
+            color: var(--wine);
+        }
+
+        .btn-premium.secondary:hover {
+            background-color: var(--light-bg);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        /* Search Box */
+        .search-box {
+            position: relative;
+            max-width: 400px;
+            margin-bottom: 2rem;
+        }
+
+        .search-input {
+            padding: 1rem 1rem 1rem 3rem;
+            border: 1px solid var(--light-gray);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            font-size: 1rem;
+            color: var(--text-dark);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--wine);
+            box-shadow: 0 0 0 4px rgba(114, 47, 55, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--medium-gray);
+            pointer-events: none;
+        }
+
+        /* Category Tabs */
+        .category-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            overflow-x: auto;
+            padding-bottom: 0.5rem;
+        }
+
+        .category-tab {
+            padding: 0.75rem 1.5rem;
+            background-color: var(--white);
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+            white-space: nowrap;
+            border: 2px solid transparent;
+        }
+
+        .category-tab:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .category-tab.active {
+            background-color: var(--dutch-white-light);
+            color: var(--wine);
+            border-color: var(--wine);
+        }
+
+        /* Inventory Table Section */
+        .table-section {
+            background-color: var(--white);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 2rem;
+            transition: var(--transition);
+            border: 1px solid rgba(114, 47, 55, 0.1);
+        }
+
+        .table-section:hover {
+            box-shadow: 0 15px 30px rgba(114, 47, 55, 0.15), 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .table-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--wine);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .table-title i {
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--dutch-white-light);
+            color: var(--wine);
+            border-radius: var(--radius-sm);
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .search-box-sm {
+            position: relative;
+        }
+
+        .search-input-sm {
+            padding: 0.65rem 1rem 0.65rem 2.5rem;
+            border: 1px solid var(--light-gray);
+            border-radius: var(--radius-lg);
+            width: 250px;
+            font-size: 0.9rem;
+            color: var(--dark-gray);
+            transition: var(--transition);
+        }
+
+        .search-input-sm:focus {
+            outline: none;
+            border-color: var(--wine-light);
+            box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
+        }
+
+        .search-icon-sm {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--medium-gray);
+            pointer-events: none;
+        }
+
+        .inventory-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .inventory-table thead th {
+            background-color: var(--bg-light);
+            color: var(--dark-gray);
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 1.25rem 1rem;
+            border-bottom: 1px solid var(--light-gray);
+            text-align: left;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .inventory-table tbody td {
+            padding: 1.25rem 1rem;
+            vertical-align: middle;
+            border-bottom: 1px solid var(--light-gray);
+            font-size: 0.95rem;
+        }
+
+        .inventory-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .inventory-table tbody tr {
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .inventory-table tbody tr:hover {
+            background-color: rgba(114, 47, 55, 0.05);
+        }
+
+        /* Stock Level Badge */
+        .stock-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 2rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            line-height: 1;
+        }
+
+        .stock-low {
+            background-color: rgba(239, 83, 80, 0.15);
+            color: #c62828;
+        }
+
+        .stock-medium {
+            background-color: rgba(255, 202, 40, 0.15);
+            color: #ff8f00;
+        }
+
+        .stock-good {
+            background-color: rgba(102, 187, 106, 0.15);
+            color: #2e7d32;
+        }
+
+        /* Table Action Buttons */
+        .table-actions-cell {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+        }
+
+        .btn-table-action {
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--white);
+            color: var(--wine);
+            border: 1px solid var(--light-gray);
+            border-radius: 50%;
+            font-size: 0.85rem;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-table-action:hover {
+            background-color: var(--light-bg);
+            border-color: var(--wine-light);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        /* Pagination */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .pagination {
+            display: flex;
+            gap: 0.35rem;
+            background-color: white;
+            border-radius: 50px;
+            padding: 0.5rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .page-item .page-link {
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            color: var(--dark-gray);
+            font-weight: 500;
+            border: none;
+            transition: var(--transition);
+            background-color: transparent;
+        }
+
+        .page-item .page-link:hover {
+            background-color: var(--light-gray);
+        }
+
+        .page-item.active .page-link {
+            background-color: var(--wine);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .page-item.disabled .page-link {
+            color: var(--medium-gray);
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        /* Modal Styles - Premium */
+        .modal-premium .modal-content {
+            border: none;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .modal-premium .modal-header {
+            background: var(--wine-gradient);
+            color: white;
+            border-bottom: none;
+            padding: 1.75rem 2rem;
+            position: relative;
+        }
+
+        .modal-premium .modal-title {
+            font-weight: 700;
+            font-size: 1.35rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .modal-premium .modal-title i {
+            width: 2.5rem;
+            height: 2.5rem;
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .modal-premium .modal-body {
+            padding: 2.5rem;
+        }
+
+        .modal-premium .modal-footer {
+            padding: 1.5rem 2.5rem;
+            border-top: 1px solid var(--light-gray);
+            background-color: rgba(248, 249, 250, 0.5);
+        }
+
+        .modal-premium .btn-close {
+            background: rgba(255, 255, 255, 0.2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23FFF'%3E%3Cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3E%3C/svg%3E") center/1em auto no-repeat;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            opacity: 0.8;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-premium .btn-close:hover {
+            opacity: 1;
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Form Styles */
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--dark-gray);
+        }
+
+        .form-control {
+            display: block;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: var(--dark-gray);
+            background-color: #fff;
+            background-clip: padding-box;
+            border: 1px solid var(--light-gray);
+            border-radius: var(--radius-md);
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .form-control:focus {
+            color: var(--dark-gray);
+            background-color: #fff;
+            border-color: var(--wine);
+            outline: 0;
+            box-shadow: 0 0 0 0.25rem rgba(114, 47, 55, 0.25);
+        }
+
+        .form-select {
+            display: block;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: var(--dark-gray);
+            background-color: #fff;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 16px 12px;
+            border: 1px solid var(--light-gray);
+            border-radius: var(--radius-md);
+            appearance: none;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .form-select:focus {
+            border-color: var(--wine);
+            outline: 0;
+            box-shadow: 0 0 0 0.25rem rgba(114, 47, 55, 0.25);
+        }
+
+        /* Inventory Details */
+        .inventory-detail-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .inventory-detail-col {
+            flex: 1;
+            min-width: 200px;
+            padding-right: 1.5rem;
+        }
+
+        .detail-label {
+            font-size: 0.85rem;
+            color: var(--medium-gray);
+            margin-bottom: 0.35rem;
+        }
+
+        .detail-value {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--dark-gray);
+        }
+
+        /* Price Tag */
+        .price-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.5rem 0.75rem;
+            background-color: var(--light-bg);
+            border-radius: var(--radius-lg);
+            font-weight: 700;
+            color: var(--wine);
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Usage History */
+        .usage-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 1.5rem;
+            background-color: var(--light-bg);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+
+        .usage-table th {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+            padding: 0.75rem 1rem;
+            text-align: left;
+            background-color: var(--light-bg);
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .usage-table td {
+            font-size: 0.9rem;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .usage-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Stats Card */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stats-card {
+            background-color: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            transition: var(--transition);
+        }
+
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stats-icon {
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: var(--radius-lg);
+            background-color: var(--dutch-white-light);
+            color: var(--wine);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .stats-info {
+            flex: 1;
+        }
+
+        .stats-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--wine);
+            margin-bottom: 0.25rem;
+            line-height: 1.2;
+        }
+
+        .stats-label {
+            font-size: 0.9rem;
+            color: var(--dark-gray);
+            margin: 0;
+        }
+
+        /* Albany Spinner */
+        .spinner-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        .spinner-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .spinner-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            perspective: 300px;
+        }
+
+        .albany-spinner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: spin 3s infinite cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+
+        .spinner-letter {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 72px;
+            font-weight: 800;
+            color: var(--wine);
+            text-shadow: 0 0 5px rgba(114, 47, 55, 0.3);
+            backface-visibility: hidden;
+            transform: rotateY(0deg) translateZ(60px);
+        }
+
+        .spinner-circle {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            width: calc(100% + 20px);
+            height: calc(100% + 20px);
+            border-radius: 50%;
+            border: 4px solid transparent;
+            border-top-color: var(--wine);
+            border-bottom-color: var(--dutch-white);
+            animation: spin-reverse 1.5s linear infinite;
+        }
+
+        .spinner-circle:nth-child(2) {
+            top: -5px;
+            left: -5px;
+            width: calc(100% + 10px);
+            height: calc(100% + 10px);
+            border-top-color: var(--dutch-white);
+            border-bottom-color: var(--wine);
+            animation-duration: 2s;
+        }
+
+        .spinner-text {
+            position: absolute;
+            bottom: -40px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--wine);
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotateY(0deg);
+            }
+            25% {
+                transform: rotateY(90deg);
+            }
+            50% {
+                transform: rotateY(180deg);
+            }
+            75% {
+                transform: rotateY(270deg);
+            }
+            100% {
+                transform: rotateY(360deg);
+            }
+        }
+
+        @keyframes spin-reverse {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Success Modal */
+        .success-modal .modal-content {
+            border: none;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+            background-color: var(--white);
+            position: relative;
+        }
+
+        .success-modal .modal-body {
+            padding: 3.5rem 2.5rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .success-modal .modal-body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 15px;
+            background: var(--wine-gradient);
+        }
+
+        .success-icon-container {
+            margin-bottom: 2rem;
+            position: relative;
+            display: inline-flex;
+        }
+
+        .success-icon-wrapper {
+            width: 8rem;
+            height: 8rem;
+            border-radius: 50%;
+            background: linear-gradient(145deg, rgba(102, 187, 106, 0.15), rgba(102, 187, 106, 0.05));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            position: relative;
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(102, 187, 106, 0.6);
+            }
+            70% {
+                box-shadow: 0 0 0 15px rgba(102, 187, 106, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(102, 187, 106, 0);
+            }
+        }
+
+        .success-icon {
+            width: 6rem;
+            height: 6rem;
+            border-radius: 50%;
+            background-color: var(--success);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            box-shadow: 0 10px 30px rgba(102, 187, 106, 0.3);
+            animation: scale-in 0.5s ease-out;
+        }
+
+        @keyframes scale-in {
+            0% {
+                transform: scale(0);
+            }
+            80% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .success-modal .success-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark-gray);
+            margin-bottom: 1rem;
+        }
+
+        .success-modal .success-message {
+            font-size: 1.1rem;
+            color: var(--medium-gray);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+            max-width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .success-modal .continue-btn {
+            padding: 1rem 3rem;
+            font-size: 1.1rem;
+            border-radius: var(--radius-lg);
+            background: var(--wine-gradient);
+            color: white;
+            border: none;
+            font-weight: 600;
+            transition: var(--transition);
+            box-shadow: var(--shadow-lg);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .success-modal .continue-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(114, 47, 55, 0.2);
+        }
+
+        /* Footer */
+        .app-footer {
+            margin-top: 3rem;
+            padding-bottom: 2rem;
+        }
+
+        .footer-content {
+            background: var(--wine-gradient);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-lg);
+            color: white;
+            text-align: center;
+        }
+
+        .footer-text {
+            margin: 0;
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        .footer-brand {
+            font-weight: 600;
+            color: var(--dutch-white-light);
+        }
+
+        /* Mobile menu toggle */
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1060;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            background: var(--wine-gradient);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 12px rgba(114, 47, 55, 0.25);
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .mobile-menu-toggle:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(114, 47, 55, 0.3);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 991.98px) {
+            .sidebar {
+                width: 5rem;
+                box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+            }
+
+            .sidebar-header h2,
+            .sidebar-menu-link span,
+            .user-info,
+            .nav-section-title,
+            .logout-btn span {
+                display: none;
+            }
+
+            .sidebar-menu-link {
+                justify-content: center;
+                padding: 0.75rem;
+            }
+
+            .sidebar-menu-link i {
+                margin-right: 0;
+                font-size: 1.25rem;
+            }
+
+            .sidebar-menu-link.active::before {
+                left: -0.5rem;
+            }
+
+            .sidebar-footer {
+                justify-content: center;
+                padding: 1rem;
+            }
+
+            .logout-btn {
+                padding: 0.5rem;
+                justify-content: center;
+            }
+
+            .main-content {
+                margin-left: 5rem;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .header-left h1 {
+                font-size: 2rem;
+            }
+
+            .table-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .table-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .search-box-sm {
+                width: 100%;
+            }
+
+            .search-input-sm {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .sidebar {
+                z-index: 1050;
+            }
+
+            .table-section {
+                overflow-x: auto;
+            }
+
+            .inventory-table {
+                min-width: 1000px;
+            }
+
+            .mobile-menu-toggle {
+                display: flex;
+            }
+
+            .sidebar {
+                width: 0;
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                width: 280px;
+                transform: translateX(0);
+            }
+
+            .sidebar.active .sidebar-header h2,
+            .sidebar.active .sidebar-menu-link span,
+            .sidebar.active .user-info,
+            .sidebar.active .nav-section-title,
+            .sidebar.active .logout-btn span {
+                display: block;
+            }
+
+            .sidebar.active .sidebar-menu-link {
+                justify-content: flex-start;
+                padding: 0.85rem 1rem;
+            }
+
+            .sidebar.active .sidebar-menu-link i {
+                margin-right: 0.75rem;
+            }
+
+            .sidebar.active .logout-btn {
+                padding: 0.5rem 1rem;
+                justify-content: space-between;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .page-header {
+                padding-top: 4rem;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .main-content {
+                padding: 1rem;
+            }
+
+            .page-header {
+                margin-bottom: 1.5rem;
+            }
+
+            .header-left h1 {
+                font-size: 1.75rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                gap: 0.75rem;
+                width: 100%;
+            }
+
+            .btn-premium {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .search-box {
+                max-width: 100%;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Hide all table rows except the first 5 by default */
+        .inventory-table tbody tr {
+            display: none;
+        }
+
+        .inventory-table tbody tr.active-page {
+            display: table-row;
+        }
+    </style>
+</head>
+<body>
+<!-- Creative Albany Spinner Overlay -->
+<div class="spinner-overlay" id="spinnerOverlay">
+    <div class="spinner-container">
+        <div class="albany-spinner">
+            <div class="spinner-letter">A</div>
+            <div class="spinner-circle"></div>
+            <div class="spinner-circle"></div>
+        </div>
+        <div class="spinner-text">Loading...</div>
+    </div>
+</div>
+
+<!-- Mobile Menu Toggle Button -->
+<button class="mobile-menu-toggle" id="mobileMenuToggle">
+    <i class="fas fa-bars"></i>
+</button>
+
+<div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>Albany</h2>
+        </div>
+
+        <div class="sidebar-content">
+            <div class="nav-section">
+                <div class="nav-section-title">Main</div>
+                <ul class="sidebar-menu">
+                    <li class="sidebar-menu-item">
+                        <a th:href="@{/admin/dashboard}" class="sidebar-menu-link">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard</span>
+                        </a>
+
+                </ul>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Management</div>
+                <ul class="sidebar-menu">
+                    <li class="sidebar-menu-item">
+                        <a th:href="@{/admin/service-requests}" class="sidebar-menu-link">
+                            <i class="fas fa-clipboard-list"></i>
+                            <span>Service Requests</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="#" class="sidebar-menu-link">
+                            <i class="fas fa-car"></i>
+                            <span>Vehicles</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a th:href="@{/admin/customers}" class="sidebar-menu-link active">
+                            <i class="fas fa-users"></i>
+                            <span>Customers</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a th:href="@{/admin/service-advisors}" class="sidebar-menu-link">
+                            <i class="fas fa-user-tie"></i>
+                            <span>Service Advisors</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a th:href="@{/admin/inventory}" class="sidebar-menu-link">
+                            <i class="fas fa-boxes"></i>
+                            <span>Inventory</span>
+                        </a>
+                    </li>
+
+                    <li class="sidebar-menu-item">
+                        <a href="#" class="sidebar-menu-link">
+                            <i class="fas fa-tools"></i>
+                            <span>Work Items</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="#" class="sidebar-menu-link">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                            <span>Invoices</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="#" class="sidebar-menu-link">
+                            <i class="fas fa-rupee-sign"></i>
+                            <span>Payments</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-name">Arthur Morgan</div>
+                <div class="user-role">Administrator</div>
+            </div>
+            <button class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Page Header -->
+        <header class="page-header">
+            <div class="header-left">
+                <h1>Inventory Management</h1>
+                <div class="header-subtitle">
+                    <i class="fas fa-boxes"></i>
+                    Manage inventory items, track stock levels, and monitor usage
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn-premium primary" data-bs-toggle="modal" data-bs-target="#addInventoryModal">
+                    <i class="fas fa-plus"></i>
+                    Add New Item
+                </button>
+            </div>
+        </header>
+
+        <!-- Search Box -->
+        <div class="search-box">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search by item name, category, ID...">
+            <i class="fas fa-search search-icon"></i>
+        </div>
+
+        <!-- Inventory Stats -->
+        <div class="stats-row">
+            <div class="stats-card">
+                <div class="stats-icon">
+                    <i class="fas fa-box"></i>
+                </div>
+                <div class="stats-info">
+                    <div class="stats-value" id="totalItems">0</div>
+                    <p class="stats-label">Total Items</p>
+                </div>
+            </div>
+            <div class="stats-card">
+                <div class="stats-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <div class="stats-info">
+                    <div class="stats-value" id="lowStockItems">0</div>
+                    <p class="stats-label">Items Low on Stock</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category Tabs -->
+        <div class="category-tabs" id="categoryTabs">
+            <div class="category-tab active" data-category="all">All Items</div>
+            <div class="category-tab" data-category="spare-parts">Spare Parts</div>
+            <div class="category-tab" data-category="fluids">Fluids & Lubricants</div>
+            <div class="category-tab" data-category="tools">Tools & Equipment</div>
+        </div>
+
+        <!-- Inventory Table Section -->
+        <section class="table-section">
+            <div class="table-header">
+                <h3 class="table-title">
+                    <i class="fas fa-boxes"></i>
+                    <span id="tableTitle">All Inventory Items</span>
+                </h3>
+                <div class="table-actions">
+                    <div class="search-box-sm">
+                        <input type="text" class="search-input-sm" placeholder="Filter items...">
+                        <i class="fas fa-search search-icon-sm"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="inventory-table" id="inventoryTable">
+                    <thead>
+                    <tr>
+                        <th>Item ID</th>
+                        <th>Item Name</th>
+                        <th>Category</th>
+                        <th>Current Stock</th>
+                        <th>Unit Price</th>
+                        <th>Stock Status</th>
+                        <th>Reorder Level</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody id="inventoryTableBody">
+                    <!-- Will be populated dynamically via JavaScript -->
+                    <tr id="loading-row">
+                        <td colspan="8" class="text-center py-4">
+                            <div class="spinner-border text-wine" role="status"></div>
+                            <p class="mt-2">Loading inventory items...</p>
+                        </td>
+                    </tr>
+                    <tr id="empty-row" style="display: none;">
+                        <td colspan="8" class="text-center py-4">
+                            <div class="my-5">
+                                <i class="fas fa-boxes fa-3x text-muted mb-3"></i>
+                                <h5>No inventory items found</h5>
+                                <p class="text-muted">Add your first inventory item to get started</p>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination-container">
+                <ul class="pagination" id="pagination">
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" id="prevBtn" aria-label="Previous">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item active"><a class="page-link" href="#" data-page="1">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#" data-page="2">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#" data-page="3">3</a></li>
+                    <li class="page-item">
+                        <a class="page-link" href="#" id="nextBtn" aria-label="Next">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <p class="footer-text">
+                    &copy; 2025 <span class="footer-brand">Albany</span>. All Rights Reserved.
+                </p>
+            </div>
+        </footer>
+    </main>
+</div>
+
+<!-- Add Inventory Item Modal -->
+<div class="modal fade modal-premium" id="addInventoryModal" tabindex="-1" aria-labelledby="addInventoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addInventoryModalLabel">
+                    <i class="fas fa-plus-circle"></i>
+                    Add New Inventory Item
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addInventoryForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="itemName">Item Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="itemName" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="itemCategory">Category <span class="text-danger">*</span></label>
+                            <select class="form-select" id="itemCategory" name="category" required>
+                                <option value="">Select Category</option>
+                                <option value="Spare Parts">Spare Parts</option>
+                                <option value="Fluids & Lubricants">Fluids & Lubricants</option>
+                                <option value="Tools & Equipment">Tools & Equipment</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="currentStock">Current Stock <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="currentStock" name="currentStock" min="0" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="unitPrice">Unit Price (₹) <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="unitPrice" name="unitPrice" min="0" step="0.01" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="reorderLevel">Reorder Level <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="reorderLevel" name="reorderLevel" min="0" step="0.01" required>
+                        <small class="form-text text-muted">Stock level at which you should reorder this item</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-premium secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn-premium primary" id="saveInventoryBtn">
+                    <i class="fas fa-save"></i>
+                    Save Item
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Inventory Item Modal -->
+<div class="modal fade modal-premium" id="editInventoryModal" tabindex="-1" aria-labelledby="editInventoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editInventoryModalLabel">
+                    <i class="fas fa-edit"></i>
+                    Edit Inventory Item
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editInventoryForm">
+                    <input type="hidden" id="editItemId" name="itemId">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="editItemName">Item Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="editItemName" name="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="editItemCategory">Category <span class="text-danger">*</span></label>
+                            <select class="form-select" id="editItemCategory" name="category" required>
+                                <option value="">Select Category</option>
+                                <option value="Spare Parts">Spare Parts</option>
+                                <option value="Fluids & Lubricants">Fluids & Lubricants</option>
+                                <option value="Tools & Equipment">Tools & Equipment</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="editCurrentStock">Current Stock <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="editCurrentStock" name="currentStock" min="0" step="0.01" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="editUnitPrice">Unit Price (₹) <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" id="editUnitPrice" name="unitPrice" min="0" step="0.01" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="editReorderLevel">Reorder Level <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="editReorderLevel" name="reorderLevel" min="0" step="0.01" required>
+                        <small class="form-text text-muted">Stock level at which you should reorder this item</small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-premium secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn-premium primary" id="updateInventoryBtn">
+                    <i class="fas fa-save"></i>
+                    Update Item
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Inventory Item Modal -->
+<div class="modal fade modal-premium" id="viewInventoryModal" tabindex="-1" aria-labelledby="viewInventoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewInventoryModalLabel">
+                    <i class="fas fa-box"></i>
+                    Inventory Item Details
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="inventory-detail-row">
+                    <div class="inventory-detail-col">
+                        <div class="detail-label">Item ID</div>
+                        <div class="detail-value" id="viewItemId">ITEM-1001</div>
+                    </div>
+                    <div class="inventory-detail-col">
+                        <div class="detail-label">Category</div>
+                        <div class="detail-value" id="viewCategory">Spare Parts</div>
+                    </div>
+                </div>
+
+                <div class="inventory-detail-row">
+                    <div class="inventory-detail-col">
+                        <div class="detail-label">Item Name</div>
+                        <div class="detail-value" id="viewItemName">Oil Filter</div>
+                    </div>
+                    <div class="inventory-detail-col">
+                        <div class="detail-label">Unit Price</div>
+                        <div class="detail-value">
+                            <span class="price-tag" id="viewUnitPrice">₹250.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="inventory-detail-row">
+                    <div class="inventory-detail-col">
+                        <div class="detail-label">Current Stock</div>
+                        <div class="detail-value" id="viewCurrentStock">45 units</div>
+                    </div>
+                    <div class="inventory-detail-col">
+                        <div class="detail-label">Reorder Level</div>
+                        <div class="detail-value" id="viewReorderLevel">10 units</div>
+                    </div>
+                </div>
+
+                <div class="inventory-detail-row">
+                    <div class="inventory-detail-col">
+                        <div class="detail-label">Stock Status</div>
+                        <div class="detail-value" id="viewStockStatus">
+                            <span class="stock-badge stock-good">
+                                <i class="fas fa-check-circle"></i> Good
+                            </span>
+                        </div>
+                    </div>
+                    <div class="inventory-detail-col">
+                        <div class="detail-label">Total Value</div>
+                        <div class="detail-value" id="viewTotalValue">₹11,250.00</div>
+                    </div>
+                </div>
+
+                <h5 class="mt-4 mb-3">Recent Usage History</h5>
+                <table class="usage-table" id="usageTable">
+                    <thead>
+                    <tr>
+                        <th>Request ID</th>
+                        <th>Date Used</th>
+                        <th>Quantity</th>
+                        <th>Service Advisor</th>
+                    </tr>
+                    </thead>
+                    <tbody id="usageTableBody">
+                    <!-- Will be populated dynamically -->
+                    <tr>
+                        <td colspan="4" class="text-center py-3">
+                            <p class="text-muted mb-0">No usage history available for this item</p>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-premium secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn-premium primary" id="editInventoryBtn">
+                    <i class="fas fa-edit"></i>
+                    Edit Item
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade success-modal" id="successModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="success-icon-container">
+                    <div class="success-icon-wrapper">
+                        <div class="success-icon">
+                            <i class="fas fa-check"></i>
+                        </div>
+                    </div>
+                </div>
+                <h3 class="success-title" id="successTitle">Success!</h3>
+                <p class="success-message" id="successMessage">Operation completed successfully.</p>
+                <button type="button" class="continue-btn" data-bs-dismiss="modal">
+                    <i class="fas fa-check-circle"></i>
+                    Continue
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- jQuery and Bootstrap JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+
+<!-- jQuery and Bootstrap JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+
+<!-- Inventory Management JavaScript -->
+<script>
+    // Inventory Management JavaScript
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize app
+        initializeApp();
+
+        // Set up event listeners
+        setupEventListeners();
+
+        // Load inventory items
+        loadInventoryItems();
+    });
+
+    // Global variables
+    let inventoryItems = [];
+    let currentPage = 1;
+    const itemsPerPage = 5;
+    let currentCategory = 'all';
+
+    // Initialize app
+    function initializeApp() {
+        // Setup mobile menu toggle
+        setupMobileMenu();
+
+        // Setup logout button
+        setupLogout();
+
+        // Set up token-based authentication
+        setupAuthentication();
+
+        // Set current date if element exists
+        setupDateDisplay();
+
+        // Set up navigation and active menu
+        setupNavigation();
+    }
+
+    function setupMobileMenu() {
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        if (mobileMenuToggle) {
+            mobileMenuToggle.addEventListener('click', function() {
+                document.getElementById('sidebar').classList.toggle('active');
+            });
+        }
+    }
+
+    function setupLogout() {
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', function() {
+                // Show confirmation dialog
+                if (confirm('Are you sure you want to logout?')) {
+                    // Clear storage
+                    localStorage.removeItem("jwt-token");
+                    sessionStorage.removeItem("jwt-token");
+                    localStorage.removeItem("user-role");
+                    localStorage.removeItem("user-name");
+                    sessionStorage.removeItem("user-role");
+                    sessionStorage.removeItem("user-name");
+
+                    // Redirect to logout
+                    window.location.href = '/admin/logout';
+                }
+            });
+        }
+    }
+
+    function setupDateDisplay() {
+        const dateElement = document.getElementById('current-date');
+        if (dateElement) {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const today = new Date();
+            dateElement.textContent = today.toLocaleDateString('en-US', options);
+        }
+    }
+
+    function setupAuthentication() {
+        // Get token from storage
+        const tokenFromStorage = localStorage.getItem("jwt-token") || sessionStorage.getItem("jwt-token");
+
+        if (tokenFromStorage) {
+            console.log("Token found in storage");
+
+            // Check if current URL already has a token parameter
+            const currentUrl = new URL(window.location.href);
+            const urlToken = currentUrl.searchParams.get('token');
+
+            // If URL doesn't have the token, update all navigation links
+            if (!urlToken) {
+                // Add token to all sidebar navigation links
+                document.querySelectorAll('.sidebar-menu-link').forEach(link => {
+                    const href = link.getAttribute('href');
+                    if (href && !href.includes('token=')) {
+                        const separator = href.includes('?') ? '&' : '?';
+                        link.setAttribute('href', href + separator + 'token=' + encodeURIComponent(tokenFromStorage));
+                    }
+                });
+
+                // Add token to current URL for refresh protection
+                if (window.location.href.indexOf('token=') === -1) {
+                    const separator = window.location.href.indexOf('?') === -1 ? '?' : '&';
+                    const newUrl = window.location.href + separator + 'token=' + encodeURIComponent(tokenFromStorage);
+                    window.history.replaceState({}, document.title, newUrl);
+                }
+            }
+        } else {
+            console.warn("No token found in storage");
+            // If no token is found, redirect to login
+            window.location.href = '/admin/login?error=session_expired';
+        }
+    }
+
+    // Function to set up navigation and sidebar active state
+    function setupNavigation() {
+        // Get the current path
+        const currentPath = window.location.pathname;
+
+        // Set active class on sidebar menu items based on current path
+        document.querySelectorAll('.sidebar-menu-link').forEach(link => {
+            const href = link.getAttribute('href');
+            // Extract base path without parameters
+            const baseHref = href ? href.split('?')[0] : '';
+
+            if (baseHref && currentPath.includes(baseHref)) {
+                link.classList.add('active');
+            } else {
+                link.classList.remove('active');
+            }
+        });
+    }
+
+    function setupEventListeners() {
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('keyup', function() {
+                filterInventoryItems(this.value);
+            });
+        }
+
+        // Table search
+        const tableSearchInput = document.querySelector('.search-input-sm');
+        if (tableSearchInput) {
+            tableSearchInput.addEventListener('keyup', function() {
+                filterTableRows(this.value);
+            });
+        }
+
+        // Category tabs
+        document.querySelectorAll('#categoryTabs .category-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Remove active class from all tabs
+                document.querySelectorAll('#categoryTabs .category-tab').forEach(t => {
+                    t.classList.remove('active');
+                });
+
+                // Add active class to clicked tab
+                this.classList.add('active');
+
+                // Set current category and update table title
+                currentCategory = this.getAttribute('data-category');
+                document.getElementById('tableTitle').textContent = this.textContent + ' Inventory';
+
+                // Filter items by category
+                filterByCategory(currentCategory);
+            });
+        });
+
+        // Pagination
+        document.querySelectorAll('#pagination .page-link').forEach(link => {
+            if (link.id !== 'prevBtn' && link.id !== 'nextBtn') {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const page = parseInt(this.getAttribute('data-page'));
+                    changePage(page);
+                });
+            }
+        });
+
+        const prevBtn = document.getElementById('prevBtn');
+        if (prevBtn) {
+            prevBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (currentPage > 1) {
+                    changePage(currentPage - 1);
+                }
+            });
+        }
+
+        const nextBtn = document.getElementById('nextBtn');
+        if (nextBtn) {
+            nextBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const totalPages = Math.ceil(getFilteredItems().length / itemsPerPage);
+                if (currentPage < totalPages) {
+                    changePage(currentPage + 1);
+                }
+            });
+        }
+
+        // Save inventory button
+        const saveInventoryBtn = document.getElementById('saveInventoryBtn');
+        if (saveInventoryBtn) {
+            saveInventoryBtn.addEventListener('click', saveInventoryItem);
+        }
+
+        // Update inventory button
+        const updateInventoryBtn = document.getElementById('updateInventoryBtn');
+        if (updateInventoryBtn) {
+            updateInventoryBtn.addEventListener('click', updateInventoryItem);
+        }
+
+        // Edit button in view modal
+        const editInventoryBtn = document.getElementById('editInventoryBtn');
+        if (editInventoryBtn) {
+            editInventoryBtn.addEventListener('click', function() {
+                // Close view modal
+                const viewModal = bootstrap.Modal.getInstance(document.getElementById('viewInventoryModal'));
+                if (viewModal) {
+                    viewModal.hide();
+                }
+
+                // Get item ID from view modal
+                const itemId = document.getElementById('viewItemId').textContent.replace('ITEM-', '');
+
+                // Show edit modal with item data
+                showEditModal(itemId);
+            });
+        }
+    }
+
+    // API Functions
+    function getToken() {
+        return localStorage.getItem('jwt-token') || sessionStorage.getItem('jwt-token');
+    }
+
+    function showSpinner() {
+        const spinnerOverlay = document.getElementById('spinnerOverlay');
+        if (spinnerOverlay) {
+            spinnerOverlay.classList.add('show');
+        }
+    }
+
+    function hideSpinner() {
+        const spinnerOverlay = document.getElementById('spinnerOverlay');
+        if (spinnerOverlay) {
+            spinnerOverlay.classList.remove('show');
+        }
+    }
+
+    function showSuccessModal(title, message) {
+        document.getElementById('successTitle').textContent = title;
+        document.getElementById('successMessage').textContent = message;
+        const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+        successModal.show();
+    }
+
+    function loadInventoryItems() {
+        showSpinner();
+
+        // Call the API to get inventory items
+        fetch('/admin/inventory/api/items', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + getToken()
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        window.location.href = '/admin/login?error=session_expired';
+                        throw new Error('Session expired');
+                    }
+                    throw new Error(`Server responded with status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                hideSpinner();
+
+                const loadingRow = document.getElementById('loading-row');
+                if (loadingRow) {
+                    loadingRow.style.display = 'none';
+                }
+
+                // Update inventory items global variable
+                inventoryItems = data;
+
+                if (inventoryItems.length > 0) {
+                    renderInventoryItems();
+                    setupPagination();
+                    updateStats();
+                } else {
+                    const emptyRow = document.getElementById('empty-row');
+                    if (emptyRow) {
+                        emptyRow.style.display = 'table-row';
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error loading inventory items:', error);
+                hideSpinner();
+
+                const loadingRow = document.getElementById('loading-row');
+                if (loadingRow) {
+                    loadingRow.style.display = 'none';
+                }
+
+                if (error.message !== 'Session expired') {
+                    alert('Failed to load inventory items. Please refresh and try again.');
+
+                    // Show empty row if no data
+                    const emptyRow = document.getElementById('empty-row');
+                    if (emptyRow) {
+                        emptyRow.style.display = 'table-row';
+                        emptyRow.querySelector('p').textContent = 'Failed to load inventory items';
+                    }
+                }
+            });
+    }
+
+    function updateStats() {
+        fetch('/admin/inventory/api/stats', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + getToken()
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Server responded with status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(stats => {
+                // Update the stats counters
+                document.getElementById('totalItems').textContent = stats.totalItems;
+                document.getElementById('lowStockItems').textContent = stats.lowStockItems;
+            })
+            .catch(error => {
+                console.error('Error loading inventory stats:', error);
+                // Fallback to calculating stats from loaded items if API fails
+                document.getElementById('totalItems').textContent = inventoryItems.length;
+                const lowStockItems = inventoryItems.filter(item =>
+                    parseFloat(item.currentStock) <= parseFloat(item.reorderLevel)
+                ).length;
+                document.getElementById('lowStockItems').textContent = lowStockItems;
+            });
+    }
+
+    function renderInventoryItems() {
+        const tableBody = document.getElementById('inventoryTableBody');
+        if (!tableBody) return;
+
+        // Clear table body except for special rows
+        const rows = tableBody.querySelectorAll('tr:not(#loading-row):not(#empty-row)');
+        rows.forEach(row => row.remove());
+
+        const filteredItems = getFilteredItems();
+
+        if (filteredItems.length === 0) {
+            const emptyRow = document.getElementById('empty-row');
+            if (emptyRow) {
+                emptyRow.style.display = 'table-row';
+            }
+            return;
+        }
+
+        const emptyRow = document.getElementById('empty-row');
+        if (emptyRow) {
+            emptyRow.style.display = 'none';
+        }
+
+        // Get items for current page
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = Math.min(startIndex + itemsPerPage, filteredItems.length);
+        const displayedItems = filteredItems.slice(startIndex, endIndex);
+
+        // Create rows for displayed items
+        displayedItems.forEach(item => {
+            const row = document.createElement('tr');
+            row.className = 'active-page';
+
+            // Determine stock status
+            let stockStatus, stockClass, stockIcon;
+            if (item.stockStatus === "Low") {
+                stockStatus = "Low";
+                stockClass = "stock-low";
+                stockIcon = "exclamation-circle";
+            } else if (item.stockStatus === "Medium") {
+                stockStatus = "Medium";
+                stockClass = "stock-medium";
+                stockIcon = "exclamation-triangle";
+            } else {
+                stockStatus = "Good";
+                stockClass = "stock-good";
+                stockIcon = "check-circle";
+            }
+
+            row.innerHTML = `
+                <td>ITEM-${item.itemId}</td>
+                <td>${item.name}</td>
+                <td>${item.category}</td>
+                <td>${parseFloat(item.currentStock).toFixed(2)}</td>
+                <td>₹${parseFloat(item.unitPrice).toFixed(2)}</td>
+                <td>
+                    <span class="stock-badge ${stockClass}">
+                        <i class="fas fa-${stockIcon}"></i> ${stockStatus}
+                    </span>
+                </td>
+                <td>${parseFloat(item.reorderLevel).toFixed(2)}</td>
+                <td class="table-actions-cell">
+                    <button class="btn-table-action view-btn" title="View Details" onclick="showInventoryDetails(${item.itemId})">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn-table-action edit-btn" title="Edit Item" onclick="showEditModal(${item.itemId})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn-table-action delete-btn" title="Delete Item" onclick="deleteInventoryItem(${item.itemId})">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            `;
+
+            tableBody.appendChild(row);
+        });
+    }
+
+    function getFilteredItems() {
+        // If we're filtering by category, apply that filter
+        if (currentCategory !== 'all') {
+            const categoryMap = {
+                'spare-parts': 'Spare Parts',
+                'fluids': 'Fluids & Lubricants',
+                'tools': 'Tools & Equipment'
+            };
+
+            return inventoryItems.filter(item =>
+                item.category === categoryMap[currentCategory]
+            );
+        }
+
+        // Otherwise return all items
+        return [...inventoryItems];
+    }
+
+    function filterInventoryItems(searchTerm) {
+        if (!searchTerm) {
+            renderInventoryItems();
+            return;
+        }
+
+        searchTerm = searchTerm.toLowerCase();
+
+        const filteredItems = getFilteredItems().filter(item => {
+            return (
+                `item-${item.itemId}`.toLowerCase().includes(searchTerm) ||
+                item.name.toLowerCase().includes(searchTerm) ||
+                item.category.toLowerCase().includes(searchTerm)
+            );
+        });
+
+        renderFilteredItems(filteredItems);
+    }
+
+    function filterByCategory(category) {
+        // Reset to first page when changing category
+        currentPage = 1;
+
+        // Rerender with the new category filter
+        renderInventoryItems();
+
+        // Update pagination
+        setupPagination();
+    }
+
+    function renderFilteredItems(filteredItems) {
+        const tableBody = document.getElementById('inventoryTableBody');
+        if (!tableBody) return;
+
+        // Clear table body except for special rows
+        const rows = tableBody.querySelectorAll('tr:not(#loading-row):not(#empty-row)');
+        rows.forEach(row => row.remove());
+
+        if (filteredItems.length === 0) {
+            const emptyRow = document.getElementById('empty-row');
+            if (emptyRow) {
+                emptyRow.style.display = 'table-row';
+                emptyRow.querySelector('p').textContent = 'No matching items found';
+            }
+            return;
+        }
+
+        const emptyRow = document.getElementById('empty-row');
+        if (emptyRow) {
+            emptyRow.style.display = 'none';
+        }
+
+        // Create rows for filtered items
+        filteredItems.forEach(item => {
+            const row = document.createElement('tr');
+            row.className = 'active-page';
+
+            // Determine stock status
+            let stockStatus, stockClass, stockIcon;
+            if (item.stockStatus === "Low") {
+                stockStatus = "Low";
+                stockClass = "stock-low";
+                stockIcon = "exclamation-circle";
+            } else if (item.stockStatus === "Medium") {
+                stockStatus = "Medium";
+                stockClass = "stock-medium";
+                stockIcon = "exclamation-triangle";
+            } else {
+                stockStatus = "Good";
+                stockClass = "stock-good";
+                stockIcon = "check-circle";
+            }
+
+            row.innerHTML = `
+                <td>ITEM-${item.itemId}</td>
+                <td>${item.name}</td>
+                <td>${item.category}</td>
+                <td>${parseFloat(item.currentStock).toFixed(2)}</td>
+                <td>₹${parseFloat(item.unitPrice).toFixed(2)}</td>
+                <td>
+                    <span class="stock-badge ${stockClass}">
+                        <i class="fas fa-${stockIcon}"></i> ${stockStatus}
+                    </span>
+                </td>
+                <td>${parseFloat(item.reorderLevel).toFixed(2)}</td>
+                <td class="table-actions-cell">
+                    <button class="btn-table-action view-btn" title="View Details" onclick="showInventoryDetails(${item.itemId})">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn-table-action edit-btn" title="Edit Item" onclick="showEditModal(${item.itemId})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn-table-action delete-btn" title="Delete Item" onclick="deleteInventoryItem(${item.itemId})">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            `;
+
+            tableBody.appendChild(row);
+        });
+    }
+
+    function filterTableRows(searchTerm) {
+        if (!searchTerm) {
+            // Reset all rows
+            document.querySelectorAll('#inventoryTable tbody tr.active-page').forEach(row => {
+                row.style.display = '';
+            });
+            return;
+        }
+
+        searchTerm = searchTerm.toLowerCase();
+
+        document.querySelectorAll('#inventoryTable tbody tr.active-page').forEach(row => {
+            const text = row.textContent.toLowerCase();
+            if (text.includes(searchTerm)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    function changePage(page) {
+        currentPage = page;
+        renderInventoryItems();
+        updatePaginationUI();
+    }
+
+    function setupPagination() {
+        const filteredItems = getFilteredItems();
+        const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+        const pagination = document.getElementById('pagination');
+        if (!pagination) return;
+
+        // Clear existing page links except for prev/next buttons
+        const pageLinks = pagination.querySelectorAll('.page-link:not(#prevBtn):not(#nextBtn)');
+        pageLinks.forEach(link => link.parentElement.remove());
+
+        // Add page links
+        const prevBtn = document.getElementById('prevBtn');
+        const prevBtnParent = prevBtn ? prevBtn.parentElement : null;
+        const nextBtn = document.getElementById('nextBtn');
+        const nextBtnParent = nextBtn ? nextBtn.parentElement : null;
+
+        if (prevBtnParent && nextBtnParent) {
+            for (let i = 1; i <= totalPages; i++) {
+                const li = document.createElement('li');
+                li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+                li.innerHTML = `<a class="page-link" href="#" data-page="${i}">${i}</a>`;
+
+                // Add event listener
+                li.querySelector('.page-link').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    changePage(i);
+                });
+
+                pagination.insertBefore(li, nextBtnParent);
+            }
+
+            // Update prev/next buttons
+            prevBtnParent.classList.toggle('disabled', currentPage === 1);
+            nextBtnParent.classList.toggle('disabled', currentPage === totalPages || totalPages === 0);
+        }
+    }
+
+    function updatePaginationUI() {
+        const filteredItems = getFilteredItems();
+        const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+        const pagination = document.getElementById('pagination');
+        if (!pagination) return;
+
+        // Update active page
+        const pageItems = pagination.querySelectorAll('.page-item');
+        pageItems.forEach(item => {
+            const pageLink = item.querySelector('.page-link');
+            if (pageLink && pageLink.id !== 'prevBtn' && pageLink.id !== 'nextBtn') {
+                const page = parseInt(pageLink.getAttribute('data-page'));
+                item.classList.toggle('active', page === currentPage);
+            }
+        });
+
+        // Update prev/next buttons
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+
+        if (prevBtn) {
+            prevBtn.parentElement.classList.toggle('disabled', currentPage === 1);
+        }
+
+        if (nextBtn) {
+            nextBtn.parentElement.classList.toggle('disabled', currentPage === totalPages || totalPages === 0);
+        }
+    }
+
+    function saveInventoryItem() {
+        const form = document.getElementById('addInventoryForm');
+        if (!form) return;
+
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        const itemData = {
+            name: document.getElementById('itemName').value,
+            category: document.getElementById('itemCategory').value,
+            currentStock: parseFloat(document.getElementById('currentStock').value),
+            unitPrice: parseFloat(document.getElementById('unitPrice').value),
+            reorderLevel: parseFloat(document.getElementById('reorderLevel').value)
+        };
+
+        showSpinner();
+
+        // Call the API to create a new inventory item
+        fetch('/admin/inventory/api/items', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + getToken()
+            },
+            body: JSON.stringify(itemData)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Server responded with status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                hideSpinner();
+
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addInventoryModal'));
+                if (modal) {
+                    modal.hide();
+                }
+
+                // Reset form
+                form.reset();
+
+                // Show success message
+                showSuccessModal('Item Added', 'The inventory item has been added successfully.');
+
+                // Refresh inventory list
+                loadInventoryItems();
+            })
+            .catch(error => {
+                hideSpinner();
+                console.error('Error creating inventory item:', error);
+                alert('Failed to create inventory item. Please try again.');
+            });
+    }
+
+    function updateInventoryItem() {
+        const form = document.getElementById('editInventoryForm');
+        if (!form) return;
+
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        const itemId = parseInt(document.getElementById('editItemId').value);
+        const itemData = {
+            name: document.getElementById('editItemName').value,
+            category: document.getElementById('editItemCategory').value,
+            currentStock: parseFloat(document.getElementById('editCurrentStock').value),
+            unitPrice: parseFloat(document.getElementById('editUnitPrice').value),
+            reorderLevel: parseFloat(document.getElementById('editReorderLevel').value)
+        };
+
+        showSpinner();
+
+        // Call the API to update the inventory item
+        fetch(`/admin/inventory/api/items/${itemId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + getToken()
+            },
+            body: JSON.stringify(itemData)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Server responded with status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                hideSpinner();
+
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('editInventoryModal'));
+                if (modal) {
+                    modal.hide();
+                }
+
+                // Show success message
+                showSuccessModal('Item Updated', 'The inventory item has been updated successfully.');
+
+                // Refresh inventory list
+                loadInventoryItems();
+            })
+            .catch(error => {
+                hideSpinner();
+                console.error('Error updating inventory item:', error);
+                alert('Failed to update inventory item. Please try again.');
+            });
+    }
+
+    // Function to show inventory details - needs to be globally accessible for onclick handlers
+    window.showInventoryDetails = function(itemId) {
+        showSpinner();
+
+        // Fetch item details
+        fetch(`/admin/inventory/api/items/${itemId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + getToken()
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Server responded with status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(item => {
+                // Populate the view modal
+                document.getElementById('viewItemId').textContent = `ITEM-${item.itemId}`;
+                document.getElementById('viewItemName').textContent = item.name;
+                document.getElementById('viewCategory').textContent = item.category;
+                document.getElementById('viewCurrentStock').textContent = `${parseFloat(item.currentStock).toFixed(2)} units`;
+                document.getElementById('viewReorderLevel').textContent = `${parseFloat(item.reorderLevel).toFixed(2)} units`;
+                document.getElementById('viewUnitPrice').textContent = `₹${parseFloat(item.unitPrice).toFixed(2)}`;
+                document.getElementById('viewTotalValue').textContent = `₹${item.totalValue.toFixed(2)}`;
+
+                // Set stock status badge
+                const viewStockStatus = document.getElementById('viewStockStatus');
+                let stockClass, stockIcon;
+
+                if (item.stockStatus === "Low") {
+                    stockClass = "stock-low";
+                    stockIcon = "exclamation-circle";
+                } else if (item.stockStatus === "Medium") {
+                    stockClass = "stock-medium";
+                    stockIcon = "exclamation-triangle";
+                } else {
+                    stockClass = "stock-good";
+                    stockIcon = "check-circle";
+                }
+
+                viewStockStatus.innerHTML = `
+                <span class="stock-badge ${stockClass}">
+                    <i class="fas fa-${stockIcon}"></i> ${item.stockStatus}
+                </span>
+            `;
+
+                // Fetch usage history
+                return fetch(`/admin/inventory/api/items/${itemId}/usage-history`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    }
+                });
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Server responded with status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(usageData => {
+                // Populate usage history
+                const usageTableBody = document.getElementById('usageTableBody');
+                if (usageTableBody) {
+                    if (usageData && usageData.length > 0) {
+                        let usageHtml = '';
+                        usageData.forEach(usage => {
+                            const date = new Date(usage.usedAt).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                            });
+
+                            usageHtml += `
+                            <tr>
+                                <td>${usage.requestReference}</td>
+                                <td>${date}</td>
+                                <td>${parseFloat(usage.quantity).toFixed(2)}</td>
+                                <td>${usage.serviceAdvisorName}</td>
+                            </tr>
+                        `;
+                        });
+                        usageTableBody.innerHTML = usageHtml;
+                    } else {
+                        usageTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="text-center py-3">
+                                <p class="text-muted mb-0">No usage history available for this item</p>
+                            </td>
+                        </tr>
+                    `;
+                    }
+                }
+
+                hideSpinner();
+
+                // Show the modal
+                const modal = new bootstrap.Modal(document.getElementById('viewInventoryModal'));
+                modal.show();
+            })
+            .catch(error => {
+                hideSpinner();
+                console.error('Error fetching item details:', error);
+                alert('Failed to load item details. Please try again.');
+            });
+    };
+
+    // Function to show edit modal - needs to be globally accessible for onclick handlers
+    window.showEditModal = function(itemId) {
+        showSpinner();
+
+        // Fetch item details
+        fetch(`/admin/inventory/api/items/${itemId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + getToken()
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`Server responded with status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(item => {
+                hideSpinner();
+
+                // Populate the edit form
+                document.getElementById('editItemId').value = item.itemId;
+                document.getElementById('editItemName').value = item.name;
+                document.getElementById('editItemCategory').value = item.category;
+                document.getElementById('editCurrentStock').value = parseFloat(item.currentStock).toFixed(2);
+                document.getElementById('editUnitPrice').value = parseFloat(item.unitPrice).toFixed(2);
+                document.getElementById('editReorderLevel').value = parseFloat(item.reorderLevel).toFixed(2);
+
+                // Show the modal
+                const modal = new bootstrap.Modal(document.getElementById('editInventoryModal'));
+                modal.show();
+            })
+            .catch(error => {
+                hideSpinner();
+                console.error('Error fetching item details for editing:', error);
+                alert('Failed to load item details for editing. Please try again.');
+            });
+    };
+
+    // Function to delete inventory item - needs to be globally accessible for onclick handlers
+    window.deleteInventoryItem = function(itemId) {
+        if (confirm('Are you sure you want to delete this item?')) {
+            showSpinner();
+
+            // Call the API to delete the inventory item
+            fetch(`/admin/inventory/api/items/${itemId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + getToken()
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Server responded with status: ${response.status}`);
+                    }
+
+                    hideSpinner();
+
+                    // Show success message
+                    showSuccessModal('Item Deleted', 'The inventory item has been deleted successfully.');
+
+                    // Refresh inventory list
+                    loadInventoryItems();
+                })
+                .catch(error => {
+                    hideSpinner();
+                    console.error('Error deleting inventory item:', error);
+                    alert('Failed to delete inventory item. Please try again.');
+                });
+        }
+    };
+</script>
+</body>
+</html>

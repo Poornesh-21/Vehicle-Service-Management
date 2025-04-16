@@ -1,0 +1,3239 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Albany Motors - Service Requests</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts - Baloo Bhaijaan 2 -->
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --dutch-white: #EFFBBB; /* Dutch White */
+            --dutch-white-light: #f5ffd4;
+            --dutch-white-dark: #d6e297;
+            --dutch-white-darker: #bfca85;
+            --wine: #722F37; /* Wine */
+            --wine-light: #8a3943;
+            --wine-dark: #5e262e;
+            --wine-darker: #491d23;
+            --wine-gradient: linear-gradient(145deg, #722F37 0%, #5e262e 100%);
+            --wine-gradient-hover: linear-gradient(145deg, #8a3943 0%, #722F37 100%);
+            --dutch-white-gradient: linear-gradient(145deg, #EFFFBB 0%, #d6e297 100%);
+            --white: #ffffff;
+            --light-bg: #f8f9fa;
+            --light-gray: #e9ecef;
+            --medium-gray: #adb5bd;
+            --dark-gray: #495057;
+            --danger: #ef5350;
+            --warning: #ffca28;
+            --success: #66bb6a;
+            --info: #42a5f5;
+
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 8px rgba(0,0,0,0.1);
+            --shadow-lg: 0 8px 16px rgba(0,0,0,0.1);
+            --shadow-xl: 0 12px 24px rgba(0,0,0,0.15);
+
+            --radius-sm: 0.25rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 1rem;
+
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            font-family: 'Baloo Bhaijaan 2', sans-serif;
+            background-color: #f8f9fa;
+            color: var(--dark-gray);
+            min-height: 100vh;
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--light-gray);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--wine);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--wine-light);
+        }
+
+        .app-container {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles - Fixed visibility issues */
+        .sidebar {
+            width: 280px;
+            background: var(--wine-gradient);
+            color: var(--white);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .sidebar-header {
+            padding: 1.75rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sidebar-header h2 {
+            margin-bottom: 0;
+            font-weight: 700;
+            color: var(--white);
+            font-size: 1.75rem;
+            letter-spacing: 0.5px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem 0;
+        }
+
+        .sidebar-content::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar-content::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar-content::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .nav-section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0.75rem 1.5rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 600;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-menu-item {
+            padding: 0 0.75rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .sidebar-menu-link {
+            display: flex;
+            align-items: center;
+            padding: 0.85rem 1rem;
+            color: rgba(255, 255, 255, 0.95);
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .sidebar-menu-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--white);
+        }
+
+        .sidebar-menu-link.active {
+            background-color: var(--dutch-white-light);
+            color: var(--wine);
+            font-weight: 600;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .sidebar-menu-link.active::before {
+            content: '';
+            position: absolute;
+            left: -0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 2rem;
+            width: 4px;
+            background-color: var(--dutch-white-dark);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+        }
+
+        .sidebar-menu-link i {
+            width: 1.5rem;
+            text-align: center;
+            font-size: 1.1rem;
+            margin-right: 0.75rem;
+        }
+
+        .sidebar-menu-link span {
+            font-size: 1rem;
+            font-weight: 500;
+            color: inherit;
+        }
+
+        .sidebar-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--white);
+        }
+
+        .user-role {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .logout-btn {
+            padding: 0.5rem 1rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: var(--radius-md);
+            color: var(--white);
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .logout-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+            transition: var(--transition);
+            color: var(--dark-gray);
+        }
+
+        /* Header Styles */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            background-color: transparent;
+            padding: 0;
+            border-radius: 0;
+            box-shadow: none;
+            position: relative;
+        }
+
+        .header-left {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .header-left h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--wine);
+            margin-bottom: 0.5rem;
+            position: relative;
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 0 rgba(0,0,0,0.1);
+        }
+
+        .header-subtitle {
+            font-size: 1rem;
+            color: var(--medium-gray);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        /* Premium Button */
+        .btn-premium {
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-lg);
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: var(--transition);
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: var(--shadow-md);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .btn-premium::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: all 0.4s ease;
+            z-index: -1;
+        }
+
+        .btn-premium:hover::after {
+            width: 100%;
+        }
+
+        .btn-premium.primary {
+            background: var(--wine-gradient);
+            color: white;
+        }
+
+        .btn-premium.primary:hover {
+            box-shadow: 0 6px 15px rgba(114, 47, 55, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn-premium.secondary {
+            background-color: var(--white);
+            color: var(--wine);
+        }
+
+        .btn-premium.secondary:hover {
+            background-color: var(--light-bg);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        /* Search Box */
+        .search-box {
+            position: relative;
+            max-width: 400px;
+            margin-bottom: 2rem;
+        }
+
+        .search-input {
+            padding: 1rem 1rem 1rem 3rem;
+            border: 1px solid var(--light-gray);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            font-size: 1rem;
+            color: var(--text-dark);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--wine);
+            box-shadow: 0 0 0 4px rgba(114, 47, 55, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--medium-gray);
+            pointer-events: none;
+        }
+
+        /* Table Section */
+        .table-section {
+            background-color: var(--white);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 2rem;
+            transition: var(--transition);
+            border: 1px solid rgba(114, 47, 55, 0.1);
+        }
+
+        .table-section:hover {
+            box-shadow: 0 15px 30px rgba(114, 47, 55, 0.15), 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .table-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--wine);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .table-title i {
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--dutch-white-light);
+            color: var(--wine);
+            border-radius: var(--radius-sm);
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .search-box-sm {
+            position: relative;
+        }
+
+        .search-input-sm {
+            padding: 0.65rem 1rem 0.65rem 2.5rem;
+            border: 1px solid var(--light-gray);
+            border-radius: var(--radius-lg);
+            width: 250px;
+            font-size: 0.9rem;
+            color: var(--dark-gray);
+            transition: var(--transition);
+        }
+
+        .search-input-sm:focus {
+            outline: none;
+            border-color: var(--wine-light);
+            box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
+        }
+
+        .search-icon-sm {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--medium-gray);
+            pointer-events: none;
+        }
+
+        .premium-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .premium-table thead th {
+            background-color: var(--bg-light);
+            color: var(--dark-gray);
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 1.25rem 1rem;
+            border-bottom: 1px solid var(--light-gray);
+            text-align: left;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .premium-table tbody td {
+            padding: 1.25rem 1rem;
+            vertical-align: middle;
+            border-bottom: 1px solid var(--light-gray);
+            font-size: 0.95rem;
+        }
+
+        .premium-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .premium-table tbody tr {
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .premium-table tbody tr:hover {
+            background-color: rgba(114, 47, 55, 0.05);
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 2rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            line-height: 1;
+        }
+
+        .status-received {
+            background-color: rgba(255, 202, 40, 0.15);
+            color: #d68000;
+        }
+
+        .status-received i {
+            color: var(--warning);
+        }
+
+        .status-diagnosis {
+            background-color: rgba(66, 165, 245, 0.15);
+            color: #0069c0;
+        }
+
+        .status-diagnosis i {
+            color: var(--info);
+        }
+
+        .status-repair {
+            background-color: rgba(255, 87, 51, 0.15);
+            color: #ff3c00;
+        }
+
+        .status-repair i {
+            color: #ff3c00;
+        }
+
+        .status-completed {
+            background-color: rgba(102, 187, 106, 0.15);
+            color: #00701a;
+        }
+
+        .status-completed i {
+            color: var(--success);
+        }
+
+        /* Customer Cell Styles */
+        .vehicle-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .vehicle-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            background-color: var(--dutch-white-light);
+            color: var(--wine);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .vehicle-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .vehicle-details h5 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--wine);
+        }
+
+        .vehicle-details p {
+            font-size: 0.8rem;
+            color: var(--medium-gray);
+            margin: 0;
+        }
+
+        .person-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .person-details h5 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--wine);
+        }
+
+        .person-details p {
+            font-size: 0.8rem;
+            color: var(--medium-gray);
+            margin: 0;
+        }
+
+        /* Membership Badge */
+        .membership-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .membership-standard {
+            background-color: rgba(66, 165, 245, 0.15);
+            color: var(--info);
+        }
+
+        .membership-premium {
+            background: linear-gradient(to right, rgba(212, 175, 55, 0.2), rgba(212, 175, 55, 0.3));
+            color: #b8860b;
+        }
+
+        /* Table Action Buttons */
+        .table-actions-cell {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+        }
+
+        .btn-table-action {
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--white);
+            color: var(--wine);
+            border: 1px solid var(--light-gray);
+            border-radius: 50%;
+            font-size: 0.85rem;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-table-action:hover {
+            background-color: var(--light-bg);
+            border-color: var(--wine-light);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .btn-assign {
+            background-color: var(--dutch-white-light);
+            color: var(--wine);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-lg);
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: 1px solid var(--dutch-white-dark);
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-assign:hover {
+            background-color: var(--dutch-white);
+            border-color: var(--dutch-white-darker);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Pagination */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .pagination {
+            display: flex;
+            gap: 0.35rem;
+            background-color: white;
+            border-radius: 50px;
+            padding: 0.5rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .page-item .page-link {
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            color: var(--dark-gray);
+            font-weight: 500;
+            border: none;
+            transition: var(--transition);
+            background-color: transparent;
+        }
+
+        .page-item .page-link:hover {
+            background-color: var(--light-gray);
+        }
+
+        .page-item.active .page-link {
+            background-color: var(--wine);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .page-item.disabled .page-link {
+            color: var(--medium-gray);
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        /* Modal Styles - Premium */
+        .modal-premium .modal-content {
+            border: none;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .modal-premium .modal-header {
+            background: var(--wine-gradient);
+            color: white;
+            border-bottom: none;
+            padding: 1.75rem 2rem;
+            position: relative;
+        }
+
+        .modal-premium .modal-title {
+            font-weight: 700;
+            font-size: 1.35rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .modal-premium .modal-title i {
+            width: 2.5rem;
+            height: 2.5rem;
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .modal-premium .modal-body {
+            padding: 2.5rem;
+        }
+
+        .modal-premium .modal-footer {
+            padding: 1.5rem 2.5rem;
+            border-top: 1px solid var(--light-gray);
+            background-color: rgba(248, 249, 250, 0.5);
+        }
+
+        .modal-premium .btn-close {
+            background: rgba(255, 255, 255, 0.2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23FFF'%3E%3Cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3E%3C/svg%3E") center/1em auto no-repeat;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            opacity: 0.8;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-premium .btn-close:hover {
+            opacity: 1;
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Form Styles */
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--dark-gray);
+        }
+
+        .form-control {
+            display: block;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: var(--dark-gray);
+            background-color: #fff;
+            background-clip: padding-box;
+            border: 1px solid var(--light-gray);
+            border-radius: var(--radius-md);
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .form-control:focus {
+            color: var(--dark-gray);
+            background-color: #fff;
+            border-color: var(--wine);
+            outline: 0;
+            box-shadow: 0 0 0 0.25rem rgba(114, 47, 55, 0.25);
+        }
+
+        .form-select {
+            display: block;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            font-weight: 400;
+            line-height: 1.5;
+            color: var(--dark-gray);
+            background-color: #fff;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 16px 12px;
+            border: 1px solid var(--light-gray);
+            border-radius: var(--radius-md);
+            appearance: none;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .form-select:focus {
+            border-color: var(--wine);
+            outline: 0;
+            box-shadow: 0 0 0 0.25rem rgba(114, 47, 55, 0.25);
+        }
+
+        /* Assign modal */
+        .advisor-card {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.25rem;
+            border-radius: var(--radius-md);
+            background-color: var(--light-bg);
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 2px solid transparent;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .advisor-card:hover {
+            background-color: var(--dutch-white-light);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .advisor-card.selected {
+            border-color: var(--wine);
+            background-color: var(--dutch-white-light);
+        }
+
+        .advisor-avatar {
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: 50%;
+            background-color: var(--wine-light);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            box-shadow: 0 3px 8px rgba(114, 47, 55, 0.2);
+        }
+
+        .advisor-info {
+            flex: 1;
+        }
+
+        .advisor-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--wine);
+            margin-bottom: 0.25rem;
+        }
+
+        .advisor-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .advisor-stat {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.9rem;
+            color: var(--dark-gray);
+        }
+
+        .advisor-services {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+            background-color: rgba(114, 47, 55, 0.12);
+            color: var(--wine);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .advisor-workload {
+            margin-top: 0.75rem;
+        }
+
+        .advisor-workload .progress {
+            height: 8px;
+            border-radius: 8px;
+            background-color: rgba(0, 0, 0, 0.05);
+            box-shadow: var(--shadow-sm) inset;
+        }
+
+        .workload-text {
+            font-size: 0.75rem;
+            color: var(--medium-gray);
+            margin-top: 0.25rem;
+        }
+
+        /* Service Details */
+        .service-detail-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .service-detail-col {
+            flex: 1;
+            min-width: 200px;
+            padding-right: 1.5rem;
+        }
+
+        .detail-label {
+            font-size: 0.85rem;
+            color: var(--medium-gray);
+            margin-bottom: 0.35rem;
+        }
+
+        .detail-value {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--dark-gray);
+        }
+
+        .materials-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 1.5rem;
+            background-color: var(--light-bg);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+
+        .materials-table th {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+            padding: 0.75rem 1rem;
+            text-align: left;
+            background-color: var(--light-bg);
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .materials-table td {
+            font-size: 0.9rem;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .materials-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Albany Spinner */
+        .spinner-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        .spinner-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .spinner-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            perspective: 300px;
+        }
+
+        .albany-spinner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: spin 3s infinite cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+
+        .spinner-letter {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 72px;
+            font-weight: 800;
+            color: var(--wine);
+            text-shadow: 0 0 5px rgba(114, 47, 55, 0.3);
+            backface-visibility: hidden;
+            transform: rotateY(0deg) translateZ(60px);
+        }
+
+        .spinner-circle {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            width: calc(100% + 20px);
+            height: calc(100% + 20px);
+            border-radius: 50%;
+            border: 4px solid transparent;
+            border-top-color: var(--wine);
+            border-bottom-color: var(--dutch-white);
+            animation: spin-reverse 1.5s linear infinite;
+        }
+
+        .spinner-circle:nth-child(2) {
+            top: -5px;
+            left: -5px;
+            width: calc(100% + 10px);
+            height: calc(100% + 10px);
+            border-top-color: var(--dutch-white);
+            border-bottom-color: var(--wine);
+            animation-duration: 2s;
+        }
+
+        .spinner-text {
+            position: absolute;
+            bottom: -40px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--wine);
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotateY(0deg);
+            }
+            25% {
+                transform: rotateY(90deg);
+            }
+            50% {
+                transform: rotateY(180deg);
+            }
+            75% {
+                transform: rotateY(270deg);
+            }
+            100% {
+                transform: rotateY(360deg);
+            }
+        }
+
+        @keyframes spin-reverse {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Success Modal */
+        .success-modal .modal-content {
+            border: none;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+            background-color: var(--white);
+            position: relative;
+        }
+
+        .success-modal .modal-body {
+            padding: 3.5rem 2.5rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .success-modal .modal-body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 15px;
+            background: var(--wine-gradient);
+        }
+
+        .success-icon-container {
+            margin-bottom: 2rem;
+            position: relative;
+            display: inline-flex;
+        }
+
+        .success-icon-wrapper {
+            width: 8rem;
+            height: 8rem;
+            border-radius: 50%;
+            background: linear-gradient(145deg, rgba(102, 187, 106, 0.15), rgba(102, 187, 106, 0.05));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            position: relative;
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(102, 187, 106, 0.6);
+            }
+            70% {
+                box-shadow: 0 0 0 15px rgba(102, 187, 106, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(102, 187, 106, 0);
+            }
+        }
+
+        .success-icon {
+            width: 6rem;
+            height: 6rem;
+            border-radius: 50%;
+            background-color: var(--success);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            box-shadow: 0 10px 30px rgba(102, 187, 106, 0.3);
+            animation: scale-in 0.5s ease-out;
+        }
+
+        @keyframes scale-in {
+            0% {
+                transform: scale(0);
+            }
+            80% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .success-modal .success-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark-gray);
+            margin-bottom: 1rem;
+        }
+
+        .success-modal .success-message {
+            font-size: 1.1rem;
+            color: var(--medium-gray);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+            max-width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .success-modal .continue-btn {
+            padding: 1rem 3rem;
+            font-size: 1.1rem;
+            border-radius: var(--radius-lg);
+            background: var(--wine-gradient);
+            color: white;
+            border: none;
+            font-weight: 600;
+            transition: var(--transition);
+            box-shadow: var(--shadow-lg);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .success-modal .continue-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(114, 47, 55, 0.2);
+        }
+
+        /* Footer */
+        .app-footer {
+            margin-top: 3rem;
+            padding-bottom: 2rem;
+        }
+
+        .footer-content {
+            background: var(--wine-gradient);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-lg);
+            color: white;
+            text-align: center;
+        }
+
+        .footer-text {
+            margin: 0;
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        .footer-brand {
+            font-weight: 600;
+            color: var(--dutch-white-light);
+        }
+
+        /* Mobile menu toggle */
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1060;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            background: var(--wine-gradient);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 12px rgba(114, 47, 55, 0.25);
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .mobile-menu-toggle:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(114, 47, 55, 0.3);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 991.98px) {
+            .sidebar {
+                width: 5rem;
+                box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+            }
+
+            .sidebar-header h2,
+            .sidebar-menu-link span,
+            .user-info,
+            .nav-section-title,
+            .logout-btn span {
+                display: none;
+            }
+
+            .sidebar-menu-link {
+                justify-content: center;
+                padding: 0.75rem;
+            }
+
+            .sidebar-menu-link i {
+                margin-right: 0;
+                font-size: 1.25rem;
+            }
+
+            .sidebar-menu-link.active::before {
+                left: -0.5rem;
+            }
+
+            .sidebar-footer {
+                justify-content: center;
+                padding: 1rem;
+            }
+
+            .logout-btn {
+                padding: 0.5rem;
+                justify-content: center;
+            }
+
+            .main-content {
+                margin-left: 5rem;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .header-left h1 {
+                font-size: 2rem;
+            }
+
+            .table-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .table-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .search-box-sm {
+                width: 100%;
+            }
+
+            .search-input-sm {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .sidebar {
+                z-index: 1050;
+            }
+
+            .table-section {
+                overflow-x: auto;
+            }
+
+            .premium-table {
+                min-width: 1000px;
+            }
+
+            .mobile-menu-toggle {
+                display: flex;
+            }
+
+            .sidebar {
+                width: 0;
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                width: 280px;
+                transform: translateX(0);
+            }
+
+            .sidebar.active .sidebar-header h2,
+            .sidebar.active .sidebar-menu-link span,
+            .sidebar.active .user-info,
+            .sidebar.active .nav-section-title,
+            .sidebar.active .logout-btn span {
+                display: block;
+            }
+
+            .sidebar.active .sidebar-menu-link {
+                justify-content: flex-start;
+                padding: 0.85rem 1rem;
+            }
+
+            .sidebar.active .sidebar-menu-link i {
+                margin-right: 0.75rem;
+            }
+
+            .sidebar.active .logout-btn {
+                padding: 0.5rem 1rem;
+                justify-content: space-between;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .page-header {
+                padding-top: 4rem;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .main-content {
+                padding: 1rem;
+            }
+
+            .page-header {
+                margin-bottom: 1.5rem;
+            }
+
+            .header-left h1 {
+                font-size: 1.75rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                gap: 0.75rem;
+                width: 100%;
+            }
+
+            .btn-premium {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .search-box {
+                max-width: 100%;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Hide all table rows except the first 5 by default */
+        .premium-table tbody tr {
+            display: none;
+        }
+
+        .premium-table tbody tr.active-page {
+            display: table-row;
+        }
+    </style>
+</head>
+<body>
+<!-- Albany Spinner Overlay -->
+<div class="spinner-overlay" id="spinnerOverlay">
+    <div class="spinner-container">
+        <div class="albany-spinner">
+            <div class="spinner-letter">A</div>
+            <div class="spinner-circle"></div>
+            <div class="spinner-circle"></div>
+        </div>
+        <div class="spinner-text">Loading...</div>
+    </div>
+</div>
+
+<!-- Mobile Menu Toggle Button -->
+<button class="mobile-menu-toggle" id="mobileMenuToggle">
+    <i class="fas fa-bars"></i>
+</button>
+
+<div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>Albany</h2>
+        </div>
+
+        <div class="sidebar-content">
+            <div class="nav-section">
+                <div class="nav-section-title">Main</div>
+                <ul class="sidebar-menu">
+                    <li class="sidebar-menu-item">
+                        <a th:href="@{/admin/dashboard}" class="sidebar-menu-link">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard</span>
+                        </a>
+
+                </ul>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Management</div>
+                <ul class="sidebar-menu">
+                    <li class="sidebar-menu-item">
+                        <a th:href="@{/admin/service-requests}" class="sidebar-menu-link">
+                            <i class="fas fa-clipboard-list"></i>
+                            <span>Service Requests</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="#" class="sidebar-menu-link">
+                            <i class="fas fa-car"></i>
+                            <span>Vehicles</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a th:href="@{/admin/customers}" class="sidebar-menu-link active">
+                            <i class="fas fa-users"></i>
+                            <span>Customers</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a th:href="@{/admin/service-advisors}" class="sidebar-menu-link">
+                            <i class="fas fa-user-tie"></i>
+                            <span>Service Advisors</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a th:href="@{/admin/inventory}" class="sidebar-menu-link">
+                            <i class="fas fa-boxes"></i>
+                            <span>Inventory</span>
+                        </a>
+                    </li>
+
+                    <li class="sidebar-menu-item">
+                        <a href="#" class="sidebar-menu-link">
+                            <i class="fas fa-tools"></i>
+                            <span>Work Items</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="#" class="sidebar-menu-link">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                            <span>Invoices</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="#" class="sidebar-menu-link">
+                            <i class="fas fa-rupee-sign"></i>
+                            <span>Payments</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-name">Arthur Morgan</div>
+                <div class="user-role">Administrator</div>
+            </div>
+            <button class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Page Header -->
+        <header class="page-header">
+            <div class="header-left">
+                <h1>Service Requests</h1>
+                <div class="header-subtitle">
+                    <i class="fas fa-clipboard-list"></i>
+                    Manage service requests and assign service advisors
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn-premium primary" data-bs-toggle="modal" data-bs-target="#addServiceRequestModal">
+                    <i class="fas fa-plus"></i>
+                    Add Service Request
+                </button>
+            </div>
+        </header>
+
+        <!-- Search Box -->
+        <div class="search-box">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search by request ID, customer name, registration number...">
+            <i class="fas fa-search search-icon"></i>
+        </div>
+
+        <!-- Service Requests Table -->
+        <section class="table-section">
+            <div class="table-header">
+                <h3 class="table-title">
+                    <i class="fas fa-clipboard-list"></i>
+                    All Service Requests
+                </h3>
+                <div class="table-actions">
+                    <div class="search-box-sm">
+                        <input type="text" class="search-input-sm" placeholder="Filter items...">
+                        <i class="fas fa-search search-icon-sm"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="premium-table" id="serviceRequestsTable">
+                    <thead>
+                    <tr>
+                        <th>Request ID</th>
+                        <th>Vehicle</th>
+                        <th>Customer</th>
+                        <th>Membership</th>
+                        <th>Service Type</th>
+                        <th>Status</th>
+                        <th>Delivery Date</th>
+                        <th>Advisor</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody id="serviceRequestsTableBody">
+                    <!-- Will be populated dynamically via JavaScript -->
+                    <tr id="loading-row">
+                        <td colspan="9" class="text-center py-4">
+                            <div class="spinner-border text-wine" role="status"></div>
+                            <p class="mt-2">Loading service requests...</p>
+                        </td>
+                    </tr>
+                    <tr id="empty-row" style="display: none;">
+                        <td colspan="9" class="text-center py-4">
+                            <div class="my-5">
+                                <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                                <h5>No service requests found</h5>
+                                <p class="text-muted">Create your first service request to get started</p>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination-container">
+                <ul class="pagination" id="pagination">
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" id="prevBtn" aria-label="Previous">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item active"><a class="page-link" href="#" data-page="1">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#" data-page="2">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#" data-page="3">3</a></li>
+                    <li class="page-item">
+                        <a class="page-link" href="#" id="nextBtn" aria-label="Next">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <p class="footer-text">
+                    &copy; 2025 <span class="footer-brand">Albany</span>. All Rights Reserved.
+                </p>
+            </div>
+        </footer>
+    </main>
+</div>
+
+<!-- Add Service Request Modal -->
+<div class="modal fade modal-premium" id="addServiceRequestModal" tabindex="-1" aria-labelledby="addServiceRequestModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addServiceRequestModalLabel">
+                    <i class="fas fa-plus-circle"></i>
+                    Add New Service Request
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addServiceRequestForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="customerId">Customer <span class="text-danger">*</span></label>
+                            <select class="form-select" id="customerId" name="customerId" required>
+                                <option value="">Select Customer</option>
+                                <!-- Will be populated dynamically -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="vehicleId">Vehicle <span class="text-danger">*</span></label>
+                            <div class="d-flex gap-2">
+                                <select class="form-select" id="vehicleId" name="vehicleId" required disabled>
+                                    <option value="">Select Vehicle</option>
+                                    <!-- Will be populated based on selected customer -->
+                                </select>
+                                <button type="button" class="btn-premium secondary" id="addNewVehicleBtn" disabled>
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="newVehicleForm" style="display: none;" class="mt-3 p-3 border rounded bg-light">
+                        <h5 class="mb-3"><i class="fas fa-car-side me-2"></i>Add New Vehicle</h5>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label" for="vehicleBrand">Brand <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="vehicleBrand" name="vehicleBrand" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="vehicleModel">Model <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="vehicleModel" name="vehicleModel" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label" for="vehicleRegNumber">Registration Number <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="vehicleRegNumber" name="vehicleRegNumber" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="vehicleCategory">Category <span class="text-danger">*</span></label>
+                                <select class="form-select" id="vehicleCategory" name="vehicleCategory" required>
+                                    <option value="">Select Category</option>
+                                    <option value="Car">Car</option>
+                                    <option value="Bike">Bike</option>
+                                    <option value="Truck">Truck</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label" for="vehicleYear">Year <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="vehicleYear" name="vehicleYear" min="1900" max="2099" required>
+                            </div>
+                        </div>
+                        <div class="text-end mt-3">
+                            <button type="button" class="btn-premium secondary" id="cancelNewVehicleBtn">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                            <button type="button" class="btn-premium primary" id="saveNewVehicleBtn">
+                                <i class="fas fa-save"></i> Save Vehicle
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="serviceType">Service Type <span class="text-danger">*</span></label>
+                            <select class="form-select" id="serviceType" name="serviceType" required>
+                                <option value="">Select Service Type</option>
+                                <option value="General Service">General Service</option>
+                                <option value="Oil Change">Oil Change</option>
+                                <option value="Brake Service">Brake Service</option>
+                                <option value="Engine Repair">Engine Repair</option>
+                                <option value="Transmission Service">Transmission Service</option>
+                                <option value="Wheel Alignment">Wheel Alignment</option>
+                                <option value="Battery Replacement">Battery Replacement</option>
+                                <option value="Air Conditioning">Air Conditioning</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="deliveryDate">Expected Delivery Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="deliveryDate" name="deliveryDate" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="description">Additional Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="4" placeholder="Please describe the issue or service required in detail"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-premium secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn-premium primary" id="saveServiceRequestBtn">
+                    <i class="fas fa-save"></i>
+                    Save Service Request
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Assign Service Advisor Modal -->
+<div class="modal fade modal-premium" id="assignAdvisorModal" tabindex="-1" aria-labelledby="assignAdvisorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="assignAdvisorModalLabel">
+                    <i class="fas fa-user-plus"></i>
+                    Assign Service Advisor
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-4 p-3 bg-light rounded-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="vehicle-icon">
+                            <i class="fas fa-car"></i>
+                        </div>
+                        <div>
+                            <h4 class="mb-1" id="assignVehicleName">Vehicle Name</h4>
+                            <div class="d-flex flex-wrap gap-3">
+                                <p class="mb-0"><strong>Registration:</strong> <span id="assignVehicleReg">RB02XY1234</span></p>
+                                <p class="mb-0"><strong>Customer:</strong> <span id="assignCustomerName">Customer Name</span></p>
+                                <p class="mb-0"><strong>Request ID:</strong> <span id="assignRequestId">REQ-1001</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h5 class="mb-3">Select Service Advisor</h5>
+                <div id="advisorsList">
+                    <!-- Will be populated dynamically -->
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-wine" role="status"></div>
+                        <p class="mt-2">Loading service advisors...</p>
+                    </div>
+                </div>
+
+                <input type="hidden" id="selectedRequestId">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-premium secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn-premium primary" id="confirmAssignBtn">
+                    <i class="fas fa-check-circle"></i>
+                    Confirm Assignment
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Service Request Details Modal -->
+<div class="modal fade modal-premium" id="viewServiceRequestModal" tabindex="-1" aria-labelledby="viewServiceRequestModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewServiceRequestModalLabel">
+                    <i class="fas fa-clipboard-list"></i>
+                    Service Request Details
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="service-detail-row">
+                    <div class="service-detail-col">
+                        <div class="detail-label">Request ID</div>
+                        <div class="detail-value" id="viewRequestId">REQ-1001</div>
+                    </div>
+                    <div class="service-detail-col">
+                        <div class="detail-label">Status</div>
+                        <div class="detail-value" id="viewStatus">
+                            <span class="status-badge status-received">
+                                <i class="fas fa-clock"></i> Received
+                            </span>
+                        </div>
+                    </div>
+                    <div class="service-detail-col">
+                        <div class="detail-label">Created Date</div>
+                        <div class="detail-value" id="viewCreatedDate">April 8, 2025</div>
+                    </div>
+                </div>
+
+                <div class="service-detail-row">
+                    <div class="service-detail-col">
+                        <div class="detail-label">Vehicle</div>
+                        <div class="detail-value" id="viewVehicleName">Honda City</div>
+                    </div>
+                    <div class="service-detail-col">
+                        <div class="detail-label">Registration Number</div>
+                        <div class="detail-value" id="viewRegistrationNumber">MH02AB1234</div>
+                    </div>
+                    <div class="service-detail-col">
+                        <div class="detail-label">Vehicle Category</div>
+                        <div class="detail-value" id="viewVehicleCategory">Car</div>
+                    </div>
+                </div>
+
+                <div class="service-detail-row">
+                    <div class="service-detail-col">
+                        <div class="detail-label">Customer</div>
+                        <div class="detail-value" id="viewCustomerName">Rajesh Kumar</div>
+                    </div>
+                    <div class="service-detail-col">
+                        <div class="detail-label">Contact</div>
+                        <div class="detail-value" id="viewCustomerContact">+91 98765 43210</div>
+                    </div>
+                    <div class="service-detail-col">
+                        <div class="detail-label">Membership</div>
+                        <div class="detail-value" id="viewMembership">Premium</div>
+                    </div>
+                </div>
+
+                <div class="service-detail-row">
+                    <div class="service-detail-col">
+                        <div class="detail-label">Service Type</div>
+                        <div class="detail-value" id="viewServiceType">General Service</div>
+                    </div>
+                    <div class="service-detail-col">
+                        <div class="detail-label">Expected Delivery</div>
+                        <div class="detail-value" id="viewDeliveryDate">April 15, 2025</div>
+                    </div>
+                    <div class="service-detail-col">
+                        <div class="detail-label">Service Advisor</div>
+                        <div class="detail-value" id="viewServiceAdvisor">Not Assigned</div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="detail-label">Additional Description</div>
+                    <div class="detail-value" id="viewDescription">
+                        <p>Vehicle is showing check engine light and making unusual noise when accelerating.</p>
+                    </div>
+                </div>
+
+                <div id="materialsSection" style="display: none;">
+                    <h5 class="mt-4 mb-3">Materials Used</h5>
+                    <table class="materials-table" id="materialsTable">
+                        <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Quantity</th>
+                            <th>Unit Price</th>
+                            <th>Total</th>
+                        </tr>
+                        </thead>
+                        <tbody id="materialsTableBody">
+                        <!-- Will be populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-premium secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn-premium primary" id="editServiceRequestBtn">
+                    <i class="fas fa-edit"></i>
+                    Edit
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade success-modal" id="successModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="success-icon-container">
+                    <div class="success-icon-wrapper">
+                        <div class="success-icon">
+                            <i class="fas fa-check"></i>
+                        </div>
+                    </div>
+                </div>
+                <h3 class="success-title" id="successTitle">Success!</h3>
+                <p class="success-message" id="successMessage">Operation completed successfully.</p>
+                <button type="button" class="continue-btn" data-bs-dismiss="modal">
+                    <i class="fas fa-check-circle"></i>
+                    Continue
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- jQuery and Bootstrap JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Service Requests Page JavaScript
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize app
+        initializeApp();
+
+        // Set up event listeners
+        setupEventListeners();
+
+        // Load service requests
+        loadServiceRequests();
+    });
+
+    // Global variables
+    let serviceRequests = [];
+    let customers = [];
+    let serviceAdvisors = [];
+    let vehicles = [];
+    let currentPage = 1;
+    const itemsPerPage = 5;
+
+    // Initialize app
+    function initializeApp() {
+        // Setup mobile menu toggle
+        setupMobileMenu();
+
+        // Setup logout button
+        setupLogout();
+
+        // Set up token-based authentication
+        setupAuthentication();
+
+        // Add CSS for membership filters
+        addMembershipFilterStyles();
+
+        // Set current date if element exists
+        setupDateDisplay();
+    }
+
+    function setupMobileMenu() {
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        if (mobileMenuToggle) {
+            mobileMenuToggle.addEventListener('click', function() {
+                document.getElementById('sidebar').classList.toggle('active');
+            });
+        }
+    }
+
+    function setupLogout() {
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', function() {
+                // Show confirmation dialog
+                if (confirm('Are you sure you want to logout?')) {
+                    // Clear storage
+                    localStorage.removeItem("jwt-token");
+                    sessionStorage.removeItem("jwt-token");
+                    localStorage.removeItem("user-role");
+                    localStorage.removeItem("user-name");
+                    sessionStorage.removeItem("user-role");
+                    sessionStorage.removeItem("user-name");
+
+                    // Redirect to logout
+                    window.location.href = '/admin/logout';
+                }
+            });
+        }
+    }
+
+    function setupDateDisplay() {
+        const dateElement = document.getElementById('current-date');
+        if (dateElement) {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const today = new Date();
+            dateElement.textContent = today.toLocaleDateString('en-US', options);
+        }
+    }
+
+    function setupAuthentication() {
+        // Get token from storage
+        const tokenFromStorage = localStorage.getItem("jwt-token") || sessionStorage.getItem("jwt-token");
+
+        if (tokenFromStorage) {
+            console.log("Token found in storage");
+
+            // Check if current URL already has a token parameter
+            const currentUrl = new URL(window.location.href);
+            const urlToken = currentUrl.searchParams.get('token');
+
+            // If URL doesn't have the token, update all navigation links
+            if (!urlToken) {
+                // Add token to all sidebar navigation links
+                document.querySelectorAll('.sidebar-menu-link').forEach(link => {
+                    const href = link.getAttribute('href');
+                    if (href && !href.includes('token=')) {
+                        const separator = href.includes('?') ? '&' : '?';
+                        link.setAttribute('href', href + separator + 'token=' + encodeURIComponent(tokenFromStorage));
+                    }
+                });
+
+                // Add token to current URL for refresh protection
+                if (window.location.href.indexOf('token=') === -1) {
+                    const separator = window.location.href.indexOf('?') === -1 ? '?' : '&';
+                    const newUrl = window.location.href + separator + 'token=' + encodeURIComponent(tokenFromStorage);
+                    window.history.replaceState({}, document.title, newUrl);
+                }
+            }
+        } else {
+            console.warn("No token found in storage");
+            // If no token is found, redirect to login
+            window.location.href = '/admin/login?error=session_expired';
+        }
+    }
+
+    function setupEventListeners() {
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('keyup', function() {
+                filterServiceRequests(this.value);
+            });
+        }
+
+        // Table search
+        const tableSearchInput = document.querySelector('.search-input-sm');
+        if (tableSearchInput) {
+            tableSearchInput.addEventListener('keyup', function() {
+                filterTableRows(this.value);
+            });
+        }
+
+        // Pagination
+        document.querySelectorAll('#pagination .page-link').forEach(link => {
+            if (link.id !== 'prevBtn' && link.id !== 'nextBtn') {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const page = parseInt(this.getAttribute('data-page'));
+                    changePage(page);
+                });
+            }
+        });
+
+        const prevBtn = document.getElementById('prevBtn');
+        if (prevBtn) {
+            prevBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (currentPage > 1) {
+                    changePage(currentPage - 1);
+                }
+            });
+        }
+
+        const nextBtn = document.getElementById('nextBtn');
+        if (nextBtn) {
+            nextBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const totalPages = Math.ceil(serviceRequests.length / itemsPerPage);
+                if (currentPage < totalPages) {
+                    changePage(currentPage + 1);
+                }
+            });
+        }
+
+        // Add Service Request Form
+        const customerIdSelect = document.getElementById('customerId');
+        if (customerIdSelect) {
+            customerIdSelect.addEventListener('change', function() {
+                const customerId = this.value;
+                const addNewVehicleBtn = document.getElementById('addNewVehicleBtn');
+
+                if (customerId) {
+                    loadVehiclesForCustomer(customerId);
+                    // Enable the "Add Vehicle" button
+                    if (addNewVehicleBtn) {
+                        addNewVehicleBtn.disabled = false;
+                    }
+                } else {
+                    resetVehicleDropdown();
+                    // Disable the "Add Vehicle" button
+                    if (addNewVehicleBtn) {
+                        addNewVehicleBtn.disabled = true;
+                    }
+                    // Hide new vehicle form if it's open
+                    document.getElementById('newVehicleForm').style.display = 'none';
+                    // Remove required attributes from new vehicle form
+                    removeRequiredFromVehicleForm();
+                }
+            });
+        }
+
+        // Add New Vehicle button
+        const addNewVehicleBtn = document.getElementById('addNewVehicleBtn');
+        if (addNewVehicleBtn) {
+            addNewVehicleBtn.addEventListener('click', function() {
+                document.getElementById('newVehicleForm').style.display = 'block';
+                // Add required attributes when form is shown
+                addRequiredToVehicleForm();
+            });
+        }
+
+        // Cancel New Vehicle button
+        const cancelNewVehicleBtn = document.getElementById('cancelNewVehicleBtn');
+        if (cancelNewVehicleBtn) {
+            cancelNewVehicleBtn.addEventListener('click', function() {
+                document.getElementById('newVehicleForm').style.display = 'none';
+                // Fixed function name - was calling removeRequiredToVehicleForm
+                removeRequiredFromVehicleForm();
+            });
+        }
+
+        // Save New Vehicle button
+        const saveNewVehicleBtn = document.getElementById('saveNewVehicleBtn');
+        if (saveNewVehicleBtn) {
+            saveNewVehicleBtn.addEventListener('click', function() {
+                saveNewVehicle();
+            });
+        }
+
+        // Save service request
+        const saveServiceRequestBtn = document.getElementById('saveServiceRequestBtn');
+        if (saveServiceRequestBtn) {
+            saveServiceRequestBtn.addEventListener('click', function() {
+                saveServiceRequest();
+            });
+        }
+
+        // Assign service advisor
+        const confirmAssignBtn = document.getElementById('confirmAssignBtn');
+        if (confirmAssignBtn) {
+            confirmAssignBtn.addEventListener('click', function() {
+                assignServiceAdvisor();
+            });
+        }
+    }
+
+    // Helper functions to add/remove required attributes
+    function addRequiredToVehicleForm() {
+        // Add required attribute to all form elements
+        document.getElementById('vehicleBrand').setAttribute('required', 'required');
+        document.getElementById('vehicleModel').setAttribute('required', 'required');
+        document.getElementById('vehicleRegNumber').setAttribute('required', 'required');
+        document.getElementById('vehicleCategory').setAttribute('required', 'required');
+        document.getElementById('vehicleYear').setAttribute('required', 'required');
+    }
+
+    function removeRequiredFromVehicleForm() {
+        // Remove required attribute from all form elements
+        document.getElementById('vehicleBrand').removeAttribute('required');
+        document.getElementById('vehicleModel').removeAttribute('required');
+        document.getElementById('vehicleRegNumber').removeAttribute('required');
+        document.getElementById('vehicleCategory').removeAttribute('required');
+        document.getElementById('vehicleYear').removeAttribute('required');
+    }
+
+    // API Functions
+    function getToken() {
+        return localStorage.getItem('jwt-token') || sessionStorage.getItem('jwt-token');
+    }
+
+    function showSpinner() {
+        const spinnerOverlay = document.getElementById('spinnerOverlay');
+        if (spinnerOverlay) {
+            spinnerOverlay.classList.add('show');
+        }
+    }
+
+    function hideSpinner() {
+        const spinnerOverlay = document.getElementById('spinnerOverlay');
+        if (spinnerOverlay) {
+            spinnerOverlay.classList.remove('show');
+        }
+    }
+
+    function loadServiceRequests() {
+        showSpinner();
+
+        // API call to get service requests
+        fetch('/admin/service-requests/api/all', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + getToken()
+            }
+        })
+            .then(response => {
+                if (response.status === 401) {
+                    window.location.href = '/admin/login?error=session_expired';
+                    throw new Error('Session expired');
+                }
+                return response.json();
+            })
+            .then(data => {
+                hideSpinner();
+
+                const loadingRow = document.getElementById('loading-row');
+                if (loadingRow) {
+                    loadingRow.style.display = 'none';
+                }
+
+                if (data && data.length > 0) {
+                    // Process membership status for each service request
+                    serviceRequests = data.map(request => {
+                        // If membershipStatus is not set, determine it based on some criteria
+                        if (!request.membershipStatus) {
+                            // Example: Set as Premium if customer has a specific flag or property
+                            request.membershipStatus = request.isPremiumCustomer ? 'Premium' : 'Standard';
+                        }
+                        return request;
+                    });
+
+                    renderServiceRequests();
+                    setupPagination();
+
+                    // Add membership filters after loading data
+                    addMembershipFilters();
+                } else {
+                    const emptyRow = document.getElementById('empty-row');
+                    if (emptyRow) {
+                        emptyRow.style.display = 'table-row';
+                    }
+                }
+            })
+            .catch(error => {
+                hideSpinner();
+
+                const loadingRow = document.getElementById('loading-row');
+                if (loadingRow) {
+                    loadingRow.style.display = 'none';
+                }
+
+                const emptyRow = document.getElementById('empty-row');
+                if (emptyRow) {
+                    emptyRow.style.display = 'table-row';
+                }
+
+                console.error('Error loading service requests:', error);
+                showToast('Failed to load service requests. Please try again.', 'error');
+            });
+
+        // Load customers and service advisors for forms
+        loadCustomers();
+        loadServiceAdvisors();
+    }
+
+    function loadCustomers() {
+        fetch('/admin/api/customers', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + getToken()
+            }
+        })
+            .then(response => {
+                if (response.status === 401) {
+                    window.location.href = '/admin/login?error=session_expired';
+                    throw new Error('Session expired');
+                }
+                return response.json();
+            })
+            .then(data => {
+                customers = data;
+                populateCustomerDropdown();
+            })
+            .catch(error => {
+                console.error('Error loading customers:', error);
+            });
+    }
+
+    function loadServiceAdvisors() {
+        fetch('/admin/service-advisors/api/advisors', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + getToken()
+            }
+        })
+            .then(response => {
+                if (response.status === 401) {
+                    window.location.href = '/admin/login?error=session_expired';
+                    throw new Error('Session expired');
+                }
+                return response.json();
+            })
+            .then(data => {
+                serviceAdvisors = data;
+            })
+            .catch(error => {
+                console.error('Error loading service advisors:', error);
+            });
+    }
+
+    function loadVehiclesForCustomer(customerId) {
+        const vehicleDropdown = document.getElementById('vehicleId');
+        if (vehicleDropdown) {
+            vehicleDropdown.disabled = true;
+            vehicleDropdown.innerHTML = '<option value="">Loading vehicles...</option>';
+
+            const token = getToken();
+
+            // Use the correct admin API endpoint
+            fetch(`/admin/api/customers/${customerId}/vehicles${token ? `?token=${token}` : ''}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+                .then(response => {
+                    if (response.status === 401) {
+                        window.location.href = '/admin/login?error=session_expired';
+                        throw new Error('Session expired');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    vehicles = data;
+                    populateVehicleDropdown(data);
+                })
+                .catch(error => {
+                    console.error('Error loading vehicles:', error);
+                    resetVehicleDropdown('Error loading vehicles. Please try again.');
+                });
+        }
+    }
+
+    function renderServiceRequests() {
+        const tableBody = document.getElementById('serviceRequestsTableBody');
+        if (!tableBody) return;
+
+        // Clear table body except for special rows
+        const rows = tableBody.querySelectorAll('tr:not(#loading-row):not(#empty-row)');
+        rows.forEach(row => row.remove());
+
+        if (serviceRequests.length === 0) {
+            const emptyRow = document.getElementById('empty-row');
+            if (emptyRow) {
+                emptyRow.style.display = 'table-row';
+            }
+            return;
+        }
+
+        const emptyRow = document.getElementById('empty-row');
+        if (emptyRow) {
+            emptyRow.style.display = 'none';
+        }
+
+        // Get requests for current page
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = Math.min(startIndex + itemsPerPage, serviceRequests.length);
+        const displayedRequests = serviceRequests.slice(startIndex, endIndex);
+
+        // Create rows for displayed requests
+        displayedRequests.forEach(request => {
+            // Determine membership status if not already set
+            const membershipStatus = request.membershipStatus || 'Standard';
+
+            const row = document.createElement('tr');
+            row.className = 'active-page';
+            row.innerHTML = `
+        <td>REQ-${request.requestId}</td>
+        <td>
+            <div class="vehicle-info">
+                <div class="vehicle-icon">
+                    <i class="fas fa-${request.vehicleCategory === 'Bike' ? 'motorcycle' : 'car-side'}"></i>
+                </div>
+                <div class="vehicle-details">
+                    <h5>${request.vehicleName || request.vehicleBrand + ' ' + request.vehicleModel}</h5>
+                    <p>${request.registrationNumber}</p>
+                </div>
+            </div>
+        </td>
+        <td>
+            <div class="person-info">
+                <div class="person-details">
+                    <h5>${request.customerName}</h5>
+                    <p>${request.customerEmail || ''}</p>
+                </div>
+            </div>
+        </td>
+        <td>
+            <span class="membership-badge membership-${membershipStatus.toLowerCase()}">
+                <i class="fas fa-${membershipStatus === 'Premium' ? 'crown' : 'user'}"></i>
+                ${membershipStatus}
+            </span>
+        </td>
+        <td>${request.serviceType}</td>
+        <td>
+            <span class="status-badge status-${request.status.toLowerCase()}">
+                <i class="fas fa-${
+                request.status === 'Received' ? 'clock' :
+                    request.status === 'Diagnosis' ? 'stethoscope' :
+                        request.status === 'Repair' ? 'wrench' :
+                            'check-circle'
+            }"></i>
+                ${request.status}
+            </span>
+        </td>
+        <td>${formatDate(request.deliveryDate)}</td>
+        <td>${request.serviceAdvisorName || 'Not Assigned'}</td>
+        <td class="table-actions-cell">
+            <button class="btn-table-action view-btn" title="View Details" onclick="showServiceRequestDetails(${request.requestId})">
+                <i class="fas fa-eye"></i>
+            </button>
+            ${!request.serviceAdvisorId ?
+                `<button class="btn-assign" title="Assign Advisor" onclick="showAssignAdvisorModal(${request.requestId})">
+                    <i class="fas fa-user-plus"></i> Assign
+                </button>` :
+                `<button class="btn-table-action edit-btn" title="Edit Request">
+                    <i class="fas fa-edit"></i>
+                </button>`
+            }
+        </td>
+    `;
+
+            tableBody.appendChild(row);
+        });
+    }
+
+    function filterByMembership(membershipType) {
+        const filteredRequests = membershipType === 'All'
+            ? serviceRequests
+            : serviceRequests.filter(request =>
+                (request.membershipStatus || 'Standard') === membershipType);
+
+        currentPage = 1;
+        renderServiceRequests(filteredRequests);
+        setupPagination();
+    }
+
+    function addMembershipFilters() {
+        const tableActions = document.querySelector('.table-actions');
+
+        if (tableActions) {
+            // Check if filters already exist
+            if (!tableActions.querySelector('.membership-filters')) {
+                const filterDiv = document.createElement('div');
+                filterDiv.className = 'membership-filters ms-2';
+                filterDiv.innerHTML = `
+            <div class="btn-group" role="group" aria-label="Membership filters">
+                <button type="button" class="btn btn-sm btn-outline-secondary active" data-filter="All">All</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-filter="Standard">Standard</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-filter="Premium">Premium</button>
+            </div>
+        `;
+
+                tableActions.appendChild(filterDiv);
+
+                // Add event listeners to filter buttons
+                const filterButtons = filterDiv.querySelectorAll('button');
+                filterButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        // Remove active class from all buttons
+                        filterButtons.forEach(btn => btn.classList.remove('active'));
+                        // Add active class to clicked button
+                        this.classList.add('active');
+                        // Filter service requests
+                        filterByMembership(this.getAttribute('data-filter'));
+                    });
+                });
+            }
+        }
+    }
+
+    function addMembershipFilterStyles() {
+        // Check if styles already exist
+        if (!document.getElementById('membership-filter-styles')) {
+            const style = document.createElement('style');
+            style.id = 'membership-filter-styles';
+            style.textContent = `
+        .membership-filters {
+            display: flex;
+            align-items: center;
+        }
+
+        .membership-filters .btn-group {
+            box-shadow: var(--shadow-sm);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .membership-filters .btn {
+            padding: 0.4rem 0.75rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border-radius: 0;
+        }
+
+        .membership-filters .btn.active {
+            background-color: var(--wine);
+            color: white;
+            border-color: var(--wine);
+        }
+    `;
+            document.head.appendChild(style);
+        }
+    }
+
+    function filterServiceRequests(searchTerm) {
+        if (!searchTerm) {
+            renderServiceRequests();
+            return;
+        }
+
+        searchTerm = searchTerm.toLowerCase();
+
+        const filteredRequests = serviceRequests.filter(request => {
+            return (
+                `req-${request.requestId}`.toLowerCase().includes(searchTerm) ||
+                (request.customerName && request.customerName.toLowerCase().includes(searchTerm)) ||
+                (request.registrationNumber && request.registrationNumber.toLowerCase().includes(searchTerm)) ||
+                (request.vehicleName && request.vehicleName.toLowerCase().includes(searchTerm)) ||
+                (request.vehicleBrand && request.vehicleBrand.toLowerCase().includes(searchTerm)) ||
+                (request.vehicleModel && request.vehicleModel.toLowerCase().includes(searchTerm)) ||
+                (request.serviceType && request.serviceType.toLowerCase().includes(searchTerm)) ||
+                (request.status && request.status.toLowerCase().includes(searchTerm))
+            );
+        });
+
+        currentPage = 1;
+        renderServiceRequests(filteredRequests);
+        setupPagination();
+    }
+
+    function filterTableRows(searchTerm) {
+        if (!searchTerm) {
+            // Reset all rows
+            document.querySelectorAll('#serviceRequestsTable tbody tr').forEach(row => {
+                row.style.display = '';
+            });
+            return;
+        }
+
+        searchTerm = searchTerm.toLowerCase();
+
+        document.querySelectorAll('#serviceRequestsTable tbody tr').forEach(row => {
+            const text = row.textContent.toLowerCase();
+            if (text.includes(searchTerm)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    function changePage(page) {
+        currentPage = page;
+        renderServiceRequests();
+        updatePaginationUI();
+    }
+
+    function setupPagination() {
+        const totalPages = Math.ceil(serviceRequests.length / itemsPerPage);
+        const pagination = document.getElementById('pagination');
+        if (!pagination) return;
+
+        // Clear existing page links except for prev/next buttons
+        const pageLinks = pagination.querySelectorAll('.page-link:not(#prevBtn):not(#nextBtn)');
+        pageLinks.forEach(link => link.parentElement.remove());
+
+        // Add page links
+        const prevBtn = document.getElementById('prevBtn');
+        const prevBtnParent = prevBtn ? prevBtn.parentElement : null;
+        const nextBtn = document.getElementById('nextBtn');
+        const nextBtnParent = nextBtn ? nextBtn.parentElement : null;
+
+        if (prevBtnParent && nextBtnParent) {
+            for (let i = 1; i <= totalPages; i++) {
+                const li = document.createElement('li');
+                li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+                li.innerHTML = `<a class="page-link" href="#" data-page="${i}">${i}</a>`;
+
+                // Add event listener
+                li.querySelector('.page-link').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    changePage(i);
+                });
+
+                pagination.insertBefore(li, nextBtnParent);
+            }
+
+            // Update prev/next buttons
+            prevBtnParent.classList.toggle('disabled', currentPage === 1);
+            nextBtnParent.classList.toggle('disabled', currentPage === totalPages || totalPages === 0);
+        }
+    }
+
+    function updatePaginationUI() {
+        const totalPages = Math.ceil(serviceRequests.length / itemsPerPage);
+        const pagination = document.getElementById('pagination');
+        if (!pagination) return;
+
+        // Update active page
+        const pageItems = pagination.querySelectorAll('.page-item');
+        pageItems.forEach(item => {
+            const pageLink = item.querySelector('.page-link');
+            if (pageLink && pageLink.id !== 'prevBtn' && pageLink.id !== 'nextBtn') {
+                const page = parseInt(pageLink.getAttribute('data-page'));
+                item.classList.toggle('active', page === currentPage);
+            }
+        });
+
+        // Update prev/next buttons
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+
+        if (prevBtn) {
+            prevBtn.parentElement.classList.toggle('disabled', currentPage === 1);
+        }
+
+        if (nextBtn) {
+            nextBtn.parentElement.classList.toggle('disabled', currentPage === totalPages || totalPages === 0);
+        }
+    }
+
+    function populateCustomerDropdown() {
+        const dropdown = document.getElementById('customerId');
+        if (!dropdown) return;
+
+        dropdown.innerHTML = '<option value="">Select Customer</option>';
+
+        customers.forEach(customer => {
+            const option = document.createElement('option');
+            option.value = customer.customerId || customer.id;
+            option.textContent = `${customer.firstName || ''} ${customer.lastName || ''} (${customer.membershipStatus || 'Standard'})`;
+            dropdown.appendChild(option);
+        });
+    }
+
+    function populateVehicleDropdown(vehicles) {
+        const dropdown = document.getElementById('vehicleId');
+        if (!dropdown) return;
+
+        dropdown.innerHTML = '<option value="">Select Vehicle</option>';
+
+        if (vehicles && vehicles.length > 0) {
+            vehicles.forEach(vehicle => {
+                const option = document.createElement('option');
+                option.value = vehicle.vehicleId || vehicle.id;
+                option.textContent = `${vehicle.brand || vehicle.make} ${vehicle.model} (${vehicle.registrationNumber})`;
+                dropdown.appendChild(option);
+            });
+            dropdown.disabled = false;
+        } else {
+            dropdown.innerHTML = '<option value="">No vehicles found</option>';
+            dropdown.disabled = true;
+        }
+    }
+
+    function resetVehicleDropdown(message = 'Select Customer First') {
+        const dropdown = document.getElementById('vehicleId');
+        if (dropdown) {
+            dropdown.innerHTML = `<option value="">${message}</option>`;
+            dropdown.disabled = true;
+        }
+    }
+
+    // Function to save a new vehicle
+    function saveNewVehicle() {
+        const customerId = document.getElementById('customerId').value;
+
+        if (!customerId) {
+            showToast('Please select a customer first', 'error');
+            return;
+        }
+
+        // Validate form
+        const brand = document.getElementById('vehicleBrand').value;
+        const model = document.getElementById('vehicleModel').value;
+        const regNumber = document.getElementById('vehicleRegNumber').value;
+        const category = document.getElementById('vehicleCategory').value;
+        const year = document.getElementById('vehicleYear').value;
+
+        if (!brand || !model || !regNumber || !category || !year) {
+            showToast('Please fill all required fields', 'error');
+            return;
+        }
+
+        const vehicleData = {
+            brand: brand,
+            model: model,
+            registrationNumber: regNumber,
+            category: category,
+            year: parseInt(year)
+        };
+
+        showSpinner();
+
+        // Get the token
+        const token = getToken();
+
+        // IMPORTANT: Use the correct endpoint URL - use the admin API path
+        fetch(`/admin/api/customers/${customerId}/vehicles${token ? `?token=${token}` : ''}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(vehicleData)
+        })
+            .then(response => {
+                if (response.status === 401) {
+                    window.location.href = '/admin/login?error=session_expired';
+                    throw new Error('Session expired');
+                }
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.error || 'Failed to create vehicle');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                hideSpinner();
+
+                console.log('Vehicle created successfully:', data);
+
+                // Add new vehicle to the vehicles array
+                vehicles.push(data);
+
+                // Update dropdown and select the new vehicle
+                const dropdown = document.getElementById('vehicleId');
+                const option = document.createElement('option');
+                option.value = data.vehicleId;
+                option.textContent = `${data.brand} ${data.model} (${data.registrationNumber})`;
+                dropdown.appendChild(option);
+                dropdown.value = data.vehicleId;
+
+                // Hide the form
+                document.getElementById('newVehicleForm').style.display = 'none';
+
+                // Remove required attributes
+                removeRequiredFromVehicleForm();
+
+                // Clear form fields
+                document.getElementById('vehicleBrand').value = '';
+                document.getElementById('vehicleModel').value = '';
+                document.getElementById('vehicleRegNumber').value = '';
+                document.getElementById('vehicleCategory').value = '';
+                document.getElementById('vehicleYear').value = '';
+
+                showToast('Vehicle added successfully', 'success');
+            })
+            .catch(error => {
+                hideSpinner();
+                console.error('Error saving vehicle:', error);
+                showToast('Failed to create vehicle: ' + error.message, 'error');
+            });
+    }
+
+    function saveServiceRequest() {
+        const form = document.getElementById('addServiceRequestForm');
+        if (!form) return;
+
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+
+        const serviceRequest = {
+            customerId: document.getElementById('customerId').value,
+            vehicleId: document.getElementById('vehicleId').value,
+            serviceType: document.getElementById('serviceType').value,
+            deliveryDate: document.getElementById('deliveryDate').value,
+            additionalDescription: document.getElementById('description').value
+        };
+
+        showSpinner();
+
+        // Fixed URL - use direct path instead of apiBaseUrl variable
+        fetch('/admin/service-requests/api', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + getToken()
+            },
+            body: JSON.stringify(serviceRequest)
+        })
+            .then(response => {
+                if (response.status === 401) {
+                    window.location.href = '/admin/login?error=session_expired';
+                    throw new Error('Session expired');
+                }
+
+                if (!response.ok) {
+                    throw new Error('Failed to create service request');
+                }
+                return response.json();
+            })
+            .then(data => {
+                hideSpinner();
+
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addServiceRequestModal'));
+                if (modal) {
+                    modal.hide();
+                }
+
+                // Reset form
+                form.reset();
+
+                // Show success message
+                showSuccessModal('Service Request Created', 'The service request has been created successfully.');
+
+                // Add new request to the list and refresh
+                serviceRequests.unshift(data);
+                renderServiceRequests();
+                setupPagination();
+            })
+            .catch(error => {
+                hideSpinner();
+                console.error('Error creating service request:', error);
+                showToast('Failed to create service request. Please try again.', 'error');
+            });
+    }
+
+    function showAssignAdvisorModal(requestId) {
+        const request = serviceRequests.find(req => req.requestId === requestId);
+
+        if (!request) {
+            console.error('Request not found:', requestId);
+            return;
+        }
+
+        // Set request details in the modal
+        document.getElementById('assignVehicleName').textContent = request.vehicleName || `${request.vehicleBrand} ${request.vehicleModel}`;
+        document.getElementById('assignVehicleReg').textContent = request.registrationNumber;
+        document.getElementById('assignCustomerName').textContent = request.customerName;
+        document.getElementById('assignRequestId').textContent = `REQ-${request.requestId}`;
+        document.getElementById('selectedRequestId').value = request.requestId;
+
+        // Populate service advisors
+        populateServiceAdvisorsList();
+
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('assignAdvisorModal'));
+        modal.show();
+    }
+
+    function populateServiceAdvisorsList() {
+        const advisorsList = document.getElementById('advisorsList');
+        if (!advisorsList) return;
+
+        if (!serviceAdvisors || serviceAdvisors.length === 0) {
+            advisorsList.innerHTML = `
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            No service advisors available. Please add service advisors first.
+        </div>
+    `;
+            return;
+        }
+
+        let html = '';
+
+        serviceAdvisors.forEach(advisor => {
+            // Calculate workload percentage (example)
+            const workloadPercentage = advisor.workloadPercentage ||
+                (advisor.activeServices ? Math.min(Math.round((advisor.activeServices / 10) * 100), 100) : 0);
+
+            // Determine workload class
+            let workloadClass = 'bg-success';
+            if (workloadPercentage > 75) {
+                workloadClass = 'bg-danger';
+            } else if (workloadPercentage > 50) {
+                workloadClass = 'bg-warning';
+            }
+
+            const name = advisor.firstName && advisor.lastName ?
+                `${advisor.firstName} ${advisor.lastName}` : advisor.name || 'Unnamed Advisor';
+
+            const initials = (advisor.firstName ? advisor.firstName.charAt(0) : '') +
+                (advisor.lastName ? advisor.lastName.charAt(0) : '');
+
+            html += `
+        <div class="advisor-card" data-advisor-id="${advisor.advisorId || advisor.id}">
+            <div class="advisor-avatar">
+                ${initials || 'SA'}
+            </div>
+            <div class="advisor-info">
+                <div class="advisor-name">${name}</div>
+                <div class="advisor-meta">
+                    <div class="advisor-stat">
+                        <i class="fas fa-clipboard-list"></i>
+                        ${advisor.activeServices || 0} active requests
+                    </div>
+                    <div class="advisor-stat">
+                        <i class="fas fa-id-badge"></i>
+                        ${advisor.formattedId || `SA-${String(advisor.advisorId || 0).padStart(3, '0')}`}
+                    </div>
+                </div>
+                <div class="advisor-services">
+                    <i class="fas fa-tools"></i>
+                    ${advisor.specialization || 'General Service'}
+                </div>
+                <div class="advisor-workload">
+                    <div class="progress">
+                        <div class="progress-bar ${workloadClass}" role="progressbar"
+                            style="width: ${workloadPercentage}%"
+                            aria-valuenow="${workloadPercentage}" aria-valuemin="0" aria-valuemax="100">
+                        </div>
+                    </div>
+                    <div class="workload-text">
+                        Workload: ${workloadPercentage}%
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+        });
+
+        advisorsList.innerHTML = html;
+
+        // Add click event to select advisor
+        document.querySelectorAll('.advisor-card').forEach(card => {
+            card.addEventListener('click', function() {
+                document.querySelectorAll('.advisor-card').forEach(c => c.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+        });
+    }
+
+    function assignServiceAdvisor() {
+        const requestId = document.getElementById('selectedRequestId').value;
+        const selectedAdvisor = document.querySelector('.advisor-card.selected');
+
+        if (!selectedAdvisor) {
+            showToast('Please select a service advisor', 'error');
+            return;
+        }
+
+        const advisorId = selectedAdvisor.getAttribute('data-advisor-id');
+
+        showSpinner();
+
+        fetch(`/admin/service-requests/api/${requestId}/assign?advisorId=${advisorId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + getToken()
+            }
+        })
+            .then(response => {
+                if (response.status === 401) {
+                    window.location.href = '/admin/login?error=session_expired';
+                    throw new Error('Session expired');
+                }
+
+                if (!response.ok) {
+                    throw new Error('Failed to assign service advisor');
+                }
+                return response.json();
+            })
+            .then(data => {
+                hideSpinner();
+
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('assignAdvisorModal'));
+                if (modal) {
+                    modal.hide();
+                }
+
+                // Show success message
+                showSuccessModal('Service Advisor Assigned', 'The service advisor has been assigned successfully.');
+
+                // Update request in the list
+                const index = serviceRequests.findIndex(req => req.requestId === parseInt(requestId));
+                if (index !== -1) {
+                    serviceRequests[index] = data;
+                    renderServiceRequests();
+                }
+            })
+            .catch(error => {
+                hideSpinner();
+                console.error('Error assigning service advisor:', error);
+                showToast('Failed to assign service advisor. Please try again.', 'error');
+            });
+    }
+
+    // Function to show service request details - needs to be globally accessible for onclick handlers
+    window.showServiceRequestDetails = function(requestId) {
+        const request = serviceRequests.find(req => req.requestId === requestId);
+
+        if (!request) {
+            console.error('Request not found:', requestId);
+            return;
+        }
+
+        // Set request details in the modal
+        document.getElementById('viewRequestId').textContent = `REQ-${request.requestId}`;
+
+        // Set status with appropriate badge
+        const statusElement = document.getElementById('viewStatus');
+        statusElement.innerHTML = `
+    <span class="status-badge status-${request.status.toLowerCase()}">
+        <i class="fas fa-${
+            request.status === 'Received' ? 'clock' :
+                request.status === 'Diagnosis' ? 'stethoscope' :
+                    request.status === 'Repair' ? 'wrench' :
+                        'check-circle'
+        }"></i>
+        ${request.status}
+    </span>
+`;
+
+        document.getElementById('viewCreatedDate').textContent = formatDate(request.createdAt || new Date().toISOString());
+        document.getElementById('viewVehicleName').textContent = request.vehicleName || `${request.vehicleBrand} ${request.vehicleModel}`;
+        document.getElementById('viewRegistrationNumber').textContent = request.registrationNumber;
+        document.getElementById('viewVehicleCategory').textContent = request.vehicleCategory || 'Car';
+        document.getElementById('viewCustomerName').textContent = request.customerName;
+        document.getElementById('viewCustomerContact').textContent = request.customerPhone || 'N/A';
+
+        // Set membership with appropriate badge
+        const membershipElement = document.getElementById('viewMembership');
+        const membershipStatus = request.membershipStatus || 'Standard';
+        membershipElement.innerHTML = `
+    <span class="membership-badge membership-${membershipStatus.toLowerCase()}">
+        <i class="fas fa-${membershipStatus === 'Premium' ? 'crown' : 'user'}"></i>
+        ${membershipStatus}
+    </span>
+`;
+
+        document.getElementById('viewServiceType').textContent = request.serviceType;
+        document.getElementById('viewDeliveryDate').textContent = formatDate(request.deliveryDate);
+        document.getElementById('viewServiceAdvisor').textContent = request.serviceAdvisorName || 'Not Assigned';
+        document.getElementById('viewDescription').textContent = request.additionalDescription || 'No additional description provided.';
+
+        // Show materials section if available
+        const materialsSection = document.getElementById('materialsSection');
+        if (materialsSection) {
+            if (request.materials && request.materials.length > 0) {
+                materialsSection.style.display = 'block';
+                populateMaterialsTable(request.materials);
+            } else {
+                materialsSection.style.display = 'none';
+            }
+        }
+
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('viewServiceRequestModal'));
+        modal.show();
+    };
+
+    // Function to show assign advisor modal - needs to be globally accessible for onclick handlers
+    window.showAssignAdvisorModal = function(requestId) {
+        showAssignAdvisorModal(requestId);
+    };
+
+    function populateMaterialsTable(materials) {
+        const tableBody = document.getElementById('materialsTableBody');
+        if (!tableBody) return;
+
+        tableBody.innerHTML = '';
+
+        let totalCost = 0;
+
+        materials.forEach(material => {
+            const row = document.createElement('tr');
+            const itemTotal = material.quantity * material.unitPrice;
+            totalCost += itemTotal;
+
+            row.innerHTML = `
+        <td>${material.name}</td>
+        <td>${material.quantity}</td>
+        <td>₹${material.unitPrice.toFixed(2)}</td>
+        <td>₹${itemTotal.toFixed(2)}</td>
+    `;
+
+            tableBody.appendChild(row);
+        });
+
+        // Add total row
+        const totalRow = document.createElement('tr');
+        totalRow.className = 'fw-bold';
+        totalRow.innerHTML = `
+    <td colspan="3" class="text-end">Total</td>
+    <td>₹${totalCost.toFixed(2)}</td>
+`;
+
+        tableBody.appendChild(totalRow);
+    }
+
+    function showSuccessModal(title, message) {
+        document.getElementById('successTitle').textContent = title;
+        document.getElementById('successMessage').textContent = message;
+
+        const modal = new bootstrap.Modal(document.getElementById('successModal'));
+        modal.show();
+    }
+
+    function showToast(message, type = 'success') {
+        // Create toast container if it doesn't exist
+        let toastContainer = document.querySelector('.toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+            document.body.appendChild(toastContainer);
+        }
+
+        // Create toast element
+        const toastId = 'toast-' + Date.now();
+        const toastHTML = `
+    <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" id="${toastId}">
+        <div class="toast-header">
+            <strong class="me-auto">${type === 'success' ? 'Success' : 'Error'}</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            ${message}
+        </div>
+    </div>
+`;
+
+        toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+
+        // Initialize and show toast
+        const toastElement = document.getElementById(toastId);
+        const toast = new bootstrap.Toast(toastElement, {
+            autohide: true,
+            delay: 5000
+        });
+        toast.show();
+
+        // Remove toast after it's hidden
+        toastElement.addEventListener('hidden.bs.toast', function() {
+            toastElement.remove();
+        });
+    }
+
+    function formatDate(dateString) {
+        if (!dateString) return 'N/A';
+
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        return new Date(dateString).toLocaleDateString('en-US', options);
+    }
+</script>
+
+</body>
+</html>

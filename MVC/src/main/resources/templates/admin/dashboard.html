@@ -1,0 +1,2863 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alba Motors - Admin Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts - Baloo Bhaijaan 2 -->
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        :root {
+            --dutch-white: #EFFBBB; /* Dutch White */
+            --dutch-white-light: #f5ffd4;
+            --dutch-white-dark: #d6e297;
+            --dutch-white-darker: #bfca85;
+            --wine: #722F37;
+            --wine-light: #8a3943;
+            --wine-dark: #5e262e;
+            --wine-darker: #491d23;
+            --wine-gradient: linear-gradient(145deg, #722F37 0%, #5e262e 100%);
+            --wine-gradient-hover: linear-gradient(145deg, #8a3943 0%, #722F37 100%);
+            --dutch-white-gradient: linear-gradient(145deg, #EFFFBB 0%, #d6e297 100%);
+            --white: #ffffff;
+            --light-bg: #f8f9fa;
+            --light-gray: #e9ecef;
+            --medium-gray: #adb5bd;
+            --dark-gray: #495057;
+            --danger: #ef5350;
+            --warning: #ffca28;
+            --success: #66bb6a;
+            --info: #42a5f5;
+
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 8px rgba(0,0,0,0.1);
+            --shadow-lg: 0 8px 16px rgba(0,0,0,0.1);
+            --shadow-xl: 0 12px 24px rgba(0,0,0,0.15);
+
+            --radius-sm: 0.25rem;
+            --radius-md: 0.5rem;
+            --radius-lg: 1rem;
+
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            font-family: 'Baloo Bhaijaan 2', sans-serif;
+            background-color: #f8f9fa;
+            color: var(--dark-gray);
+            min-height: 100vh;
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--light-gray);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--wine);
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--wine-light);
+        }
+
+        .app-container {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles - Fixed visibility issues */
+        .sidebar {
+            width: 280px;
+            background: var(--wine-gradient);
+            color: var(--white);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1000;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .sidebar-header {
+            padding: 1.75rem 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sidebar-header h2 {
+            margin-bottom: 0;
+            font-weight: 700;
+            color: var(--white); /* Fixed visibility issue */
+            font-size: 1.75rem;
+            letter-spacing: 0.5px;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2); /* Added for better visibility */
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem 0;
+        }
+
+        .sidebar-content::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar-content::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar-content::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .nav-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .nav-section-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 0.75rem 1.5rem;
+            color: rgba(255, 255, 255, 0.8); /* Improved visibility */
+            font-weight: 600;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar-menu-item {
+            padding: 0 0.75rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .sidebar-menu-link {
+            display: flex;
+            align-items: center;
+            padding: 0.85rem 1rem;
+            color: rgba(255, 255, 255, 0.95); /* Improved visibility */
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .sidebar-menu-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--white);
+        }
+
+        .sidebar-menu-link.active {
+            background-color: var(--dutch-white-light);
+            color: var(--wine);
+            font-weight: 600;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .sidebar-menu-link.active::before {
+            content: '';
+            position: absolute;
+            left: -0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            height: 2rem;
+            width: 4px;
+            background-color: var(--dutch-white-dark);
+            border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+        }
+
+        .sidebar-menu-link i {
+            width: 1.5rem;
+            text-align: center;
+            font-size: 1.1rem;
+            margin-right: 0.75rem;
+        }
+
+        .sidebar-menu-link span {
+            font-size: 1rem;
+            font-weight: 500;
+            color: inherit; /* Ensures text inherits color properly */
+        }
+
+        .sidebar-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--white);
+        }
+
+        .user-role {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.8); /* Improved visibility */
+        }
+
+        .logout-btn {
+            padding: 0.5rem 1rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: var(--radius-md);
+            color: var(--white);
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .logout-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        /* Main Content Styles */
+        .main-content {
+            flex: 1;
+            margin-left: 280px;
+            padding: 2rem;
+            transition: var(--transition);
+            color: var(--dark-gray);
+        }
+
+        /* Header Styles */
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            margin-bottom: 2rem;
+            background-color: transparent;
+            padding: 0;
+            border-radius: 0;
+            box-shadow: none;
+            position: relative;
+            text-align: center;
+        }
+
+        .header-left {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .header-left h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--wine);
+            margin-bottom: 0.5rem;
+            position: relative;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 0 rgba(0,0,0,0.1);
+        }
+
+        .current-date {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1.5rem;
+            background-color: var(--wine);
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 500;
+            color: white;
+            margin-top: 0.5rem;
+            box-shadow: 0 4px 10px rgba(114, 47, 55, 0.3);
+        }
+
+        .current-date i {
+            color: var(--dutch-white-light);
+        }
+
+        /* Stats Overview */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background-color: var(--white);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 10px 25px rgba(114, 47, 55, 0.1), 0 5px 10px rgba(0, 0, 0, 0.05);
+            padding: 1.75rem;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(114, 47, 55, 0.1);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(114, 47, 55, 0.15), 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 0.35rem;
+            background: var(--wine-gradient);
+        }
+
+        .stat-icon {
+            margin-bottom: 1.25rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .stat-icon-inner {
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: 50%;
+            background-color: var(--dutch-white-light);
+            color: var(--wine);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 10px rgba(114, 47, 55, 0.15);
+        }
+
+        .stat-icon::after {
+            content: '';
+            position: absolute;
+            top: -0.5rem;
+            left: -0.5rem;
+            width: 4.5rem;
+            height: 4.5rem;
+            border-radius: 50%;
+            background-color: var(--dutch-white-light);
+            opacity: 0.3;
+            z-index: -1;
+        }
+
+        .stat-title {
+            font-size: 0.95rem;
+            color: var(--medium-gray);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: var(--wine);
+            margin-bottom: 0.5rem;
+            line-height: 1;
+        }
+
+        .stat-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .stat-trend {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius-md);
+            font-weight: 500;
+        }
+
+        .stat-trend.up {
+            background-color: rgba(102, 187, 106, 0.15);
+            color: var(--success);
+        }
+
+        .stat-trend.down {
+            background-color: rgba(239, 83, 80, 0.15);
+            color: var(--danger);
+        }
+
+        .stat-period {
+            color: var(--medium-gray);
+        }
+
+        /* Charts Section */
+        .chart-section {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .chart-card {
+            background-color: var(--white);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 10px 25px rgba(114, 47, 55, 0.1), 0 5px 10px rgba(0, 0, 0, 0.05);
+            padding: 1.75rem;
+            position: relative;
+            transition: var(--transition);
+            border: 1px solid rgba(114, 47, 55, 0.1);
+        }
+
+        .chart-card:hover {
+            box-shadow: 0 15px 30px rgba(114, 47, 55, 0.15), 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--wine);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .chart-title i {
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--dutch-white-light);
+            color: var(--wine);
+            border-radius: var(--radius-sm);
+        }
+
+        .chart-options {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chart-filter {
+            padding: 0.4rem 0.75rem;
+            background-color: var(--light-bg);
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 0.85rem;
+            color: var(--dark-gray);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .chart-filter:hover {
+            background-color: var(--light-gray);
+        }
+
+        .chart-filter.active {
+            background-color: var(--wine);
+            color: var(--white);
+        }
+
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+
+        /* Table Section */
+        .table-section {
+            background-color: var(--white);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 10px 25px rgba(114, 47, 55, 0.1), 0 5px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+            transition: var(--transition);
+            overflow: hidden;
+            border: 1px solid rgba(114, 47, 55, 0.1);
+        }
+
+        .table-section:hover {
+            box-shadow: 0 15px 30px rgba(114, 47, 55, 0.15), 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .table-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--wine);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .table-title i {
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--dutch-white-light);
+            color: var(--wine);
+            border-radius: var(--radius-sm);
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-input {
+            padding: 0.65rem 1rem 0.65rem 2.5rem;
+            border: 1px solid var(--light-gray);
+            border-radius: var(--radius-lg);
+            width: 250px;
+            font-size: 0.9rem;
+            color: var(--dark-gray);
+            transition: var(--transition);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--wine-light);
+            box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--medium-gray);
+            pointer-events: none;
+        }
+
+        .premium-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .premium-table thead th {
+            padding: 1rem 1.5rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--medium-gray);
+            background-color: var(--light-bg);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .premium-table tbody td {
+            padding: 1.25rem 1.5rem;
+            vertical-align: middle;
+            border-bottom: 1px solid var(--light-gray);
+            color: var(--dark-gray);
+            font-size: 0.95rem;
+        }
+
+        .premium-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .premium-table tbody tr {
+            transition: var(--transition);
+        }
+
+        .premium-table tbody tr:hover {
+            background-color: rgba(114, 47, 55, 0.05);
+        }
+
+        /* Customer Cell Styles */
+        .vehicle-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        /* Vehicle Icons Styles */
+        .vehicle-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            background-color: var(--dutch-white-light);
+            color: var(--wine);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .vehicle-icon i.fa-car {
+            font-size: 0.9rem;
+        }
+
+        .vehicle-icon i.fa-motorcycle {
+            font-size: 1.1rem;
+        }
+
+        .vehicle-icon i.fa-truck {
+            font-size: 0.9rem;
+        }
+
+        .vehicle-icon i.fa-truck-pickup {
+            font-size: 0.85rem;
+        }
+
+        .vehicle-icon i.fa-shuttle-van,
+        .vehicle-icon i.fa-bus {
+            font-size: 0.9rem;
+        }
+
+        .vehicle-icon i.fa-car-side,
+        .vehicle-icon i.fa-taxi {
+            font-size: 0.9rem;
+        }
+
+        .vehicle-details h5 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--wine);
+        }
+
+        .vehicle-details p {
+            font-size: 0.8rem;
+            color: var(--medium-gray);
+            margin: 0;
+        }
+
+        .person-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .person-details h5 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--wine);
+        }
+
+        .person-details p {
+            font-size: 0.8rem;
+            color: var(--medium-gray);
+            margin: 0;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 2rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            line-height: 1;
+        }
+
+        .status-pending {
+            background-color: rgba(255, 202, 40, 0.15);
+            color: #d68000;
+        }
+
+        .status-pending i {
+            color: var(--warning);
+        }
+
+        .status-progress {
+            background-color: rgba(66, 165, 245, 0.15);
+            color: #0069c0;
+        }
+
+        .status-progress i {
+            color: var(--info);
+        }
+
+        .status-completed {
+            background-color: rgba(102, 187, 106, 0.15);
+            color: #00701a;
+        }
+
+        .status-completed i {
+            color: var(--success);
+        }
+
+        .price {
+            font-weight: 700;
+            color: var(--wine-dark);
+        }
+
+        .table-actions-cell {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+        }
+
+        /* Button Styles - Redesigned the assign button */
+        .btn-premium {
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius-lg);
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: var(--transition);
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            box-shadow: 0 4px 10px rgba(114, 47, 55, 0.2);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .btn-premium::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: all 0.4s ease;
+            z-index: -1;
+        }
+
+        .btn-premium:hover::after {
+            width: 100%;
+        }
+
+        .btn-premium.sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        .btn-premium.primary {
+            background: var(--wine-gradient);
+            color: white;
+        }
+
+        .btn-premium.primary:hover {
+            box-shadow: 0 6px 15px rgba(114, 47, 55, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Redesigned assign button style */
+        .btn-assign {
+            background: var(--dutch-white-light);
+            color: var(--wine);
+            border: 1px solid var(--dutch-white-dark);
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+            border-radius: var(--radius-lg);
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-assign:hover {
+            background-color: var(--dutch-white);
+            border-color: var(--dutch-white-darker);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-premium.secondary {
+            background-color: var(--white);
+            color: var(--wine);
+            border: 1px solid var(--light-gray);
+        }
+
+        .btn-premium.secondary:hover {
+            background-color: var(--light-bg);
+            border-color: var(--wine-light);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .btn-premium.ghost {
+            background-color: transparent;
+            color: var(--wine);
+            box-shadow: none;
+        }
+
+        .btn-premium.ghost:hover {
+            background-color: rgba(114, 47, 55, 0.05);
+        }
+
+        .btn-icon {
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background-color: var(--white);
+            color: var(--wine);
+            border: 1px solid var(--light-gray);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .btn-icon:hover {
+            background-color: var(--light-bg);
+            border-color: var(--wine-light);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        /* Service Cards Section - Added search functionality */
+        .service-cards-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .service-cards-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--wine);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .service-cards-title i {
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--dutch-white-light);
+            color: var(--wine);
+            border-radius: var(--radius-sm);
+        }
+
+        .service-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .service-card {
+            background-color: var(--white);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 10px 25px rgba(114, 47, 55, 0.1), 0 5px 10px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            transition: var(--transition);
+            border: 1px solid rgba(114, 47, 55, 0.1);
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(114, 47, 55, 0.15), 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .service-card-header {
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: var(--dutch-white-light);
+        }
+
+        .service-card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--wine);
+            margin: 0;
+        }
+
+        .service-card-body {
+            padding: 1.25rem;
+        }
+
+        .service-meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .service-meta-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .service-meta-label {
+            font-size: 0.8rem;
+            color: var(--medium-gray);
+            margin-bottom: 0.25rem;
+        }
+
+        .service-meta-value {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+        }
+
+        .service-card-footer {
+            padding: 1.25rem;
+            border-top: 1px solid var(--light-gray);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .service-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-indicator {
+            width: 0.75rem;
+            height: 0.75rem;
+            border-radius: 50%;
+        }
+
+        .status-indicator.pending {
+            background-color: var(--warning);
+        }
+
+        .status-indicator.progress {
+            background-color: var(--info);
+        }
+
+        .status-indicator.completed {
+            background-color: var(--success);
+        }
+
+        .status-text {
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .status-text.pending {
+            color: #d68000;
+        }
+
+        .status-text.progress {
+            color: #0069c0;
+        }
+
+        .status-text.completed {
+            color: #00701a;
+        }
+
+        /* Modal Styles - Fixed icon issues */
+        .modal-backdrop {
+            background-color: rgba(114, 47, 55, 0.2);
+        }
+
+        .premium-modal .modal-content {
+            border: none;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .premium-modal .modal-header {
+            background: var(--wine-gradient);
+            color: white;
+            border-bottom: none;
+            padding: 1.5rem;
+            position: relative;
+        }
+
+        .premium-modal .modal-title {
+            font-weight: 700;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .premium-modal .modal-title i {
+            width: 2rem;
+            height: 2rem;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .premium-modal .modal-body {
+            padding: 1.75rem;
+        }
+
+        .premium-modal .modal-footer {
+            padding: 1.25rem 1.75rem;
+            border-top: 1px solid var(--light-gray);
+        }
+
+        /* Fixed close button icon */
+        .premium-modal .btn-close {
+            background: rgba(255, 255, 255, 0.2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23FFF'%3E%3Cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3E%3C/svg%3E") center/1em auto no-repeat;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            opacity: 0.8;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .premium-modal .btn-close:hover {
+            opacity: 1;
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .modal-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .modal-section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--wine);
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--light-gray);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Redesigned advisor card for select modal */
+        .advisor-card {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1.25rem;
+            border-radius: var(--radius-md);
+            background-color: var(--light-bg);
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 2px solid transparent;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .advisor-card:hover {
+            background-color: var(--dutch-white-light);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .advisor-card.selected {
+            border-color: var(--wine);
+            background-color: var(--dutch-white-light);
+        }
+
+        .advisor-avatar {
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: 50%;
+            background-color: var(--wine-light);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            box-shadow: 0 3px 8px rgba(114, 47, 55, 0.2);
+        }
+
+        .advisor-info {
+            flex: 1;
+        }
+
+        .advisor-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--wine);
+            margin-bottom: 0.25rem;
+        }
+
+        .advisor-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .advisor-stat {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.9rem;
+            color: var(--dark-gray);
+        }
+
+        .advisor-services {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+            background-color: rgba(114, 47, 55, 0.12);
+            color: var(--wine);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .advisor-workload {
+            margin-top: 0.75rem;
+        }
+
+        .advisor-workload .progress {
+            height: 8px;
+            border-radius: 8px;
+            background-color: rgba(0, 0, 0, 0.05);
+            box-shadow: var(--shadow-sm) inset;
+        }
+
+        .workload-text {
+            font-size: 0.75rem;
+            color: var(--medium-gray);
+            margin-top: 0.25rem;
+        }
+
+        /* Footer */
+        .app-footer {
+            margin-top: 3rem;
+            padding-bottom: 2rem;
+        }
+
+        .footer-content {
+            background: var(--wine-gradient);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-lg);
+            color: white;
+            text-align: center;
+        }
+
+        .footer-text {
+            margin: 0;
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        .footer-brand {
+            font-weight: 600;
+            color: var(--dutch-white-light);
+        }
+
+        /* Pagination Styles */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            padding: 1.5rem;
+            border-top: 1px solid var(--light-gray);
+        }
+
+        .premium-pagination {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            background-color: var(--light-bg);
+            border-radius: var(--radius-lg);
+            padding: 0.3rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .page-item {
+            list-style: none;
+        }
+
+        .page-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: var(--radius-md);
+            color: var(--wine);
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            cursor: pointer;
+            border: none;
+            background-color: transparent;
+        }
+
+        .page-link:hover {
+            background-color: var(--dutch-white-light);
+            color: var(--wine-dark);
+        }
+
+        .page-link.active {
+            background-color: var(--wine);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .page-link.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        /* Fancy Pagination for Completed Services */
+        .fancy-pagination-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .fancy-pagination {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: var(--white);
+            border-radius: 50px;
+            padding: 0.5rem;
+            box-shadow: 0 10px 30px rgba(114, 47, 55, 0.15);
+            border: 1px solid rgba(114, 47, 55, 0.1);
+            position: relative;
+            z-index: 2;
+        }
+
+        .fancy-pagination::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            background: var(--wine-gradient);
+            border-radius: 60px;
+            z-index: -1;
+            opacity: 0.15;
+        }
+
+        .fancy-page-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 2.75rem;
+            height: 2.75rem;
+            border-radius: 50%;
+            color: var(--wine);
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: var(--transition);
+            cursor: pointer;
+            border: none;
+            background-color: transparent;
+            padding: 0 1rem;
+        }
+
+        .fancy-page-link:hover {
+            background-color: var(--dutch-white-light);
+            color: var(--wine-dark);
+        }
+
+        .fancy-page-link.active {
+            background: var(--wine-gradient);
+            color: white;
+            box-shadow: 0 5px 15px rgba(114, 47, 55, 0.3);
+        }
+
+        .fancy-page-link.nav-link {
+            font-size: 1rem;
+        }
+
+        .fancy-page-link.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 991.98px) {
+            .sidebar {
+                width: 5rem;
+                box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+            }
+
+            .sidebar-header h2,
+            .sidebar-menu-link span,
+            .user-info,
+            .nav-section-title,
+            .logout-btn span {
+                display: none;
+            }
+
+            .sidebar-menu-link {
+                justify-content: center;
+                padding: 0.75rem;
+            }
+
+            .sidebar-menu-link i {
+                margin-right: 0;
+                font-size: 1.25rem;
+            }
+
+            .sidebar-menu-link.active::before {
+                left: -0.5rem;
+            }
+
+            .sidebar-footer {
+                justify-content: center;
+                padding: 1rem;
+            }
+
+            .logout-btn {
+                padding: 0.5rem;
+                justify-content: center;
+            }
+
+            .main-content {
+                margin-left: 5rem;
+            }
+
+            .page-header {
+                padding-top: 1rem;
+                padding-bottom: 1rem;
+            }
+
+            .header-left h1 {
+                font-size: 2rem;
+            }
+
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .fancy-pagination-container {
+                flex-direction: column;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .fancy-pagination-info {
+                margin-left: 0;
+            }
+
+            .chart-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .sidebar {
+                z-index: 1050;
+            }
+
+            .stats-row {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-section {
+                grid-template-columns: 1fr;
+            }
+
+            .page-header {
+                padding-top: 0.75rem;
+                padding-bottom: 0.75rem;
+            }
+
+            .header-left h1 {
+                font-size: 1.75rem;
+            }
+
+            .current-date {
+                font-size: 0.9rem;
+                padding: 0.4rem 1.2rem;
+            }
+
+            .table-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .table-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .btn-premium {
+                padding: 0.6rem 1.2rem;
+            }
+
+            .service-cards-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .fancy-page-link {
+                min-width: 2.5rem;
+                height: 2.5rem;
+                padding: 0 0.75rem;
+            }
+
+            .premium-pagination {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 0.5rem;
+                padding: 0.5rem;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .sidebar {
+                width: 0;
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                width: 16rem;
+                transform: translateX(0);
+            }
+
+            .sidebar.active .sidebar-header h2,
+            .sidebar.active .sidebar-menu-link span,
+            .sidebar.active .user-info,
+            .sidebar.active .nav-section-title,
+            .sidebar.active .logout-btn span {
+                display: block;
+            }
+
+            .sidebar.active .sidebar-menu-link {
+                justify-content: flex-start;
+                padding: 0.85rem 1rem;
+            }
+
+            .sidebar.active .sidebar-menu-link i {
+                margin-right: 0.75rem;
+            }
+
+            .sidebar.active .logout-btn {
+                padding: 0.5rem 1rem;
+                justify-content: space-between;
+            }
+
+            .main-content {
+                margin-left: 0;
+                padding: 1.5rem;
+            }
+
+            /* Add a mobile menu toggle button */
+            .mobile-menu-toggle {
+                position: fixed;
+                top: 1rem;
+                left: 1rem;
+                width: 2.5rem;
+                height: 2.5rem;
+                border-radius: 50%;
+                background-color: var(--wine);
+                color: white;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.25rem;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+                cursor: pointer;
+                z-index: 1060;
+            }
+
+            .page-header {
+                margin-top: 3rem;
+            }
+
+            .header-left h1 {
+                font-size: 1.5rem;
+            }
+
+            .premium-table tbody td {
+                padding: 1rem;
+                font-size: 0.85rem;
+            }
+
+            .premium-table thead th {
+                padding: 0.85rem 1rem;
+                font-size: 0.75rem;
+            }
+
+            .vehicle-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .btn-premium.sm {
+                padding: 0.4rem 0.6rem;
+                font-size: 0.75rem;
+            }
+
+            .btn-icon {
+                width: 1.75rem;
+                height: 1.75rem;
+            }
+
+            .table-actions-cell {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .fancy-pagination {
+                flex-wrap: wrap;
+                justify-content: center;
+                padding: 0.5rem;
+            }
+        }
+
+        /* Hide all table rows except the first 5 by default */
+        .premium-table tbody tr {
+            display: none;
+        }
+
+        .premium-table tbody tr.active-page {
+            display: table-row;
+        }
+
+        /* Hide all service cards except the first 3 by default */
+        .service-card {
+            display: none;
+        }
+
+        .service-card.active-page {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <!-- Sidebar - Fixed visibility issues -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>Albany</h2>
+        </div>
+
+        <div class="sidebar-content">
+            <div class="nav-section">
+                <div class="nav-section-title">Main</div>
+                <ul class="sidebar-menu">
+                    <li class="sidebar-menu-item">
+                        <a th:href="@{/admin/dashboard}" class="sidebar-menu-link">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard</span>
+                        </a>
+
+                </ul>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Management</div>
+                <ul class="sidebar-menu">
+                    <li class="sidebar-menu-item">
+                        <a th:href="@{/admin/service-requests}" class="sidebar-menu-link">
+                            <i class="fas fa-clipboard-list"></i>
+                            <span>Service Requests</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="#" class="sidebar-menu-link">
+                            <i class="fas fa-car"></i>
+                            <span>Vehicles</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a th:href="@{/admin/customers}" class="sidebar-menu-link active">
+                            <i class="fas fa-users"></i>
+                            <span>Customers</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a th:href="@{/admin/service-advisors}" class="sidebar-menu-link">
+                            <i class="fas fa-user-tie"></i>
+                            <span>Service Advisors</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a th:href="@{/admin/inventory}" class="sidebar-menu-link">
+                            <i class="fas fa-boxes"></i>
+                            <span>Inventory</span>
+                        </a>
+                    </li>
+
+                    <li class="sidebar-menu-item">
+                        <a href="#" class="sidebar-menu-link">
+                            <i class="fas fa-tools"></i>
+                            <span>Work Items</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="#" class="sidebar-menu-link">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                            <span>Invoices</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="#" class="sidebar-menu-link">
+                            <i class="fas fa-rupee-sign"></i>
+                            <span>Payments</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-name">Arthur Morgan</div>
+                <div class="user-role">Administrator</div>
+            </div>
+            <button class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Page Header -->
+        <header class="page-header">
+            <div class="header-left">
+                <h1>Albany Dashboard</h1>
+                <div class="current-date">
+                    <i class="far fa-calendar-alt"></i>
+                    <span id="current-date">Loading date...</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Error alert if API issues -->
+        <div th:if="${apiError}" class="alert alert-danger" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <span th:text="${apiError}">API Error</span>
+        </div>
+
+        <!-- Stats Overview -->
+        <section class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <div class="stat-icon-inner">
+                        <i class="fas fa-car-side"></i>
+
+                    </div>
+                </div>
+                <h3 class="stat-title">Vehicles Due</h3>
+                <div class="stat-value" th:text="${dashboardStats?.vehiclesDue ?: '0'}">12</div>
+                <div class="stat-info">
+                    <div class="stat-trend up">
+                        <i class="fas fa-arrow-up"></i> 8.3%
+                    </div>
+                    <div class="stat-period">vs last week</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <div class="stat-icon-inner">
+                        <i class="fas fa-wrench"></i>
+                    </div>
+                </div>
+                <h3 class="stat-title">In Progress</h3>
+                <div class="stat-value" th:text="${dashboardStats?.vehiclesInProgress ?: '0'}">8</div>
+                <div class="stat-info">
+                    <div class="stat-trend up">
+                        <i class="fas fa-arrow-up"></i> 12.5%
+                    </div>
+                    <div class="stat-period">vs last week</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <div class="stat-icon-inner">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+                <h3 class="stat-title">Completed</h3>
+                <div class="stat-value" th:text="${dashboardStats?.vehiclesCompleted ?: '0'}">5</div>
+                <div class="stat-info">
+                    <div class="stat-trend down">
+                        <i class="fas fa-arrow-down"></i> 4.2%
+                    </div>
+                    <div class="stat-period">vs last week</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <div class="stat-icon-inner">
+                        <i class="fas fa-rupee-sign"></i>
+                    </div>
+                </div>
+                <h3 class="stat-title">Revenue</h3>
+                <div class="stat-value" th:text="${'₹' + (dashboardStats?.totalRevenue ?: '0')}">₹3,84,000</div>
+                <div class="stat-info">
+                    <div class="stat-trend up">
+                        <i class="fas fa-arrow-up"></i> 15.2%
+                    </div>
+                    <div class="stat-period">vs last week</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Charts Section -->
+        <section class="chart-section">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">
+                        <i class="fas fa-chart-line"></i>
+                        Vehicle Service Trend
+                    </h3>
+                    <div class="chart-options">
+                        <button class="chart-filter">Week</button>
+                        <button class="chart-filter active">Month</button>
+                        <button class="chart-filter">Quarter</button>
+                        <button class="chart-filter">Year</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="serviceChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3 class="chart-title">
+                        <i class="fas fa-chart-pie"></i>
+                        Service Distribution
+                    </h3>
+                    <div class="chart-options">
+                        <button class="chart-filter active">Month</button>
+                        <button class="chart-filter">Year</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="distributionChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Vehicles Due for Service - Redesigned assign button -->
+        <section class="table-section">
+            <div class="table-header">
+                <h3 class="table-title">
+                    <i class="fas fa-car-side"></i>
+                    Vehicles Due for Service
+                </h3>
+                <div class="table-actions">
+                    <div class="search-box">
+                        <input type="text" class="search-input" placeholder="Search vehicles...">
+                        <i class="fas fa-search search-icon"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="premium-table" id="dueTable">
+                    <thead>
+                    <tr>
+                        <th>Vehicle</th>
+                        <th>Customer</th>
+                        <th>Status</th>
+                        <th>Due Date</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="vehicle, iterStat : ${dashboardStats?.vehiclesDueList}"
+                        th:class="${iterStat.index < 5 ? 'active-page' : ''}"
+                        th:data-page="${iterStat.count <= 5 ? 1 : (iterStat.count / 5) + 1}">
+                        <td>
+                            <div class="vehicle-info">
+                                <div class="vehicle-icon">
+                                    <i th:class="${vehicle.category == 'Bike' ? 'fas fa-motorcycle' : 'fas fa-car-side'}"></i>
+                                </div>
+                                <div class="vehicle-details">
+                                    <h5 th:text="${vehicle.vehicleName}">Vehicle Name</h5>
+                                    <p th:text="'Reg: ' + ${vehicle.registrationNumber}">Reg: Number</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="person-info">
+                                <div class="person-details">
+                                    <h5 th:text="${vehicle.customerName}">Customer Name</h5>
+                                    <p th:text="${vehicle.customerEmail}">customer@example.com</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status-badge status-pending">
+                                <i class="fas fa-clock"></i>
+                                <span th:text="${vehicle.status}">Pending</span>
+                            </span>
+                        </td>
+                        <td th:text="${#temporals.format(vehicle.dueDate, 'MMM dd, yyyy')}">Date</td>
+                        <td class="table-actions-cell">
+                            <button class="btn-assign"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#singleAssignModal"
+                                    th:data-vehicle-name="${vehicle.vehicleName}"
+                                    th:data-vehicle-reg="${vehicle.registrationNumber}"
+                                    th:data-customer-name="${vehicle.customerName}">
+                                <i class="fas fa-user-plus"></i>
+                                Assign
+                            </button>
+                        </td>
+                    </tr>
+                    <!-- If no data, show empty state -->
+                    <tr th:if="${#lists.isEmpty(dashboardStats?.vehiclesDueList)}">
+                        <td colspan="5" class="text-center py-4">
+                            <div class="no-data-message">
+                                <i class="fas fa-car fa-3x mb-3 text-muted"></i>
+                                <h5>No vehicles due for service</h5>
+                                <p class="text-muted">All vehicles are currently serviced or no pending service requests.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination for Due Table -->
+            <div class="pagination-container">
+                <ul class="premium-pagination" id="dueTablePagination">
+                    <li class="page-item">
+                        <button class="page-link disabled" id="duePrevBtn">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                    </li>
+                    <li class="page-item">
+                        <button class="page-link active" data-page="1">1</button>
+                    </li>
+                    <li class="page-item">
+                        <button class="page-link" data-page="2">2</button>
+                    </li>
+                    <li class="page-item">
+                        <button class="page-link" id="dueNextBtn">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Vehicles In Service -->
+        <section class="table-section">
+            <div class="table-header">
+                <h3 class="table-title">
+                    <i class="fas fa-wrench"></i>
+                    Vehicles Under Service
+                </h3>
+                <div class="table-actions">
+                    <div class="search-box">
+                        <input type="text" class="search-input" placeholder="Search vehicles...">
+                        <i class="fas fa-search search-icon"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="premium-table" id="serviceTable">
+                    <thead>
+                    <tr>
+                        <th>Vehicle</th>
+                        <th>Service Advisor</th>
+                        <th>Status</th>
+                        <th>Start Date</th>
+                        <th>Est. Completion</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="vehicle, iterStat : ${dashboardStats?.vehiclesInServiceList}"
+                        th:class="${iterStat.index < 5 ? 'active-page' : ''}"
+                        th:data-page="${iterStat.count <= 5 ? 1 : (iterStat.count / 5) + 1}">
+                        <td>
+                            <div class="vehicle-info">
+                                <div class="vehicle-icon">
+                                    <i th:class="${vehicle.category == 'Bike' ? 'fas fa-motorcycle' : 'fas fa-car-side'}"></i>
+                                </div>
+                                <div class="vehicle-details">
+                                    <h5 th:text="${vehicle.vehicleName}">Vehicle Name</h5>
+                                    <p th:text="'Reg: ' + ${vehicle.registrationNumber}">Reg: Number</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="person-info">
+                                <div class="person-details">
+                                    <h5 th:text="${vehicle.serviceAdvisorName}">Advisor Name</h5>
+                                    <p th:text="'ID: ' + ${vehicle.serviceAdvisorId}">ID: SA-1023</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status-badge status-progress">
+                                <i class="fas fa-spinner"></i>
+                                <span th:text="${vehicle.status}">In Progress</span>
+                            </span>
+                        </td>
+                        <td th:text="${#temporals.format(vehicle.startDate, 'MMM dd, yyyy')}">Mar 24, 2025</td>
+                        <td th:text="${#temporals.format(vehicle.estimatedCompletionDate, 'MMM dd, yyyy')}">Mar 27, 2025</td>
+                        <td class="table-actions-cell">
+                            <button class="btn-premium sm primary"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#vehicleServiceDetailsModal">
+                                <i class="fas fa-eye"></i>
+                                Details
+                            </button>
+                        </td>
+                    </tr>
+                    <!-- If no data, show empty state -->
+                    <tr th:if="${#lists.isEmpty(dashboardStats?.vehiclesInServiceList)}">
+                        <td colspan="6" class="text-center py-4">
+                            <div class="no-data-message">
+                                <i class="fas fa-wrench fa-3x mb-3 text-muted"></i>
+                                <h5>No vehicles currently in service</h5>
+                                <p class="text-muted">There are no vehicles currently being serviced.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination for Service Table -->
+            <div class="pagination-container">
+                <ul class="premium-pagination" id="serviceTablePagination">
+                    <li class="page-item">
+                        <button class="page-link disabled" id="servicePrevBtn">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                    </li>
+                    <li class="page-item">
+                        <button class="page-link active" data-page="1">1</button>
+                    </li>
+                    <li class="page-item">
+                        <button class="page-link" data-page="2">2</button>
+                    </li>
+                    <li class="page-item">
+                        <button class="page-link" id="serviceNextBtn">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Completed Services - Added search functionality -->
+        <section>
+            <div class="service-cards-header">
+                <h3 class="service-cards-title">
+                    <i class="fas fa-check-circle"></i>
+                    Completed Vehicles
+                </h3>
+                <div class="search-box">
+                    <input type="text" class="search-input" id="completedServiceSearch" placeholder="Search completed services...">
+                    <i class="fas fa-search search-icon"></i>
+                </div>
+            </div>
+
+            <div class="service-cards-grid" id="completedServicesGrid">
+                <div th:each="service, iterStat : ${dashboardStats?.completedServicesList}"
+                     th:class="${'service-card' + (iterStat.index < 3 ? ' active-page' : '')}"
+                     th:data-page="${iterStat.count <= 3 ? 1 : (iterStat.count / 3) + 1}">
+                    <div class="service-card-header">
+                        <h4 class="service-card-title">
+                            <i th:class="${service.vehicleName.contains('Bike') || service.vehicleName.contains('motorcycle') ? 'fas fa-motorcycle' : 'fas fa-car-side'}"></i>
+                            <span th:text="${service.vehicleName}">Vehicle Name</span>
+                        </h4>
+                        <div class="service-status">
+                            <div class="status-indicator completed"></div>
+                            <div class="status-text completed">Completed</div>
+                        </div>
+                    </div>
+                    <div class="service-card-body">
+                        <div class="service-meta">
+                            <div class="service-meta-item">
+                                <div class="service-meta-label">Registration</div>
+                                <div class="service-meta-value" th:text="${service.registrationNumber}">DL07KL1234</div>
+                            </div>
+                            <div class="service-meta-item">
+                                <div class="service-meta-label">Completed Date</div>
+                                <div class="service-meta-value" th:text="${#temporals.format(service.completedDate, 'MMM dd, yyyy')}">Mar 24, 2025</div>
+                            </div>
+                            <div class="service-meta-item">
+                                <div class="service-meta-label">Customer</div>
+                                <div class="service-meta-value" th:text="${service.customerName}">Amit Verma</div>
+                            </div>
+                            <div class="service-meta-item">
+                                <div class="service-meta-label">Service Advisor</div>
+                                <div class="service-meta-value" th:text="${service.serviceAdvisorName}">Deepak Sharma</div>
+                            </div>
+                        </div>
+                        <div class="price" th:text="${'Total Cost: ₹' + service.totalCost}">Total Cost: ₹42,550</div>
+                    </div>
+                    <div class="service-card-footer">
+                        <button class="btn-premium sm secondary view-service-details-btn"
+                                th:data-service-id="${service.serviceId}"
+                                data-bs-toggle="modal"
+                                data-bs-target="#completedServiceDetailsModal">
+                            <i class="fas fa-eye"></i>
+                            View Details
+                        </button>
+                        <button class="btn-premium sm primary generate-invoice-btn"
+                                th:data-service-id="${service.serviceId}"
+                                th:data-has-invoice="${service.hasInvoice}"
+                                data-bs-toggle="modal"
+                                data-bs-target="#generateInvoiceModal">
+                            <i class="fas fa-file-invoice"></i>
+                            Generate Invoice
+                        </button>
+                    </div>
+                </div>
+                <!-- If no data, show empty state -->
+                <div th:if="${#lists.isEmpty(dashboardStats?.completedServicesList)}" class="text-center py-5">
+                    <i class="fas fa-check-circle fa-3x text-muted mb-3"></i>
+                    <h5>No completed services found</h5>
+                    <p class="text-muted">There are no completed service requests available.</p>
+                </div>
+            </div>
+
+            <!-- Fancy Pagination for Completed Services -->
+            <div class="fancy-pagination-container">
+                <div class="fancy-pagination" id="completedServicesPagination">
+                    <button class="fancy-page-link nav-link disabled" id="completedPrevBtn">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="fancy-page-link active" data-page="1">1</button>
+                    <button class="fancy-page-link" data-page="2">2</button>
+                    <button class="fancy-page-link" data-page="3">3</button>
+                    <button class="fancy-page-link nav-link" id="completedNextBtn">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <p class="footer-text">
+                    &copy; 2025 <span class="footer-brand">Albany</span>. All Rights Reserved.
+                </p>
+            </div>
+        </footer>
+    </main>
+</div>
+
+<!-- MODALS -->
+
+<!-- Redesigned Single Assign Advisor Modal -->
+<div class="modal fade premium-modal" id="singleAssignModal" tabindex="-1" aria-labelledby="singleAssignModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="singleAssignModalLabel">
+                    <i class="fas fa-user-plus"></i>
+                    Assign Service Advisor
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form>
+                <div class="modal-body">
+                    <div class="mb-4 p-3 bg-light rounded-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="vehicle-icon">
+                                <i class="fas fa-car"></i>
+                            </div>
+                            <div>
+                                <h4 class="mb-1 vehicle-name">Maruti Swift</h4>
+                                <div class="d-flex flex-wrap gap-3">
+                                    <p class="mb-0"><strong>Registration:</strong> <span class="vehicle-reg">DL01AB1234</span></p>
+                                    <p class="mb-0"><strong>Customer:</strong> <span class="customer-name">Rahul Sharma</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-section">
+                        <div class="modal-section-title">
+                            <i class="fas fa-user-tie"></i> Available Service Advisors
+                        </div>
+
+                        <div class="advisor-card selected" onclick="selectAdvisor(this)">
+                            <div class="advisor-avatar">VM</div>
+                            <div class="advisor-info">
+                                <div class="advisor-name">Vikram Mehta</div>
+                                <div class="advisor-meta">
+                                    <div class="advisor-stat">
+                                        <i class="fas fa-id-badge"></i> SA-1023
+                                    </div>
+                                    <div class="advisor-stat">
+                                        <i class="fas fa-star text-warning"></i> 4.8/5 Rating
+                                    </div>
+                                </div>
+                                <div class="advisor-services">
+                                    <i class="fas fa-car"></i> 4 services in progress
+                                </div>
+                                <div class="advisor-workload mt-2">
+                                    <div class="progress">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 65%;" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    <div class="workload-text">
+                                        <i class="fas fa-info-circle"></i> Current workload: 65%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="advisor-card" onclick="selectAdvisor(this)">
+                            <div class="advisor-avatar">DS</div>
+                            <div class="advisor-info">
+                                <div class="advisor-name">Deepak Sharma</div>
+                                <div class="advisor-meta">
+                                    <div class="advisor-stat">
+                                        <i class="fas fa-id-badge"></i> SA-1045
+                                    </div>
+                                    <div class="advisor-stat">
+                                        <i class="fas fa-star text-warning"></i> 4.6/5 Rating
+                                    </div>
+                                </div>
+                                <div class="advisor-services">
+                                    <i class="fas fa-car"></i> 3 services in progress
+                                </div>
+                                <div class="advisor-workload mt-2">
+                                    <div class="progress">
+                                        <div class="progress-bar bg-info" role="progressbar" style="width: 45%;" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    <div class="workload-text">
+                                        <i class="fas fa-info-circle"></i> Current workload: 45%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="advisor-card" onclick="selectAdvisor(this)">
+                            <div class="advisor-avatar">SK</div>
+                            <div class="advisor-info">
+                                <div class="advisor-name">Sunita Kumar</div>
+                                <div class="advisor-meta">
+                                    <div class="advisor-stat">
+                                        <i class="fas fa-id-badge"></i> SA-1087
+                                    </div>
+                                    <div class="advisor-stat">
+                                        <i class="fas fa-star text-warning"></i> 4.9/5 Rating
+                                    </div>
+                                </div>
+                                <div class="advisor-services">
+                                    <i class="fas fa-car"></i> 1 service in progress
+                                </div>
+                                <div class="advisor-workload mt-2">
+                                    <div class="progress">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 20%;" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    <div class="workload-text">
+                                        <i class="fas fa-info-circle"></i> Current workload: 20%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-premium secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn-premium primary" id="confirmSingleAssignBtn">
+                        <i class="fas fa-check"></i>
+                        Confirm Assignment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Additional modals here (keeping them the same) -->
+
+<!-- jQuery and Bootstrap JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+
+<!-- Custom Scripts -->
+<script>
+    // Function to select service advisor in modal
+    function selectAdvisor(element) {
+        // Remove selected class from all advisor cards
+        document.querySelectorAll('.advisor-card').forEach(card => {
+            card.classList.remove('selected');
+        });
+
+        // Add selected class to clicked card
+        element.classList.add('selected');
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Create mobile menu toggle button for responsive design
+        const mobileToggle = document.createElement('button');
+        mobileToggle.className = 'mobile-menu-toggle';
+        mobileToggle.innerHTML = '<i class="fas fa-bars"></i>';
+        document.body.appendChild(mobileToggle);
+
+        // Toggle sidebar on mobile
+        mobileToggle.addEventListener('click', function() {
+            const sidebar = document.querySelector('.sidebar');
+            sidebar.classList.toggle('active');
+        });
+
+        // Set current date
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const today = new Date();
+        document.getElementById('current-date').textContent = today.toLocaleDateString('en-US', options);
+
+        // Initialize charts with wine and dutch white colors
+        // Line chart for service trends with area
+        const serviceChartCtx = document.getElementById('serviceChart').getContext('2d');
+        const serviceChart = new Chart(serviceChartCtx, {
+            type: 'line',
+            data: {
+                labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                datasets: [
+                    {
+                        label: 'Vehicles Due',
+                        data: [8, 10, 12, 15],
+                        borderColor: '#722F37',
+                        backgroundColor: 'rgba(114, 47, 55, 0.15)',
+                        tension: 0.4,
+                        fill: true,
+                        borderWidth: 2,
+                        pointBackgroundColor: '#722F37',
+                        pointBorderColor: '#fff',
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    },
+                    {
+                        label: 'Completed Services',
+                        data: [5, 8, 7, 10],
+                        borderColor: '#8a3943',
+                        backgroundColor: 'rgba(138, 57, 67, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        borderWidth: 2,
+                        pointBackgroundColor: '#8a3943',
+                        pointBorderColor: '#fff',
+                        pointRadius: 5,
+                        pointHoverRadius: 7
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            font: {
+                                family: "'Baloo Bhaijaan 2', sans-serif",
+                                weight: 500
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        titleColor: '#722F37',
+                        bodyColor: '#495057',
+                        bodyFont: {
+                            family: "'Baloo Bhaijaan 2', sans-serif"
+                        },
+                        titleFont: {
+                            family: "'Baloo Bhaijaan 2', sans-serif",
+                            weight: 600
+                        },
+                        borderColor: 'rgba(114, 47, 55, 0.2)',
+                        borderWidth: 1,
+                        caretPadding: 10,
+                        caretSize: 8,
+                        cornerRadius: 8,
+                        displayColors: true,
+                        padding: 12
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: {
+                            drawBorder: false,
+                            color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                            font: {
+                                family: "'Baloo Bhaijaan 2', sans-serif"
+                            }
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            font: {
+                                family: "'Baloo Bhaijaan 2', sans-serif"
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Doughnut chart for service distribution with wine color scheme
+        const distributionChartCtx = document.getElementById('distributionChart').getContext('2d');
+        const distributionChart = new Chart(distributionChartCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Pending', 'In Progress', 'Completed'],
+                datasets: [{
+                    data: [12, 8, 5],
+                    backgroundColor: [
+                        '#EFFFBB',
+                        '#722F37',
+                        '#66BB6A'
+                    ],
+                    borderColor: [
+                        '#d6e297',
+                        '#5e262e',
+                        '#388E3C'
+                    ],
+                    borderWidth: 1,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 15,
+                            usePointStyle: true,
+                            pointStyle: 'circle',
+                            font: {
+                                family: "'Baloo Bhaijaan 2', sans-serif",
+                                weight: 500
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        titleColor: '#722F37',
+                        bodyColor: '#495057',
+                        bodyFont: {
+                            family: "'Baloo Bhaijaan 2', sans-serif"
+                        },
+                        titleFont: {
+                            family: "'Baloo Bhaijaan 2', sans-serif",
+                            weight: 600
+                        },
+                        borderColor: 'rgba(114, 47, 55, 0.2)',
+                        borderWidth: 1,
+                        caretPadding: 10,
+                        cornerRadius: 8,
+                        displayColors: true,
+                        padding: 12
+                    }
+                }
+            }
+        });
+
+        // Chart filter buttons
+        document.querySelectorAll('.chart-filter').forEach(button => {
+            button.addEventListener('click', function() {
+                const parent = this.closest('.chart-options');
+                parent.querySelectorAll('.chart-filter').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                this.classList.add('active');
+
+                const period = this.textContent.trim().toLowerCase();
+                updateChartData(parent, period);
+            });
+        });
+
+        // Update chart data based on selected period
+        function updateChartData(parent, period) {
+            const chartContainer = parent.closest('.chart-card').querySelector('.chart-container canvas');
+
+            if (chartContainer.id === 'serviceChart') {
+                let labels, data1, data2;
+
+                if (period === 'week') {
+                    labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                    data1 = [2, 3, 4, 3, 5, 2, 1];
+                    data2 = [1, 2, 3, 2, 4, 1, 0];
+                } else if (period === 'month') {
+                    labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+                    data1 = [8, 10, 12, 15];
+                    data2 = [5, 8, 7, 10];
+                } else if (period === 'quarter') {
+                    labels = ['Jan', 'Feb', 'Mar'];
+                    data1 = [30, 35, 40];
+                    data2 = [25, 30, 35];
+                } else if (period === 'year') {
+                    labels = ['Q1', 'Q2', 'Q3', 'Q4'];
+                    data1 = [100, 120, 110, 130];
+                    data2 = [90, 105, 95, 115];
+                }
+
+                serviceChart.data.labels = labels;
+                serviceChart.data.datasets[0].data = data1;
+                serviceChart.data.datasets[1].data = data2;
+                serviceChart.update();
+            } else if (chartContainer.id === 'distributionChart') {
+                let data;
+
+                if (period === 'month') {
+                    data = [12, 8, 5];
+                } else if (period === 'year') {
+                    data = [150, 95, 75];
+                }
+
+                distributionChart.data.datasets[0].data = data;
+                distributionChart.update();
+            }
+        }
+
+        // Set vehicle details in single assign modal
+        document.querySelectorAll('[data-bs-target="#singleAssignModal"]').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const vehicleName = this.getAttribute('data-vehicle-name');
+                const vehicleReg = this.getAttribute('data-vehicle-reg');
+                const customerName = this.getAttribute('data-customer-name');
+
+                document.querySelector('#singleAssignModal .vehicle-name').textContent = vehicleName;
+                document.querySelector('#singleAssignModal .vehicle-reg').textContent = vehicleReg;
+                document.querySelector('#singleAssignModal .customer-name').textContent = customerName;
+            });
+        });
+
+        // Search functionality for completed services
+        document.getElementById('completedServiceSearch').addEventListener('keyup', function() {
+            const searchTerm = this.value.toLowerCase();
+            const serviceCards = document.querySelectorAll('.service-cards-grid .service-card');
+
+            serviceCards.forEach(card => {
+                const vehicleName = card.querySelector('.service-card-title').textContent.toLowerCase();
+                const vehicleReg = card.querySelector('.service-meta-value').textContent.toLowerCase();
+                const customerName = card.querySelectorAll('.service-meta-value')[2].textContent.toLowerCase();
+
+                if (vehicleName.includes(searchTerm) || vehicleReg.includes(searchTerm) || customerName.includes(searchTerm)) {
+                    card.style.display = '';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+
+        // Due Table Pagination
+        const dueRowsPerPage = 5;
+        const dueTotalItems = document.querySelectorAll('#dueTable tbody tr').length;
+        const dueTotalPages = Math.ceil(dueTotalItems / dueRowsPerPage);
+
+        function setDuePage(pageNum) {
+            const prevBtn = document.getElementById('duePrevBtn');
+            const nextBtn = document.getElementById('dueNextBtn');
+            const tableRows = document.querySelectorAll('#dueTable tbody tr');
+
+            // Hide all rows
+            tableRows.forEach(row => {
+                row.classList.remove('active-page');
+            });
+
+            // Show rows for current page
+            const startIndex = (pageNum - 1) * dueRowsPerPage;
+            const endIndex = Math.min(startIndex + dueRowsPerPage, dueTotalItems);
+
+            for (let i = startIndex; i < endIndex; i++) {
+                tableRows[i].classList.add('active-page');
+            }
+
+            // Update pagination buttons states
+            document.querySelectorAll('#dueTablePagination [data-page]').forEach(btn => {
+                btn.classList.remove('active');
+                if (parseInt(btn.getAttribute('data-page')) === pageNum) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Enable/disable prev/next buttons
+            if (pageNum === 1) {
+                prevBtn.classList.add('disabled');
+            } else {
+                prevBtn.classList.remove('disabled');
+            }
+
+            if (pageNum === dueTotalPages) {
+                nextBtn.classList.add('disabled');
+            } else {
+                nextBtn.classList.remove('disabled');
+            }
+        }
+
+        // Service Table Pagination
+        const serviceRowsPerPage = 5;
+        const serviceTotalItems = document.querySelectorAll('#serviceTable tbody tr').length;
+        const serviceTotalPages = Math.ceil(serviceTotalItems / serviceRowsPerPage);
+
+        function setServicePage(pageNum) {
+            const prevBtn = document.getElementById('servicePrevBtn');
+            const nextBtn = document.getElementById('serviceNextBtn');
+            const tableRows = document.querySelectorAll('#serviceTable tbody tr');
+
+            // Hide all rows
+            tableRows.forEach(row => {
+                row.classList.remove('active-page');
+            });
+
+            // Show rows for current page
+            const startIndex = (pageNum - 1) * serviceRowsPerPage;
+            const endIndex = Math.min(startIndex + serviceRowsPerPage, serviceTotalItems);
+
+            for (let i = startIndex; i < endIndex; i++) {
+                tableRows[i].classList.add('active-page');
+            }
+
+            // Update pagination buttons states
+            document.querySelectorAll('#serviceTablePagination [data-page]').forEach(btn => {
+                btn.classList.remove('active');
+                if (parseInt(btn.getAttribute('data-page')) === pageNum) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Enable/disable prev/next buttons
+            if (pageNum === 1) {
+                prevBtn.classList.add('disabled');
+            } else {
+                prevBtn.classList.remove('disabled');
+            }
+
+            if (pageNum === serviceTotalPages) {
+                nextBtn.classList.add('disabled');
+            } else {
+                nextBtn.classList.remove('disabled');
+            }
+        }
+
+        // Completed Services Pagination
+        const completedCardsPerPage = 3;
+        const completedTotalItems = document.querySelectorAll('#completedServicesGrid .service-card').length;
+        const completedTotalPages = Math.ceil(completedTotalItems / completedCardsPerPage);
+
+        function setCompletedPage(pageNum) {
+            const prevBtn = document.getElementById('completedPrevBtn');
+            const nextBtn = document.getElementById('completedNextBtn');
+            const serviceCards = document.querySelectorAll('#completedServicesGrid .service-card');
+
+            // Hide all cards
+            serviceCards.forEach(card => {
+                card.classList.remove('active-page');
+            });
+
+            // Show cards for current page
+            const startIndex = (pageNum - 1) * completedCardsPerPage;
+            const endIndex = Math.min(startIndex + completedCardsPerPage, completedTotalItems);
+
+            for (let i = startIndex; i < endIndex; i++) {
+                serviceCards[i].classList.add('active-page');
+            }
+
+            // Update pagination buttons states
+            document.querySelectorAll('#completedServicesPagination [data-page]').forEach(btn => {
+                btn.classList.remove('active');
+                if (parseInt(btn.getAttribute('data-page')) === pageNum) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Enable/disable prev/next buttons
+            if (pageNum === 1) {
+                prevBtn.classList.add('disabled');
+            } else {
+                prevBtn.classList.remove('disabled');
+            }
+
+            if (pageNum === completedTotalPages) {
+                nextBtn.classList.add('disabled');
+            } else {
+                nextBtn.classList.remove('disabled');
+            }
+        }
+
+        // Set up pagination click events for Due Table
+        document.querySelectorAll('#dueTablePagination [data-page]').forEach(button => {
+            button.addEventListener('click', function() {
+                setDuePage(parseInt(this.getAttribute('data-page')));
+            });
+        });
+
+        document.getElementById('duePrevBtn').addEventListener('click', function() {
+            const activePage = document.querySelector('#dueTablePagination .page-link.active');
+            const currentPage = parseInt(activePage.getAttribute('data-page'));
+            if (currentPage > 1) {
+                setDuePage(currentPage - 1);
+            }
+        });
+
+        document.getElementById('dueNextBtn').addEventListener('click', function() {
+            const activePage = document.querySelector('#dueTablePagination .page-link.active');
+            const currentPage = parseInt(activePage.getAttribute('data-page'));
+            if (currentPage < dueTotalPages) {
+                setDuePage(currentPage + 1);
+            }
+        });
+
+        // Set up pagination click events for Service Table
+        document.querySelectorAll('#serviceTablePagination [data-page]').forEach(button => {
+            button.addEventListener('click', function() {
+                setServicePage(parseInt(this.getAttribute('data-page')));
+            });
+        });
+
+        document.getElementById('servicePrevBtn').addEventListener('click', function() {
+            const activePage = document.querySelector('#serviceTablePagination .page-link.active');
+            const currentPage = parseInt(activePage.getAttribute('data-page'));
+            if (currentPage > 1) {
+                setServicePage(currentPage - 1);
+            }
+        });
+
+        document.getElementById('serviceNextBtn').addEventListener('click', function() {
+            const activePage = document.querySelector('#serviceTablePagination .page-link.active');
+            const currentPage = parseInt(activePage.getAttribute('data-page'));
+            if (currentPage < serviceTotalPages) {
+                setServicePage(currentPage + 1);
+            }
+        });
+
+        // Set up pagination click events for Completed Services
+        document.querySelectorAll('#completedServicesPagination [data-page]').forEach(button => {
+            button.addEventListener('click', function() {
+                setCompletedPage(parseInt(this.getAttribute('data-page')));
+            });
+        });
+
+        document.getElementById('completedPrevBtn').addEventListener('click', function() {
+            const activePage = document.querySelector('#completedServicesPagination .fancy-page-link.active');
+            const currentPage = parseInt(activePage.getAttribute('data-page'));
+            if (currentPage > 1) {
+                setCompletedPage(currentPage - 1);
+            }
+        });
+
+        document.getElementById('completedNextBtn').addEventListener('click', function() {
+            const activePage = document.querySelector('#completedServicesPagination .fancy-page-link.active');
+            const currentPage = parseInt(activePage.getAttribute('data-page'));
+            if (currentPage < completedTotalPages) {
+                setCompletedPage(currentPage + 1);
+            }
+        });
+
+        // Initialize all paginations
+        setDuePage(1);
+        setServicePage(1);
+        setCompletedPage(1);
+
+        // Toast notification function
+        function showToast(message) {
+            // Create toast container if it doesn't exist
+            let toastContainer = document.querySelector('.toast-container');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+                document.body.appendChild(toastContainer);
+            }
+
+            // Create toast element
+            const toastId = 'toast-' + Date.now();
+            const toastHTML = `
+                <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" id="${toastId}" style="background-color: #fff; border-left: 4px solid #722F37; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+                    <div class="toast-header" style="background-color: rgba(114, 47, 55, 0.05); border-bottom: 1px solid rgba(114, 47, 55, 0.1);">
+                        <strong class="me-auto" style="color: #722F37;"><i class="fas fa-check-circle text-success me-2"></i> Success</strong>
+                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                </div>
+            `;
+
+            toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+
+            // Initialize and show toast
+            const toastElement = document.getElementById(toastId);
+            const toast = new bootstrap.Toast(toastElement, {
+                autohide: true,
+                delay: 5000
+            });
+            toast.show();
+
+            // Remove toast after it's hidden
+            toastElement.addEventListener('hidden.bs.toast', function() {
+                toastElement.remove();
+            });
+        }
+
+        // Handle confirm assignment button for single assign
+        document.getElementById('confirmSingleAssignBtn').addEventListener('click', function() {
+            // Get selected advisor
+            const selectedAdvisor = document.querySelector('#singleAssignModal .advisor-card.selected');
+
+            if (selectedAdvisor) {
+                const advisorName = selectedAdvisor.querySelector('.advisor-name').textContent;
+                const vehicleName = document.querySelector('#singleAssignModal .vehicle-name').textContent;
+
+                // Close the modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('singleAssignModal'));
+                modal.hide();
+
+                // Show success message
+                showToast(`${vehicleName} has been successfully assigned to ${advisorName}`);
+            } else {
+                // Show validation message
+                alert('Please select a service advisor');
+            }
+        });
+
+        // Handle logout button
+        document.querySelector('.logout-btn').addEventListener('click', function() {
+            if (confirm('Are you sure you want to logout?')) {
+                // Perform logout (redirect to login page in a real application)
+                window.location.href = '/logout';
+            }
+        });
+    });
+    // Authentication management script - add to all admin pages
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get token from storage
+        const tokenFromStorage = localStorage.getItem("jwt-token") || sessionStorage.getItem("jwt-token");
+
+        if (tokenFromStorage) {
+            console.log("Token found in storage");
+
+            // Check if current URL already has a token parameter
+            const currentUrl = new URL(window.location.href);
+            const urlToken = currentUrl.searchParams.get('token');
+
+            // If URL doesn't have the token, update all navigation links
+            if (!urlToken) {
+                // Add token to all sidebar navigation links
+                document.querySelectorAll('.sidebar-menu-link').forEach(link => {
+                    const href = link.getAttribute('href');
+                    if (href && !href.includes('token=')) {
+                        const separator = href.includes('?') ? '&' : '?';
+                        link.setAttribute('href', href + separator + 'token=' + encodeURIComponent(tokenFromStorage));
+                    }
+                });
+
+                // Consider adding token to current URL for refresh protection
+                // This is optional but can help with refresh issues
+                if (window.location.href.indexOf('token=') === -1) {
+                    const separator = window.location.href.indexOf('?') === -1 ? '?' : '&';
+                    const newUrl = window.location.href + separator + 'token=' + encodeURIComponent(tokenFromStorage);
+                    window.history.replaceState({}, document.title, newUrl);
+                }
+            }
+        } else {
+            console.warn("No token found in storage");
+            // If no token is found, redirect to login
+            window.location.href = '/admin/login?error=session_expired';
+        }
+
+        // Add token to logout button
+        const logoutBtn = document.querySelector('.logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                // Clear storage
+                localStorage.removeItem("jwt-token");
+                sessionStorage.removeItem("jwt-token");
+
+                // Redirect to logout
+                window.location.href = '/admin/logout';
+            });
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Portal - Albany</title>
+    <!-- Bootstrap CSS -->
+    <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css"
+            rel="stylesheet"
+    />
+    <!-- Font Awesome -->
+    <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+            rel="stylesheet"
+    />
+    <!-- Google Fonts - Baloo Bhaijaan 2 -->
+    <link
+            href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;500;600;700;800&display=swap"
+            rel="stylesheet"
+    />
+    <style>
+        :root {
+            --primary-color: #EFFBBB; /* Dutch White */
+            --secondary-color: #722F37; /* Wine */
+            --text-dark: #2D2D2D;
+            --text-light: #FFFFFF;
+            --accent-gold: #D4AF37;
+            --bg-light: #F8F9FA;
+            --border-radius: 10px;
+            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Baloo Bhaijaan 2', sans-serif;
+            height: 100vh;
+            background-color: #F0F0F0;
+            color: var(--text-dark);
+            overflow-x: hidden;
+            background-image: url('https://images.unsplash.com/photo-1497366754035-f200968a6e72?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2069&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(114, 47, 55, 0.9), rgba(45, 45, 45, 0.8));
+            z-index: -1;
+        }
+
+        .admin-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .login-card {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            width: 100%;
+            max-width: 1100px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            position: relative;
+        }
+
+        /* Left Panel - Visual */
+        .panel-visual {
+            background-color: var(--secondary-color);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            padding: 3rem;
+            overflow: hidden;
+            background-image: url('https://images.unsplash.com/photo-1497215842964-222b430dc094?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .panel-visual::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(114, 47, 55, 0.9), rgba(80, 25, 34, 0.85));
+            z-index: 0;
+        }
+
+        .brand-corner {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .brand-logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            text-decoration: none;
+            letter-spacing: 1px;
+            position: relative;
+        }
+
+        .brand-logo::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 40px;
+            height: 3px;
+            background-color: var(--accent-gold);
+            border-radius: 10px;
+        }
+
+        .visual-content {
+            position: relative;
+            z-index: 5;
+            margin-top: auto;
+            margin-bottom: 2rem;
+        }
+
+        .visual-badge {
+            display: inline-block;
+            padding: 0.4rem 1.2rem;
+            background-color: rgba(239, 251, 187, 0.15);
+            color: var(--primary-color);
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 50px;
+            margin-bottom: 1.5rem;
+            letter-spacing: 1px;
+            border: 1px solid rgba(239, 251, 187, 0.3);
+            backdrop-filter: blur(5px);
+        }
+
+        .visual-heading {
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .visual-heading span {
+            display: block;
+            color: var(--accent-gold);
+        }
+
+        .visual-text {
+            font-size: 1rem;
+            color: rgba(239, 251, 187, 0.8);
+            margin-bottom: 2.5rem;
+            line-height: 1.6;
+        }
+
+        .key-features {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.2rem;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.8rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            backdrop-filter: blur(5px);
+            transition: var(--transition);
+        }
+
+        .feature-item:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-3px);
+        }
+
+        .feature-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 38px;
+            height: 38px;
+            background-color: rgba(239, 251, 187, 0.15);
+            border-radius: 10px;
+            color: var(--accent-gold);
+            flex-shrink: 0;
+        }
+
+        .feature-text {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+
+        /* Right Panel - Login Form */
+        .panel-login {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 3rem;
+            background-color: var(--text-light);
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 380px;
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .access-badge {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            background-color: rgba(114, 47, 55, 0.08);
+            color: var(--secondary-color);
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 20px;
+            margin-bottom: 1rem;
+            letter-spacing: 0.5px;
+        }
+
+        .login-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 1rem;
+        }
+
+        .login-subtitle {
+            font-size: 0.95rem;
+            color: #6c757d;
+            max-width: 90%;
+            margin: 0 auto;
+        }
+
+        .form-divider {
+            width: 50px;
+            height: 4px;
+            background: linear-gradient(to right, var(--secondary-color), var(--accent-gold));
+            margin: 1.5rem auto;
+            border-radius: 2px;
+        }
+
+        .form-group {
+            position: relative;
+            margin-bottom: 1.8rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 1.2rem 1.2rem 1.2rem 3.2rem;
+            font-size: 1rem;
+            color: var(--text-dark);
+            background-color: #F5F5F5;
+            border: 1px solid transparent;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            background-color: var(--text-light);
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+        }
+
+        .input-icon {
+            position: absolute;
+            top: 50%;
+            left: 1.2rem;
+            transform: translateY(-50%);
+            color: #adb5bd;
+            font-size: 1.1rem;
+            transition: var(--transition);
+        }
+
+        .form-control:focus + .input-icon {
+            color: var(--secondary-color);
+        }
+
+        .password-toggle {
+            position: absolute;
+            top: 50%;
+            right: 1.2rem;
+            transform: translateY(-50%);
+            color: #adb5bd;
+            cursor: pointer;
+            z-index: 10;
+            transition: var(--transition);
+        }
+
+        .password-toggle:hover {
+            color: var(--secondary-color);
+        }
+
+        .form-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+        }
+
+        .remember-checkbox {
+            width: 1.1rem;
+            height: 1.1rem;
+            margin-right: 0.5rem;
+            accent-color: var(--secondary-color);
+        }
+
+        .remember-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .forgot-link {
+            font-size: 0.9rem;
+            color: var(--secondary-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .forgot-link:hover {
+            color: var(--accent-gold);
+        }
+
+        .btn-login {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--secondary-color), #501922);
+            color: var(--text-light);
+            font-size: 1rem;
+            font-weight: 600;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 5px 15px rgba(114, 47, 55, 0.2);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .btn-login::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: all 0.6s ease;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(114, 47, 55, 0.3);
+        }
+
+        .btn-login:hover::before {
+            left: 100%;
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .btn-text {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8rem;
+        }
+
+        .login-footer {
+            text-align: center;
+        }
+
+        .footer-text {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .footer-link {
+            color: var(--secondary-color);
+            text-decoration: none;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .footer-link:hover {
+            color: var(--accent-gold);
+        }
+
+        .alert {
+            padding: 1rem;
+            border-radius: var(--border-radius);
+            margin-bottom: 1.5rem;
+            background-color: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+            display: none;
+        }
+
+        .alert-icon {
+            margin-right: 0.5rem;
+        }
+
+        .floating-shapes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 0;
+        }
+
+        .shape {
+            position: absolute;
+            background-color: rgba(239, 251, 187, 0.05);
+            border-radius: 50%;
+        }
+
+        .shape-1 {
+            width: 80px;
+            height: 80px;
+            top: 10%;
+            left: 10%;
+            animation: float 8s infinite ease-in-out;
+        }
+
+        .shape-2 {
+            width: 60px;
+            height: 60px;
+            bottom: 20%;
+            right: 15%;
+            animation: float 6s infinite ease-in-out reverse;
+        }
+
+        .shape-3 {
+            width: 40px;
+            height: 40px;
+            bottom: 30%;
+            left: 30%;
+            animation: float 10s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+            50% {
+                transform: translateY(-20px) rotate(10deg);
+            }
+        }
+
+        /* Responsive styles */
+        @media (max-width: 1199.98px) {
+            .visual-heading {
+                font-size: 2.5rem;
+            }
+
+            .key-features {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 991.98px) {
+            .login-card {
+                grid-template-columns: 1fr;
+                max-width: 500px;
+            }
+
+            .panel-visual {
+                display: none;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .admin-container {
+                padding: 1rem;
+            }
+
+            .panel-login {
+                padding: 2rem 1.5rem;
+            }
+
+            .login-title {
+                font-size: 1.8rem;
+            }
+
+            .form-options {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="admin-container">
+    <div class="login-card">
+        <!-- Left Panel - Visual -->
+        <div class="panel-visual">
+            <div class="brand-corner">
+                <a href="#" class="brand-logo">ALBANY</a>
+            </div>
+
+            <div class="floating-shapes">
+                <div class="shape shape-1"></div>
+                <div class="shape shape-2"></div>
+                <div class="shape shape-3"></div>
+            </div>
+
+            <div class="visual-content">
+                <span class="visual-badge">ADMINISTRATOR PORTAL</span>
+                <h1 class="visual-heading">
+                    Complete Control
+                    <span>of Your Services</span>
+                </h1>
+                <p class="visual-text">
+                    Access your comprehensive administrative dashboard to manage service operations,
+                    handle customer requests, and optimize your business workflows with ease.
+                </p>
+
+                <div class="key-features">
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="feature-text">Real-time Analytics Dashboard</div>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <div class="feature-text">User & Access Management</div>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                        <div class="feature-text">Service Request Tracking</div>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                        </div>
+                        <div class="feature-text">Financial Reports & Invoicing</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel - Login Form -->
+        <div class="panel-login">
+            <div class="login-container">
+                <div class="login-header">
+                    <span class="access-badge">SECURE ACCESS</span>
+                    <h2 class="login-title">Administrator Login</h2>
+                    <p class="login-subtitle">
+                        Enter your credentials to access the system dashboard and management tools.
+                    </p>
+                    <div class="form-divider"></div>
+                </div>
+
+                <div class="alert" id="loginAlert">
+                    <i class="fas fa-exclamation-circle alert-icon"></i>
+                    <span id="alertMessage">Invalid email or password. Please try again.</span>
+                </div>
+
+                <!-- Changed form tag to use regular action and GET method -->
+                <!-- Update the form tag in your login.html -->
+                <form action="/admin/login" method="post" id="loginForm">
+                    <div class="form-group">
+                        <input type="email" class="form-control" id="email" name="email" placeholder="Email address" required autocomplete="off" />
+                        <i class="input-icon fas fa-envelope"></i>
+                    </div>
+
+                    <div class="form-group">
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Password" required />
+                        <i class="input-icon fas fa-lock"></i>
+                        <span class="password-toggle" id="togglePassword">
+            <i class="fas fa-eye" id="eyeIcon"></i>
+        </span>
+                    </div>
+
+                    <div class="form-options">
+                        <div class="remember-me">
+                            <input type="checkbox" class="remember-checkbox" id="rememberMe" name="rememberMe" />
+                            <label for="rememberMe" class="remember-label">Remember me</label>
+                        </div>
+
+                        <a href="#" class="forgot-link">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="btn-login">
+        <span class="btn-text">
+            <span>Sign in to Dashboard</span>
+            <i class="fas fa-arrow-right"></i>
+        </span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Check for error parameter in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has("error")) {
+            const errorType = urlParams.get("error");
+
+            // Check for specific error types or provide more helpful messages
+            if (errorType === "invalid_grant" || errorType === "bad_credentials") {
+                $("#alertMessage").text("Invalid password. Please check your password and try again.");
+            } else if (errorType === "invalid_token" || errorType === "invalid_client") {
+                $("#alertMessage").text("Email not found. Please check your email address.");
+            } else if (errorType === "access_denied") {
+                $("#alertMessage").text("Access denied. Your account may not have appropriate permissions.");
+            } else if (errorType === "unauthorized") {
+                $("#alertMessage").text("Your account is not authorized to access this system.");
+            } else if (errorType === "session_expired") {
+                $("#alertMessage").text("Your session has expired. Please log in again.");
+            } else {
+                $("#alertMessage").text("Authentication failed. Please verify your email and password.");
+            }
+
+            $("#loginAlert").show();
+        }
+
+        // Password toggle functionality
+        $("#togglePassword").click(function() {
+            const passwordField = $("#password");
+            const eyeIcon = $("#eyeIcon");
+
+            if (passwordField.attr("type") === "password") {
+                passwordField.attr("type", "text");
+                eyeIcon.removeClass("fa-eye").addClass("fa-eye-slash");
+            } else {
+                passwordField.attr("type", "password");
+                eyeIcon.removeClass("fa-eye-slash").addClass("fa-eye");
+            }
+        });
+
+        // Clear any previous tokens
+        localStorage.removeItem("jwt-token");
+        sessionStorage.removeItem("jwt-token");
+
+        // Handle form submission via AJAX
+        $("#loginForm").submit(function(e) {
+            e.preventDefault(); // Prevent standard form submission
+
+            const email = $("#email").val();
+            const password = $("#password").val();
+            const rememberMe = $("#rememberMe").is(":checked");
+
+            // Basic form validation
+            if (!isValidEmail(email)) {
+                $("#alertMessage").text("Please enter a valid email address.");
+                $("#loginAlert").show();
+                return false;
+            }
+
+            // Password length check
+            if (password.length < 6) {
+                $("#alertMessage").text("Password must be at least 6 characters long.");
+                $("#loginAlert").show();
+                return false;
+            }
+
+            // Show loading button
+            $(".btn-login").html('<span class="spinner-border spinner-border-sm mr-2" role="status" aria-hidden="true"></span> Signing in...');
+            $(".btn-login").prop("disabled", true);
+
+            // Send AJAX request
+            $.ajax({
+                url: "/admin/api/login",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({
+                    email: email,
+                    password: password
+                }),
+                success: function(response) {
+                    // Store token in local storage or session storage based on remember me
+                    const storage = rememberMe ? localStorage : sessionStorage;
+
+                    // Store token and user info in both storages for redundancy
+                    storage.setItem("jwt-token", response.token);
+                    storage.setItem("user-role", response.role);
+                    storage.setItem("user-name", response.firstName + " " + response.lastName);
+                    storage.setItem("user-email", response.email);
+
+                    // Store user info in session storage always
+                    sessionStorage.setItem("jwt-token", response.token);
+
+                    // Add token to redirect URL
+                    window.location.href = "/admin/dashboard?token=" + encodeURIComponent(response.token);
+                },
+                error: function(xhr) {
+                    let errorMsg = "Authentication failed. Please check your credentials.";
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMsg = xhr.responseJSON.message;
+                    }
+                    $("#alertMessage").text(errorMsg);
+                    $("#loginAlert").show();
+
+                    // Reset button state
+                    $(".btn-login").html('<span class="btn-text"><span>Sign in to Dashboard</span><i class="fas fa-arrow-right"></i></span>');
+                    $(".btn-login").prop("disabled", false);
+                }
+            });
+        });
+
+        // Email validation helper function
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+    });
+</script>
+</body>
+</html>

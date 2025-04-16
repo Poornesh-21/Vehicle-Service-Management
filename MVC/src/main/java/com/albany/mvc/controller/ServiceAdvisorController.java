@@ -1,0 +1,227 @@
+package com.albany.mvc.controller;
+
+import com.albany.mvc.dto.ServiceAdvisorDto;
+import com.albany.mvc.service.ServiceAdvisorService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import java.util.Collections;
+import java.util.List;
+
+@Controller
+@RequestMapping("/admin/service-advisors")
+@RequiredArgsConstructor
+@Slf4j
+public class ServiceAdvisorController {
+
+    private final ServiceAdvisorService serviceAdvisorService;
+
+    // This returns the view for the service-advisors page
+    @GetMapping
+    public String serviceAdvisorsPage(
+            @RequestParam(required = false) String token,
+            Model model,
+            HttpServletRequest request) {
+
+        log.info("Accessing service advisors page");
+
+        // Get token from various sources
+        String validToken = getValidToken(token, request);
+
+        if (validToken == null) {
+            log.warn("No valid token found, redirecting to login");
+            return "redirect:/admin/login?error=session_expired";
+        }
+
+        return "admin/serviceAdvisor";
+    }
+
+    // This REST endpoint handles the AJAX request to get all advisors
+    @GetMapping("/api/advisors")
+    @ResponseBody
+    public ResponseEntity<List<ServiceAdvisorDto>> getServiceAdvisorsJson(
+            @RequestParam(required = false) String token,
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            HttpServletRequest request) {
+
+        // Get token from various sources
+        String validToken = getValidToken(token, authHeader, request);
+
+        if (validToken == null) {
+            return ResponseEntity.status(401).body(Collections.emptyList());
+        }
+
+        try {
+            List<ServiceAdvisorDto> serviceAdvisors = serviceAdvisorService.getAllServiceAdvisors(validToken);
+
+            if (serviceAdvisors == null) {
+                return ResponseEntity.ok(Collections.emptyList());
+            }
+
+            log.info("Successfully fetched {} service advisors", serviceAdvisors.size());
+            return ResponseEntity.ok(serviceAdvisors);
+        } catch (Exception e) {
+            log.error("Error fetching service advisors: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).body(Collections.emptyList());
+        }
+    }
+
+    @GetMapping("/{id}")
+    @ResponseBody
+    public ResponseEntity<ServiceAdvisorDto> getServiceAdvisor(
+            @PathVariable Integer id,
+            @RequestParam(required = false) String token,
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            HttpServletRequest request) {
+
+        String validToken = getValidToken(token, authHeader, request);
+
+        if (validToken == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        try {
+            ServiceAdvisorDto advisor = serviceAdvisorService.getServiceAdvisorById(id, validToken);
+
+            if (advisor == null) {
+                return ResponseEntity.notFound().build();
+            }
+
+            return ResponseEntity.ok(advisor);
+        } catch (Exception e) {
+            log.error("Error getting service advisor: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    @PostMapping
+    @ResponseBody
+    public ResponseEntity<ServiceAdvisorDto> createServiceAdvisor(
+            @RequestBody ServiceAdvisorDto advisorDto,
+            @RequestParam(required = false) String token,
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            HttpServletRequest request) {
+
+        String validToken = getValidToken(token, authHeader, request);
+
+        if (validToken == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        try {
+            ServiceAdvisorDto createdAdvisor = serviceAdvisorService.createServiceAdvisor(advisorDto, validToken);
+
+            if (createdAdvisor == null) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            return ResponseEntity.ok(createdAdvisor);
+        } catch (Exception e) {
+            log.error("Error creating service advisor: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).body(null);
+        }
+    }
+
+    @PutMapping("/{id}")
+    @ResponseBody
+    public ResponseEntity<ServiceAdvisorDto> updateServiceAdvisor(
+            @PathVariable Integer id,
+            @RequestBody ServiceAdvisorDto advisorDto,
+            @RequestParam(required = false) String token,
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            HttpServletRequest request) {
+
+        String validToken = getValidToken(token, authHeader, request);
+
+        if (validToken == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        try {
+            ServiceAdvisorDto updatedAdvisor = serviceAdvisorService.updateServiceAdvisor(id, advisorDto, validToken);
+
+            if (updatedAdvisor == null) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            return ResponseEntity.ok(updatedAdvisor);
+        } catch (Exception e) {
+            log.error("Error updating service advisor: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).body(null);
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseBody
+    public ResponseEntity<Void> deleteServiceAdvisor(
+            @PathVariable Integer id,
+            @RequestParam(required = false) String token,
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            HttpServletRequest request) {
+
+        String validToken = getValidToken(token, authHeader, request);
+
+        if (validToken == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        try {
+            boolean deleted = serviceAdvisorService.deleteServiceAdvisor(id, validToken);
+
+            if (!deleted) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            log.error("Error deleting service advisor: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    /**
+     * Gets a valid token from various sources
+     */
+    private String getValidToken(String tokenParam, HttpServletRequest request) {
+        return getValidToken(tokenParam, null, request);
+    }
+
+    /**
+     * Gets a valid token from various sources with Auth header
+     */
+    private String getValidToken(String tokenParam, String authHeader, HttpServletRequest request) {
+        // Check parameter first
+        if (tokenParam != null && !tokenParam.isEmpty()) {
+            log.debug("Using token from parameter");
+            // Store token in session
+            HttpSession session = request.getSession();
+            session.setAttribute("jwt-token", tokenParam);
+            return tokenParam;
+        }
+
+        // Check header next
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            log.debug("Using token from Authorization header");
+            return authHeader.substring(7);
+        }
+
+        // Check session last
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            String sessionToken = (String) session.getAttribute("jwt-token");
+            if (sessionToken != null && !sessionToken.isEmpty()) {
+                log.debug("Using token from session");
+                return sessionToken;
+            }
+        }
+
+        log.warn("No valid token found from any source");
+        return null;
+    }
+}

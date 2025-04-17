@@ -99,26 +99,26 @@ public class AdminController {
         return "admin/serviceAdvisor";
     }
 
-    @GetMapping("/inventory")
-    public String inventory(
-            @RequestParam(required = false) String token,
-            Model model,
-            HttpServletRequest request) {
-        log.info("Accessing inventory page");
-
-        // Get token from various sources
-        String validToken = getValidToken(token, request);
-
-        if (validToken == null) {
-            log.warn("No valid token found, redirecting to login");
-            return "redirect:/admin/login?error=session_expired";
-        }
-
-        // Set the admin's name for the page
-        model.addAttribute("userName", "Arthur Morgan");
-
-        return "admin/inventory";
-    }
+//    @GetMapping("/inventory")
+//    public String inventory(
+//            @RequestParam(required = false) String token,
+//            Model model,
+//            HttpServletRequest request) {
+//        log.info("Accessing inventory page");
+//
+//        // Get token from various sources
+//        String validToken = getValidToken(token, request);
+//
+//        if (validToken == null) {
+//            log.warn("No valid token found, redirecting to login");
+//            return "redirect:/admin/login?error=session_expired";
+//        }
+//
+//        // Set the admin's name for the page
+//        model.addAttribute("userName", "Arthur Morgan");
+//
+//        return "admin/inventory";
+//    }
 
     @GetMapping("/service-requests")
     public String serviceRequests(

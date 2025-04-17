@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
-@RequestMapping("/admin/api/service-advisors")
+@RequestMapping("/admin/service-advisors")
 @RequiredArgsConstructor
 @Slf4j
 public class ServiceAdvisorController {
@@ -248,7 +248,6 @@ public class ServiceAdvisorController {
      * Generate a random password for new service advisors
      */
     private String generateRandomPassword() {
-        // Generate a password in the format: SA2025-XXXNNN (where X is a letter and N is a number)
         final String letters = "ABCDEFGHJKLMNPQRSTUVWXYZ"; // Excluded I and O to avoid confusion
         final String numbers = "123456789"; // Excluded 0 to avoid confusion
 

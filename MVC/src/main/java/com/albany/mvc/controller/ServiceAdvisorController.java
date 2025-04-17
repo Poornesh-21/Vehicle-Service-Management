@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
-@RequestMapping("/admin/service-advisors")
+@RequestMapping("/admin/api/service-advisors")
 @RequiredArgsConstructor
 @Slf4j
 public class ServiceAdvisorController {

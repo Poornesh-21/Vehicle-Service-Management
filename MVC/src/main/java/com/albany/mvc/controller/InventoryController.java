@@ -10,6 +10,7 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
@@ -67,21 +68,36 @@ public class InventoryController {
 
         try {
             HttpHeaders headers = new HttpHeaders();
-            headers.setBearerAuth(validToken);
-            
+
+            // Enhanced logging & handling
+            log.debug("Token value first 10 chars: {}",
+                    validToken.substring(0, Math.min(10, validToken.length())));
+
+            // Direct header setting with bearer prefix
+            headers.set("Authorization", "Bearer " + validToken);
+
+            log.debug("Request headers: {}", headers);
+
             HttpEntity<Void> entity = new HttpEntity<>(headers);
-            
-            // Make the API call to the backend
+
+            // Log full URL for debugging
+            String fullUrl = apiBaseUrl + "/admin/inventory";
+            log.debug("Making request to: {}", fullUrl);
+
             ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(
-                    apiBaseUrl + "/admin/api/inventory",
+                    fullUrl,
                     HttpMethod.GET,
                     entity,
                     new ParameterizedTypeReference<List<Map<String, Object>>>() {}
             );
-            
+
             log.debug("API response for inventory items: {}", response.getStatusCode());
             return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
-            
+
+        } catch (HttpClientErrorException.Forbidden e) {
+            log.error("403 Forbidden response from API. Token might be invalid or expired.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Access denied. Your session may have expired."));
         } catch (Exception e) {
             log.error("Error fetching inventory items: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -106,21 +122,27 @@ public class InventoryController {
 
         try {
             HttpHeaders headers = new HttpHeaders();
-            headers.setBearerAuth(validToken);
-            
+            headers.set("Authorization", "Bearer " + validToken);
+
             HttpEntity<Void> entity = new HttpEntity<>(headers);
-            
-            // Make the API call to the backend
+
+            String fullUrl = apiBaseUrl + "/admin/inventory/stats";
+            log.debug("Making request to: {}", fullUrl);
+
             ResponseEntity<Map<String, Long>> response = restTemplate.exchange(
-                    apiBaseUrl + "/admin/api/inventory/stats",
+                    fullUrl,
                     HttpMethod.GET,
                     entity,
                     new ParameterizedTypeReference<Map<String, Long>>() {}
             );
-            
+
             log.debug("API response for inventory stats: {}", response.getStatusCode());
             return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
-            
+
+        } catch (HttpClientErrorException.Forbidden e) {
+            log.error("403 Forbidden response from API. Token might be invalid or expired.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Access denied. Your session may have expired."));
         } catch (Exception e) {
             log.error("Error fetching inventory stats: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -146,21 +168,26 @@ public class InventoryController {
 
         try {
             HttpHeaders headers = new HttpHeaders();
-            headers.setBearerAuth(validToken);
-            
+            headers.set("Authorization", "Bearer " + validToken);
+
             HttpEntity<Void> entity = new HttpEntity<>(headers);
-            
-            // Make the API call to the backend
+
+            String fullUrl = apiBaseUrl + "/admin/inventory/" + id;
+
             ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
-                    apiBaseUrl + "/admin/api/inventory/" + id,
+                    fullUrl,
                     HttpMethod.GET,
                     entity,
                     new ParameterizedTypeReference<Map<String, Object>>() {}
             );
-            
+
             log.debug("API response for inventory item: {}", response.getStatusCode());
             return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
-            
+
+        } catch (HttpClientErrorException.Forbidden e) {
+            log.error("403 Forbidden response from API. Token might be invalid or expired.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Access denied. Your session may have expired."));
         } catch (Exception e) {
             log.error("Error fetching inventory item: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -186,21 +213,26 @@ public class InventoryController {
 
         try {
             HttpHeaders headers = new HttpHeaders();
-            headers.setBearerAuth(validToken);
-            
+            headers.set("Authorization", "Bearer " + validToken);
+
             HttpEntity<Void> entity = new HttpEntity<>(headers);
-            
-            // Make the API call to the backend
+
+            String fullUrl = apiBaseUrl + "/admin/inventory/" + id + "/usage-history";
+
             ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(
-                    apiBaseUrl + "/admin/api/inventory/" + id + "/usage-history",
+                    fullUrl,
                     HttpMethod.GET,
                     entity,
                     new ParameterizedTypeReference<List<Map<String, Object>>>() {}
             );
-            
+
             log.debug("API response for usage history: {}", response.getStatusCode());
             return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
-            
+
+        } catch (HttpClientErrorException.Forbidden e) {
+            log.error("403 Forbidden response from API. Token might be invalid or expired.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Access denied. Your session may have expired."));
         } catch (Exception e) {
             log.error("Error fetching usage history: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -226,22 +258,29 @@ public class InventoryController {
 
         try {
             HttpHeaders headers = new HttpHeaders();
-            headers.setBearerAuth(validToken);
+            headers.set("Authorization", "Bearer " + validToken);
             headers.setContentType(MediaType.APPLICATION_JSON);
-            
+
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(itemData, headers);
-            
-            // Make the API call to the backend
+
+            String fullUrl = apiBaseUrl + "/admin/inventory";
+            log.debug("Making POST request to: {}", fullUrl);
+            log.debug("Request body: {}", itemData);
+
             ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
-                    apiBaseUrl + "/admin/api/inventory",
+                    fullUrl,
                     HttpMethod.POST,
                     entity,
                     new ParameterizedTypeReference<Map<String, Object>>() {}
             );
-            
+
             log.info("Inventory item created successfully");
             return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
-            
+
+        } catch (HttpClientErrorException.Forbidden e) {
+            log.error("403 Forbidden response from API. Token might be invalid or expired.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Access denied. Your session may have expired."));
         } catch (Exception e) {
             log.error("Error creating inventory item: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -268,22 +307,27 @@ public class InventoryController {
 
         try {
             HttpHeaders headers = new HttpHeaders();
-            headers.setBearerAuth(validToken);
+            headers.set("Authorization", "Bearer " + validToken);
             headers.setContentType(MediaType.APPLICATION_JSON);
-            
+
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(itemData, headers);
-            
-            // Make the API call to the backend
+
+            String fullUrl = apiBaseUrl + "/admin/inventory/" + id;
+
             ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
-                    apiBaseUrl + "/admin/api/inventory/" + id,
+                    fullUrl,
                     HttpMethod.PUT,
                     entity,
                     new ParameterizedTypeReference<Map<String, Object>>() {}
             );
-            
+
             log.info("Inventory item updated successfully");
             return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
-            
+
+        } catch (HttpClientErrorException.Forbidden e) {
+            log.error("403 Forbidden response from API. Token might be invalid or expired.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Access denied. Your session may have expired."));
         } catch (Exception e) {
             log.error("Error updating inventory item: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -309,21 +353,26 @@ public class InventoryController {
 
         try {
             HttpHeaders headers = new HttpHeaders();
-            headers.setBearerAuth(validToken);
-            
+            headers.set("Authorization", "Bearer " + validToken);
+
             HttpEntity<Void> entity = new HttpEntity<>(headers);
-            
-            // Make the API call to the backend
+
+            String fullUrl = apiBaseUrl + "/admin/inventory/" + id;
+
             ResponseEntity<Void> response = restTemplate.exchange(
-                    apiBaseUrl + "/admin/api/inventory/" + id,
+                    fullUrl,
                     HttpMethod.DELETE,
                     entity,
                     Void.class
             );
-            
+
             log.info("Inventory item deleted successfully");
             return ResponseEntity.status(response.getStatusCode()).build();
-            
+
+        } catch (HttpClientErrorException.Forbidden e) {
+            log.error("403 Forbidden response from API. Token might be invalid or expired.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Access denied. Your session may have expired."));
         } catch (Exception e) {
             log.error("Error deleting inventory item: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -349,22 +398,27 @@ public class InventoryController {
 
         try {
             HttpHeaders headers = new HttpHeaders();
-            headers.setBearerAuth(validToken);
+            headers.set("Authorization", "Bearer " + validToken);
             headers.setContentType(MediaType.APPLICATION_JSON);
-            
+
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(usageData, headers);
-            
-            // Make the API call to the backend
+
+            String fullUrl = apiBaseUrl + "/admin/inventory/record-usage";
+
             ResponseEntity<Void> response = restTemplate.exchange(
-                    apiBaseUrl + "/admin/api/inventory/record-usage",
+                    fullUrl,
                     HttpMethod.POST,
                     entity,
                     Void.class
             );
-            
+
             log.info("Material usage recorded successfully");
             return ResponseEntity.status(response.getStatusCode()).build();
-            
+
+        } catch (HttpClientErrorException.Forbidden e) {
+            log.error("403 Forbidden response from API. Token might be invalid or expired.");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Access denied. Your session may have expired."));
         } catch (Exception e) {
             log.error("Error recording material usage: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

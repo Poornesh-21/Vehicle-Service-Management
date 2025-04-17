@@ -2432,7 +2432,14 @@
       })
               .then(response => {
                 if (!response.ok) {
-                  throw new Error(`Server responded with status: ${response.status}`);
+                  // Log the status for debugging
+                  console.error(`Server responded with status: ${response.status}`);
+
+                  // Try to get more detailed error message
+                  return response.text().then(text => {
+                    throw new Error(`Server responded with status: ${response.status}` +
+                            (text ? `, message: ${text}` : ''));
+                  });
                 }
                 return response.json();
               })
@@ -2462,7 +2469,10 @@
               .catch(error => {
                 hideSpinner();
                 console.error('Error creating service advisor:', error);
-                alert('Failed to create service advisor. Please try again.');
+
+                // Show user-friendly error message
+                alert('Failed to create service advisor. ' +
+                        (error.message || 'Please check your connection and try again.'));
               });
     }
 
@@ -2589,6 +2599,279 @@
       return password;
     }
   });
+  // Rendering and filtering functions
+  function renderServiceAdvisors() {
+    // Get filtered advisors based on current filter and search term
+    const filteredAdvisors = getFilteredAdvisors();
+
+    // Calculate pagination
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const paginatedAdvisors = filteredAdvisors.slice(startIndex, endIndex);
+
+    // Get the table body
+    const tableBody = document.getElementById('advisorsTableBody');
+
+    // Clear table
+    tableBody.innerHTML = '';
+
+    // Check if there are service advisors
+    if (paginatedAdvisors.length === 0) {
+      tableBody.innerHTML = `
+      <tr>
+        <td colspan="6" class="text-center py-4">
+          <div class="no-data-message">
+            <i class="fas fa-user-tie fa-3x mb-3 text-muted"></i>
+            <h4>No service advisors found</h4>
+            <p class="text-muted">Try adjusting your filters or add a new service advisor</p>
+          </div>
+        </td>
+      </tr>
+    `;
+      return;
+    }
+
+    // Populate table with service advisors
+    paginatedAdvisors.forEach(advisor => {
+      // Create row
+      const row = document.createElement('tr');
+
+      // Set row click handler
+      row.addEventListener('click', function() {
+        showAdvisorDetails(advisor);
+      });
+
+      // Determine workload class
+      const workloadClass = getWorkloadClass(advisor.workloadPercentage);
+
+      // Set row content
+      row.innerHTML = `
+      <td>
+        <div class="advisor-cell">
+          <div class="advisor-avatar">${getInitials(advisor.firstName, advisor.lastName)}</div>
+          <div class="advisor-info">
+            <div class="advisor-name">${advisor.firstName} ${advisor.lastName}</div>
+            <div class="advisor-id">${advisor.formattedId || ('SA-' + advisor.advisorId)}</div>
+          </div>
+        </div>
+      </td>
+      <td>
+        <div class="phone-number">
+          <i class="fas fa-phone"></i>
+          ${advisor.phoneNumber}
+        </div>
+        <div class="mt-1">
+          <small>${advisor.email}</small>
+        </div>
+      </td>
+      <td>
+        <div class="department">
+          <i class="fas fa-building"></i>
+          ${advisor.department || 'Not assigned'}
+        </div>
+      </td>
+      <td>
+        <span class="specialization-badge ${getSpecializationClass(advisor.specialization)}">
+          <i class="fas fa-${getSpecializationIcon(advisor.specialization)}"></i>
+          ${advisor.specialization || 'None'}
+        </span>
+      </td>
+      <td>
+        <div class="workload-container">
+          <div class="workload-progress ${workloadClass}" style="width: ${advisor.workloadPercentage}%;"></div>
+        </div>
+        <div class="workload-text">${advisor.workloadPercentage}% - ${getWorkloadText(advisor.workloadPercentage)}</div>
+      </td>
+      <td class="text-center">
+        <span class="badge bg-${getActiveServicesClass(advisor.activeServices)}">${advisor.activeServices}</span>
+      </td>
+    `;
+
+      // Add row to table
+      tableBody.appendChild(row);
+    });
+
+    // Update pagination
+    updatePaginationUI();
+  }
+
+  function getFilteredAdvisors() {
+    const searchTerm = document.getElementById('advisorSearch').value.toLowerCase();
+
+    // First filter by search term
+    let filtered = serviceAdvisors.filter(advisor => {
+      // Search in name, email, ID, and department
+      return (
+              (advisor.firstName + ' ' + advisor.lastName).toLowerCase().includes(searchTerm) ||
+              advisor.email.toLowerCase().includes(searchTerm) ||
+              (advisor.formattedId || '').toLowerCase().includes(searchTerm) ||
+              (advisor.department || '').toLowerCase().includes(searchTerm)
+      );
+    });
+
+    // Then filter by selected filter pill
+    if (currentFilter !== 'all-advisors') {
+      if (currentFilter === 'high-workload') {
+        filtered = filtered.filter(advisor => advisor.workloadPercentage >= 75);
+      } else if (currentFilter === 'available') {
+        filtered = filtered.filter(advisor => advisor.workloadPercentage < 50);
+      }
+    }
+
+    return filtered;
+  }
+
+  function updatePaginationUI() {
+    const filteredAdvisors = getFilteredAdvisors();
+    const totalPages = Math.ceil(filteredAdvisors.length / itemsPerPage);
+
+    // Get pagination container
+    const pagination = document.getElementById('pagination');
+
+    // Clear pagination
+    pagination.innerHTML = '';
+
+    // Add previous button
+    const prevBtn = document.createElement('li');
+    prevBtn.className = 'page-item ' + (currentPage === 1 ? 'disabled' : '');
+    prevBtn.innerHTML = `
+    <a class="page-link" href="#" aria-label="Previous">
+      <i class="fas fa-chevron-left"></i>
+    </a>
+  `;
+    prevBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      if (currentPage > 1) {
+        currentPage--;
+        renderServiceAdvisors();
+      }
+    });
+    pagination.appendChild(prevBtn);
+
+    // Add page numbers
+    for (let i = 1; i <= totalPages; i++) {
+      const pageItem = document.createElement('li');
+      pageItem.className = 'page-item ' + (i === currentPage ? 'active' : '');
+      pageItem.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+      pageItem.addEventListener('click', function(e) {
+        e.preventDefault();
+        currentPage = i;
+        renderServiceAdvisors();
+      });
+      pagination.appendChild(pageItem);
+    }
+
+    // Add next button
+    const nextBtn = document.createElement('li');
+    nextBtn.className = 'page-item ' + (currentPage === totalPages || totalPages === 0 ? 'disabled' : '');
+    nextBtn.innerHTML = `
+    <a class="page-link" href="#" aria-label="Next">
+      <i class="fas fa-chevron-right"></i>
+    </a>
+  `;
+    nextBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      if (currentPage < totalPages) {
+        currentPage++;
+        renderServiceAdvisors();
+      }
+    });
+    pagination.appendChild(nextBtn);
+  }
+
+  function setupPagination() {
+    const filteredAdvisors = getFilteredAdvisors();
+    const totalPages = Math.ceil(filteredAdvisors.length / itemsPerPage);
+
+    // Update pagination UI
+    updatePaginationUI();
+  }
+
+  // Helper functions
+  function getSpecializationClass(specialization) {
+    if (!specialization) return '';
+
+    const spec = specialization.toLowerCase();
+    if (spec.includes('engine') || spec.includes('mechanical')) {
+      return 'mechanical';
+    } else if (spec.includes('electrical')) {
+      return 'electrical';
+    } else if (spec.includes('body')) {
+      return 'bodywork';
+    } else if (spec.includes('diagnostics')) {
+      return 'diagnostics';
+    }
+
+    return '';
+  }
+
+  function getSpecializationIcon(specialization) {
+    if (!specialization) return 'question-circle';
+
+    const spec = specialization.toLowerCase();
+    if (spec.includes('engine') || spec.includes('mechanical')) {
+      return 'cogs';
+    } else if (spec.includes('electrical')) {
+      return 'bolt';
+    } else if (spec.includes('body')) {
+      return 'car';
+    } else if (spec.includes('diagnostics')) {
+      return 'stethoscope';
+    } else if (spec.includes('general')) {
+      return 'tools';
+    }
+
+    return 'wrench';
+  }
+
+  function getWorkloadText(percentage) {
+    if (percentage >= 75) {
+      return 'High workload';
+    } else if (percentage >= 50) {
+      return 'Moderate workload';
+    } else {
+      return 'Available for new services';
+    }
+  }
+
+  function getActiveServicesClass(count) {
+    if (count >= 6) {
+      return 'danger';
+    } else if (count >= 3) {
+      return 'warning';
+    } else {
+      return 'success';
+    }
+  }
+
+  function showAdvisorDetails(advisor) {
+    // Set advisor ID on edit button for future reference
+    document.getElementById('editAdvisorFromDetailsBtn').setAttribute('data-advisor-id', advisor.advisorId);
+
+    // Personal Info Tab
+    document.getElementById('viewAdvisorInitials').textContent = getInitials(advisor.firstName, advisor.lastName);
+    document.getElementById('viewAdvisorName').textContent = advisor.firstName + ' ' + advisor.lastName;
+    document.getElementById('viewAdvisorEmail').textContent = advisor.email;
+    document.getElementById('viewAdvisorPhone').textContent = advisor.phoneNumber;
+    document.getElementById('viewAdvisorId').textContent = advisor.formattedId || ('SA-' + advisor.advisorId);
+    document.getElementById('viewAdvisorDepartment').textContent = advisor.department || 'Not assigned';
+    document.getElementById('viewAdvisorSpecialization').textContent = advisor.specialization || 'None';
+    document.getElementById('viewAdvisorHireDate').textContent = advisor.hireDate ? new Date(advisor.hireDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Not available';
+
+    // Workload Tab
+    document.getElementById('viewAdvisorWorkloadValue').textContent = advisor.workloadPercentage + '%';
+
+    const workloadBar = document.getElementById('viewAdvisorWorkloadBar');
+    workloadBar.style.width = advisor.workloadPercentage + '%';
+    workloadBar.className = 'workload-progress ' + getWorkloadClass(advisor.workloadPercentage);
+
+    document.getElementById('viewAdvisorWorkloadText').textContent = getWorkloadText(advisor.workloadPercentage);
+
+    // Show modal
+    const detailsModal = new bootstrap.Modal(document.getElementById('advisorDetailsModal'));
+    detailsModal.show();
+  }
+
 </script>
 </body>
 </html>

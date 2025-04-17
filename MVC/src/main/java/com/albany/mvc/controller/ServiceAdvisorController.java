@@ -12,7 +12,9 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/admin/service-advisors")
@@ -102,7 +104,7 @@ public class ServiceAdvisorController {
 
     @PostMapping
     @ResponseBody
-    public ResponseEntity<ServiceAdvisorDto> createServiceAdvisor(
+    public ResponseEntity<?> createServiceAdvisor(
             @RequestBody ServiceAdvisorDto advisorDto,
             @RequestParam(required = false) String token,
             @RequestHeader(value = "Authorization", required = false) String authHeader,
@@ -115,16 +117,31 @@ public class ServiceAdvisorController {
         }
 
         try {
+            log.info("Creating service advisor: {}", advisorDto.getEmail());
+
+            // Validate the request
+            if (advisorDto.getFirstName() == null || advisorDto.getLastName() == null ||
+                    advisorDto.getEmail() == null || advisorDto.getPhoneNumber() == null) {
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "Required fields missing");
+                return ResponseEntity.badRequest().body(error);
+            }
+
             ServiceAdvisorDto createdAdvisor = serviceAdvisorService.createServiceAdvisor(advisorDto, validToken);
 
             if (createdAdvisor == null) {
-                return ResponseEntity.badRequest().build();
+                Map<String, String> error = new HashMap<>();
+                error.put("error", "Failed to create service advisor");
+                return ResponseEntity.badRequest().body(error);
             }
 
+            log.info("Successfully created service advisor with ID: {}", createdAdvisor.getAdvisorId());
             return ResponseEntity.ok(createdAdvisor);
         } catch (Exception e) {
             log.error("Error creating service advisor: {}", e.getMessage(), e);
-            return ResponseEntity.status(500).body(null);
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Server error: " + e.getMessage());
+            return ResponseEntity.status(500).body(error);
         }
     }
 

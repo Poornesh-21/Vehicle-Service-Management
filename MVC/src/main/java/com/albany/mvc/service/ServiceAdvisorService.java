@@ -11,7 +11,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -59,19 +61,12 @@ public class ServiceAdvisorService {
 
         } catch (Exception e) {
             log.error("Error fetching service advisors: {}", e.getMessage());
-
-            // Try debug endpoint to get token info
             try {
-                ResponseEntity<String> debugResponse = restTemplate.exchange(
-                        apiBaseUrl + "/debug/token-info",
-                        HttpMethod.GET,
-                        entity,
-                        String.class
-                );
-                log.debug("Token debug info: {}", debugResponse.getBody());
-            } catch (Exception ex) {
-                log.error("Error fetching token debug info: {}", ex.getMessage());
-            }
+                // For debugging - try to log any response body
+                if (e.getMessage().contains("response")) {
+                    log.debug("Error response details: {}", e.getMessage());
+                }
+            } catch (Exception ignored) {}
         }
 
         return Collections.emptyList();
@@ -112,7 +107,20 @@ public class ServiceAdvisorService {
         headers.setBearerAuth(token);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        HttpEntity<ServiceAdvisorDto> entity = new HttpEntity<>(advisorDto, headers);
+        // Create a map with only the fields expected by the REST API
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("firstName", advisorDto.getFirstName());
+        requestBody.put("lastName", advisorDto.getLastName());
+        requestBody.put("email", advisorDto.getEmail());
+        requestBody.put("phoneNumber", advisorDto.getPhoneNumber());
+        requestBody.put("password", advisorDto.getPassword());
+        requestBody.put("department", advisorDto.getDepartment());
+        requestBody.put("specialization", advisorDto.getSpecialization());
+
+        // Log the request for debugging
+        log.debug("Creating service advisor with request: {}", requestBody);
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
         try {
             ResponseEntity<ServiceAdvisorDto> response = restTemplate.exchange(
@@ -122,12 +130,20 @@ public class ServiceAdvisorService {
                     ServiceAdvisorDto.class
             );
 
+            log.debug("Service advisor creation response: {}", response.getStatusCode());
+
             if (response.getStatusCode() == HttpStatus.OK) {
                 return response.getBody();
             }
 
         } catch (Exception e) {
             log.error("Error creating service advisor: {}", e.getMessage());
+            // Try to extract more details from the exception
+            if (e.getMessage().contains("403")) {
+                log.error("Access denied - check that the token has the correct permissions");
+            } else if (e.getMessage().contains("400")) {
+                log.error("Bad request - check that the request body is correctly structured");
+            }
         }
 
         return null;
@@ -140,7 +156,21 @@ public class ServiceAdvisorService {
         headers.setBearerAuth(token);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        HttpEntity<ServiceAdvisorDto> entity = new HttpEntity<>(advisorDto, headers);
+        // Create a map with only the fields expected by the REST API
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("firstName", advisorDto.getFirstName());
+        requestBody.put("lastName", advisorDto.getLastName());
+        requestBody.put("email", advisorDto.getEmail());
+        requestBody.put("phoneNumber", advisorDto.getPhoneNumber());
+        requestBody.put("department", advisorDto.getDepartment());
+        requestBody.put("specialization", advisorDto.getSpecialization());
+
+        // Add password only if provided
+        if (advisorDto.getPassword() != null && !advisorDto.getPassword().isEmpty()) {
+            requestBody.put("password", advisorDto.getPassword());
+        }
+
+        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
 
         try {
             ResponseEntity<ServiceAdvisorDto> response = restTemplate.exchange(

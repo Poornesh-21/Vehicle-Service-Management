@@ -4,6 +4,7 @@ import com.albany.restapi.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -37,20 +38,17 @@ public class SecurityConfig {
                         .requestMatchers("/api/public/**").permitAll()
                         .requestMatchers("/api/debug/**").permitAll()
 
-                        // Admin API paths
-                        .requestMatchers("/admin/vehicles/**").hasAnyAuthority(
+                        // Admin API paths - explicitly define all HTTP methods
+                        .requestMatchers(HttpMethod.GET, "/api/service-advisors/**").hasAnyAuthority(
                                 "ROLE_ADMIN", "ROLE_admin")
-                        .requestMatchers("/admin/customers/**").hasAnyAuthority(
+                        .requestMatchers(HttpMethod.POST, "/api/service-advisors/**").hasAnyAuthority(
                                 "ROLE_ADMIN", "ROLE_admin")
-                        .requestMatchers("/admin/service-requests/**").hasAnyAuthority(
+                        .requestMatchers(HttpMethod.PUT, "/api/service-advisors/**").hasAnyAuthority(
                                 "ROLE_ADMIN", "ROLE_admin")
-                        .requestMatchers("/admin/service-advisors/**").hasAnyAuthority(
-                                "ROLE_ADMIN", "ROLE_admin")
-                        // Add this line for inventory endpoints
-                        .requestMatchers("/admin/inventory/**").hasAnyAuthority(
+                        .requestMatchers(HttpMethod.DELETE, "/api/service-advisors/**").hasAnyAuthority(
                                 "ROLE_ADMIN", "ROLE_admin")
 
-                        // Regular API paths
+                        // Other API paths can remain as they were
                         .requestMatchers("/api/vehicles/**").hasAnyAuthority(
                                 "ROLE_ADMIN", "ROLE_admin", "ROLE_CUSTOMER", "ROLE_customer")
                         .requestMatchers("/api/customers/{customerId}/vehicles/**").hasAnyAuthority(

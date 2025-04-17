@@ -107,20 +107,12 @@ public class ServiceAdvisorService {
         headers.setBearerAuth(token);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        // Create a map with only the fields expected by the REST API
-        Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("firstName", advisorDto.getFirstName());
-        requestBody.put("lastName", advisorDto.getLastName());
-        requestBody.put("email", advisorDto.getEmail());
-        requestBody.put("phoneNumber", advisorDto.getPhoneNumber());
-        requestBody.put("password", advisorDto.getPassword());
-        requestBody.put("department", advisorDto.getDepartment());
-        requestBody.put("specialization", advisorDto.getSpecialization());
+        // Log the entire request
+        log.debug("Creating service advisor with request: {}", advisorDto);
+        log.debug("API URL: {}", url);
+        log.debug("Auth token first 10 chars: {}", token.substring(0, Math.min(10, token.length())));
 
-        // Log the request for debugging
-        log.debug("Creating service advisor with request: {}", requestBody);
-
-        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+        HttpEntity<ServiceAdvisorDto> entity = new HttpEntity<>(advisorDto, headers);
 
         try {
             ResponseEntity<ServiceAdvisorDto> response = restTemplate.exchange(
@@ -138,12 +130,19 @@ public class ServiceAdvisorService {
 
         } catch (Exception e) {
             log.error("Error creating service advisor: {}", e.getMessage());
+
             // Try to extract more details from the exception
             if (e.getMessage().contains("403")) {
                 log.error("Access denied - check that the token has the correct permissions");
             } else if (e.getMessage().contains("400")) {
                 log.error("Bad request - check that the request body is correctly structured");
             }
+
+            // Try to log the response body if available
+            try {
+                String errorDetails = e.getMessage();
+                log.error("Detailed error: {}", errorDetails);
+            } catch (Exception ignored) {}
         }
 
         return null;
@@ -156,21 +155,10 @@ public class ServiceAdvisorService {
         headers.setBearerAuth(token);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        // Create a map with only the fields expected by the REST API
-        Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("firstName", advisorDto.getFirstName());
-        requestBody.put("lastName", advisorDto.getLastName());
-        requestBody.put("email", advisorDto.getEmail());
-        requestBody.put("phoneNumber", advisorDto.getPhoneNumber());
-        requestBody.put("department", advisorDto.getDepartment());
-        requestBody.put("specialization", advisorDto.getSpecialization());
+        // Log the request
+        log.debug("Updating service advisor with ID: {} and data: {}", id, advisorDto);
 
-        // Add password only if provided
-        if (advisorDto.getPassword() != null && !advisorDto.getPassword().isEmpty()) {
-            requestBody.put("password", advisorDto.getPassword());
-        }
-
-        HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+        HttpEntity<ServiceAdvisorDto> entity = new HttpEntity<>(advisorDto, headers);
 
         try {
             ResponseEntity<ServiceAdvisorDto> response = restTemplate.exchange(

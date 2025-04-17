@@ -119,12 +119,9 @@ public class ServiceAdvisorController {
         try {
             log.info("Creating service advisor: {}", advisorDto.getEmail());
 
-            // Validate the request
-            if (advisorDto.getFirstName() == null || advisorDto.getLastName() == null ||
-                    advisorDto.getEmail() == null || advisorDto.getPhoneNumber() == null) {
-                Map<String, String> error = new HashMap<>();
-                error.put("error", "Required fields missing");
-                return ResponseEntity.badRequest().body(error);
+            // Ensure the advisor has a password
+            if (advisorDto.getPassword() == null || advisorDto.getPassword().isEmpty()) {
+                advisorDto.setPassword(generateRandomPassword());
             }
 
             ServiceAdvisorDto createdAdvisor = serviceAdvisorService.createServiceAdvisor(advisorDto, validToken);
@@ -135,8 +132,13 @@ public class ServiceAdvisorController {
                 return ResponseEntity.badRequest().body(error);
             }
 
+            // Add the password to the response so the client can display it
+            Map<String, Object> response = new HashMap<>();
+            response.put("advisor", createdAdvisor);
+            response.put("tempPassword", advisorDto.getPassword());
+
             log.info("Successfully created service advisor with ID: {}", createdAdvisor.getAdvisorId());
-            return ResponseEntity.ok(createdAdvisor);
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             log.error("Error creating service advisor: {}", e.getMessage(), e);
             Map<String, String> error = new HashMap<>();
@@ -240,5 +242,30 @@ public class ServiceAdvisorController {
 
         log.warn("No valid token found from any source");
         return null;
+    }
+
+    /**
+     * Generate a random password for new service advisors
+     */
+    private String generateRandomPassword() {
+        // Generate a password in the format: SA2025-XXXNNN (where X is a letter and N is a number)
+        final String letters = "ABCDEFGHJKLMNPQRSTUVWXYZ"; // Excluded I and O to avoid confusion
+        final String numbers = "123456789"; // Excluded 0 to avoid confusion
+
+        StringBuilder password = new StringBuilder("SA2025-");
+
+        // Add 3 random letters
+        for (int i = 0; i < 3; i++) {
+            int index = (int) (Math.random() * letters.length());
+            password.append(letters.charAt(index));
+        }
+
+        // Add 3 random numbers
+        for (int i = 0; i < 3; i++) {
+            int index = (int) (Math.random() * numbers.length());
+            password.append(numbers.charAt(index));
+        }
+
+        return password.toString();
     }
 }

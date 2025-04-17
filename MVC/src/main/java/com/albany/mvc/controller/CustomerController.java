@@ -1,5 +1,7 @@
 package com.albany.mvc.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,12 +12,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
-import java.util.Map;
-import java.util.List;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/admin/customers")
@@ -155,6 +155,13 @@ public class CustomerController {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
 
+            // Add a temporary password if not provided
+            if (!customerData.containsKey("password") ||
+                    customerData.get("password") == null ||
+                    customerData.get("password").toString().isEmpty()) {
+                customerData.put("password", generateTempPassword());
+            }
+
             // Forward the request to the backend API
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Bearer " + validToken);
@@ -269,6 +276,30 @@ public class CustomerController {
             errorResponse.put("error", "Failed to delete customer: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
+    }
+
+    /**
+     * Generate a temporary password
+     */
+    private String generateTempPassword() {
+        final String letters = "ABCDEFGHJKLMNPQRSTUVWXYZ"; // Excluded I and O
+        final String numbers = "123456789"; // Excluded 0
+
+        StringBuilder password = new StringBuilder("CUS2025-");
+
+        // Add 3 random letters
+        for (int i = 0; i < 3; i++) {
+            int index = (int) (Math.random() * letters.length());
+            password.append(letters.charAt(index));
+        }
+
+        // Add 3 random numbers
+        for (int i = 0; i < 3; i++) {
+            int index = (int) (Math.random() * numbers.length());
+            password.append(numbers.charAt(index));
+        }
+
+        return password.toString();
     }
 
     /**

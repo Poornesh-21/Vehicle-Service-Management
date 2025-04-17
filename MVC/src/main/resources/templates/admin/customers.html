@@ -2533,7 +2533,7 @@
     function loadCustomers() {
       showSpinner();
 
-      fetch('/admin/api/customers', {
+      fetch('/admin/customers/api', {  // IMPORTANT: Changed from '/admin/api/customers'
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

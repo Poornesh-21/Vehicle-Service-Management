@@ -21,4 +21,11 @@ public class VehicleInServiceDTO {
     private LocalDate startDate;
     private LocalDate estimatedCompletionDate;
     private String category;
+
+    // Added customer information fields
+    private String customerName;
+    private String customerEmail;
+    private String membershipStatus;
+    private String serviceType;
+    private String additionalDescription;
 }

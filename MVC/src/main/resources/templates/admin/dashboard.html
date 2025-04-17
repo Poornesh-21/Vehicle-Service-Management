@@ -3716,17 +3716,17 @@
         let request;
 
         // Check in vehiclesDueList
-        if (dashboardStats.vehiclesDueList) {
+        if (dashboardStats && dashboardStats.vehiclesDueList) {
             request = dashboardStats.vehiclesDueList.find(req => req.requestId === requestId);
         }
 
         // If not found, check in vehiclesInServiceList
-        if (!request && dashboardStats.vehiclesInServiceList) {
+        if (!request && dashboardStats && dashboardStats.vehiclesInServiceList) {
             request = dashboardStats.vehiclesInServiceList.find(req => req.requestId === requestId);
         }
 
         // If not found, check in completedServicesList
-        if (!request && dashboardStats.completedServicesList) {
+        if (!request && dashboardStats && dashboardStats.completedServicesList) {
             request = dashboardStats.completedServicesList.find(service => service.serviceId === requestId);
         }
 
@@ -3735,6 +3735,8 @@
             showToast('Error: Request not found', 'error');
             return;
         }
+
+        console.log("Request details for modal:", request);
 
         // Create modal if it doesn't exist
         let modal = document.getElementById('viewServiceRequestModal');
@@ -3900,37 +3902,46 @@
         </span>
     `;
 
-        // Set other details
+        // Created Date
         const createdDateElement = document.getElementById('viewCreatedDate');
         if (createdDateElement) {
-            createdDateElement.textContent = request.createdAt ? formatDate(request.createdAt) : 'N/A';
+            createdDateElement.textContent = request.createdAt ? formatDate(request.createdAt) :
+                request.startDate ? formatDate(request.startDate) : 'N/A';
         }
 
+        // Vehicle Name
         const vehicleNameElement = document.getElementById('viewVehicleName');
         if (vehicleNameElement) {
-            vehicleNameElement.textContent = request.vehicleName || (request.vehicleBrand + ' ' + request.vehicleModel) || 'N/A';
+            vehicleNameElement.textContent = request.vehicleName ||
+                (request.vehicleBrand && request.vehicleModel ?
+                    request.vehicleBrand + ' ' + request.vehicleModel : 'N/A');
         }
 
+        // Registration Number
         const registrationNumberElement = document.getElementById('viewRegistrationNumber');
         if (registrationNumberElement) {
             registrationNumberElement.textContent = request.registrationNumber || 'N/A';
         }
 
+        // Vehicle Category
         const vehicleCategoryElement = document.getElementById('viewVehicleCategory');
         if (vehicleCategoryElement) {
             vehicleCategoryElement.textContent = request.category || 'Car';
         }
 
+        // Customer Name
         const customerNameElement = document.getElementById('viewCustomerName');
         if (customerNameElement) {
             customerNameElement.textContent = request.customerName || 'N/A';
         }
 
+        // Customer Contact
         const customerContactElement = document.getElementById('viewCustomerContact');
         if (customerContactElement) {
             customerContactElement.textContent = request.customerEmail || 'N/A';
         }
 
+        // Membership
         const membershipElement = document.getElementById('viewMembership');
         if (membershipElement) {
             const membershipStatus = request.membershipStatus || 'Standard';
@@ -3942,24 +3953,72 @@
         `;
         }
 
+        // Service Type
         const serviceTypeElement = document.getElementById('viewServiceType');
         if (serviceTypeElement) {
             serviceTypeElement.textContent = request.serviceType || 'N/A';
         }
 
+        // FIX 1: Delivery/Due Date
         const deliveryDateElement = document.getElementById('viewDeliveryDate');
         if (deliveryDateElement) {
-            deliveryDateElement.textContent = formatDate(request.deliveryDate) || 'N/A';
+            // Try to find the due date in different possible property names
+            const dueDate = request.dueDate ||
+                request.deliveryDate ||
+                request.estimatedCompletionDate;
+
+            deliveryDateElement.textContent = dueDate ? formatDate(dueDate) : 'N/A';
+
+            // Add a label to explain what the date means based on status
+            const label = deliveryDateElement.parentElement.querySelector('.form-label');
+            if (label) {
+                if (request.status === 'Received') {
+                    label.textContent = 'Due Date';
+                } else if (request.status === 'Completed') {
+                    label.textContent = 'Completed Date';
+                } else {
+                    label.textContent = 'Expected Delivery Date';
+                }
+            }
         }
 
+        // FIX 2: Service Advisor
         const serviceAdvisorElement = document.getElementById('viewServiceAdvisor');
         if (serviceAdvisorElement) {
-            serviceAdvisorElement.textContent = request.serviceAdvisorName || 'Not Assigned';
+            // Check multiple possible property names where service advisor might be stored
+            const advisorName = request.serviceAdvisorName ||
+                request.advisorName ||
+                (request.serviceAdvisor ? request.serviceAdvisor.name : null);
+
+            // If we have an advisor ID, add it to the display
+            const advisorId = request.serviceAdvisorId ||
+                request.advisorId ||
+                (request.serviceAdvisor ? request.serviceAdvisor.id : null);
+
+            if (advisorName) {
+                if (advisorId) {
+                    serviceAdvisorElement.textContent = `${advisorName} (ID: ${advisorId})`;
+                } else {
+                    serviceAdvisorElement.textContent = advisorName;
+                }
+            } else {
+                serviceAdvisorElement.textContent = 'Not Assigned';
+            }
+
+            // Add a class to highlight if not assigned
+            if (serviceAdvisorElement.textContent === 'Not Assigned') {
+                serviceAdvisorElement.classList.add('text-warning');
+            } else {
+                serviceAdvisorElement.classList.remove('text-warning');
+            }
         }
 
+        // Service Description
         const descriptionElement = document.getElementById('viewDescription');
         if (descriptionElement) {
-            descriptionElement.textContent = request.additionalDescription || 'No additional description provided.';
+            descriptionElement.textContent = request.additionalDescription ||
+                request.description ||
+                'No additional description provided.';
         }
 
         // Show materials section if available

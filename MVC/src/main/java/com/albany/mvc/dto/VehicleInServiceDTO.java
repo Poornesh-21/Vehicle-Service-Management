@@ -17,7 +17,14 @@ public class VehicleInServiceDTO {
     private String serviceAdvisorName;
     private String serviceAdvisorId;
     private String status;
-    private LocalDate startDate;        // Changed from String to LocalDate
-    private LocalDate estimatedCompletionDate;  // Changed from String to LocalDate
+    private LocalDate startDate;
+    private LocalDate estimatedCompletionDate;
     private String category;
+
+    // Added customer information fields
+    private String customerName;
+    private String customerEmail;
+    private String membershipStatus;
+    private String serviceType;
+    private String additionalDescription;
 }

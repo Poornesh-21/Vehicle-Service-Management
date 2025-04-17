@@ -38,13 +38,16 @@ public class SecurityConfig {
                         .requestMatchers("/api/debug/**").permitAll()
 
                         // Admin API paths
-                        .requestMatchers("/admin/api/vehicles/**").hasAnyAuthority(
+                        .requestMatchers("/admin/vehicles/**").hasAnyAuthority(
                                 "ROLE_ADMIN", "ROLE_admin")
-                        .requestMatchers("/admin/api/customers/**").hasAnyAuthority(
+                        .requestMatchers("/admin/customers/**").hasAnyAuthority(
                                 "ROLE_ADMIN", "ROLE_admin")
-                        .requestMatchers("/admin/api/service-requests/**").hasAnyAuthority(
+                        .requestMatchers("/admin/service-requests/**").hasAnyAuthority(
                                 "ROLE_ADMIN", "ROLE_admin")
-                        .requestMatchers("/admin/api/service-advisors/**").hasAnyAuthority(
+                        .requestMatchers("/admin/service-advisors/**").hasAnyAuthority(
+                                "ROLE_ADMIN", "ROLE_admin")
+                        // Add this line for inventory endpoints
+                        .requestMatchers("/admin/inventory/**").hasAnyAuthority(
                                 "ROLE_ADMIN", "ROLE_admin")
 
                         // Regular API paths
@@ -53,7 +56,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/customers/{customerId}/vehicles/**").hasAnyAuthority(
                                 "ROLE_ADMIN", "ROLE_admin", "ROLE_CUSTOMER", "ROLE_customer")
                         .requestMatchers("/api/service-requests/**").hasAnyAuthority(
-                                "ROLE_ADMIN", "ROLE_admin", "ROLE_CUSTOMER", "ROLE_customer", "ROLE_SERVICE_ADVISOR", "ROLE_serviceAdvisor")
+                                "ROLE_ADMIN", "ROLE_admin", "ROLE_CUSTOMER", "ROLE_customer",
+                                "ROLE_SERVICE_ADVISOR", "ROLE_serviceAdvisor")
+                        .requestMatchers("/api/inventory/**").hasAnyAuthority(
+                                "ROLE_ADMIN", "ROLE_admin", "ROLE_SERVICE_ADVISOR", "ROLE_serviceAdvisor")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session

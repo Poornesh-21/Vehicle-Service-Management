@@ -18,7 +18,7 @@ import java.util.Map;
  * This controller provides dedicated endpoints that are accessible through the admin API path
  */
 @RestController
-@RequestMapping("/admin/api/inventory")
+@RequestMapping("/admin/inventory")
 @RequiredArgsConstructor
 @Slf4j
 public class AdminInventoryController {

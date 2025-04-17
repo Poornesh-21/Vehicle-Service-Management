@@ -59,8 +59,14 @@ public class DashboardService {
             String customerName = request.getVehicle().getCustomer().getUser().getFirstName() + " " +
                     request.getVehicle().getCustomer().getUser().getLastName();
 
-            // Get the membership status from the customer profile
+            // Get the membership status directly from the database without modification
+            // This ensures "Premium" stays as "Premium" and isn't altered
             String membershipStatus = request.getVehicle().getCustomer().getMembershipStatus();
+
+            // Default to Standard only if completely null
+            if (membershipStatus == null) {
+                membershipStatus = "Standard";
+            }
 
             return VehicleDueDTO.builder()
                     .requestId(request.getRequestId())
@@ -71,7 +77,7 @@ public class DashboardService {
                     .status(request.getStatus().name())
                     .dueDate(request.getDeliveryDate())
                     .category(request.getVehicle().getCategory().name())
-                    .membershipStatus(membershipStatus) // Added membership status
+                    .membershipStatus(membershipStatus) // Preserve exact case and value
                     .build();
         }).collect(Collectors.toList());
     }

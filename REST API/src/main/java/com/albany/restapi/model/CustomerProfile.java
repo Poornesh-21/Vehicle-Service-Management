@@ -37,6 +37,7 @@ public class CustomerProfile {
     @Column(name = "last_service_date")
     private LocalDate lastServiceDate;
 
+    // No default value, this will ensure it uses exactly what's in the database
     @Column(name = "membership_status")
-    private String membershipStatus = "Standard";
+    private String membershipStatus;
 }

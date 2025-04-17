@@ -447,78 +447,58 @@
       color: white;
     }
 
-    /* Service Advisors Table */
-    .advisors-table-container {
-      background-color: white;
-      border-radius: var(--radius-lg);
-      overflow: hidden;
-      box-shadow: var(--shadow-lg);
+    /* Advisor Cards Grid */
+    .advisors-grid-container {
       margin-bottom: 2rem;
     }
 
-    .advisors-table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
+    .advisors-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.5rem;
     }
 
-    .advisors-table th {
-      background-color: var(--bg-light);
-      color: var(--dark-gray);
-      font-weight: 600;
-      font-size: 0.9rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      padding: 1.25rem 1rem;
-      border-bottom: 1px solid var(--light-gray);
-      text-align: left;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-
-    .advisors-table td {
-      padding: 1.25rem 1rem;
-      vertical-align: middle;
-      border-bottom: 1px solid var(--light-gray);
-      font-size: 0.95rem;
-    }
-
-    .advisors-table tr:last-child td {
-      border-bottom: none;
-    }
-
-    .advisors-table tbody tr {
+    .advisor-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-md);
       transition: var(--transition);
       cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
     }
 
-    .advisors-table tbody tr:hover {
-      background-color: rgba(114, 47, 55, 0.05);
+    .advisor-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-lg);
     }
 
-    /* Service Advisor Cell Styles */
-    .advisor-cell {
+    .advisor-card-header {
+      background-color: var(--bg-light);
+      padding: 1.25rem;
+      border-bottom: 1px solid var(--light-gray);
       display: flex;
       align-items: center;
       gap: 1rem;
     }
 
     .advisor-avatar {
-      width: 3rem;
-      height: 3rem;
+      width: 3.5rem;
+      height: 3.5rem;
       border-radius: 50%;
       background-color: var(--dutch-white);
       color: var(--secondary-color);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.25rem;
+      font-size: 1.5rem;
       font-weight: 600;
       flex-shrink: 0;
     }
 
-    .advisor-info {
+    .advisor-header-info {
       display: flex;
       flex-direction: column;
     }
@@ -526,6 +506,7 @@
     .advisor-name {
       font-weight: 600;
       color: var(--secondary-color);
+      font-size: 1.1rem;
       margin-bottom: 0.25rem;
     }
 
@@ -534,15 +515,58 @@
       color: var(--medium-gray);
     }
 
-    /* Specialization Badge */
+    .advisor-card-body {
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      flex: 1;
+    }
+
+    .advisor-detail {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .advisor-detail-icon {
+      width: 1.75rem;
+      height: 1.75rem;
+      border-radius: var(--radius-md);
+      background-color: rgba(114, 47, 55, 0.1);
+      color: var(--secondary-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      flex-shrink: 0;
+    }
+
+    .advisor-detail-content {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .advisor-detail-label {
+      font-size: 0.8rem;
+      color: var(--medium-gray);
+    }
+
+    .advisor-detail-value {
+      font-size: 0.95rem;
+      color: var(--text-dark);
+      font-weight: 500;
+    }
+
     .specialization-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
       padding: 0.5rem 1rem;
       border-radius: 50px;
       font-size: 0.85rem;
       font-weight: 600;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
+      margin-top: 0.25rem;
     }
 
     .specialization-badge.mechanical {
@@ -565,13 +589,19 @@
       color: #388e3c;
     }
 
-    /* Workload Progress Bar */
+    .advisor-card-footer {
+      padding: 1rem 1.25rem;
+      border-top: 1px solid var(--light-gray);
+      background-color: var(--bg-light);
+    }
+
     .workload-container {
       width: 100%;
       background-color: var(--light-gray);
       border-radius: 50px;
       height: 0.65rem;
       overflow: hidden;
+      margin-bottom: 0.5rem;
     }
 
     .workload-progress {
@@ -592,36 +622,22 @@
     .workload-text {
       font-size: 0.85rem;
       font-weight: 600;
-      margin-top: 0.35rem;
       color: var(--dark-gray);
+      display: flex;
+      justify-content: space-between;
     }
 
-    /* Phone Number Style */
-    .phone-number {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      color: var(--dark-gray);
-      font-size: 0.9rem;
-    }
-
-    .phone-number i {
+    .workload-label {
       color: var(--secondary-color);
-      font-size: 0.85rem;
     }
 
-    /* Department Style */
-    .department {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      color: var(--dark-gray);
-      font-size: 0.9rem;
-    }
-
-    .department i {
-      color: var(--secondary-color);
-      font-size: 0.85rem;
+    .no-advisors-message {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 3rem;
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
     }
 
     /* Pagination */
@@ -1378,12 +1394,8 @@
         padding-top: 4rem;
       }
 
-      .advisors-table-container {
-        overflow-x: auto;
-      }
-
-      .advisors-table {
-        min-width: 1000px;
+      .advisors-grid {
+        grid-template-columns: 1fr;
       }
     }
 
@@ -1579,23 +1591,11 @@
       </div>
     </section>
 
-    <!-- Service Advisors Table -->
-    <section class="advisors-table-container">
-      <table class="advisors-table">
-        <thead>
-        <tr>
-          <th>Service Advisor</th>
-          <th>Contact Info</th>
-          <th>Department</th>
-          <th>Specialization</th>
-          <th>Current Workload</th>
-          <th>Active Services</th>
-        </tr>
-        </thead>
-        <tbody id="advisorsTableBody">
-        <!-- Will be populated with service advisor data -->
-        </tbody>
-      </table>
+    <!-- Service Advisors Grid -->
+    <section class="advisors-grid-container">
+      <div class="advisors-grid" id="advisorsGrid">
+        <!-- Grid items will be populated here -->
+      </div>
     </section>
 
     <!-- Pagination -->
@@ -1923,885 +1923,880 @@
   </div>
 </div>
 
-<!-- Password Generated Modal -->
-<div class="modal fade confirmation-modal" id="passwordGeneratedModal" tabindex="-1" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-      <div class="modal-body">
-        <div class="confirmation-icon" style="background: linear-gradient(145deg, #42a5f5, #1e88e5);">
-          <i class="fas fa-key"></i>
-        </div>
-        <h3 class="confirmation-title">Password Generated</h3>
-        <p class="confirmation-message">A temporary password has been generated and would be sent to the service advisor's email.</p>
-        <div class="password-display p-3 mb-4 bg-light rounded">
-          <div class="fw-bold mb-2">Temporary Password:</div>
-          <code class="fs-5" id="tempPasswordDisplay">SA2025-XYZ123</code>
-        </div>
-        <div class="alert alert-warning mb-4">
-          <i class="fas fa-exclamation-triangle me-2"></i>
-          <small>Save this password as it won't be displayed again.</small>
-        </div>
-        <button type="button" class="confirmation-btn" data-bs-dismiss="modal">Continue</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- jQuery and Bootstrap JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 
 <!-- Custom JS -->
-<script th:inline="javascript">
-  // Make serviceAdvisors a global variable
-  let serviceAdvisors = [];
-  let currentPage = 1;
-  const itemsPerPage = 10;
-  let currentFilter = 'all';
+<script th:inline="javascript">// Make serviceAdvisors a global variable
+let serviceAdvisors = [];
+let currentPage = 1;
+const itemsPerPage = 8; // Changed from 10 to 8 for grid layout
+let currentFilter = 'all';
 
-  // Wait for DOM to be loaded
-  document.addEventListener('DOMContentLoaded', function() {
-    // Initialize app
-    initializeApp();
+// Wait for DOM to be loaded
+document.addEventListener('DOMContentLoaded', function() {
+  // Initialize app
+  initializeApp();
 
-    // Set up event listeners
-    setupEventListeners();
+  // Set up event listeners
+  setupEventListeners();
 
-    // Load service advisors
-    loadServiceAdvisors();
+  // Load service advisors
+  loadServiceAdvisors();
 
-    function initializeApp() {
-      // Setup mobile menu toggle
-      setupMobileMenu();
+  function initializeApp() {
+    // Setup mobile menu toggle
+    setupMobileMenu();
 
-      // Setup logout button
-      setupLogout();
+    // Setup logout button
+    setupLogout();
 
-      // Set up token-based authentication
-      setupAuthentication();
+    // Set up token-based authentication
+    setupAuthentication();
 
-      // Set up navigation and active menu
-      setupNavigation();
+    // Set up navigation and active menu
+    setupNavigation();
+  }
+
+  function setupMobileMenu() {
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    if (mobileMenuToggle) {
+      mobileMenuToggle.addEventListener('click', function() {
+        document.getElementById('sidebar').classList.toggle('active');
+      });
     }
+  }
 
-    function setupMobileMenu() {
-      const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-      if (mobileMenuToggle) {
-        mobileMenuToggle.addEventListener('click', function() {
-          document.getElementById('sidebar').classList.toggle('active');
-        });
-      }
+  function setupLogout() {
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', function() {
+        // Clear storage
+        localStorage.removeItem("jwt-token");
+        sessionStorage.removeItem("jwt-token");
+        localStorage.removeItem("user-role");
+        localStorage.removeItem("user-name");
+        sessionStorage.removeItem("user-role");
+        sessionStorage.removeItem("user-name");
+
+        // Redirect to logout
+        window.location.href = '/admin/logout';
+      });
     }
+  }
 
-    function setupLogout() {
-      const logoutBtn = document.getElementById('logoutBtn');
-      if (logoutBtn) {
-        logoutBtn.addEventListener('click', function() {
-          // Clear storage
-          localStorage.removeItem("jwt-token");
-          sessionStorage.removeItem("jwt-token");
-          localStorage.removeItem("user-role");
-          localStorage.removeItem("user-name");
-          sessionStorage.removeItem("user-role");
-          sessionStorage.removeItem("user-name");
+  function setupAuthentication() {
+    // Get token from storage
+    const tokenFromStorage = localStorage.getItem("jwt-token") || sessionStorage.getItem("jwt-token");
 
-          // Redirect to logout
-          window.location.href = '/admin/logout';
-        });
-      }
+    if (tokenFromStorage) {
+      console.log("Token found in storage");
+    } else {
+      console.warn("No token found in storage");
+      // If no token is found, redirect to login
+      window.location.href = '/admin/login?error=session_expired';
     }
+  }
 
-    function setupAuthentication() {
-      // Get token from storage
-      const tokenFromStorage = localStorage.getItem("jwt-token") || sessionStorage.getItem("jwt-token");
+  function setupNavigation() {
+    // Get the current path
+    const currentPath = window.location.pathname;
 
-      if (tokenFromStorage) {
-        console.log("Token found in storage");
+    // Set active class on sidebar menu items based on current path
+    document.querySelectorAll('.sidebar-menu-link').forEach(link => {
+      const href = link.getAttribute('href');
+      if (href && currentPath.includes(href.split('?')[0])) {
+        link.classList.add('active');
       } else {
-        console.warn("No token found in storage");
-        // If no token is found, redirect to login
-        window.location.href = '/admin/login?error=session_expired';
+        link.classList.remove('active');
       }
+    });
+  }
+
+  function setupEventListeners() {
+    // Add service advisor button
+    const addAdvisorBtn = document.getElementById('addAdvisorBtn');
+    if (addAdvisorBtn) {
+      addAdvisorBtn.addEventListener('click', function() {
+        // Reset form
+        document.getElementById('addAdvisorForm').reset();
+
+        // Show add advisor modal
+        const addAdvisorModal = new bootstrap.Modal(document.getElementById('addAdvisorModal'));
+        addAdvisorModal.show();
+      });
     }
 
-    function setupNavigation() {
-      // Get the current path
-      const currentPath = window.location.pathname;
+    // Save service advisor button
+    const saveAdvisorBtn = document.getElementById('saveAdvisorBtn');
+    if (saveAdvisorBtn) {
+      saveAdvisorBtn.addEventListener('click', saveServiceAdvisor);
+    }
 
-      // Set active class on sidebar menu items based on current path
-      document.querySelectorAll('.sidebar-menu-link').forEach(link => {
-        const href = link.getAttribute('href');
-        if (href && currentPath.includes(href.split('?')[0])) {
-          link.classList.add('active');
-        } else {
-          link.classList.remove('active');
+    // Edit service advisor button from details
+    const editAdvisorFromDetailsBtn = document.getElementById('editAdvisorFromDetailsBtn');
+    if (editAdvisorFromDetailsBtn) {
+      editAdvisorFromDetailsBtn.addEventListener('click', function() {
+        const advisorId = this.getAttribute('data-advisor-id');
+        showEditModal(advisorId);
+      });
+    }
+
+    // Update service advisor button
+    const updateAdvisorBtn = document.getElementById('updateAdvisorBtn');
+    if (updateAdvisorBtn) {
+      updateAdvisorBtn.addEventListener('click', updateServiceAdvisor);
+    }
+
+    // Reset password button
+    const resetPasswordBtn = document.getElementById('resetPasswordBtn');
+    if (resetPasswordBtn) {
+      resetPasswordBtn.addEventListener('click', function() {
+        const generatedPassword = generateRandomPassword();
+        document.getElementById('editPassword').value = generatedPassword;
+
+        // Show success message that password will be sent by email
+        showConfirmation(
+                "Password Reset",
+                "A new temporary password has been generated and will be sent to the service advisor's email."
+        );
+      });
+    }
+
+    // Profile tabs functionality
+    const profileTabs = document.querySelectorAll('.profile-tab');
+    profileTabs.forEach(tab => {
+      tab.addEventListener('click', function() {
+        // Get the tab ID
+        const tabId = this.getAttribute('data-tab');
+
+        // Remove active class from all tabs and tab contents
+        profileTabs.forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+        // Add active class to clicked tab and corresponding content
+        this.classList.add('active');
+        document.getElementById(`${tabId}-tab`).classList.add('active');
+      });
+    });
+
+    // Search functionality
+    const searchInput = document.getElementById('advisorSearch');
+    if (searchInput) {
+      searchInput.addEventListener('keyup', function() {
+        filterServiceAdvisors(this.value);
+      });
+    }
+
+    // Filter pills functionality
+    const filterPills = document.querySelectorAll('.filter-pill');
+    filterPills.forEach(pill => {
+      pill.addEventListener('click', function() {
+        // Remove active class from all pills
+        filterPills.forEach(p => p.classList.remove('active'));
+
+        // Add active class to clicked pill
+        this.classList.add('active');
+
+        // Set current filter
+        currentFilter = this.textContent.trim().toLowerCase().replace(' ', '-');
+
+        // Reset to first page
+        currentPage = 1;
+
+        // Render with new filter
+        renderServiceAdvisors();
+      });
+    });
+
+    // Pagination
+    const prevBtn = document.getElementById('prevBtn');
+    if (prevBtn) {
+      prevBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (currentPage > 1) {
+          currentPage--;
+          renderServiceAdvisors();
+          updatePaginationUI();
         }
       });
     }
 
-    function setupEventListeners() {
-      // Add service advisor button
-      const addAdvisorBtn = document.getElementById('addAdvisorBtn');
-      if (addAdvisorBtn) {
-        addAdvisorBtn.addEventListener('click', function() {
-          // Reset form
-          document.getElementById('addAdvisorForm').reset();
-
-          // Show add advisor modal
-          const addAdvisorModal = new bootstrap.Modal(document.getElementById('addAdvisorModal'));
-          addAdvisorModal.show();
-        });
-      }
-
-      // Save service advisor button
-      const saveAdvisorBtn = document.getElementById('saveAdvisorBtn');
-      if (saveAdvisorBtn) {
-        saveAdvisorBtn.addEventListener('click', saveServiceAdvisor);
-      }
-
-      // Edit service advisor button from details
-      const editAdvisorFromDetailsBtn = document.getElementById('editAdvisorFromDetailsBtn');
-      if (editAdvisorFromDetailsBtn) {
-        editAdvisorFromDetailsBtn.addEventListener('click', function() {
-          const advisorId = this.getAttribute('data-advisor-id');
-          showEditModal(advisorId);
-        });
-      }
-
-      // Update service advisor button
-      const updateAdvisorBtn = document.getElementById('updateAdvisorBtn');
-      if (updateAdvisorBtn) {
-        updateAdvisorBtn.addEventListener('click', updateServiceAdvisor);
-      }
-
-      // Reset password button
-      const resetPasswordBtn = document.getElementById('resetPasswordBtn');
-      if (resetPasswordBtn) {
-        resetPasswordBtn.addEventListener('click', function() {
-          const generatedPassword = generateRandomPassword();
-          document.getElementById('editPassword').value = generatedPassword;
-
-          // Show password generated modal
-          document.getElementById('tempPasswordDisplay').textContent = generatedPassword;
-          const passwordModal = new bootstrap.Modal(document.getElementById('passwordGeneratedModal'));
-          passwordModal.show();
-        });
-      }
-
-      // Profile tabs functionality
-      const profileTabs = document.querySelectorAll('.profile-tab');
-      profileTabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-          // Get the tab ID
-          const tabId = this.getAttribute('data-tab');
-
-          // Remove active class from all tabs and tab contents
-          profileTabs.forEach(t => t.classList.remove('active'));
-          document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-
-          // Add active class to clicked tab and corresponding content
-          this.classList.add('active');
-          document.getElementById(`${tabId}-tab`).classList.add('active');
-        });
-      });
-
-      // Search functionality
-      const searchInput = document.getElementById('advisorSearch');
-      if (searchInput) {
-        searchInput.addEventListener('keyup', function() {
-          filterServiceAdvisors(this.value);
-        });
-      }
-
-      // Filter pills functionality
-      const filterPills = document.querySelectorAll('.filter-pill');
-      filterPills.forEach(pill => {
-        pill.addEventListener('click', function() {
-          // Remove active class from all pills
-          filterPills.forEach(p => p.classList.remove('active'));
-
-          // Add active class to clicked pill
-          this.classList.add('active');
-
-          // Set current filter
-          currentFilter = this.textContent.trim().toLowerCase().replace(' ', '-');
-
-          // Reset to first page
-          currentPage = 1;
-
-          // Render with new filter
+    const nextBtn = document.getElementById('nextBtn');
+    if (nextBtn) {
+      nextBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        const filteredAdvisors = getFilteredAdvisors();
+        const totalPages = Math.ceil(filteredAdvisors.length / itemsPerPage);
+        if (currentPage < totalPages) {
+          currentPage++;
           renderServiceAdvisors();
-        });
+          updatePaginationUI();
+        }
       });
+    }
 
-      // Pagination
-      const prevBtn = document.getElementById('prevBtn');
-      if (prevBtn) {
-        prevBtn.addEventListener('click', function(e) {
-          e.preventDefault();
-          if (currentPage > 1) {
-            currentPage--;
-            renderServiceAdvisors();
-            updatePaginationUI();
-          }
-        });
-      }
+    // Sort dropdown functionality
+    const sortDropdownItems = document.querySelectorAll('.dropdown-menu .dropdown-item');
+    sortDropdownItems.forEach(item => {
+      item.addEventListener('click', function(e) {
+        e.preventDefault();
 
-      const nextBtn = document.getElementById('nextBtn');
-      if (nextBtn) {
-        nextBtn.addEventListener('click', function(e) {
-          e.preventDefault();
-          const filteredAdvisors = getFilteredAdvisors();
-          const totalPages = Math.ceil(filteredAdvisors.length / itemsPerPage);
-          if (currentPage < totalPages) {
-            currentPage++;
-            renderServiceAdvisors();
-            updatePaginationUI();
-          }
-        });
-      }
+        // Remove active class from all items
+        sortDropdownItems.forEach(i => i.classList.remove('active'));
 
-      // Sort dropdown functionality
-      const sortDropdownItems = document.querySelectorAll('.dropdown-menu .dropdown-item');
-      sortDropdownItems.forEach(item => {
-        item.addEventListener('click', function(e) {
-          e.preventDefault();
+        // Add active class to clicked item
+        this.classList.add('active');
 
-          // Remove active class from all items
-          sortDropdownItems.forEach(i => i.classList.remove('active'));
+        // Update dropdown button text
+        document.getElementById('sortDropdown').innerHTML = `
+                  <i class="fas fa-sort"></i>
+                  Sort by: ${this.textContent}
+              `;
 
-          // Add active class to clicked item
-          this.classList.add('active');
-
-          // Update dropdown button text
-          document.getElementById('sortDropdown').innerHTML = `
-                    <i class="fas fa-sort"></i>
-                    Sort by: ${this.textContent}
-                `;
-
-          // Sort service advisors
-          sortServiceAdvisors(this.textContent.toLowerCase());
-        });
+        // Sort service advisors
+        sortServiceAdvisors(this.textContent.toLowerCase());
       });
+    });
+  }
+});
+
+// Move all helper functions and other functions that use serviceAdvisors outside the document ready handler,
+// but make sure they can access the now-global serviceAdvisors variable
+
+function getToken() {
+  return localStorage.getItem('jwt-token') || sessionStorage.getItem('jwt-token');
+}
+
+function showSpinner() {
+  const spinnerOverlay = document.getElementById('spinnerOverlay');
+  if (spinnerOverlay) {
+    spinnerOverlay.classList.add('show');
+  }
+}
+
+function hideSpinner() {
+  const spinnerOverlay = document.getElementById('spinnerOverlay');
+  if (spinnerOverlay) {
+    setTimeout(() => {
+      spinnerOverlay.classList.remove('show');
+    }, 500); // Minimum show time for spinner
+  }
+}
+
+function showConfirmation(title, message) {
+  document.getElementById('confirmationTitle').textContent = title;
+  document.getElementById('confirmationMessage').textContent = message;
+  const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+  successModal.show();
+}
+
+function loadServiceAdvisors() {
+  showSpinner();
+
+  // Call API to get service advisors
+  fetch('/admin/service-advisors/api/advisors', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + getToken()
+    }
+  })
+          .then(response => {
+            if (!response.ok) {
+              if (response.status === 401) {
+                // Redirect to login on auth failure
+                window.location.href = '/admin/login?error=session_expired';
+                throw new Error('Session expired');
+              }
+              throw new Error(`Server responded with status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then(data => {
+            hideSpinner();
+
+            // Store service advisors globally
+            serviceAdvisors = data;
+
+            // Render service advisors
+            renderServiceAdvisors();
+
+            // Setup pagination
+            setupPagination();
+          })
+          .catch(error => {
+            hideSpinner();
+            console.error('Error fetching advisor details:', error);
+            alert('Failed to load advisor details. Please try again.');
+          });
+}
+
+function getFilteredAdvisors() {
+  const searchTerm = document.getElementById('advisorSearch').value.toLowerCase();
+
+  // First filter by search term
+  let filtered = serviceAdvisors.filter(advisor => {
+    // Search in name, email, ID, and department
+    return (
+            (advisor.firstName + ' ' + advisor.lastName).toLowerCase().includes(searchTerm) ||
+            advisor.email.toLowerCase().includes(searchTerm) ||
+            (advisor.formattedId || '').toLowerCase().includes(searchTerm) ||
+            (advisor.department || '').toLowerCase().includes(searchTerm)
+    );
+  });
+
+  // Then filter by selected filter pill
+  if (currentFilter !== 'all-advisors') {
+    if (currentFilter === 'high-workload') {
+      filtered = filtered.filter(advisor => advisor.workloadPercentage >= 75);
+    } else if (currentFilter === 'available') {
+      filtered = filtered.filter(advisor => advisor.workloadPercentage < 50);
+    }
+  }
+
+  return filtered;
+}
+
+function renderServiceAdvisors() {
+  // Get filtered advisors based on current filter and search term
+  const filteredAdvisors = getFilteredAdvisors();
+
+  // Calculate pagination
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedAdvisors = filteredAdvisors.slice(startIndex, endIndex);
+
+  // Get the grid container
+  const gridContainer = document.getElementById('advisorsGrid');
+
+  // Clear grid
+  gridContainer.innerHTML = '';
+
+  // Check if there are service advisors
+  if (paginatedAdvisors.length === 0) {
+    gridContainer.innerHTML = `
+      <div class="no-advisors-message">
+        <i class="fas fa-user-tie fa-3x mb-3 text-muted"></i>
+        <h4>No service advisors found</h4>
+        <p class="text-muted">Try adjusting your filters or add a new service advisor</p>
+      </div>
+    `;
+    return;
+  }
+
+  // Populate grid with service advisor cards
+  paginatedAdvisors.forEach(advisor => {
+    // Determine workload class
+    const workloadClass = getWorkloadClass(advisor.workloadPercentage);
+
+    // Create advisor card
+    const card = document.createElement('div');
+    card.className = 'advisor-card';
+    card.addEventListener('click', function() {
+      showAdvisorDetails(advisor);
+    });
+
+    // Create card contents
+    card.innerHTML = `
+      <div class="advisor-card-header">
+        <div class="advisor-avatar">${getInitials(advisor.firstName, advisor.lastName)}</div>
+        <div class="advisor-header-info">
+          <div class="advisor-name">${advisor.firstName} ${advisor.lastName}</div>
+          <div class="advisor-id">${advisor.formattedId || ('SA-' + advisor.advisorId)}</div>
+        </div>
+      </div>
+      <div class="advisor-card-body">
+        <div class="advisor-detail">
+          <div class="advisor-detail-icon">
+            <i class="fas fa-envelope"></i>
+          </div>
+          <div class="advisor-detail-content">
+            <div class="advisor-detail-label">Email</div>
+            <div class="advisor-detail-value">${advisor.email}</div>
+          </div>
+        </div>
+        <div class="advisor-detail">
+          <div class="advisor-detail-icon">
+            <i class="fas fa-phone"></i>
+          </div>
+          <div class="advisor-detail-content">
+            <div class="advisor-detail-label">Phone</div>
+            <div class="advisor-detail-value">${advisor.phoneNumber}</div>
+          </div>
+        </div>
+        <div class="advisor-detail">
+          <div class="advisor-detail-icon">
+            <i class="fas fa-building"></i>
+          </div>
+          <div class="advisor-detail-content">
+            <div class="advisor-detail-label">Department</div>
+            <div class="advisor-detail-value">${advisor.department || 'Not assigned'}</div>
+          </div>
+        </div>
+        <div class="advisor-detail">
+          <div class="advisor-detail-icon">
+            <i class="fas fa-${getSpecializationIcon(advisor.specialization)}"></i>
+          </div>
+          <div class="advisor-detail-content">
+            <div class="advisor-detail-label">Specialization</div>
+            <div class="advisor-detail-value">
+              <span class="specialization-badge ${getSpecializationClass(advisor.specialization)}">
+                ${advisor.specialization || 'None'}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="advisor-card-footer">
+        <div class="workload-container">
+          <div class="workload-progress ${workloadClass}" style="width: ${advisor.workloadPercentage}%;"></div>
+        </div>
+        <div class="workload-text">
+          <span>Workload</span>
+          <span class="workload-label">${advisor.workloadPercentage}% (${advisor.activeServices} active)</span>
+        </div>
+      </div>
+    `;
+
+    // Add card to grid
+    gridContainer.appendChild(card);
+  });
+
+  // Update pagination
+  updatePaginationUI();
+}
+
+function updatePaginationUI() {
+  const filteredAdvisors = getFilteredAdvisors();
+  const totalPages = Math.ceil(filteredAdvisors.length / itemsPerPage);
+
+  // Get pagination container
+  const pagination = document.getElementById('pagination');
+
+  // Clear pagination
+  pagination.innerHTML = '';
+
+  // Add previous button
+  const prevBtn = document.createElement('li');
+  prevBtn.className = 'page-item ' + (currentPage === 1 ? 'disabled' : '');
+  prevBtn.innerHTML = `
+  <a class="page-link" href="#" aria-label="Previous">
+      <i class="fas fa-chevron-left"></i>
+  </a>
+  `;
+  prevBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    if (currentPage > 1) {
+      currentPage--;
+      renderServiceAdvisors();
+    }
+  });
+  pagination.appendChild(prevBtn);
+
+  // Add page numbers
+  for (let i = 1; i <= totalPages; i++) {
+    const pageItem = document.createElement('li');
+    pageItem.className = 'page-item ' + (i === currentPage ? 'active' : '');
+    pageItem.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+    pageItem.addEventListener('click', function(e) {
+      e.preventDefault();
+      currentPage = i;
+      renderServiceAdvisors();
+    });
+    pagination.appendChild(pageItem);
+  }
+
+  // Add next button
+  const nextBtn = document.createElement('li');
+  nextBtn.className = 'page-item ' + (currentPage === totalPages || totalPages === 0 ? 'disabled' : '');
+  nextBtn.innerHTML = `
+  <a class="page-link" href="#" aria-label="Next">
+      <i class="fas fa-chevron-right"></i>
+  </a>
+  `;
+  nextBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    if (currentPage < totalPages) {
+      currentPage++;
+      renderServiceAdvisors();
+    }
+  });
+  pagination.appendChild(nextBtn);
+}
+
+function setupPagination() {
+  const filteredAdvisors = getFilteredAdvisors();
+  const totalPages = Math.ceil(filteredAdvisors.length / itemsPerPage);
+
+  // Update pagination UI
+  updatePaginationUI();
+}
+
+function getInitials(firstName, lastName) {
+  const firstInitial = firstName ? firstName.charAt(0).toUpperCase() : '';
+  const lastInitial = lastName ? lastName.charAt(0).toUpperCase() : '';
+  return firstInitial + lastInitial;
+}
+
+function getWorkloadClass(percentage) {
+  if (percentage >= 75) {
+    return 'high';
+  } else if (percentage >= 50) {
+    return 'medium';
+  } else {
+    return 'low';
+  }
+}
+
+function getStatusIcon(status) {
+  switch (status.toLowerCase()) {
+    case 'received':
+      return 'clipboard-check';
+    case 'diagnosis':
+      return 'stethoscope';
+    case 'repair':
+      return 'tools';
+    case 'completed':
+      return 'check-circle';
+    default:
+      return 'circle';
+  }
+}
+
+function getSpecializationClass(specialization) {
+  if (!specialization) return '';
+
+  const spec = specialization.toLowerCase();
+  if (spec.includes('engine') || spec.includes('mechanical')) {
+    return 'mechanical';
+  } else if (spec.includes('electrical')) {
+    return 'electrical';
+  } else if (spec.includes('body')) {
+    return 'bodywork';
+  } else if (spec.includes('diagnostics')) {
+    return 'diagnostics';
+  }
+
+  return '';
+}
+
+function getSpecializationIcon(specialization) {
+  if (!specialization) return 'question-circle';
+
+  const spec = specialization.toLowerCase();
+  if (spec.includes('engine') || spec.includes('mechanical')) {
+    return 'cogs';
+  } else if (spec.includes('electrical')) {
+    return 'bolt';
+  } else if (spec.includes('body')) {
+    return 'car';
+  } else if (spec.includes('diagnostics')) {
+    return 'stethoscope';
+  } else if (spec.includes('general')) {
+    return 'tools';
+  }
+
+  return 'wrench';
+}
+
+function getWorkloadText(percentage) {
+  if (percentage >= 75) {
+    return 'High workload';
+  } else if (percentage >= 50) {
+    return 'Moderate workload';
+  } else {
+    return 'Available for new services';
+  }
+}
+
+function getActiveServicesClass(count) {
+  if (count >= 6) {
+    return 'danger';
+  } else if (count >= 3) {
+    return 'warning';
+  } else {
+    return 'success';
+  }
+}
+
+function showAdvisorDetails(advisor) {
+  // Set advisor ID on edit button for future reference
+  document.getElementById('editAdvisorFromDetailsBtn').setAttribute('data-advisor-id', advisor.advisorId);
+
+  // Personal Info Tab
+  document.getElementById('viewAdvisorInitials').textContent = getInitials(advisor.firstName, advisor.lastName);
+  document.getElementById('viewAdvisorName').textContent = advisor.firstName + ' ' + advisor.lastName;
+  document.getElementById('viewAdvisorEmail').textContent = advisor.email;
+  document.getElementById('viewAdvisorPhone').textContent = advisor.phoneNumber;
+  document.getElementById('viewAdvisorId').textContent = advisor.formattedId || ('SA-' + advisor.advisorId);
+  document.getElementById('viewAdvisorDepartment').textContent = advisor.department || 'Not assigned';
+  document.getElementById('viewAdvisorSpecialization').textContent = advisor.specialization || 'None';
+  document.getElementById('viewAdvisorHireDate').textContent = advisor.hireDate ? new Date(advisor.hireDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Not available';
+
+  // Workload Tab
+  document.getElementById('viewAdvisorWorkloadValue').textContent = advisor.workloadPercentage + '%';
+
+  const workloadBar = document.getElementById('viewAdvisorWorkloadBar');
+  workloadBar.style.width = advisor.workloadPercentage + '%';
+  workloadBar.className = 'workload-progress ' + getWorkloadClass(advisor.workloadPercentage);
+
+  document.getElementById('viewAdvisorWorkloadText').textContent = getWorkloadText(advisor.workloadPercentage);
+
+  // Show modal
+  const detailsModal = new bootstrap.Modal(document.getElementById('advisorDetailsModal'));
+  detailsModal.show();
+}
+
+function generateRandomPassword() {
+  // Generate a password in the format: SA2025-XXXNNN (where X is a letter and N is a number)
+  const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // Excluded I and O to avoid confusion
+  const numbers = '123456789'; // Excluded 0 to avoid confusion
+
+  let password = 'SA2025-';
+
+  // Add 3 random letters
+  for (let i = 0; i < 3; i++) {
+    password += letters.charAt(Math.floor(Math.random() * letters.length));
+  }
+
+  // Add 3 random numbers
+  for (let i = 0; i < 3; i++) {
+    password += numbers.charAt(Math.floor(Math.random() * numbers.length));
+  }
+
+  return password;
+}
+
+function saveServiceAdvisor() {
+  // Get form
+  const form = document.getElementById('addAdvisorForm');
+
+  // Basic form validation
+  if (!form.checkValidity()) {
+    form.reportValidity();
+    return;
+  }
+
+  // Generate a random password for the new advisor
+  const generatedPassword = generateRandomPassword();
+
+  // Get form data
+  const formData = {
+    firstName: document.getElementById('firstName').value,
+    lastName: document.getElementById('lastName').value,
+    email: document.getElementById('email').value,
+    phoneNumber: document.getElementById('phone').value,
+    department: document.getElementById('department').value,
+    specialization: document.getElementById('specialization').value,
+    password: generatedPassword // Add the generated password to the request
+  };
+
+  showSpinner();
+
+  // Call API to create new service advisor
+  fetch('/admin/service-advisors', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + getToken()
+    },
+    body: JSON.stringify(formData)
+  })
+          .then(response => {
+            if (!response.ok) {
+              // Log the status for debugging
+              console.error(`Server responded with status: ${response.status}`);
+
+              // Try to get more detailed error message
+              return response.text().then(text => {
+                throw new Error(`Server responded with status: ${response.status}` +
+                        (text ? `, message: ${text}` : ''));
+              });
+            }
+            return response.json();
+          })
+          .then(data => {
+            hideSpinner();
+
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addAdvisorModal'));
+            modal.hide();
+
+            // Show success message about email
+            showConfirmation(
+                    "Service Advisor Added Successfully",
+                    "The service advisor has been created and login credentials have been sent to their email address."
+            );
+
+            // Reset form
+            form.reset();
+
+            // Reload service advisors
+            loadServiceAdvisors();
+          })
+          .catch(error => {
+            hideSpinner();
+            console.error('Error creating service advisor:', error);
+
+            // Show user-friendly error message
+            alert('Failed to create service advisor. ' +
+                    (error.message || 'Please check your connection and try again.'));
+          });
+}
+
+function showEditModal(advisorId) {
+  // Close details modal if open
+  const detailsModal = bootstrap.Modal.getInstance(document.getElementById('advisorDetailsModal'));
+  if (detailsModal) {
+    detailsModal.hide();
+  }
+
+  showSpinner();
+
+  // Call API to get advisor details for editing
+  fetch(`/admin/service-advisors/${advisorId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + getToken()
+    }
+  })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`Server responded with status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then(advisor => {
+            hideSpinner();
+
+            // Populate edit form
+            document.getElementById('editAdvisorId').value = advisor.advisorId;
+            document.getElementById('editUserId').value = advisor.userId;
+            document.getElementById('editFirstName').value = advisor.firstName;
+            document.getElementById('editLastName').value = advisor.lastName;
+            document.getElementById('editEmail').value = advisor.email;
+            document.getElementById('editPhone').value = advisor.phoneNumber;
+            document.getElementById('editDepartment').value = advisor.department;
+            document.getElementById('editSpecialization').value = advisor.specialization;
+            document.getElementById('editPassword').value = '';
+
+            // Show edit modal
+            const editModal = new bootstrap.Modal(document.getElementById('editAdvisorModal'));
+            editModal.show();
+          })
+          .catch(error => {
+            hideSpinner();
+            console.error('Error fetching advisor details for editing:', error);
+            alert('Failed to load advisor details for editing. Please try again.');
+          });
+}
+
+function updateServiceAdvisor() {
+  // Get form
+  const form = document.getElementById('editAdvisorForm');
+
+  // Basic form validation
+  if (!form.checkValidity()) {
+    form.reportValidity();
+    return;
+  }
+
+  // Get advisor ID
+  const advisorId = document.getElementById('editAdvisorId').value;
+
+  // Get form data
+  const formData = {
+    advisorId: advisorId,
+    userId: document.getElementById('editUserId').value,
+    firstName: document.getElementById('editFirstName').value,
+    lastName: document.getElementById('editLastName').value,
+    email: document.getElementById('editEmail').value,
+    phoneNumber: document.getElementById('editPhone').value,
+    department: document.getElementById('editDepartment').value,
+    specialization: document.getElementById('editSpecialization').value
+  };
+
+  // Add password if provided
+  const password = document.getElementById('editPassword').value;
+  if (password) {
+    formData.password = password;
+  }
+
+  showSpinner();
+
+  // Call API to update service advisor
+  fetch(`/admin/service-advisors/${advisorId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + getToken()
+    },
+    body: JSON.stringify(formData)
+  })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`Server responded with status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then(data => {
+            hideSpinner();
+
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('editAdvisorModal'));
+            modal.hide();
+
+            // Show success message
+            showConfirmation(
+                    'Service Advisor Updated',
+                    'The service advisor information has been updated successfully.' +
+                    (password ? ' A new password has been sent to their email.' : '')
+            );
+
+            // Reset form
+            form.reset();
+
+            // Reload service advisors
+            loadServiceAdvisors();
+          })
+          .catch(error => {
+            hideSpinner();
+            console.error('Error updating service advisor:', error);
+            alert('Failed to update service advisor. Please try again.');
+          });
+}
+
+function filterServiceAdvisors(searchTerm) {
+  // Reset to first page
+  currentPage = 1;
+
+  // Render with new search term (getFilteredAdvisors will use the search input value)
+  renderServiceAdvisors();
+}
+
+function sortServiceAdvisors(sortBy) {
+  // Sort the service advisors array based on the sortBy parameter
+  serviceAdvisors.sort((a, b) => {
+    switch (sortBy) {
+      case 'name':
+        return (a.firstName + a.lastName).localeCompare(b.firstName + b.lastName);
+      case 'department':
+        return (a.department || '').localeCompare(b.department || '');
+      case 'workload':
+        return b.workloadPercentage - a.workloadPercentage;
+      case 'hire date':
+        return new Date(a.hireDate || 0) - new Date(b.hireDate || 0);
+      default:
+        return 0;
     }
   });
 
-  // Move all helper functions and other functions that use serviceAdvisors outside the document ready handler,
-  // but make sure they can access the now-global serviceAdvisors variable
-
-  function getToken() {
-    return localStorage.getItem('jwt-token') || sessionStorage.getItem('jwt-token');
-  }
-
-  function showSpinner() {
-    const spinnerOverlay = document.getElementById('spinnerOverlay');
-    if (spinnerOverlay) {
-      spinnerOverlay.classList.add('show');
-    }
-  }
-
-  function hideSpinner() {
-    const spinnerOverlay = document.getElementById('spinnerOverlay');
-    if (spinnerOverlay) {
-      setTimeout(() => {
-        spinnerOverlay.classList.remove('show');
-      }, 500); // Minimum show time for spinner
-    }
-  }
-
-  function showConfirmation(title, message) {
-    document.getElementById('confirmationTitle').textContent = title;
-    document.getElementById('confirmationMessage').textContent = message;
-    const successModal = new bootstrap.Modal(document.getElementById('successModal'));
-    successModal.show();
-  }
-
-  function loadServiceAdvisors() {
-    showSpinner();
-
-    // Call API to get service advisors
-    fetch('/admin/service-advisors/api/advisors', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + getToken()
-      }
-    })
-            .then(response => {
-              if (!response.ok) {
-                if (response.status === 401) {
-                  // Redirect to login on auth failure
-                  window.location.href = '/admin/login?error=session_expired';
-                  throw new Error('Session expired');
-                }
-                throw new Error(`Server responded with status: ${response.status}`);
-              }
-              return response.json();
-            })
-            .then(data => {
-              hideSpinner();
-
-              // Store service advisors globally
-              serviceAdvisors = data;
-
-              // Render service advisors
-              renderServiceAdvisors();
-
-              // Setup pagination
-              setupPagination();
-            })
-            .catch(error => {
-              hideSpinner();
-              console.error('Error fetching advisor details:', error);
-              alert('Failed to load advisor details. Please try again.');
-            });
-  }
-
-  function getFilteredAdvisors() {
-    const searchTerm = document.getElementById('advisorSearch').value.toLowerCase();
-
-    // First filter by search term
-    let filtered = serviceAdvisors.filter(advisor => {
-      // Search in name, email, ID, and department
-      return (
-              (advisor.firstName + ' ' + advisor.lastName).toLowerCase().includes(searchTerm) ||
-              advisor.email.toLowerCase().includes(searchTerm) ||
-              (advisor.formattedId || '').toLowerCase().includes(searchTerm) ||
-              (advisor.department || '').toLowerCase().includes(searchTerm)
-      );
-    });
-
-    // Then filter by selected filter pill
-    if (currentFilter !== 'all-advisors') {
-      if (currentFilter === 'high-workload') {
-        filtered = filtered.filter(advisor => advisor.workloadPercentage >= 75);
-      } else if (currentFilter === 'available') {
-        filtered = filtered.filter(advisor => advisor.workloadPercentage < 50);
-      }
-    }
-
-    return filtered;
-  }
-
-  function renderServiceAdvisors() {
-    // Get filtered advisors based on current filter and search term
-    const filteredAdvisors = getFilteredAdvisors();
-
-    // Calculate pagination
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    const paginatedAdvisors = filteredAdvisors.slice(startIndex, endIndex);
-
-    // Get the table body
-    const tableBody = document.getElementById('advisorsTableBody');
-
-    // Clear table
-    tableBody.innerHTML = '';
-
-    // Check if there are service advisors
-    if (paginatedAdvisors.length === 0) {
-      tableBody.innerHTML = `
-        <tr>
-            <td colspan="6" class="text-center py-4">
-                <div class="no-data-message">
-                    <i class="fas fa-user-tie fa-3x mb-3 text-muted"></i>
-                    <h4>No service advisors found</h4>
-                    <p class="text-muted">Try adjusting your filters or add a new service advisor</p>
-                </div>
-            </td>
-        </tr>
-        `;
-      return;
-    }
-
-    // Populate table with service advisors
-    paginatedAdvisors.forEach(advisor => {
-      // Create row
-      const row = document.createElement('tr');
-
-      // Set row click handler
-      row.addEventListener('click', function() {
-        showAdvisorDetails(advisor);
-      });
-
-      // Determine workload class
-      const workloadClass = getWorkloadClass(advisor.workloadPercentage);
-
-      // Set row content
-      row.innerHTML = `
-        <td>
-            <div class="advisor-cell">
-                <div class="advisor-avatar">${getInitials(advisor.firstName, advisor.lastName)}</div>
-                <div class="advisor-info">
-                    <div class="advisor-name">${advisor.firstName} ${advisor.lastName}</div>
-                    <div class="advisor-id">${advisor.formattedId || ('SA-' + advisor.advisorId)}</div>
-                </div>
-            </div>
-        </td>
-        <td>
-            <div class="phone-number">
-                <i class="fas fa-phone"></i>
-                ${advisor.phoneNumber}
-            </div>
-            <div class="mt-1">
-                <small>${advisor.email}</small>
-            </div>
-        </td>
-        <td>
-            <div class="department">
-                <i class="fas fa-building"></i>
-                ${advisor.department || 'Not assigned'}
-            </div>
-        </td>
-        <td>
-            <span class="specialization-badge ${getSpecializationClass(advisor.specialization)}">
-                <i class="fas fa-${getSpecializationIcon(advisor.specialization)}"></i>
-                ${advisor.specialization || 'None'}
-            </span>
-        </td>
-        <td>
-            <div class="workload-container">
-                <div class="workload-progress ${workloadClass}" style="width: ${advisor.workloadPercentage}%;"></div>
-            </div>
-            <div class="workload-text">${advisor.workloadPercentage}% - ${getWorkloadText(advisor.workloadPercentage)}</div>
-        </td>
-        <td class="text-center">
-            <span class="badge bg-${getActiveServicesClass(advisor.activeServices)}">${advisor.activeServices}</span>
-        </td>
-        `;
-
-      // Add row to table
-      tableBody.appendChild(row);
-    });
-
-    // Update pagination
-    updatePaginationUI();
-  }
-
-  function updatePaginationUI() {
-    const filteredAdvisors = getFilteredAdvisors();
-    const totalPages = Math.ceil(filteredAdvisors.length / itemsPerPage);
-
-    // Get pagination container
-    const pagination = document.getElementById('pagination');
-
-    // Clear pagination
-    pagination.innerHTML = '';
-
-    // Add previous button
-    const prevBtn = document.createElement('li');
-    prevBtn.className = 'page-item ' + (currentPage === 1 ? 'disabled' : '');
-    prevBtn.innerHTML = `
-    <a class="page-link" href="#" aria-label="Previous">
-        <i class="fas fa-chevron-left"></i>
-    </a>
-    `;
-    prevBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      if (currentPage > 1) {
-        currentPage--;
-        renderServiceAdvisors();
-      }
-    });
-    pagination.appendChild(prevBtn);
-
-    // Add page numbers
-    for (let i = 1; i <= totalPages; i++) {
-      const pageItem = document.createElement('li');
-      pageItem.className = 'page-item ' + (i === currentPage ? 'active' : '');
-      pageItem.innerHTML = `<a class="page-link" href="#">${i}</a>`;
-      pageItem.addEventListener('click', function(e) {
-        e.preventDefault();
-        currentPage = i;
-        renderServiceAdvisors();
-      });
-      pagination.appendChild(pageItem);
-    }
-
-    // Add next button
-    const nextBtn = document.createElement('li');
-    nextBtn.className = 'page-item ' + (currentPage === totalPages || totalPages === 0 ? 'disabled' : '');
-    nextBtn.innerHTML = `
-    <a class="page-link" href="#" aria-label="Next">
-        <i class="fas fa-chevron-right"></i>
-    </a>
-    `;
-    nextBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      if (currentPage < totalPages) {
-        currentPage++;
-        renderServiceAdvisors();
-      }
-    });
-    pagination.appendChild(nextBtn);
-  }
-
-  function setupPagination() {
-    const filteredAdvisors = getFilteredAdvisors();
-    const totalPages = Math.ceil(filteredAdvisors.length / itemsPerPage);
-
-    // Update pagination UI
-    updatePaginationUI();
-  }
-
-  function getInitials(firstName, lastName) {
-    const firstInitial = firstName ? firstName.charAt(0).toUpperCase() : '';
-    const lastInitial = lastName ? lastName.charAt(0).toUpperCase() : '';
-    return firstInitial + lastInitial;
-  }
-
-  function getWorkloadClass(percentage) {
-    if (percentage >= 75) {
-      return 'high';
-    } else if (percentage >= 50) {
-      return 'medium';
-    } else {
-      return 'low';
-    }
-  }
-
-  function getStatusIcon(status) {
-    switch (status.toLowerCase()) {
-      case 'received':
-        return 'clipboard-check';
-      case 'diagnosis':
-        return 'stethoscope';
-      case 'repair':
-        return 'tools';
-      case 'completed':
-        return 'check-circle';
-      default:
-        return 'circle';
-    }
-  }
-
-  function getSpecializationClass(specialization) {
-    if (!specialization) return '';
-
-    const spec = specialization.toLowerCase();
-    if (spec.includes('engine') || spec.includes('mechanical')) {
-      return 'mechanical';
-    } else if (spec.includes('electrical')) {
-      return 'electrical';
-    } else if (spec.includes('body')) {
-      return 'bodywork';
-    } else if (spec.includes('diagnostics')) {
-      return 'diagnostics';
-    }
-
-    return '';
-  }
-
-  function getSpecializationIcon(specialization) {
-    if (!specialization) return 'question-circle';
-
-    const spec = specialization.toLowerCase();
-    if (spec.includes('engine') || spec.includes('mechanical')) {
-      return 'cogs';
-    } else if (spec.includes('electrical')) {
-      return 'bolt';
-    } else if (spec.includes('body')) {
-      return 'car';
-    } else if (spec.includes('diagnostics')) {
-      return 'stethoscope';
-    } else if (spec.includes('general')) {
-      return 'tools';
-    }
-
-    return 'wrench';
-  }
-
-  function getWorkloadText(percentage) {
-    if (percentage >= 75) {
-      return 'High workload';
-    } else if (percentage >= 50) {
-      return 'Moderate workload';
-    } else {
-      return 'Available for new services';
-    }
-  }
-
-  function getActiveServicesClass(count) {
-    if (count >= 6) {
-      return 'danger';
-    } else if (count >= 3) {
-      return 'warning';
-    } else {
-      return 'success';
-    }
-  }
-
-  function showAdvisorDetails(advisor) {
-    // Set advisor ID on edit button for future reference
-    document.getElementById('editAdvisorFromDetailsBtn').setAttribute('data-advisor-id', advisor.advisorId);
-
-    // Personal Info Tab
-    document.getElementById('viewAdvisorInitials').textContent = getInitials(advisor.firstName, advisor.lastName);
-    document.getElementById('viewAdvisorName').textContent = advisor.firstName + ' ' + advisor.lastName;
-    document.getElementById('viewAdvisorEmail').textContent = advisor.email;
-    document.getElementById('viewAdvisorPhone').textContent = advisor.phoneNumber;
-    document.getElementById('viewAdvisorId').textContent = advisor.formattedId || ('SA-' + advisor.advisorId);
-    document.getElementById('viewAdvisorDepartment').textContent = advisor.department || 'Not assigned';
-    document.getElementById('viewAdvisorSpecialization').textContent = advisor.specialization || 'None';
-    document.getElementById('viewAdvisorHireDate').textContent = advisor.hireDate ? new Date(advisor.hireDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Not available';
-
-    // Workload Tab
-    document.getElementById('viewAdvisorWorkloadValue').textContent = advisor.workloadPercentage + '%';
-
-    const workloadBar = document.getElementById('viewAdvisorWorkloadBar');
-    workloadBar.style.width = advisor.workloadPercentage + '%';
-    workloadBar.className = 'workload-progress ' + getWorkloadClass(advisor.workloadPercentage);
-
-    document.getElementById('viewAdvisorWorkloadText').textContent = getWorkloadText(advisor.workloadPercentage);
-
-    // Show modal
-    const detailsModal = new bootstrap.Modal(document.getElementById('advisorDetailsModal'));
-    detailsModal.show();
-  }
-
-  function generateRandomPassword() {
-    // Generate a password in the format: SA2025-XXXNNN (where X is a letter and N is a number)
-    const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // Excluded I and O to avoid confusion
-    const numbers = '123456789'; // Excluded 0 to avoid confusion
-
-    let password = 'SA2025-';
-
-    // Add 3 random letters
-    for (let i = 0; i < 3; i++) {
-      password += letters.charAt(Math.floor(Math.random() * letters.length));
-    }
-
-    // Add 3 random numbers
-    for (let i = 0; i < 3; i++) {
-      password += numbers.charAt(Math.floor(Math.random() * numbers.length));
-    }
-
-    return password;
-  }
-
-  function saveServiceAdvisor() {
-    // Get form
-    const form = document.getElementById('addAdvisorForm');
-
-    // Basic form validation
-    if (!form.checkValidity()) {
-      form.reportValidity();
-      return;
-    }
-
-    // Generate a random password for the new advisor
-    const generatedPassword = generateRandomPassword();
-
-    // Get form data
-    const formData = {
-      firstName: document.getElementById('firstName').value,
-      lastName: document.getElementById('lastName').value,
-      email: document.getElementById('email').value,
-      phoneNumber: document.getElementById('phone').value,
-      department: document.getElementById('department').value,
-      specialization: document.getElementById('specialization').value,
-      password: generatedPassword // Add the generated password to the request
-    };
-
-    showSpinner();
-
-    // Call API to create new service advisor
-    fetch('/admin/service-advisors', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + getToken()
-      },
-      body: JSON.stringify(formData)
-    })
-            .then(response => {
-              if (!response.ok) {
-                // Log the status for debugging
-                console.error(`Server responded with status: ${response.status}`);
-
-                // Try to get more detailed error message
-                return response.text().then(text => {
-                  throw new Error(`Server responded with status: ${response.status}` +
-                          (text ? `, message: ${text}` : ''));
-                });
-              }
-              return response.json();
-            })
-            .then(data => {
-              hideSpinner();
-
-              // Close modal
-              const modal = bootstrap.Modal.getInstance(document.getElementById('addAdvisorModal'));
-              modal.hide();
-
-              // Always show the generated password
-              document.getElementById('tempPasswordDisplay').textContent = generatedPassword;
-              const passwordModal = new bootstrap.Modal(document.getElementById('passwordGeneratedModal'));
-              passwordModal.show();
-
-              // Reset form
-              form.reset();
-
-              // Reload service advisors
-              loadServiceAdvisors();
-            })
-            .catch(error => {
-              hideSpinner();
-              console.error('Error creating service advisor:', error);
-
-              // Show user-friendly error message
-              alert('Failed to create service advisor. ' +
-                      (error.message || 'Please check your connection and try again.'));
-            });
-  }
-
-  function showEditModal(advisorId) {
-    // Close details modal if open
-    const detailsModal = bootstrap.Modal.getInstance(document.getElementById('advisorDetailsModal'));
-    if (detailsModal) {
-      detailsModal.hide();
-    }
-
-    showSpinner();
-
-    // Call API to get advisor details for editing
-    fetch(`/admin/service-advisors/${advisorId}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + getToken()
-      }
-    })
-            .then(response => {
-              if (!response.ok) {
-                throw new Error(`Server responded with status: ${response.status}`);
-              }
-              return response.json();
-            })
-            .then(advisor => {
-              hideSpinner();
-
-              // Populate edit form
-              document.getElementById('editAdvisorId').value = advisor.advisorId;
-              document.getElementById('editUserId').value = advisor.userId;
-              document.getElementById('editFirstName').value = advisor.firstName;
-              document.getElementById('editLastName').value = advisor.lastName;
-              document.getElementById('editEmail').value = advisor.email;
-              document.getElementById('editPhone').value = advisor.phoneNumber;
-              document.getElementById('editDepartment').value = advisor.department;
-              document.getElementById('editSpecialization').value = advisor.specialization;
-              document.getElementById('editPassword').value = '';
-
-              // Show edit modal
-              const editModal = new bootstrap.Modal(document.getElementById('editAdvisorModal'));
-              editModal.show();
-            })
-            .catch(error => {
-              hideSpinner();
-              console.error('Error fetching advisor details for editing:', error);
-              alert('Failed to load advisor details for editing. Please try again.');
-            });
-  }
-
-  function updateServiceAdvisor() {
-    // Get form
-    const form = document.getElementById('editAdvisorForm');
-
-    // Basic form validation
-    if (!form.checkValidity()) {
-      form.reportValidity();
-      return;
-    }
-
-    // Get advisor ID
-    const advisorId = document.getElementById('editAdvisorId').value;
-
-    // Get form data
-    const formData = {
-      advisorId: advisorId,
-      userId: document.getElementById('editUserId').value,
-      firstName: document.getElementById('editFirstName').value,
-      lastName: document.getElementById('editLastName').value,
-      email: document.getElementById('editEmail').value,
-      phoneNumber: document.getElementById('editPhone').value,
-      department: document.getElementById('editDepartment').value,
-      specialization: document.getElementById('editSpecialization').value
-    };
-
-    // Add password if provided
-    const password = document.getElementById('editPassword').value;
-    if (password) {
-      formData.password = password;
-    }
-
-    showSpinner();
-
-    // Call API to update service advisor
-    fetch(`/admin/service-advisors/${advisorId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + getToken()
-      },
-      body: JSON.stringify(formData)
-    })
-            .then(response => {
-              if (!response.ok) {
-                throw new Error(`Server responded with status: ${response.status}`);
-              }
-              return response.json();
-            })
-            .then(data => {
-              hideSpinner();
-
-              // Close modal
-              const modal = bootstrap.Modal.getInstance(document.getElementById('editAdvisorModal'));
-              modal.hide();
-
-              // Show success message
-              showConfirmation('Service Advisor Updated', 'The service advisor has been updated successfully.');
-
-              // Reset form
-              form.reset();
-
-              // Reload service advisors
-              loadServiceAdvisors();
-            })
-            .catch(error => {
-              hideSpinner();
-              console.error('Error updating service advisor:', error);
-              alert('Failed to update service advisor. Please try again.');
-            });
-  }
-
-  function filterServiceAdvisors(searchTerm) {
-    // Reset to first page
-    currentPage = 1;
-
-    // Render with new search term (getFilteredAdvisors will use the search input value)
-    renderServiceAdvisors();
-  }
-
-  function sortServiceAdvisors(sortBy) {
-    // Sort the service advisors array based on the sortBy parameter
-    serviceAdvisors.sort((a, b) => {
-      switch (sortBy) {
-        case 'name':
-          return (a.firstName + a.lastName).localeCompare(b.firstName + b.lastName);
-        case 'department':
-          return (a.department || '').localeCompare(b.department || '');
-        case 'workload':
-          return b.workloadPercentage - a.workloadPercentage;
-        case 'hire date':
-          return new Date(a.hireDate || 0) - new Date(b.hireDate || 0);
-        default:
-          return 0;
-      }
-    });
-
-    // Re-render the service advisors
-    renderServiceAdvisors();
-  }
+  // Re-render the service advisors
+  renderServiceAdvisors();
+}
 </script>
 </body>
 </html>

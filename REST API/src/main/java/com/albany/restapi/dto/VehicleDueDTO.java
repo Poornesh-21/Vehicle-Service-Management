@@ -20,5 +20,5 @@ public class VehicleDueDTO {
     private String status;
     private LocalDate dueDate;
     private String category;
+    private String membershipStatus;
 }
-

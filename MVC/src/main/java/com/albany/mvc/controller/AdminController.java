@@ -1,6 +1,8 @@
 package com.albany.mvc.controller;
 
+import com.albany.mvc.dto.DashboardDTO;
 import com.albany.mvc.security.JwtUtil;
+import com.albany.mvc.service.DashboardService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class AdminController {
 
     private final JwtUtil jwtUtil;
+    private final DashboardService dashboardService;
 
     @GetMapping("/dashboard")
     public String dashboard(
@@ -36,11 +39,17 @@ public class AdminController {
             return "redirect:/admin/login?error=session_expired";
         }
 
+        // Get dashboard data
+        DashboardDTO dashboardStats = dashboardService.getDashboardData(validToken);
+        if (dashboardStats == null) {
+            log.error("Failed to get dashboard data");
+            model.addAttribute("apiError", "Failed to get dashboard data. Please try again.");
+        } else {
+            model.addAttribute("dashboardStats", dashboardStats);
+        }
+
         // Set the admin's name for the page
         model.addAttribute("userName", "Arthur Morgan");
-
-        // You can add more attributes for the dashboard stats here
-        model.addAttribute("dashboardStats", null);
 
         return "admin/dashboard";
     }
@@ -67,6 +76,69 @@ public class AdminController {
         model.addAttribute("customers", null);
 
         return "admin/customers";
+    }
+
+    @GetMapping("/service-advisors")
+    public String serviceAdvisors(
+            @RequestParam(required = false) String token,
+            Model model,
+            HttpServletRequest request) {
+        log.info("Accessing service advisors page");
+
+        // Get token from various sources
+        String validToken = getValidToken(token, request);
+
+        if (validToken == null) {
+            log.warn("No valid token found, redirecting to login");
+            return "redirect:/admin/login?error=session_expired";
+        }
+
+        // Set the admin's name for the page
+        model.addAttribute("userName", "Arthur Morgan");
+
+        return "admin/serviceAdvisor";
+    }
+
+    @GetMapping("/inventory")
+    public String inventory(
+            @RequestParam(required = false) String token,
+            Model model,
+            HttpServletRequest request) {
+        log.info("Accessing inventory page");
+
+        // Get token from various sources
+        String validToken = getValidToken(token, request);
+
+        if (validToken == null) {
+            log.warn("No valid token found, redirecting to login");
+            return "redirect:/admin/login?error=session_expired";
+        }
+
+        // Set the admin's name for the page
+        model.addAttribute("userName", "Arthur Morgan");
+
+        return "admin/inventory";
+    }
+
+    @GetMapping("/service-requests")
+    public String serviceRequests(
+            @RequestParam(required = false) String token,
+            Model model,
+            HttpServletRequest request) {
+        log.info("Accessing service requests page");
+
+        // Get token from various sources
+        String validToken = getValidToken(token, request);
+
+        if (validToken == null) {
+            log.warn("No valid token found, redirecting to login");
+            return "redirect:/admin/login?error=session_expired";
+        }
+
+        // Set the admin's name for the page
+        model.addAttribute("userName", "Arthur Morgan");
+
+        return "admin/serviceRequests";
     }
 
     /**

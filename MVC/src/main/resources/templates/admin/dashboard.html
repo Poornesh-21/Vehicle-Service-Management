@@ -90,6 +90,30 @@
             min-height: 100vh;
         }
 
+        /* Mobile menu toggle button */
+        .mobile-menu-toggle {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            background: var(--wine);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 1100;
+            box-shadow: var(--shadow-md);
+            transition: var(--transition);
+        }
+        
+        .mobile-menu-toggle:hover {
+            background: var(--wine-light);
+        }
+        
         /* Sidebar Styles - Fixed visibility issues */
         .sidebar {
             width: 280px;
@@ -1344,7 +1368,43 @@
         }
 
         /* Responsive Design */
+        /* Responsive styles */
+        @media (max-width: 1199.98px) {
+            .stats-row {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .chart-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        
         @media (max-width: 991.98px) {
+            .mobile-menu-toggle {
+                display: flex;
+            }
+            
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+                width: 100%;
+            }
+            
+            .stats-row {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .chart-card {
+                height: auto;
+            }
             .sidebar {
                 width: 5rem;
                 box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
@@ -1595,6 +1655,61 @@
         .service-card.active-page {
             display: block;
         }
+        
+        @media (max-width: 767.98px) {
+            .main-content {
+                padding: 1.5rem 1rem;
+            }
+            
+            .page-header {
+                margin-bottom: 1.5rem;
+            }
+            
+            .header-left h1 {
+                font-size: 2rem;
+            }
+            
+            .current-date {
+                font-size: 0.9rem;
+                padding: 0.4rem 1.2rem;
+            }
+            
+            .stats-row {
+                margin-bottom: 1.5rem;
+            }
+            
+            .stat-card {
+                padding: 1.25rem;
+            }
+            
+            .stat-icon {
+                width: 45px;
+                height: 45px;
+                font-size: 1.2rem;
+            }
+            
+            .stat-value {
+                font-size: 1.75rem;
+            }
+        }
+        
+        @media (max-width: 575.98px) {
+            .header-left h1 {
+                font-size: 1.75rem;
+            }
+            
+            .sidebar {
+                width: 100%;
+            }
+            
+            .stat-card {
+                padding: 1rem;
+            }
+            
+            .sidebar-menu-link {
+                padding: 0.75rem 0.85rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1610,7 +1725,7 @@
                 <div class="nav-section-title">Main</div>
                 <ul class="sidebar-menu">
                     <li class="sidebar-menu-item">
-                        <a th:href="@{/admin/dashboard}" class="sidebar-menu-link">
+                        <a th:href="@{/admin/dashboard}" class="sidebar-menu-link active">
                             <i class="fas fa-tachometer-alt"></i>
                             <span>Dashboard</span>
                         </a>
@@ -1634,7 +1749,7 @@
                         </a>
                     </li>
                     <li class="sidebar-menu-item">
-                        <a th:href="@{/admin/customers}" class="sidebar-menu-link active">
+                        <a th:href="@{/admin/customers}" class="sidebar-menu-link ">
                             <i class="fas fa-users"></i>
                             <span>Customers</span>
                         </a>
@@ -2246,6 +2361,33 @@
     </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Mobile menu toggle
+        $('#mobile-menu-toggle').click(function() {
+            $('#sidebar').toggleClass('active');
+            $(this).find('i').toggleClass('fa-bars fa-times');
+        });
+        
+        // Close sidebar when clicking on a menu item on mobile
+        $('.sidebar-menu-link').click(function() {
+            if ($(window).width() < 992) {
+                $('#sidebar').removeClass('active');
+                $('#mobile-menu-toggle').find('i').removeClass('fa-times').addClass('fa-bars');
+            }
+        });
+        
+        // Handle window resize
+        $(window).resize(function() {
+            if ($(window).width() >= 992) {
+                $('#sidebar').removeClass('active');
+                $('#mobile-menu-toggle').find('i').removeClass('fa-times').addClass('fa-bars');
+            }
+        });
+    });
+</script>
+
 <!-- Additional modals here (keeping them the same) -->
 
 <!-- jQuery and Bootstrap JS -->
@@ -2254,39 +2396,139 @@
 
 <!-- Custom Scripts -->
 <script>
-    // Function to select service advisor in modal
-    function selectAdvisor(element) {
-        // Remove selected class from all advisor cards
-        document.querySelectorAll('.advisor-card').forEach(card => {
-            card.classList.remove('selected');
-        });
+    // Global variables
+    let dashboardStats = null;
+    let serviceAdvisors = [];
+    let currentPage = {
+        due: 1,
+        inService: 1,
+        completed: 1
+    };
+    const itemsPerPage = {
+        due: 5,
+        inService: 5,
+        completed: 3
+    };
 
-        // Add selected class to clicked card
-        element.classList.add('selected');
+    // Document ready function
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize app
+        initializeApp();
+
+        // Load dashboard data
+        loadDashboardData();
+
+        // Load service advisors for assignment
+        loadServiceAdvisors();
+
+        // Set up event listeners
+        setupEventListeners();
+    });
+
+    // Initialize app
+    function initializeApp() {
+        // Setup mobile menu toggle
+        setupMobileMenu();
+
+        // Setup logout button
+        setupLogout();
+
+        // Set up token-based authentication
+        setupAuthentication();
+
+        // Set current date if element exists
+        setupDateDisplay();
+
+        // Initialize charts
+        initializeCharts();
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
-        // Create mobile menu toggle button for responsive design
-        const mobileToggle = document.createElement('button');
-        mobileToggle.className = 'mobile-menu-toggle';
-        mobileToggle.innerHTML = '<i class="fas fa-bars"></i>';
-        document.body.appendChild(mobileToggle);
+    function setupMobileMenu() {
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        if (mobileMenuToggle) {
+            mobileMenuToggle.addEventListener('click', function() {
+                document.getElementById('sidebar').classList.toggle('active');
+            });
+        }
+    }
 
-        // Toggle sidebar on mobile
-        mobileToggle.addEventListener('click', function() {
-            const sidebar = document.querySelector('.sidebar');
-            sidebar.classList.toggle('active');
-        });
+    function setupLogout() {
+        const logoutBtn = document.querySelector('.logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', function() {
+                // Show confirmation dialog
+                if (confirm('Are you sure you want to logout?')) {
+                    // Clear storage
+                    localStorage.removeItem("jwt-token");
+                    sessionStorage.removeItem("jwt-token");
+                    localStorage.removeItem("user-role");
+                    localStorage.removeItem("user-name");
+                    sessionStorage.removeItem("user-role");
+                    sessionStorage.removeItem("user-name");
 
-        // Set current date
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        const today = new Date();
-        document.getElementById('current-date').textContent = today.toLocaleDateString('en-US', options);
+                    // Redirect to logout
+                    window.location.href = '/admin/logout';
+                }
+            });
+        }
+    }
 
-        // Initialize charts with wine and dutch white colors
-        // Line chart for service trends with area
-        const serviceChartCtx = document.getElementById('serviceChart').getContext('2d');
-        const serviceChart = new Chart(serviceChartCtx, {
+    function setupDateDisplay() {
+        const dateElement = document.getElementById('current-date');
+        if (dateElement) {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const today = new Date();
+            dateElement.textContent = today.toLocaleDateString('en-US', options);
+        }
+    }
+
+    function setupAuthentication() {
+        // Get token from storage
+        const tokenFromStorage = localStorage.getItem("jwt-token") || sessionStorage.getItem("jwt-token");
+
+        if (tokenFromStorage) {
+            console.log("Token found in storage");
+
+            // Check if current URL already has a token parameter
+            const currentUrl = new URL(window.location.href);
+            const urlToken = currentUrl.searchParams.get('token');
+
+            // If URL doesn't have the token, update all navigation links
+            if (!urlToken) {
+                // Add token to all sidebar navigation links
+                document.querySelectorAll('.sidebar-menu-link').forEach(link => {
+                    const href = link.getAttribute('href');
+                    if (href && !href.includes('token=')) {
+                        const separator = href.includes('?') ? '&' : '?';
+                        link.setAttribute('href', href + separator + 'token=' + encodeURIComponent(tokenFromStorage));
+                    }
+                });
+
+                // Consider adding token to current URL for refresh protection
+                if (window.location.href.indexOf('token=') === -1) {
+                    const separator = window.location.href.indexOf('?') === -1 ? '?' : '&';
+                    const newUrl = window.location.href + separator + 'token=' + encodeURIComponent(tokenFromStorage);
+                    window.history.replaceState({}, document.title, newUrl);
+                }
+            }
+        } else {
+            console.warn("No token found in storage");
+            // If no token is found, redirect to login
+            window.location.href = '/admin/login?error=session_expired';
+        }
+    }
+
+    // Initialize charts
+    function initializeCharts() {
+        initializeServiceChart();
+        initializeDistributionChart();
+    }
+
+    function initializeServiceChart() {
+        const serviceChartCtx = document.getElementById('serviceChart');
+        if (!serviceChartCtx) return;
+
+        const serviceChart = new Chart(serviceChartCtx.getContext('2d'), {
             type: 'line',
             data: {
                 labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
@@ -2379,9 +2621,26 @@
             }
         });
 
-        // Doughnut chart for service distribution with wine color scheme
-        const distributionChartCtx = document.getElementById('distributionChart').getContext('2d');
-        const distributionChart = new Chart(distributionChartCtx, {
+        // Add click event to chart filter buttons
+        document.querySelectorAll('.chart-filter').forEach(button => {
+            button.addEventListener('click', function() {
+                const parent = this.closest('.chart-options');
+                parent.querySelectorAll('.chart-filter').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                this.classList.add('active');
+
+                const period = this.textContent.trim().toLowerCase();
+                updateChartData(this, period);
+            });
+        });
+    }
+
+    function initializeDistributionChart() {
+        const distributionChartCtx = document.getElementById('distributionChart');
+        if (!distributionChartCtx) return;
+
+        const distributionChart = new Chart(distributionChartCtx.getContext('2d'), {
             type: 'doughnut',
             data: {
                 labels: ['Pending', 'In Progress', 'Completed'],
@@ -2439,425 +2698,1152 @@
                 }
             }
         });
+    }
 
-        // Chart filter buttons
-        document.querySelectorAll('.chart-filter').forEach(button => {
-            button.addEventListener('click', function() {
-                const parent = this.closest('.chart-options');
-                parent.querySelectorAll('.chart-filter').forEach(btn => {
-                    btn.classList.remove('active');
-                });
-                this.classList.add('active');
+    function updateChartData(buttonElement, period) {
+        const chartContainer = buttonElement.closest('.chart-card').querySelector('.chart-container canvas');
+        const chart = Chart.getChart(chartContainer.id);
 
-                const period = this.textContent.trim().toLowerCase();
-                updateChartData(parent, period);
-            });
-        });
+        if (chartContainer.id === 'serviceChart') {
+            let labels, data1, data2;
 
-        // Update chart data based on selected period
-        function updateChartData(parent, period) {
-            const chartContainer = parent.closest('.chart-card').querySelector('.chart-container canvas');
-
-            if (chartContainer.id === 'serviceChart') {
-                let labels, data1, data2;
-
-                if (period === 'week') {
-                    labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-                    data1 = [2, 3, 4, 3, 5, 2, 1];
-                    data2 = [1, 2, 3, 2, 4, 1, 0];
-                } else if (period === 'month') {
-                    labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
-                    data1 = [8, 10, 12, 15];
-                    data2 = [5, 8, 7, 10];
-                } else if (period === 'quarter') {
-                    labels = ['Jan', 'Feb', 'Mar'];
-                    data1 = [30, 35, 40];
-                    data2 = [25, 30, 35];
-                } else if (period === 'year') {
-                    labels = ['Q1', 'Q2', 'Q3', 'Q4'];
-                    data1 = [100, 120, 110, 130];
-                    data2 = [90, 105, 95, 115];
-                }
-
-                serviceChart.data.labels = labels;
-                serviceChart.data.datasets[0].data = data1;
-                serviceChart.data.datasets[1].data = data2;
-                serviceChart.update();
-            } else if (chartContainer.id === 'distributionChart') {
-                let data;
-
-                if (period === 'month') {
-                    data = [12, 8, 5];
-                } else if (period === 'year') {
-                    data = [150, 95, 75];
-                }
-
-                distributionChart.data.datasets[0].data = data;
-                distributionChart.update();
+            if (period === 'week') {
+                labels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+                data1 = [2, 3, 4, 3, 5, 2, 1];
+                data2 = [1, 2, 3, 2, 4, 1, 0];
+            } else if (period === 'month') {
+                labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+                data1 = [8, 10, 12, 15];
+                data2 = [5, 8, 7, 10];
+            } else if (period === 'quarter') {
+                labels = ['Jan', 'Feb', 'Mar'];
+                data1 = [30, 35, 40];
+                data2 = [25, 30, 35];
+            } else if (period === 'year') {
+                labels = ['Q1', 'Q2', 'Q3', 'Q4'];
+                data1 = [100, 120, 110, 130];
+                data2 = [90, 105, 95, 115];
             }
+
+            chart.data.labels = labels;
+            chart.data.datasets[0].data = data1;
+            chart.data.datasets[1].data = data2;
+            chart.update();
+        } else if (chartContainer.id === 'distributionChart') {
+            let data;
+
+            if (period === 'month') {
+                data = [12, 8, 5];
+            } else if (period === 'year') {
+                data = [150, 95, 75];
+            }
+
+            chart.data.datasets[0].data = data;
+            chart.update();
         }
+    }
 
-        // Set vehicle details in single assign modal
-        document.querySelectorAll('[data-bs-target="#singleAssignModal"]').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const vehicleName = this.getAttribute('data-vehicle-name');
-                const vehicleReg = this.getAttribute('data-vehicle-reg');
-                const customerName = this.getAttribute('data-customer-name');
+    // Set up event listeners
+    function setupEventListeners() {
+        // Pagination for Due Table
+        setupPagination('dueTable', 'dueTablePagination', 'due');
 
-                document.querySelector('#singleAssignModal .vehicle-name').textContent = vehicleName;
-                document.querySelector('#singleAssignModal .vehicle-reg').textContent = vehicleReg;
-                document.querySelector('#singleAssignModal .customer-name').textContent = customerName;
+        // Pagination for Service Table
+        setupPagination('serviceTable', 'serviceTablePagination', 'inService');
+
+        // Pagination for Completed Services
+        setupPagination('completedServicesGrid', 'completedServicesPagination', 'completed');
+
+        // Search functionality
+        setupSearch();
+
+        // Modal functionality
+        setupModalListeners();
+    }
+
+    function setupPagination(tableId, paginationId, type) {
+        const tableElement = document.getElementById(tableId);
+        const paginationElement = document.getElementById(paginationId);
+
+        if (!tableElement || !paginationElement) return;
+
+        // Add click event to pagination buttons
+        paginationElement.querySelectorAll('[data-page]').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const page = parseInt(this.getAttribute('data-page'));
+                changePage(page, type);
             });
         });
 
-        // Search functionality for completed services
-        document.getElementById('completedServiceSearch').addEventListener('keyup', function() {
-            const searchTerm = this.value.toLowerCase();
-            const serviceCards = document.querySelectorAll('.service-cards-grid .service-card');
-
-            serviceCards.forEach(card => {
-                const vehicleName = card.querySelector('.service-card-title').textContent.toLowerCase();
-                const vehicleReg = card.querySelector('.service-meta-value').textContent.toLowerCase();
-                const customerName = card.querySelectorAll('.service-meta-value')[2].textContent.toLowerCase();
-
-                if (vehicleName.includes(searchTerm) || vehicleReg.includes(searchTerm) || customerName.includes(searchTerm)) {
-                    card.style.display = '';
-                } else {
-                    card.style.display = 'none';
+        // Add click event to previous button
+        const prevBtn = document.getElementById(`${type}PrevBtn`);
+        if (prevBtn) {
+            prevBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (currentPage[type] > 1) {
+                    changePage(currentPage[type] - 1, type);
                 }
-            });
-        });
-
-        // Due Table Pagination
-        const dueRowsPerPage = 5;
-        const dueTotalItems = document.querySelectorAll('#dueTable tbody tr').length;
-        const dueTotalPages = Math.ceil(dueTotalItems / dueRowsPerPage);
-
-        function setDuePage(pageNum) {
-            const prevBtn = document.getElementById('duePrevBtn');
-            const nextBtn = document.getElementById('dueNextBtn');
-            const tableRows = document.querySelectorAll('#dueTable tbody tr');
-
-            // Hide all rows
-            tableRows.forEach(row => {
-                row.classList.remove('active-page');
-            });
-
-            // Show rows for current page
-            const startIndex = (pageNum - 1) * dueRowsPerPage;
-            const endIndex = Math.min(startIndex + dueRowsPerPage, dueTotalItems);
-
-            for (let i = startIndex; i < endIndex; i++) {
-                tableRows[i].classList.add('active-page');
-            }
-
-            // Update pagination buttons states
-            document.querySelectorAll('#dueTablePagination [data-page]').forEach(btn => {
-                btn.classList.remove('active');
-                if (parseInt(btn.getAttribute('data-page')) === pageNum) {
-                    btn.classList.add('active');
-                }
-            });
-
-            // Enable/disable prev/next buttons
-            if (pageNum === 1) {
-                prevBtn.classList.add('disabled');
-            } else {
-                prevBtn.classList.remove('disabled');
-            }
-
-            if (pageNum === dueTotalPages) {
-                nextBtn.classList.add('disabled');
-            } else {
-                nextBtn.classList.remove('disabled');
-            }
-        }
-
-        // Service Table Pagination
-        const serviceRowsPerPage = 5;
-        const serviceTotalItems = document.querySelectorAll('#serviceTable tbody tr').length;
-        const serviceTotalPages = Math.ceil(serviceTotalItems / serviceRowsPerPage);
-
-        function setServicePage(pageNum) {
-            const prevBtn = document.getElementById('servicePrevBtn');
-            const nextBtn = document.getElementById('serviceNextBtn');
-            const tableRows = document.querySelectorAll('#serviceTable tbody tr');
-
-            // Hide all rows
-            tableRows.forEach(row => {
-                row.classList.remove('active-page');
-            });
-
-            // Show rows for current page
-            const startIndex = (pageNum - 1) * serviceRowsPerPage;
-            const endIndex = Math.min(startIndex + serviceRowsPerPage, serviceTotalItems);
-
-            for (let i = startIndex; i < endIndex; i++) {
-                tableRows[i].classList.add('active-page');
-            }
-
-            // Update pagination buttons states
-            document.querySelectorAll('#serviceTablePagination [data-page]').forEach(btn => {
-                btn.classList.remove('active');
-                if (parseInt(btn.getAttribute('data-page')) === pageNum) {
-                    btn.classList.add('active');
-                }
-            });
-
-            // Enable/disable prev/next buttons
-            if (pageNum === 1) {
-                prevBtn.classList.add('disabled');
-            } else {
-                prevBtn.classList.remove('disabled');
-            }
-
-            if (pageNum === serviceTotalPages) {
-                nextBtn.classList.add('disabled');
-            } else {
-                nextBtn.classList.remove('disabled');
-            }
-        }
-
-        // Completed Services Pagination
-        const completedCardsPerPage = 3;
-        const completedTotalItems = document.querySelectorAll('#completedServicesGrid .service-card').length;
-        const completedTotalPages = Math.ceil(completedTotalItems / completedCardsPerPage);
-
-        function setCompletedPage(pageNum) {
-            const prevBtn = document.getElementById('completedPrevBtn');
-            const nextBtn = document.getElementById('completedNextBtn');
-            const serviceCards = document.querySelectorAll('#completedServicesGrid .service-card');
-
-            // Hide all cards
-            serviceCards.forEach(card => {
-                card.classList.remove('active-page');
-            });
-
-            // Show cards for current page
-            const startIndex = (pageNum - 1) * completedCardsPerPage;
-            const endIndex = Math.min(startIndex + completedCardsPerPage, completedTotalItems);
-
-            for (let i = startIndex; i < endIndex; i++) {
-                serviceCards[i].classList.add('active-page');
-            }
-
-            // Update pagination buttons states
-            document.querySelectorAll('#completedServicesPagination [data-page]').forEach(btn => {
-                btn.classList.remove('active');
-                if (parseInt(btn.getAttribute('data-page')) === pageNum) {
-                    btn.classList.add('active');
-                }
-            });
-
-            // Enable/disable prev/next buttons
-            if (pageNum === 1) {
-                prevBtn.classList.add('disabled');
-            } else {
-                prevBtn.classList.remove('disabled');
-            }
-
-            if (pageNum === completedTotalPages) {
-                nextBtn.classList.add('disabled');
-            } else {
-                nextBtn.classList.remove('disabled');
-            }
-        }
-
-        // Set up pagination click events for Due Table
-        document.querySelectorAll('#dueTablePagination [data-page]').forEach(button => {
-            button.addEventListener('click', function() {
-                setDuePage(parseInt(this.getAttribute('data-page')));
-            });
-        });
-
-        document.getElementById('duePrevBtn').addEventListener('click', function() {
-            const activePage = document.querySelector('#dueTablePagination .page-link.active');
-            const currentPage = parseInt(activePage.getAttribute('data-page'));
-            if (currentPage > 1) {
-                setDuePage(currentPage - 1);
-            }
-        });
-
-        document.getElementById('dueNextBtn').addEventListener('click', function() {
-            const activePage = document.querySelector('#dueTablePagination .page-link.active');
-            const currentPage = parseInt(activePage.getAttribute('data-page'));
-            if (currentPage < dueTotalPages) {
-                setDuePage(currentPage + 1);
-            }
-        });
-
-        // Set up pagination click events for Service Table
-        document.querySelectorAll('#serviceTablePagination [data-page]').forEach(button => {
-            button.addEventListener('click', function() {
-                setServicePage(parseInt(this.getAttribute('data-page')));
-            });
-        });
-
-        document.getElementById('servicePrevBtn').addEventListener('click', function() {
-            const activePage = document.querySelector('#serviceTablePagination .page-link.active');
-            const currentPage = parseInt(activePage.getAttribute('data-page'));
-            if (currentPage > 1) {
-                setServicePage(currentPage - 1);
-            }
-        });
-
-        document.getElementById('serviceNextBtn').addEventListener('click', function() {
-            const activePage = document.querySelector('#serviceTablePagination .page-link.active');
-            const currentPage = parseInt(activePage.getAttribute('data-page'));
-            if (currentPage < serviceTotalPages) {
-                setServicePage(currentPage + 1);
-            }
-        });
-
-        // Set up pagination click events for Completed Services
-        document.querySelectorAll('#completedServicesPagination [data-page]').forEach(button => {
-            button.addEventListener('click', function() {
-                setCompletedPage(parseInt(this.getAttribute('data-page')));
-            });
-        });
-
-        document.getElementById('completedPrevBtn').addEventListener('click', function() {
-            const activePage = document.querySelector('#completedServicesPagination .fancy-page-link.active');
-            const currentPage = parseInt(activePage.getAttribute('data-page'));
-            if (currentPage > 1) {
-                setCompletedPage(currentPage - 1);
-            }
-        });
-
-        document.getElementById('completedNextBtn').addEventListener('click', function() {
-            const activePage = document.querySelector('#completedServicesPagination .fancy-page-link.active');
-            const currentPage = parseInt(activePage.getAttribute('data-page'));
-            if (currentPage < completedTotalPages) {
-                setCompletedPage(currentPage + 1);
-            }
-        });
-
-        // Initialize all paginations
-        setDuePage(1);
-        setServicePage(1);
-        setCompletedPage(1);
-
-        // Toast notification function
-        function showToast(message) {
-            // Create toast container if it doesn't exist
-            let toastContainer = document.querySelector('.toast-container');
-            if (!toastContainer) {
-                toastContainer = document.createElement('div');
-                toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
-                document.body.appendChild(toastContainer);
-            }
-
-            // Create toast element
-            const toastId = 'toast-' + Date.now();
-            const toastHTML = `
-                <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" id="${toastId}" style="background-color: #fff; border-left: 4px solid #722F37; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
-                    <div class="toast-header" style="background-color: rgba(114, 47, 55, 0.05); border-bottom: 1px solid rgba(114, 47, 55, 0.1);">
-                        <strong class="me-auto" style="color: #722F37;"><i class="fas fa-check-circle text-success me-2"></i> Success</strong>
-                        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-                    </div>
-                    <div class="toast-body">
-                        ${message}
-                    </div>
-                </div>
-            `;
-
-            toastContainer.insertAdjacentHTML('beforeend', toastHTML);
-
-            // Initialize and show toast
-            const toastElement = document.getElementById(toastId);
-            const toast = new bootstrap.Toast(toastElement, {
-                autohide: true,
-                delay: 5000
-            });
-            toast.show();
-
-            // Remove toast after it's hidden
-            toastElement.addEventListener('hidden.bs.toast', function() {
-                toastElement.remove();
             });
         }
 
-        // Handle confirm assignment button for single assign
-        document.getElementById('confirmSingleAssignBtn').addEventListener('click', function() {
-            // Get selected advisor
-            const selectedAdvisor = document.querySelector('#singleAssignModal .advisor-card.selected');
-
-            if (selectedAdvisor) {
-                const advisorName = selectedAdvisor.querySelector('.advisor-name').textContent;
-                const vehicleName = document.querySelector('#singleAssignModal .vehicle-name').textContent;
-
-                // Close the modal
-                const modal = bootstrap.Modal.getInstance(document.getElementById('singleAssignModal'));
-                modal.hide();
-
-                // Show success message
-                showToast(`${vehicleName} has been successfully assigned to ${advisorName}`);
-            } else {
-                // Show validation message
-                alert('Please select a service advisor');
-            }
-        });
-
-        // Handle logout button
-        document.querySelector('.logout-btn').addEventListener('click', function() {
-            if (confirm('Are you sure you want to logout?')) {
-                // Perform logout (redirect to login page in a real application)
-                window.location.href = '/logout';
-            }
-        });
-    });
-    // Authentication management script - add to all admin pages
-    document.addEventListener('DOMContentLoaded', function() {
-        // Get token from storage
-        const tokenFromStorage = localStorage.getItem("jwt-token") || sessionStorage.getItem("jwt-token");
-
-        if (tokenFromStorage) {
-            console.log("Token found in storage");
-
-            // Check if current URL already has a token parameter
-            const currentUrl = new URL(window.location.href);
-            const urlToken = currentUrl.searchParams.get('token');
-
-            // If URL doesn't have the token, update all navigation links
-            if (!urlToken) {
-                // Add token to all sidebar navigation links
-                document.querySelectorAll('.sidebar-menu-link').forEach(link => {
-                    const href = link.getAttribute('href');
-                    if (href && !href.includes('token=')) {
-                        const separator = href.includes('?') ? '&' : '?';
-                        link.setAttribute('href', href + separator + 'token=' + encodeURIComponent(tokenFromStorage));
-                    }
-                });
-
-                // Consider adding token to current URL for refresh protection
-                // This is optional but can help with refresh issues
-                if (window.location.href.indexOf('token=') === -1) {
-                    const separator = window.location.href.indexOf('?') === -1 ? '?' : '&';
-                    const newUrl = window.location.href + separator + 'token=' + encodeURIComponent(tokenFromStorage);
-                    window.history.replaceState({}, document.title, newUrl);
-                }
-            }
-        } else {
-            console.warn("No token found in storage");
-            // If no token is found, redirect to login
-            window.location.href = '/admin/login?error=session_expired';
-        }
-
-        // Add token to logout button
-        const logoutBtn = document.querySelector('.logout-btn');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', function(e) {
+        // Add click event to next button
+        const nextBtn = document.getElementById(`${type}NextBtn`);
+        if (nextBtn) {
+            nextBtn.addEventListener('click', function(e) {
                 e.preventDefault();
 
-                // Clear storage
-                localStorage.removeItem("jwt-token");
-                sessionStorage.removeItem("jwt-token");
+                let totalItems = 0;
+                if (type === 'due' && dashboardStats && dashboardStats.vehiclesDueList) {
+                    totalItems = dashboardStats.vehiclesDueList.length;
+                } else if (type === 'inService' && dashboardStats && dashboardStats.vehiclesInServiceList) {
+                    totalItems = dashboardStats.vehiclesInServiceList.length;
+                } else if (type === 'completed' && dashboardStats && dashboardStats.completedServicesList) {
+                    totalItems = dashboardStats.completedServicesList.length;
+                }
 
-                // Redirect to logout
-                window.location.href = '/admin/logout';
+                const totalPages = Math.ceil(totalItems / itemsPerPage[type]);
+
+                if (currentPage[type] < totalPages) {
+                    changePage(currentPage[type] + 1, type);
+                }
             });
         }
-    });
+    }
+
+    function changePage(page, type) {
+        currentPage[type] = page;
+
+        // Update UI
+        if (type === 'due') {
+            updateDueTablePage();
+        } else if (type === 'inService') {
+            updateServiceTablePage();
+        } else if (type === 'completed') {
+            updateCompletedServicesPage();
+        }
+
+        // Update pagination UI
+        updatePaginationUI(type);
+    }
+
+    function updateDueTablePage() {
+        const tableRows = document.querySelectorAll('#dueTable tbody tr');
+        const startIndex = (currentPage.due - 1) * itemsPerPage.due;
+        const endIndex = startIndex + itemsPerPage.due;
+
+        // Hide all rows
+        tableRows.forEach((row, index) => {
+            row.classList.remove('active-page');
+        });
+
+        // Show rows for current page
+        for (let i = startIndex; i < endIndex && i < tableRows.length; i++) {
+            tableRows[i].classList.add('active-page');
+        }
+    }
+
+    function updateServiceTablePage() {
+        const tableRows = document.querySelectorAll('#serviceTable tbody tr');
+        const startIndex = (currentPage.inService - 1) * itemsPerPage.inService;
+        const endIndex = startIndex + itemsPerPage.inService;
+
+        // Hide all rows
+        tableRows.forEach((row, index) => {
+            row.classList.remove('active-page');
+        });
+
+        // Show rows for current page
+        for (let i = startIndex; i < endIndex && i < tableRows.length; i++) {
+            tableRows[i].classList.add('active-page');
+        }
+    }
+
+    function updateCompletedServicesPage() {
+        const cards = document.querySelectorAll('#completedServicesGrid .service-card');
+        const startIndex = (currentPage.completed - 1) * itemsPerPage.completed;
+        const endIndex = startIndex + itemsPerPage.completed;
+
+        // Hide all cards
+        cards.forEach((card, index) => {
+            card.classList.remove('active-page');
+        });
+
+        // Show cards for current page
+        for (let i = startIndex; i < endIndex && i < cards.length; i++) {
+            cards[i].classList.add('active-page');
+        }
+    }
+
+    function updatePaginationUI(type) {
+        let totalItems = 0;
+        if (type === 'due' && dashboardStats && dashboardStats.vehiclesDueList) {
+            totalItems = dashboardStats.vehiclesDueList.length;
+        } else if (type === 'inService' && dashboardStats && dashboardStats.vehiclesInServiceList) {
+            totalItems = dashboardStats.vehiclesInServiceList.length;
+        } else if (type === 'completed' && dashboardStats && dashboardStats.completedServicesList) {
+            totalItems = dashboardStats.completedServicesList.length;
+        }
+
+        const totalPages = Math.ceil(totalItems / itemsPerPage[type]);
+        const paginationElement = document.getElementById(`${type}TablePagination`) ||
+            document.getElementById(`${type}ServicesPagination`);
+
+        if (!paginationElement) return;
+
+        // Update active page
+        paginationElement.querySelectorAll('[data-page]').forEach(button => {
+            button.classList.toggle('active', parseInt(button.getAttribute('data-page')) === currentPage[type]);
+        });
+
+        // Update prev/next buttons
+        const prevBtn = document.getElementById(`${type}PrevBtn`);
+        const nextBtn = document.getElementById(`${type}NextBtn`);
+
+        if (prevBtn) {
+            prevBtn.classList.toggle('disabled', currentPage[type] === 1);
+        }
+
+        if (nextBtn) {
+            nextBtn.classList.toggle('disabled', currentPage[type] === totalPages || totalPages === 0);
+        }
+    }
+
+    function setupSearch() {
+        // Due table search
+        const dueTableSearch = document.querySelector('#dueTable .search-input');
+        if (dueTableSearch) {
+            dueTableSearch.addEventListener('keyup', function() {
+                filterTable('dueTable', this.value);
+            });
+        }
+
+        // Service table search
+        const serviceTableSearch = document.querySelector('#serviceTable .search-input');
+        if (serviceTableSearch) {
+            serviceTableSearch.addEventListener('keyup', function() {
+                filterTable('serviceTable', this.value);
+            });
+        }
+
+        // Completed services search
+        const completedServicesSearch = document.getElementById('completedServiceSearch');
+        if (completedServicesSearch) {
+            completedServicesSearch.addEventListener('keyup', function() {
+                filterCompletedServices(this.value);
+            });
+        }
+    }
+
+    function filterTable(tableId, searchTerm) {
+        const table = document.getElementById(tableId);
+        if (!table) return;
+
+        const rows = table.querySelectorAll('tbody tr:not([id])');
+
+        searchTerm = searchTerm.toLowerCase();
+
+        if (!searchTerm) {
+            // Reset to current page view
+            if (tableId === 'dueTable') {
+                updateDueTablePage();
+            } else if (tableId === 'serviceTable') {
+                updateServiceTablePage();
+            }
+            return;
+        }
+
+        // Hide all rows first
+        rows.forEach(row => {
+            row.classList.remove('active-page');
+        });
+
+        // Show rows that match search term
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            if (text.includes(searchTerm)) {
+                row.classList.add('active-page');
+            }
+        });
+    }
+
+    function filterCompletedServices(searchTerm) {
+        const cards = document.querySelectorAll('#completedServicesGrid .service-card');
+
+        searchTerm = searchTerm.toLowerCase();
+
+        if (!searchTerm) {
+            // Reset to current page view
+            updateCompletedServicesPage();
+            return;
+        }
+
+        // Hide all cards first
+        cards.forEach(card => {
+            card.classList.remove('active-page');
+        });
+
+        // Show cards that match search term
+        cards.forEach(card => {
+            const text = card.textContent.toLowerCase();
+            if (text.includes(searchTerm)) {
+                card.classList.add('active-page');
+            }
+        });
+    }
+
+    function setupModalListeners() {
+        // Confirm assign button click
+        const confirmAssignBtn = document.getElementById('confirmAssignBtn');
+        if (confirmAssignBtn) {
+            confirmAssignBtn.addEventListener('click', assignServiceAdvisor);
+        }
+
+        // Advisor card selection
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.advisor-card')) {
+                const card = e.target.closest('.advisor-card');
+                document.querySelectorAll('.advisor-card').forEach(c => {
+                    c.classList.remove('selected');
+                });
+                card.classList.add('selected');
+            }
+        });
+    }
+
+    // API Functions
+    function getToken() {
+        return localStorage.getItem('jwt-token') || sessionStorage.getItem('jwt-token');
+    }
+
+    function showSpinner() {
+        const spinnerOverlay = document.getElementById('spinnerOverlay');
+        if (spinnerOverlay) {
+            spinnerOverlay.classList.add('show');
+        }
+    }
+
+    function hideSpinner() {
+        const spinnerOverlay = document.getElementById('spinnerOverlay');
+        if (spinnerOverlay) {
+            spinnerOverlay.classList.remove('show');
+        }
+    }
+
+    function loadDashboardData() {
+        showSpinner();
+
+        fetch('/admin/dashboard', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + getToken()
+            }
+        })
+            .then(response => {
+                if (response.status === 401) {
+                    window.location.href = '/admin/login?error=session_expired';
+                    throw new Error('Session expired');
+                }
+                return response.json();
+            })
+            .then(data => {
+                hideSpinner();
+
+                dashboardStats = data;
+
+                // Update stats
+                updateDashboardStats();
+
+                // Update tables
+                renderDueTable();
+                renderServiceTable();
+                renderCompletedServices();
+
+                // Update charts with real data
+                updateChartsWithRealData();
+            })
+            .catch(error => {
+                hideSpinner();
+                console.error('Error loading dashboard data:', error);
+                showToast('Failed to load dashboard data. Please try again.', 'error');
+            });
+    }
+
+    function loadServiceAdvisors() {
+        fetch('/admin/service-advisors/api/advisors', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + getToken()
+            }
+        })
+            .then(response => {
+                if (response.status === 401) {
+                    window.location.href = '/admin/login?error=session_expired';
+                    throw new Error('Session expired');
+                }
+                return response.json();
+            })
+            .then(data => {
+                serviceAdvisors = data;
+            })
+            .catch(error => {
+                console.error('Error loading service advisors:', error);
+            });
+    }
+
+    function updateDashboardStats() {
+        if (!dashboardStats) return;
+
+        // Update stats cards
+        const vehiclesDueElement = document.querySelector('.stat-card:nth-child(1) .stat-value');
+        const inProgressElement = document.querySelector('.stat-card:nth-child(2) .stat-value');
+        const completedElement = document.querySelector('.stat-card:nth-child(3) .stat-value');
+        const revenueElement = document.querySelector('.stat-card:nth-child(4) .stat-value');
+
+        if (vehiclesDueElement) {
+            vehiclesDueElement.textContent = dashboardStats.vehiclesDue || 0;
+        }
+
+        if (inProgressElement) {
+            inProgressElement.textContent = dashboardStats.vehiclesInProgress || 0;
+        }
+
+        if (completedElement) {
+            completedElement.textContent = dashboardStats.vehiclesCompleted || 0;
+        }
+
+        if (revenueElement) {
+            revenueElement.textContent = '₹' + (dashboardStats.totalRevenue || 0);
+        }
+    }
+
+    function renderDueTable() {
+        const tableBody = document.querySelector('#dueTable tbody');
+        if (!tableBody || !dashboardStats || !dashboardStats.vehiclesDueList) return;
+
+        // Clear existing rows
+        const existingRows = tableBody.querySelectorAll('tr:not([id])');
+        existingRows.forEach(row => row.remove());
+
+        // Hide loading row
+        const loadingRow = document.getElementById('loading-row');
+        if (loadingRow) {
+            loadingRow.style.display = 'none';
+        }
+
+        if (dashboardStats.vehiclesDueList.length === 0) {
+            // Show empty row
+            const emptyRow = document.getElementById('empty-row');
+            if (emptyRow) {
+                emptyRow.style.display = 'table-row';
+            }
+            return;
+        }
+
+        // Add rows for vehicles due
+        dashboardStats.vehiclesDueList.forEach((vehicle, index) => {
+            const isActivePage = index < itemsPerPage.due;
+
+            const row = document.createElement('tr');
+            row.className = isActivePage ? 'active-page' : '';
+            row.innerHTML = `
+            <td>
+                <div class="vehicle-info">
+                    <div class="vehicle-icon">
+                        <i class="fas fa-${vehicle.category === 'Bike' ? 'motorcycle' : 'car-side'}"></i>
+                    </div>
+                    <div class="vehicle-details">
+                        <h5>${vehicle.vehicleName}</h5>
+                        <p>Reg: ${vehicle.registrationNumber}</p>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <div class="person-info">
+                    <div class="person-details">
+                        <h5>${vehicle.customerName}</h5>
+                        <p>${vehicle.customerEmail || ''}</p>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <span class="status-badge status-pending">
+                    <i class="fas fa-clock"></i>
+                    <span>${vehicle.status}</span>
+                </span>
+            </td>
+            <td>${formatDate(vehicle.dueDate)}</td>
+            <td class="table-actions-cell">
+                <button class="btn-assign"
+                        onclick="showAssignAdvisorModal(${vehicle.requestId})">
+                    <i class="fas fa-user-plus"></i>
+                    Assign
+                </button>
+            </td>
+        `;
+
+            tableBody.appendChild(row);
+        });
+
+        // Update pagination
+        updatePaginationUI('due');
+    }
+
+    function renderServiceTable() {
+        const tableBody = document.querySelector('#serviceTable tbody');
+        if (!tableBody || !dashboardStats || !dashboardStats.vehiclesInServiceList) return;
+
+        // Clear existing rows
+        const existingRows = tableBody.querySelectorAll('tr:not([id])');
+        existingRows.forEach(row => row.remove());
+
+        if (dashboardStats.vehiclesInServiceList.length === 0) {
+            // Show empty row if it exists
+            const emptyRow = tableBody.querySelector('.empty-row');
+            if (emptyRow) {
+                emptyRow.style.display = 'table-row';
+            } else {
+                // Create empty row if it doesn't exist
+                const row = document.createElement('tr');
+                row.className = 'empty-row';
+                row.innerHTML = `
+                <td colspan="6" class="text-center py-4">
+                    <div class="no-data-message">
+                        <i class="fas fa-wrench fa-3x mb-3 text-muted"></i>
+                        <h5>No vehicles currently in service</h5>
+                        <p class="text-muted">There are no vehicles currently being serviced.</p>
+                    </div>
+                </td>
+            `;
+                tableBody.appendChild(row);
+            }
+            return;
+        }
+
+        // Add rows for vehicles in service
+        dashboardStats.vehiclesInServiceList.forEach((vehicle, index) => {
+            const isActivePage = index < itemsPerPage.inService;
+
+            const row = document.createElement('tr');
+            row.className = isActivePage ? 'active-page' : '';
+            row.innerHTML = `
+            <td>
+                <div class="vehicle-info">
+                    <div class="vehicle-icon">
+                        <i class="fas fa-${vehicle.category === 'Bike' ? 'motorcycle' : 'car-side'}"></i>
+                    </div>
+                    <div class="vehicle-details">
+                        <h5>${vehicle.vehicleName}</h5>
+                        <p>Reg: ${vehicle.registrationNumber}</p>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <div class="person-info">
+                    <div class="person-details">
+                        <h5>${vehicle.serviceAdvisorName}</h5>
+                        <p>ID: ${vehicle.serviceAdvisorId}</p>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <span class="status-badge status-${vehicle.status.toLowerCase() === 'diagnosis' ? 'diagnosis' : 'repair'}">
+                    <i class="fas fa-${vehicle.status.toLowerCase() === 'diagnosis' ? 'stethoscope' : 'wrench'}"></i>
+                    <span>${vehicle.status}</span>
+                </span>
+            </td>
+            <td>${formatDate(vehicle.startDate)}</td>
+            <td>${formatDate(vehicle.estimatedCompletionDate)}</td>
+            <td class="table-actions-cell">
+                <button class="btn-premium sm primary"
+                        onclick="showServiceRequestDetails(${vehicle.requestId})">
+                    <i class="fas fa-eye"></i>
+                    Details
+                </button>
+            </td>
+        `;
+
+            tableBody.appendChild(row);
+        });
+
+        // Update pagination
+        updatePaginationUI('inService');
+    }
+
+    function renderCompletedServices() {
+        const container = document.getElementById('completedServicesGrid');
+        if (!container || !dashboardStats || !dashboardStats.completedServicesList) return;
+
+        // Clear existing cards
+        container.innerHTML = '';
+
+        if (dashboardStats.completedServicesList.length === 0) {
+            // Show empty state
+            container.innerHTML = `
+            <div class="text-center py-5">
+                <i class="fas fa-check-circle fa-3x text-muted mb-3"></i>
+                <h5>No completed services found</h5>
+                <p class="text-muted">There are no completed service requests available.</p>
+            </div>
+        `;
+            return;
+        }
+
+        // Add cards for completed services
+        dashboardStats.completedServicesList.forEach((service, index) => {
+            const isActivePage = index < itemsPerPage.completed;
+
+            const card = document.createElement('div');
+            card.className = `service-card${isActivePage ? ' active-page' : ''}`;
+            card.dataset.page = Math.ceil((index + 1) / itemsPerPage.completed);
+
+            card.innerHTML = `
+            <div class="service-card-header">
+                <h4 class="service-card-title">
+                    <i class="fas fa-car-side"></i>
+                    <span>${service.vehicleName}</span>
+                </h4>
+                <div class="service-status">
+                    <div class="status-indicator completed"></div>
+                    <div class="status-text completed">Completed</div>
+                </div>
+            </div>
+            <div class="service-card-body">
+                <div class="service-meta">
+                    <div class="service-meta-item">
+                        <div class="service-meta-label">Registration</div>
+                        <div class="service-meta-value">${service.registrationNumber}</div>
+                    </div>
+                    <div class="service-meta-item">
+                        <div class="service-meta-label">Completed Date</div>
+                        <div class="service-meta-value">${formatDate(service.completedDate)}</div>
+                    </div>
+                    <div class="service-meta-item">
+                        <div class="service-meta-label">Customer</div>
+                        <div class="service-meta-value">${service.customerName}</div>
+                    </div>
+                    <div class="service-meta-item">
+                        <div class="service-meta-label">Service Advisor</div>
+                        <div class="service-meta-value">${service.serviceAdvisorName}</div>
+                    </div>
+                </div>
+                <div class="price">Total Cost: ₹${service.totalCost.toLocaleString('en-IN', { maximumFractionDigits: 2 })}</div>
+            </div>
+            <div class="service-card-footer">
+                <button class="btn-premium sm secondary view-service-details-btn"
+                        data-service-id="${service.serviceId}"
+                        onclick="showServiceRequestDetails(${service.serviceId})">
+                    <i class="fas fa-eye"></i>
+                    View Details
+                </button>
+                <button class="btn-premium sm primary generate-invoice-btn"
+                        data-service-id="${service.serviceId}"
+                        data-has-invoice="${service.hasInvoice}"
+                        ${service.hasInvoice ? 'onclick="downloadInvoice(' + service.serviceId + ')"' : 'onclick="generateInvoice(' + service.serviceId + ')"'}>
+                    <i class="fas fa-file-invoice"></i>
+                    ${service.hasInvoice ? 'Download Invoice' : 'Generate Invoice'}
+                </button>
+            </div>
+        `;
+
+            container.appendChild(card);
+        });
+
+        // Update pagination
+        updatePaginationUI('completed');
+    }
+
+    function updateChartsWithRealData() {
+        if (!dashboardStats) return;
+
+        // Update service chart with real data if available
+        const serviceChart = Chart.getChart('serviceChart');
+        if (serviceChart) {
+            // Use real data or keep sample data
+            const dueCount = dashboardStats.vehiclesDue || 0;
+            const inProgressCount = dashboardStats.vehiclesInProgress || 0;
+            const completedCount = dashboardStats.vehiclesCompleted || 0;
+
+            // Generate some trend data based on real counts
+            const dueData = [
+                Math.max(0, dueCount - Math.floor(Math.random() * 3)),
+                Math.max(0, dueCount - Math.floor(Math.random() * 2)),
+                dueCount,
+                Math.max(0, dueCount + Math.floor(Math.random() * 3))
+            ];
+
+            const completedData = [
+                Math.max(0, completedCount - Math.floor(Math.random() * 3)),
+                Math.max(0, completedCount - Math.floor(Math.random() * 2)),
+                completedCount,
+                Math.max(0, completedCount + Math.floor(Math.random() * 2))
+            ];
+
+            serviceChart.data.datasets[0].data = dueData;
+            serviceChart.data.datasets[1].data = completedData;
+            serviceChart.update();
+        }
+
+        // Update distribution chart with real data
+        const distributionChart = Chart.getChart('distributionChart');
+        if (distributionChart) {
+            const dueCount = dashboardStats.vehiclesDue || 0;
+            const inProgressCount = dashboardStats.vehiclesInProgress || 0;
+            const completedCount = dashboardStats.vehiclesCompleted || 0;
+
+            distributionChart.data.datasets[0].data = [dueCount, inProgressCount, completedCount];
+            distributionChart.update();
+        }
+    }
+
+    // Function to assign a service advisor
+    function assignServiceAdvisor() {
+        const requestId = document.getElementById('selectedRequestId').value;
+        const selectedAdvisor = document.querySelector('.advisor-card.selected');
+
+        if (!selectedAdvisor) {
+            showToast('Please select a service advisor', 'error');
+            return;
+        }
+
+        const advisorId = selectedAdvisor.getAttribute('data-advisor-id');
+
+        showSpinner();
+
+        fetch(`/admin/dashboard/api/assign/${requestId}?advisorId=${advisorId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + getToken()
+            }
+        })
+            .then(response => {
+                if (response.status === 401) {
+                    window.location.href = '/admin/login?error=session_expired';
+                    throw new Error('Session expired');
+                }
+
+                if (!response.ok) {
+                    throw new Error('Failed to assign service advisor');
+                }
+                return response.json();
+            })
+            .then(data => {
+                hideSpinner();
+
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('assignAdvisorModal'));
+                if (modal) {
+                    modal.hide();
+                }
+
+                // Show success message
+                showSuccessModal('Service Advisor Assigned', 'The service advisor has been assigned successfully.');
+
+                // Refresh the page to update the dashboard
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            })
+            .catch(error => {
+                hideSpinner();
+                console.error('Error assigning service advisor:', error);
+                showToast('Failed to assign service advisor. Please try again.', 'error');
+            });
+    }
+
+    // Function to update service request status
+    function updateServiceRequestStatus(requestId, status) {
+        showSpinner();
+
+        fetch(`/admin/dashboard/api/status/${requestId}?status=${status}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + getToken()
+            }
+        })
+            .then(response => {
+                if (response.status === 401) {
+                    window.location.href = '/admin/login?error=session_expired';
+                    throw new Error('Session expired');
+                }
+
+                if (!response.ok) {
+                    throw new Error('Failed to update service request status');
+                }
+                return response.json();
+            })
+            .then(data => {
+                hideSpinner();
+
+                // Show success message
+                showToast(`Service request status updated to ${status}`, 'success');
+
+                // Refresh the page to update the dashboard
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+            })
+            .catch(error => {
+                hideSpinner();
+                console.error('Error updating service request status:', error);
+                showToast('Failed to update service request status. Please try again.', 'error');
+            });
+    }
+
+    // Function to show service advisor assignment modal
+    function showAssignAdvisorModal(requestId) {
+        // Find the request in vehiclesDueList
+        const request = dashboardStats.vehiclesDueList.find(req => req.requestId === requestId);
+
+        if (!request) {
+            console.error('Request not found:', requestId);
+            return;
+        }
+
+        // Set request details in the modal
+        document.getElementById('assignVehicleName').textContent = request.vehicleName;
+        document.getElementById('assignVehicleReg').textContent = request.registrationNumber;
+        document.getElementById('assignCustomerName').textContent = request.customerName;
+        document.getElementById('assignRequestId').textContent = `REQ-${request.requestId}`;
+        document.getElementById('selectedRequestId').value = request.requestId;
+
+        // Populate service advisors
+        populateServiceAdvisorsList();
+
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('assignAdvisorModal'));
+        modal.show();
+    }
+
+    function populateServiceAdvisorsList() {
+        const advisorsList = document.getElementById('advisorsList');
+        if (!advisorsList) return;
+
+        if (!serviceAdvisors || serviceAdvisors.length === 0) {
+            advisorsList.innerHTML = `
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                No service advisors available. Please add service advisors first.
+            </div>
+        `;
+            return;
+        }
+
+        let html = '';
+
+        serviceAdvisors.forEach(advisor => {
+            // Calculate workload percentage (example)
+            const workloadPercentage = advisor.workloadPercentage ||
+                (advisor.activeServices ? Math.min(Math.round((advisor.activeServices / 10) * 100), 100) : 0);
+
+            // Determine workload class
+            let workloadClass = 'bg-success';
+            if (workloadPercentage > 75) {
+                workloadClass = 'bg-danger';
+            } else if (workloadPercentage > 50) {
+                workloadClass = 'bg-warning';
+            }
+
+            const name = advisor.firstName && advisor.lastName ?
+                `${advisor.firstName} ${advisor.lastName}` : advisor.name || 'Unnamed Advisor';
+
+            const initials = (advisor.firstName ? advisor.firstName.charAt(0) : '') +
+                (advisor.lastName ? advisor.lastName.charAt(0) : '');
+
+            html += `
+            <div class="advisor-card" data-advisor-id="${advisor.advisorId || advisor.id}">
+                <div class="advisor-avatar">
+                    ${initials || 'SA'}
+                </div>
+                <div class="advisor-info">
+                    <div class="advisor-name">${name}</div>
+                    <div class="advisor-meta">
+                        <div class="advisor-stat">
+                            <i class="fas fa-clipboard-list"></i>
+                            ${advisor.activeServices || 0} active requests
+                        </div>
+                        <div class="advisor-stat">
+                            <i class="fas fa-id-badge"></i>
+                            ${advisor.formattedId || `SA-${String(advisor.advisorId || 0).padStart(3, '0')}`}
+                        </div>
+                    </div>
+                    <div class="advisor-services">
+                        <i class="fas fa-tools"></i>
+                        ${advisor.specialization || 'General Service'}
+                    </div>
+                    <div class="advisor-workload">
+                        <div class="progress">
+                            <div class="progress-bar ${workloadClass}" role="progressbar"
+                                style="width: ${workloadPercentage}%"
+                                aria-valuenow="${workloadPercentage}" aria-valuemin="0" aria-valuemax="100">
+                            </div>
+                        </div>
+                        <div class="workload-text">
+                            Workload: ${workloadPercentage}%
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        });
+
+        advisorsList.innerHTML = html;
+    }
+
+    // Function to show service request details
+    function showServiceRequestDetails(requestId) {
+        // Find the request in one of the lists (due, in-service, completed)
+        let request;
+
+        // Check in vehiclesDueList
+        if (dashboardStats.vehiclesDueList) {
+            request = dashboardStats.vehiclesDueList.find(req => req.requestId === requestId);
+        }
+
+        // If not found, check in vehiclesInServiceList
+        if (!request && dashboardStats.vehiclesInServiceList) {
+            request = dashboardStats.vehiclesInServiceList.find(req => req.requestId === requestId);
+        }
+
+        // If not found, check in completedServicesList
+        if (!request && dashboardStats.completedServicesList) {
+            request = dashboardStats.completedServicesList.find(service => service.serviceId === requestId);
+        }
+
+        if (!request) {
+            console.error('Request not found:', requestId);
+            return;
+        }
+
+        // Set request details in the modal
+        document.getElementById('viewRequestId').textContent = `REQ-${requestId}`;
+
+        // Set status with appropriate badge
+        const statusElement = document.getElementById('viewStatus');
+        const status = request.status || 'Received';
+        statusElement.innerHTML = `
+        <span class="status-badge status-${status.toLowerCase()}">
+            <i class="fas fa-${
+            status === 'Received' ? 'clock' :
+                status === 'Diagnosis' ? 'stethoscope' :
+                    status === 'Repair' ? 'wrench' :
+                        'check-circle'
+        }"></i>
+            ${status}
+        </span>
+    `;
+
+        // Set other details
+        const createdDateElement = document.getElementById('viewCreatedDate');
+        if (createdDateElement) {
+            createdDateElement.textContent = formatDate(request.createdAt) || 'N/A';
+        }
+
+        const vehicleNameElement = document.getElementById('viewVehicleName');
+        if (vehicleNameElement) {
+            vehicleNameElement.textContent = request.vehicleName || (request.vehicleBrand + ' ' + request.vehicleModel) || 'N/A';
+        }
+
+        const registrationNumberElement = document.getElementById('viewRegistrationNumber');
+        if (registrationNumberElement) {
+            registrationNumberElement.textContent = request.registrationNumber || 'N/A';
+        }
+
+        const vehicleCategoryElement = document.getElementById('viewVehicleCategory');
+        if (vehicleCategoryElement) {
+            vehicleCategoryElement.textContent = request.category || 'Car';
+        }
+
+        const customerNameElement = document.getElementById('viewCustomerName');
+        if (customerNameElement) {
+            customerNameElement.textContent = request.customerName || 'N/A';
+        }
+
+        const customerContactElement = document.getElementById('viewCustomerContact');
+        if (customerContactElement) {
+            customerContactElement.textContent = request.customerPhone || request.customerEmail || 'N/A';
+        }
+
+        const membershipElement = document.getElementById('viewMembership');
+        if (membershipElement) {
+            const membershipStatus = request.membershipStatus || 'Standard';
+            membershipElement.innerHTML = `
+            <span class="membership-badge membership-${membershipStatus.toLowerCase()}">
+                <i class="fas fa-${membershipStatus === 'Premium' ? 'crown' : 'user'}"></i>
+                ${membershipStatus}
+            </span>
+        `;
+        }
+
+        const serviceTypeElement = document.getElementById('viewServiceType');
+        if (serviceTypeElement) {
+            serviceTypeElement.textContent = request.serviceType || 'N/A';
+        }
+
+        const deliveryDateElement = document.getElementById('viewDeliveryDate');
+        if (deliveryDateElement) {
+            deliveryDateElement.textContent = formatDate(request.deliveryDate) || 'N/A';
+        }
+
+        const serviceAdvisorElement = document.getElementById('viewServiceAdvisor');
+        if (serviceAdvisorElement) {
+            serviceAdvisorElement.textContent = request.serviceAdvisorName || 'Not Assigned';
+        }
+
+        const descriptionElement = document.getElementById('viewDescription');
+        if (descriptionElement) {
+            descriptionElement.textContent = request.additionalDescription || 'No additional description provided.';
+        }
+
+        // Show materials section if available
+        const materialsSection = document.getElementById('materialsSection');
+        if (materialsSection) {
+            if (request.materials && request.materials.length > 0) {
+                materialsSection.style.display = 'block';
+                populateMaterialsTable(request.materials);
+            } else {
+                materialsSection.style.display = 'none';
+            }
+        }
+
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('viewServiceRequestModal'));
+        modal.show();
+    }
+
+    function populateMaterialsTable(materials) {
+        const tableBody = document.getElementById('materialsTableBody');
+        if (!tableBody) return;
+
+        tableBody.innerHTML = '';
+
+        let totalCost = 0;
+
+        materials.forEach(material => {
+            const row = document.createElement('tr');
+            const itemTotal = material.quantity * material.unitPrice;
+            totalCost += itemTotal;
+
+            row.innerHTML = `
+            <td>${material.name}</td>
+            <td>${material.quantity}</td>
+            <td>₹${material.unitPrice.toFixed(2)}</td>
+            <td>₹${itemTotal.toFixed(2)}</td>
+        `;
+
+            tableBody.appendChild(row);
+        });
+
+        // Add total row
+        const totalRow = document.createElement('tr');
+        totalRow.className = 'fw-bold';
+        totalRow.innerHTML = `
+        <td colspan="3" class="text-end">Total</td>
+        <td>₹${totalCost.toFixed(2)}</td>
+    `;
+
+        tableBody.appendChild(totalRow);
+    }
+
+    function generateInvoice(serviceId) {
+        console.log(`Generating invoice for service ID: ${serviceId}`);
+        showToast('Invoice generation initiated. Please wait...', 'info');
+
+        // In a real application, you would make an API call to generate the invoice
+        // For now, simulate a successful response after a delay
+        setTimeout(() => {
+            showToast('Invoice generated successfully!', 'success');
+
+            // Update the button to download
+            const button = document.querySelector(`.generate-invoice-btn[data-service-id="${serviceId}"]`);
+            if (button) {
+                button.innerHTML = '<i class="fas fa-file-invoice"></i> Download Invoice';
+                button.setAttribute('onclick', `downloadInvoice(${serviceId})`);
+                button.setAttribute('data-has-invoice', 'true');
+            }
+        }, 2000);
+    }
+
+    function downloadInvoice(serviceId) {
+        console.log(`Downloading invoice for service ID: ${serviceId}`);
+        showToast('Invoice download initiated. Please wait...', 'info');
+
+        // In a real application, you would make an API call to download the invoice
+        // For now, simulate a successful response after a delay
+        setTimeout(() => {
+            showToast('Invoice downloaded successfully!', 'success');
+        }, 1000);
+    }
+
+    function showSuccessModal(title, message) {
+        document.getElementById('successTitle').textContent = title;
+        document.getElementById('successMessage').textContent = message;
+
+        const modal = new bootstrap.Modal(document.getElementById('successModal'));
+        modal.show();
+    }
+
+    function showToast(message, type = 'success') {
+        // Create toast container if it doesn't exist
+        let toastContainer = document.querySelector('.toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+            document.body.appendChild(toastContainer);
+        }
+
+        // Create toast element
+        const toastId = 'toast-' + Date.now();
+        const toastHTML = `
+        <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" id="${toastId}">
+            <div class="toast-header">
+                <strong class="me-auto">
+                    <i class="fas fa-${type === 'success' ? 'check-circle text-success' :
+            type === 'error' ? 'exclamation-circle text-danger' :
+                'info-circle text-info'} me-2"></i>
+                    ${type.charAt(0).toUpperCase() + type.slice(1)}
+                </strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                ${message}
+            </div>
+        </div>
+    `;
+
+        toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+
+        // Initialize and show toast
+        const toastElement = document.getElementById(toastId);
+        const toast = new bootstrap.Toast(toastElement, {
+            autohide: true,
+            delay: 5000
+        });
+        toast.show();
+
+        // Remove toast after it's hidden
+        toastElement.addEventListener('hidden.bs.toast', function() {
+            toastElement.remove();
+        });
+    }
+
+    function formatDate(dateString) {
+        if (!dateString) return 'N/A';
+
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        return new Date(dateString).toLocaleDateString('en-US', options);
+    }
+
+    // Make functions available globally for onclick handlers
+    window.showAssignAdvisorModal = showAssignAdvisorModal;
+    window.updateServiceRequestStatus = updateServiceRequestStatus;
+    window.showServiceRequestDetails = showServiceRequestDetails;
+    window.generateInvoice = generateInvoice;
+    window.downloadInvoice = downloadInvoice;
 </script>
 </body>
 </html>

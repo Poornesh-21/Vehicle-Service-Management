@@ -2,6 +2,8 @@ package com.albany.mvc.controller;
 
 import com.albany.mvc.dto.ServiceAdvisorDto;
 import com.albany.mvc.service.ServiceAdvisorService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -9,8 +11,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -24,7 +24,7 @@ public class ServiceAdvisorController {
 
     private final ServiceAdvisorService serviceAdvisorService;
 
-    // This returns the view for the service-advisors page
+    // Page rendering method
     @GetMapping
     public String serviceAdvisorsPage(
             @RequestParam(required = false) String token,
@@ -41,10 +41,13 @@ public class ServiceAdvisorController {
             return "redirect:/admin/login?error=session_expired";
         }
 
+        // Set some model attributes for the view
+        model.addAttribute("userName", "Arthur Morgan");
+
         return "admin/serviceAdvisor";
     }
 
-    // This REST endpoint handles the AJAX request to get all advisors
+    // REST endpoint to get all advisors
     @GetMapping("/api/advisors")
     @ResponseBody
     public ResponseEntity<List<ServiceAdvisorDto>> getServiceAdvisorsJson(

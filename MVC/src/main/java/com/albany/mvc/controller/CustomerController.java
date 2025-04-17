@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
-@RequestMapping("/admin/customers")
+@RequestMapping("/admin")
 @RequiredArgsConstructor
 @Slf4j
 public class CustomerController {
@@ -31,7 +31,7 @@ public class CustomerController {
     /**
      * Render the customers page
      */
-    @GetMapping
+    @GetMapping("/customers")
     public String customersPage(
             @RequestParam(required = false) String token,
             Model model,
@@ -56,7 +56,7 @@ public class CustomerController {
     /**
      * Get all customers via API
      */
-    @GetMapping("/api")
+    @GetMapping("/customers/api")
     @ResponseBody
     public ResponseEntity<List<Map<String, Object>>> getAllCustomers(
             @RequestParam(required = false) String token,
@@ -97,7 +97,7 @@ public class CustomerController {
     /**
      * Get a specific customer by ID
      */
-    @GetMapping("/{id}")
+    @GetMapping("/api/customers/{id}")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> getCustomerById(
             @PathVariable Integer id,
@@ -139,7 +139,7 @@ public class CustomerController {
     /**
      * Create a new customer
      */
-    @PostMapping("/api")
+    @PostMapping("/api/customers")
     @ResponseBody
     public ResponseEntity<?> createCustomer(
             @RequestBody Map<String, Object> customerData,
@@ -191,7 +191,7 @@ public class CustomerController {
     /**
      * Update an existing customer
      */
-    @PutMapping("/{id}")
+    @PutMapping("/api/customers/{id}")
     @ResponseBody
     public ResponseEntity<?> updateCustomer(
             @PathVariable Integer id,
@@ -237,7 +237,7 @@ public class CustomerController {
     /**
      * Delete a customer
      */
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/api/customers/{id}")
     @ResponseBody
     public ResponseEntity<?> deleteCustomer(
             @PathVariable Integer id,

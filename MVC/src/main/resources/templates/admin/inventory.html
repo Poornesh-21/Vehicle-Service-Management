@@ -427,30 +427,26 @@
             border-color: var(--wine);
         }
 
-        /* Inventory Table Section */
-        .table-section {
-            background-color: var(--white);
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-            box-shadow: var(--shadow-lg);
+        /* Inventory Grid Section */
+        .grid-section {
+            background-color: transparent;
             margin-bottom: 2rem;
             transition: var(--transition);
-            border: 1px solid rgba(114, 47, 55, 0.1);
         }
 
-        .table-section:hover {
-            box-shadow: 0 15px 30px rgba(114, 47, 55, 0.15), 0 5px 15px rgba(0, 0, 0, 0.08);
-        }
-
-        .table-header {
+        .grid-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 1.5rem;
-            border-bottom: 1px solid var(--light-gray);
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            background-color: var(--white);
+            border: 1px solid rgba(114, 47, 55, 0.1);
+            border-bottom: none;
+            box-shadow: var(--shadow-sm);
         }
 
-        .table-title {
+        .grid-title {
             font-size: 1.1rem;
             font-weight: 600;
             color: var(--wine);
@@ -460,7 +456,7 @@
             gap: 0.75rem;
         }
 
-        .table-title i {
+        .grid-title i {
             width: 2rem;
             height: 2rem;
             display: flex;
@@ -471,7 +467,7 @@
             border-radius: var(--radius-sm);
         }
 
-        .table-actions {
+        .grid-actions {
             display: flex;
             gap: 0.75rem;
             align-items: center;
@@ -506,55 +502,60 @@
             pointer-events: none;
         }
 
-        .inventory-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
+        /* Inventory Grid */
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            padding: 1.5rem;
+            background-color: var(--white);
+            border: 1px solid rgba(114, 47, 55, 0.1);
+            border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+            box-shadow: var(--shadow-lg);
         }
 
-        .inventory-table thead th {
-            background-color: var(--bg-light);
-            color: var(--dark-gray);
-            font-weight: 600;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            padding: 1.25rem 1rem;
-            border-bottom: 1px solid var(--light-gray);
-            text-align: left;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-
-        .inventory-table tbody td {
-            padding: 1.25rem 1rem;
-            vertical-align: middle;
-            border-bottom: 1px solid var(--light-gray);
-            font-size: 0.95rem;
-        }
-
-        .inventory-table tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-        .inventory-table tbody tr {
+        /* Inventory Item Card */
+        .inventory-card {
+            background-color: var(--white);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--light-gray);
+            overflow: hidden;
             transition: var(--transition);
-            cursor: pointer;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            box-shadow: var(--shadow-sm);
         }
 
-        .inventory-table tbody tr:hover {
-            background-color: rgba(114, 47, 55, 0.05);
+        .inventory-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--wine-light);
         }
 
-        /* Stock Level Badge */
+        .card-header {
+            padding: 1rem;
+            background-color: var(--light-bg);
+            border-bottom: 1px solid var(--light-gray);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .item-id {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--medium-gray);
+        }
+
         .stock-badge {
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 0.75rem;
+            gap: 0.35rem;
+            padding: 0.35rem 0.75rem;
             border-radius: 2rem;
-            font-size: 0.85rem;
+            font-size: 0.75rem;
             font-weight: 600;
             line-height: 1;
         }
@@ -574,14 +575,73 @@
             color: #2e7d32;
         }
 
-        /* Table Action Buttons */
-        .table-actions-cell {
+        .card-body {
+            padding: 1.25rem;
+            flex: 1;
             display: flex;
-            gap: 0.5rem;
-            justify-content: flex-end;
+            flex-direction: column;
         }
 
-        .btn-table-action {
+        .item-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--wine);
+            margin-bottom: 0.5rem;
+        }
+
+        .item-category {
+            font-size: 0.85rem;
+            color: var(--medium-gray);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .item-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: auto;
+        }
+
+        .detail-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .detail-label {
+            font-size: 0.75rem;
+            color: var(--medium-gray);
+            margin-bottom: 0.25rem;
+        }
+
+        .detail-value {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+        }
+
+        .price-value {
+            color: var(--wine);
+            font-size: 1.1rem;
+        }
+
+        .card-footer {
+            padding: 0.75rem 1rem;
+            border-top: 1px solid var(--light-gray);
+            background-color: var(--white);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-card-action {
             width: 2.5rem;
             height: 2.5rem;
             display: flex;
@@ -596,11 +656,122 @@
             box-shadow: var(--shadow-sm);
         }
 
-        .btn-table-action:hover {
+        .btn-card-action:hover {
             background-color: var(--light-bg);
             border-color: var(--wine-light);
             box-shadow: var(--shadow-md);
             transform: translateY(-2px);
+        }
+
+        /* Loading State */
+        .loading-grid {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 3rem;
+            background-color: var(--white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .loading-spinner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .spinner-border {
+            color: var(--wine);
+            width: 3rem;
+            height: 3rem;
+        }
+
+        /* Empty State */
+        .empty-grid {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 5rem;
+            background-color: var(--white);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+        }
+
+        .empty-icon {
+            font-size: 3rem;
+            color: var(--medium-gray);
+            margin-bottom: 1rem;
+        }
+
+        .empty-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-message {
+            font-size: 1rem;
+            color: var(--medium-gray);
+            margin-bottom: 2rem;
+        }
+
+        /* Inventory Stats */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stats-card {
+            background-color: var(--white);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-md);
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            transition: var(--transition);
+        }
+
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stats-icon {
+            width: 3.5rem;
+            height: 3.5rem;
+            border-radius: var(--radius-lg);
+            background-color: var(--dutch-white-light);
+            color: var(--wine);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .stats-info {
+            flex: 1;
+        }
+
+        .stats-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--wine);
+            margin-bottom: 0.25rem;
+            line-height: 1.2;
+        }
+
+        .stats-label {
+            font-size: 0.9rem;
+            color: var(--dark-gray);
+            margin: 0;
         }
 
         /* Pagination */
@@ -778,132 +949,6 @@
             box-shadow: 0 0 0 0.25rem rgba(114, 47, 55, 0.25);
         }
 
-        /* Inventory Details */
-        .inventory-detail-row {
-            display: flex;
-            flex-wrap: wrap;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid var(--light-gray);
-        }
-
-        .inventory-detail-col {
-            flex: 1;
-            min-width: 200px;
-            padding-right: 1.5rem;
-        }
-
-        .detail-label {
-            font-size: 0.85rem;
-            color: var(--medium-gray);
-            margin-bottom: 0.35rem;
-        }
-
-        .detail-value {
-            font-size: 1rem;
-            font-weight: 500;
-            color: var(--dark-gray);
-        }
-
-        /* Price Tag */
-        .price-tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-            padding: 0.5rem 0.75rem;
-            background-color: var(--light-bg);
-            border-radius: var(--radius-lg);
-            font-weight: 700;
-            color: var(--wine);
-            box-shadow: var(--shadow-sm);
-        }
-
-        /* Usage History */
-        .usage-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            margin-top: 1.5rem;
-            background-color: var(--light-bg);
-            border-radius: var(--radius-md);
-            overflow: hidden;
-        }
-
-        .usage-table th {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--dark-gray);
-            padding: 0.75rem 1rem;
-            text-align: left;
-            background-color: var(--light-bg);
-            border-bottom: 1px solid var(--light-gray);
-        }
-
-        .usage-table td {
-            font-size: 0.9rem;
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid var(--light-gray);
-        }
-
-        .usage-table tr:last-child td {
-            border-bottom: none;
-        }
-
-        /* Stats Card */
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        .stats-card {
-            background-color: var(--white);
-            border-radius: var(--radius-lg);
-            padding: 1.5rem;
-            box-shadow: var(--shadow-md);
-            display: flex;
-            align-items: center;
-            gap: 1.25rem;
-            transition: var(--transition);
-        }
-
-        .stats-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .stats-icon {
-            width: 3.5rem;
-            height: 3.5rem;
-            border-radius: var(--radius-lg);
-            background-color: var(--dutch-white-light);
-            color: var(--wine);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            flex-shrink: 0;
-        }
-
-        .stats-info {
-            flex: 1;
-        }
-
-        .stats-value {
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: var(--wine);
-            margin-bottom: 0.25rem;
-            line-height: 1.2;
-        }
-
-        .stats-label {
-            font-size: 0.9rem;
-            color: var(--dark-gray);
-            margin: 0;
-        }
-
         /* Albany Spinner */
         .spinner-overlay {
             position: fixed;
@@ -957,6 +1002,7 @@
             text-shadow: 0 0 5px rgba(114, 47, 55, 0.3);
             backface-visibility: hidden;
             transform: rotateY(0deg) translateZ(60px);
+            font-family: 'Baloo Bhaijaan 2', sans-serif;
         }
 
         .spinner-circle {
@@ -1018,126 +1064,6 @@
             to {
                 transform: rotate(360deg);
             }
-        }
-
-        /* Success Modal */
-        .success-modal .modal-content {
-            border: none;
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-xl);
-            overflow: hidden;
-            background-color: var(--white);
-            position: relative;
-        }
-
-        .success-modal .modal-body {
-            padding: 3.5rem 2.5rem;
-            text-align: center;
-            position: relative;
-        }
-
-        .success-modal .modal-body::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 15px;
-            background: var(--wine-gradient);
-        }
-
-        .success-icon-container {
-            margin-bottom: 2rem;
-            position: relative;
-            display: inline-flex;
-        }
-
-        .success-icon-wrapper {
-            width: 8rem;
-            height: 8rem;
-            border-radius: 50%;
-            background: linear-gradient(145deg, rgba(102, 187, 106, 0.15), rgba(102, 187, 106, 0.05));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto;
-            position: relative;
-            animation: pulse 1.5s infinite ease-in-out;
-        }
-
-        @keyframes pulse {
-            0% {
-                box-shadow: 0 0 0 0 rgba(102, 187, 106, 0.6);
-            }
-            70% {
-                box-shadow: 0 0 0 15px rgba(102, 187, 106, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(102, 187, 106, 0);
-            }
-        }
-
-        .success-icon {
-            width: 6rem;
-            height: 6rem;
-            border-radius: 50%;
-            background-color: var(--success);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3rem;
-            box-shadow: 0 10px 30px rgba(102, 187, 106, 0.3);
-            animation: scale-in 0.5s ease-out;
-        }
-
-        @keyframes scale-in {
-            0% {
-                transform: scale(0);
-            }
-            80% {
-                transform: scale(1.1);
-            }
-            100% {
-                transform: scale(1);
-            }
-        }
-
-        .success-modal .success-title {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--dark-gray);
-            margin-bottom: 1rem;
-        }
-
-        .success-modal .success-message {
-            font-size: 1.1rem;
-            color: var(--medium-gray);
-            margin-bottom: 2rem;
-            line-height: 1.6;
-            max-width: 80%;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .success-modal .continue-btn {
-            padding: 1rem 3rem;
-            font-size: 1.1rem;
-            border-radius: var(--radius-lg);
-            background: var(--wine-gradient);
-            color: white;
-            border: none;
-            font-weight: 600;
-            transition: var(--transition);
-            box-shadow: var(--shadow-lg);
-            display: inline-flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .success-modal .continue-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 30px rgba(114, 47, 55, 0.2);
         }
 
         /* Footer */
@@ -1245,37 +1171,14 @@
                 font-size: 2rem;
             }
 
-            .table-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 1rem;
-            }
-
-            .table-actions {
-                width: 100%;
-                justify-content: space-between;
-            }
-
-            .search-box-sm {
-                width: 100%;
-            }
-
-            .search-input-sm {
-                width: 100%;
+            .inventory-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             }
         }
 
         @media (max-width: 767.98px) {
             .sidebar {
                 z-index: 1050;
-            }
-
-            .table-section {
-                overflow-x: auto;
-            }
-
-            .inventory-table {
-                min-width: 1000px;
             }
 
             .mobile-menu-toggle {
@@ -1321,6 +1224,28 @@
             .page-header {
                 padding-top: 4rem;
             }
+
+            .inventory-grid {
+                grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+            }
+
+            .grid-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .grid-actions {
+                width: 100%;
+            }
+
+            .search-box-sm {
+                width: 100%;
+            }
+
+            .search-input-sm {
+                width: 100%;
+            }
         }
 
         @media (max-width: 575.98px) {
@@ -1354,15 +1279,10 @@
             .form-row {
                 grid-template-columns: 1fr;
             }
-        }
 
-        /* Hide all table rows except the first 5 by default */
-        .inventory-table tbody tr {
-            display: none;
-        }
-
-        .inventory-table tbody tr.active-page {
-            display: table-row;
+            .stats-row {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -1400,7 +1320,7 @@
                             <i class="fas fa-tachometer-alt"></i>
                             <span>Dashboard</span>
                         </a>
-
+                    </li>
                 </ul>
             </div>
 
@@ -1420,7 +1340,7 @@
                         </a>
                     </li>
                     <li class="sidebar-menu-item">
-                        <a th:href="@{/admin/customers}" class="sidebar-menu-link active">
+                        <a th:href="@{/admin/customers}" class="sidebar-menu-link">
                             <i class="fas fa-users"></i>
                             <span>Customers</span>
                         </a>
@@ -1432,12 +1352,11 @@
                         </a>
                     </li>
                     <li class="sidebar-menu-item">
-                        <a th:href="@{/admin/inventory}" class="sidebar-menu-link">
+                        <a th:href="@{/admin/inventory}" class="sidebar-menu-link active">
                             <i class="fas fa-boxes"></i>
                             <span>Inventory</span>
                         </a>
                     </li>
-
                     <li class="sidebar-menu-item">
                         <a href="#" class="sidebar-menu-link">
                             <i class="fas fa-tools"></i>
@@ -1465,7 +1384,7 @@
                 <div class="user-name">Arthur Morgan</div>
                 <div class="user-role">Administrator</div>
             </div>
-            <button class="logout-btn">
+            <button class="logout-btn" id="logoutBtn">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Logout</span>
             </button>
@@ -1528,14 +1447,14 @@
             <div class="category-tab" data-category="tools">Tools & Equipment</div>
         </div>
 
-        <!-- Inventory Table Section -->
-        <section class="table-section">
-            <div class="table-header">
-                <h3 class="table-title">
+        <!-- Inventory Grid Section -->
+        <section class="grid-section">
+            <div class="grid-header">
+                <h3 class="grid-title">
                     <i class="fas fa-boxes"></i>
-                    <span id="tableTitle">All Inventory Items</span>
+                    <span id="gridTitle">All Inventory Items</span>
                 </h3>
-                <div class="table-actions">
+                <div class="grid-actions">
                     <div class="search-box-sm">
                         <input type="text" class="search-input-sm" placeholder="Filter items...">
                         <i class="fas fa-search search-icon-sm"></i>
@@ -1543,43 +1462,32 @@
                 </div>
             </div>
 
-            <div class="table-responsive">
-                <table class="inventory-table" id="inventoryTable">
-                    <thead>
-                    <tr>
-                        <th>Item ID</th>
-                        <th>Item Name</th>
-                        <th>Category</th>
-                        <th>Current Stock</th>
-                        <th>Unit Price</th>
-                        <th>Stock Status</th>
-                        <th>Reorder Level</th>
-                        <th>Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody id="inventoryTableBody">
-                    <!-- Will be populated dynamically via JavaScript -->
-                    <tr id="loading-row">
-                        <td colspan="8" class="text-center py-4">
-                            <div class="spinner-border text-wine" role="status"></div>
-                            <p class="mt-2">Loading inventory items...</p>
-                        </td>
-                    </tr>
-                    <tr id="empty-row" style="display: none;">
-                        <td colspan="8" class="text-center py-4">
-                            <div class="my-5">
-                                <i class="fas fa-boxes fa-3x text-muted mb-3"></i>
-                                <h5>No inventory items found</h5>
-                                <p class="text-muted">Add your first inventory item to get started</p>
-                            </div>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
+            <!-- Loading State -->
+            <div class="loading-grid" id="loading-grid">
+                <div class="loading-spinner">
+                    <div class="spinner-border" role="status"></div>
+                    <p>Loading inventory items...</p>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div class="empty-grid" id="empty-grid" style="display: none;">
+                <i class="fas fa-boxes empty-icon"></i>
+                <h5 class="empty-title">No inventory items found</h5>
+                <p class="empty-message">Add your first inventory item to get started</p>
+                <button class="btn-premium primary" data-bs-toggle="modal" data-bs-target="#addInventoryModal">
+                    <i class="fas fa-plus"></i>
+                    Add New Item
+                </button>
+            </div>
+
+            <!-- Inventory Grid -->
+            <div class="inventory-grid" id="inventoryGrid" style="display: none;">
+                <!-- Inventory items will be rendered here dynamically -->
             </div>
 
             <!-- Pagination -->
-            <div class="pagination-container">
+            <div class="pagination-container" id="pagination-container" style="display: none;">
                 <ul class="pagination" id="pagination">
                     <li class="page-item disabled">
                         <a class="page-link" href="#" id="prevBtn" aria-label="Previous">
@@ -1820,23 +1728,16 @@
 </div>
 
 <!-- Success Modal -->
-<div class="modal fade success-modal" id="successModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-body">
-                <div class="success-icon-container">
-                    <div class="success-icon-wrapper">
-                        <div class="success-icon">
-                            <i class="fas fa-check"></i>
-                        </div>
-                    </div>
+            <div class="modal-body text-center py-4">
+                <div class="mb-4">
+                    <i class="fas fa-check-circle text-success fa-4x"></i>
                 </div>
-                <h3 class="success-title" id="successTitle">Success!</h3>
-                <p class="success-message" id="successMessage">Operation completed successfully.</p>
-                <button type="button" class="continue-btn" data-bs-dismiss="modal">
-                    <i class="fas fa-check-circle"></i>
-                    Continue
-                </button>
+                <h3 class="mb-2" id="successTitle">Success!</h3>
+                <p class="text-muted mb-4" id="successMessage">Operation completed successfully.</p>
+                <button type="button" class="btn btn-success px-4 py-2" data-bs-dismiss="modal">Continue</button>
             </div>
         </div>
     </div>
@@ -1846,9 +1747,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 
-<!-- jQuery and Bootstrap JS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<!-- Font Awesome -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js"></script>
 
 <!-- Inventory Management JavaScript -->
 <script>
@@ -1867,7 +1767,7 @@
     // Global variables
     let inventoryItems = [];
     let currentPage = 1;
-    const itemsPerPage = 5;
+    const itemsPerPage = 8; // Show more items per page in grid view
     let currentCategory = 'all';
 
     // Initialize app
@@ -1880,9 +1780,6 @@
 
         // Set up token-based authentication
         setupAuthentication();
-
-        // Set current date if element exists
-        setupDateDisplay();
 
         // Set up navigation and active menu
         setupNavigation();
@@ -1915,15 +1812,6 @@
                     window.location.href = '/admin/logout';
                 }
             });
-        }
-    }
-
-    function setupDateDisplay() {
-        const dateElement = document.getElementById('current-date');
-        if (dateElement) {
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            const today = new Date();
-            dateElement.textContent = today.toLocaleDateString('en-US', options);
         }
     }
 
@@ -1963,7 +1851,6 @@
         }
     }
 
-    // Function to set up navigation and sidebar active state
     function setupNavigation() {
         // Get the current path
         const currentPath = window.location.pathname;
@@ -1995,7 +1882,7 @@
         const tableSearchInput = document.querySelector('.search-input-sm');
         if (tableSearchInput) {
             tableSearchInput.addEventListener('keyup', function() {
-                filterTableRows(this.value);
+                filterGridItems(this.value);
             });
         }
 
@@ -2010,26 +1897,19 @@
                 // Add active class to clicked tab
                 this.classList.add('active');
 
-                // Set current category and update table title
+                // Set current category and update grid title
                 currentCategory = this.getAttribute('data-category');
-                document.getElementById('tableTitle').textContent = this.textContent + ' Inventory';
+                document.getElementById('gridTitle').textContent = this.textContent + ' Inventory';
 
-                // Filter items by category
-                filterByCategory(currentCategory);
+                // Reset to first page
+                currentPage = 1;
+
+                // Filter items by category and render
+                renderInventoryItems();
             });
         });
 
         // Pagination
-        document.querySelectorAll('#pagination .page-link').forEach(link => {
-            if (link.id !== 'prevBtn' && link.id !== 'nextBtn') {
-                link.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const page = parseInt(this.getAttribute('data-page'));
-                    changePage(page);
-                });
-            }
-        });
-
         const prevBtn = document.getElementById('prevBtn');
         if (prevBtn) {
             prevBtn.addEventListener('click', function(e) {
@@ -2132,42 +2012,39 @@
             .then(data => {
                 hideSpinner();
 
-                const loadingRow = document.getElementById('loading-row');
-                if (loadingRow) {
-                    loadingRow.style.display = 'none';
-                }
+                // Hide loading elements
+                document.getElementById('loading-grid').style.display = 'none';
 
                 // Update inventory items global variable
                 inventoryItems = data;
 
                 if (inventoryItems.length > 0) {
+                    // Show the grid
+                    document.getElementById('inventoryGrid').style.display = 'grid';
+                    document.getElementById('pagination-container').style.display = 'flex';
+
                     renderInventoryItems();
                     setupPagination();
                     updateStats();
                 } else {
-                    const emptyRow = document.getElementById('empty-row');
-                    if (emptyRow) {
-                        emptyRow.style.display = 'table-row';
-                    }
+                    // Show empty state
+                    document.getElementById('empty-grid').style.display = 'flex';
                 }
             })
             .catch(error => {
                 console.error('Error loading inventory items:', error);
                 hideSpinner();
 
-                const loadingRow = document.getElementById('loading-row');
-                if (loadingRow) {
-                    loadingRow.style.display = 'none';
-                }
+                // Hide loading element
+                document.getElementById('loading-grid').style.display = 'none';
 
                 if (error.message !== 'Session expired') {
-                    alert('Failed to load inventory items. Please refresh and try again.');
-
-                    // Show empty row if no data
-                    const emptyRow = document.getElementById('empty-row');
-                    if (emptyRow) {
-                        emptyRow.style.display = 'table-row';
-                        emptyRow.querySelector('p').textContent = 'Failed to load inventory items';
+                    // Show empty state with error message
+                    const emptyGrid = document.getElementById('empty-grid');
+                    if (emptyGrid) {
+                        emptyGrid.style.display = 'flex';
+                        emptyGrid.querySelector('.empty-title').textContent = 'Failed to load inventory items';
+                        emptyGrid.querySelector('.empty-message').textContent = 'Please try refreshing the page';
                     }
                 }
             });
@@ -2204,38 +2081,34 @@
     }
 
     function renderInventoryItems() {
-        const tableBody = document.getElementById('inventoryTableBody');
-        if (!tableBody) return;
+        const gridContainer = document.getElementById('inventoryGrid');
+        if (!gridContainer) return;
 
-        // Clear table body except for special rows
-        const rows = tableBody.querySelectorAll('tr:not(#loading-row):not(#empty-row)');
-        rows.forEach(row => row.remove());
+        // Clear the grid container
+        gridContainer.innerHTML = '';
 
         const filteredItems = getFilteredItems();
 
         if (filteredItems.length === 0) {
-            const emptyRow = document.getElementById('empty-row');
-            if (emptyRow) {
-                emptyRow.style.display = 'table-row';
-            }
+            // Show empty state
+            document.getElementById('empty-grid').style.display = 'flex';
+            gridContainer.style.display = 'none';
+            document.getElementById('pagination-container').style.display = 'none';
             return;
         }
 
-        const emptyRow = document.getElementById('empty-row');
-        if (emptyRow) {
-            emptyRow.style.display = 'none';
-        }
+        // Hide empty state and show grid
+        document.getElementById('empty-grid').style.display = 'none';
+        gridContainer.style.display = 'grid';
+        document.getElementById('pagination-container').style.display = 'flex';
 
         // Get items for current page
         const startIndex = (currentPage - 1) * itemsPerPage;
         const endIndex = Math.min(startIndex + itemsPerPage, filteredItems.length);
         const displayedItems = filteredItems.slice(startIndex, endIndex);
 
-        // Create rows for displayed items
+        // Create cards for displayed items
         displayedItems.forEach(item => {
-            const row = document.createElement('tr');
-            row.className = 'active-page';
-
             // Determine stock status
             let stockStatus, stockClass, stockIcon;
             if (item.stockStatus === "Low") {
@@ -2252,33 +2125,71 @@
                 stockIcon = "check-circle";
             }
 
-            row.innerHTML = `
-                <td>ITEM-${item.itemId}</td>
-                <td>${item.name}</td>
-                <td>${item.category}</td>
-                <td>${parseFloat(item.currentStock).toFixed(2)}</td>
-                <td>₹${parseFloat(item.unitPrice).toFixed(2)}</td>
-                <td>
+            // Create category icon
+            let categoryIcon;
+            if (item.category === "Spare Parts") {
+                categoryIcon = "fa-cogs";
+            } else if (item.category === "Fluids & Lubricants") {
+                categoryIcon = "fa-oil-can";
+            } else {
+                categoryIcon = "fa-tools";
+            }
+
+            // Create card element
+            const cardDiv = document.createElement('div');
+            cardDiv.className = 'inventory-card';
+            cardDiv.innerHTML = `
+                <div class="card-header">
+                    <span class="item-id">ITEM-${item.itemId}</span>
                     <span class="stock-badge ${stockClass}">
                         <i class="fas fa-${stockIcon}"></i> ${stockStatus}
                     </span>
-                </td>
-                <td>${parseFloat(item.reorderLevel).toFixed(2)}</td>
-                <td class="table-actions-cell">
-                    <button class="btn-table-action view-btn" title="View Details" onclick="showInventoryDetails(${item.itemId})">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                    <button class="btn-table-action edit-btn" title="Edit Item" onclick="showEditModal(${item.itemId})">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn-table-action delete-btn" title="Delete Item" onclick="deleteInventoryItem(${item.itemId})">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                </td>
+                </div>
+                <div class="card-body">
+                    <h4 class="item-name">${item.name}</h4>
+                    <div class="item-category">
+                        <i class="fas ${categoryIcon}"></i> ${item.category}
+                    </div>
+                    <div class="item-details">
+                        <div class="detail-group">
+                            <div class="detail-label">Current Stock</div>
+                            <div class="detail-value">${parseFloat(item.currentStock).toFixed(2)}</div>
+                        </div>
+                        <div class="detail-group">
+                            <div class="detail-label">Reorder Level</div>
+                            <div class="detail-value">${parseFloat(item.reorderLevel).toFixed(2)}</div>
+                        </div>
+                        <div class="detail-group">
+                            <div class="detail-label">Unit Price</div>
+                            <div class="detail-value price-value">₹${parseFloat(item.unitPrice).toFixed(2)}</div>
+                        </div>
+                        <div class="detail-group">
+                            <div class="detail-label">Total Value</div>
+                            <div class="detail-value">₹${parseFloat(item.totalValue).toFixed(2)}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <span class="stock-indicator"></span>
+                    <div class="card-actions">
+                        <button class="btn-card-action view-btn" title="View Details" onclick="showInventoryDetails(${item.itemId})">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn-card-action edit-btn" title="Edit Item" onclick="showEditModal(${item.itemId})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-card-action delete-btn" title="Delete Item" onclick="deleteInventoryItem(${item.itemId})">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
             `;
 
-            tableBody.appendChild(row);
+            gridContainer.appendChild(cardDiv);
         });
+
+        // Update pagination
+        setupPagination();
     }
 
     function getFilteredItems() {
@@ -2288,6 +2199,80 @@
                 'spare-parts': 'Spare Parts',
                 'fluids': 'Fluids & Lubricants',
                 'tools': 'Tools & Equipment'
+            };
+
+            // Function to show edit modal - needs to be globally accessible for onclick handlers
+            window.showEditModal = function(itemId) {
+                showSpinner();
+
+                // Fetch item details
+                fetch(`/admin/inventory/api/items/${itemId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + getToken()
+                    }
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`Server responded with status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(item => {
+                        hideSpinner();
+
+                        // Populate the edit form
+                        document.getElementById('editItemId').value = item.itemId;
+                        document.getElementById('editItemName').value = item.name;
+                        document.getElementById('editItemCategory').value = item.category;
+                        document.getElementById('editCurrentStock').value = parseFloat(item.currentStock).toFixed(2);
+                        document.getElementById('editUnitPrice').value = parseFloat(item.unitPrice).toFixed(2);
+                        document.getElementById('editReorderLevel').value = parseFloat(item.reorderLevel).toFixed(2);
+
+                        // Show the modal
+                        const modal = new bootstrap.Modal(document.getElementById('editInventoryModal'));
+                        modal.show();
+                    })
+                    .catch(error => {
+                        hideSpinner();
+                        console.error('Error fetching item details for editing:', error);
+                        alert('Failed to load item details for editing. Please try again.');
+                    });
+            };
+
+            // Function to delete inventory item - needs to be globally accessible for onclick handlers
+            window.deleteInventoryItem = function(itemId) {
+                if (confirm('Are you sure you want to delete this item?')) {
+                    showSpinner();
+
+                    // Call the API to delete the inventory item
+                    fetch(`/admin/inventory/api/items/${itemId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + getToken()
+                        }
+                    })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`Server responded with status: ${response.status}`);
+                            }
+
+                            hideSpinner();
+
+                            // Show success message
+                            showSuccessModal('Item Deleted', 'The inventory item has been deleted successfully.');
+
+                            // Refresh inventory list
+                            loadInventoryItems();
+                        })
+                        .catch(error => {
+                            hideSpinner();
+                            console.error('Error deleting inventory item:', error);
+                            alert('Failed to delete inventory item. Please try again.');
+                        });
+                }
             };
 
             return inventoryItems.filter(item =>
@@ -2315,47 +2300,45 @@
             );
         });
 
-        renderFilteredItems(filteredItems);
-    }
+        // Update global inventory items with filtered results
+        const gridContainer = document.getElementById('inventoryGrid');
 
-    function filterByCategory(category) {
-        // Reset to first page when changing category
-        currentPage = 1;
+        if (filteredItems.length === 0) {
+            // Show empty state
+            document.getElementById('empty-grid').style.display = 'flex';
+            document.getElementById('empty-grid').querySelector('.empty-title').textContent = 'No items found';
+            document.getElementById('empty-grid').querySelector('.empty-message').textContent = 'Try a different search term';
 
-        // Rerender with the new category filter
-        renderInventoryItems();
+            gridContainer.style.display = 'none';
+            document.getElementById('pagination-container').style.display = 'none';
+        } else {
+            // Reset to first page
+            currentPage = 1;
 
-        // Update pagination
-        setupPagination();
+            // Clear and rebuild the grid
+            renderFilteredItems(filteredItems);
+        }
     }
 
     function renderFilteredItems(filteredItems) {
-        const tableBody = document.getElementById('inventoryTableBody');
-        if (!tableBody) return;
+        const gridContainer = document.getElementById('inventoryGrid');
+        if (!gridContainer) return;
 
-        // Clear table body except for special rows
-        const rows = tableBody.querySelectorAll('tr:not(#loading-row):not(#empty-row)');
-        rows.forEach(row => row.remove());
+        // Clear the grid container
+        gridContainer.innerHTML = '';
 
-        if (filteredItems.length === 0) {
-            const emptyRow = document.getElementById('empty-row');
-            if (emptyRow) {
-                emptyRow.style.display = 'table-row';
-                emptyRow.querySelector('p').textContent = 'No matching items found';
-            }
-            return;
-        }
+        // Show grid and hide empty state
+        document.getElementById('empty-grid').style.display = 'none';
+        gridContainer.style.display = 'grid';
+        document.getElementById('pagination-container').style.display = 'flex';
 
-        const emptyRow = document.getElementById('empty-row');
-        if (emptyRow) {
-            emptyRow.style.display = 'none';
-        }
+        // Get items for current page
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = Math.min(startIndex + itemsPerPage, filteredItems.length);
+        const displayedItems = filteredItems.slice(startIndex, endIndex);
 
-        // Create rows for filtered items
-        filteredItems.forEach(item => {
-            const row = document.createElement('tr');
-            row.className = 'active-page';
-
+        // Create cards for displayed items
+        displayedItems.forEach(item => {
             // Determine stock status
             let stockStatus, stockClass, stockIcon;
             if (item.stockStatus === "Low") {
@@ -2372,52 +2355,91 @@
                 stockIcon = "check-circle";
             }
 
-            row.innerHTML = `
-                <td>ITEM-${item.itemId}</td>
-                <td>${item.name}</td>
-                <td>${item.category}</td>
-                <td>${parseFloat(item.currentStock).toFixed(2)}</td>
-                <td>₹${parseFloat(item.unitPrice).toFixed(2)}</td>
-                <td>
+            // Create category icon
+            let categoryIcon;
+            if (item.category === "Spare Parts") {
+                categoryIcon = "fa-cogs";
+            } else if (item.category === "Fluids & Lubricants") {
+                categoryIcon = "fa-oil-can";
+            } else {
+                categoryIcon = "fa-tools";
+            }
+
+            // Create card element
+            const cardDiv = document.createElement('div');
+            cardDiv.className = 'inventory-card';
+            cardDiv.innerHTML = `
+                <div class="card-header">
+                    <span class="item-id">ITEM-${item.itemId}</span>
                     <span class="stock-badge ${stockClass}">
                         <i class="fas fa-${stockIcon}"></i> ${stockStatus}
                     </span>
-                </td>
-                <td>${parseFloat(item.reorderLevel).toFixed(2)}</td>
-                <td class="table-actions-cell">
-                    <button class="btn-table-action view-btn" title="View Details" onclick="showInventoryDetails(${item.itemId})">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                    <button class="btn-table-action edit-btn" title="Edit Item" onclick="showEditModal(${item.itemId})">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn-table-action delete-btn" title="Delete Item" onclick="deleteInventoryItem(${item.itemId})">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
-                </td>
+                </div>
+                <div class="card-body">
+                    <h4 class="item-name">${item.name}</h4>
+                    <div class="item-category">
+                        <i class="fas ${categoryIcon}"></i> ${item.category}
+                    </div>
+                    <div class="item-details">
+                        <div class="detail-group">
+                            <div class="detail-label">Current Stock</div>
+                            <div class="detail-value">${parseFloat(item.currentStock).toFixed(2)}</div>
+                        </div>
+                        <div class="detail-group">
+                            <div class="detail-label">Reorder Level</div>
+                            <div class="detail-value">${parseFloat(item.reorderLevel).toFixed(2)}</div>
+                        </div>
+                        <div class="detail-group">
+                            <div class="detail-label">Unit Price</div>
+                            <div class="detail-value price-value">₹${parseFloat(item.unitPrice).toFixed(2)}</div>
+                        </div>
+                        <div class="detail-group">
+                            <div class="detail-label">Total Value</div>
+                            <div class="detail-value">₹${parseFloat(item.totalValue).toFixed(2)}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <span class="stock-indicator"></span>
+                    <div class="card-actions">
+                        <button class="btn-card-action view-btn" title="View Details" onclick="showInventoryDetails(${item.itemId})">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn-card-action edit-btn" title="Edit Item" onclick="showEditModal(${item.itemId})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn-card-action delete-btn" title="Delete Item" onclick="deleteInventoryItem(${item.itemId})">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                </div>
             `;
 
-            tableBody.appendChild(row);
+            gridContainer.appendChild(cardDiv);
         });
+
+        // Update pagination based on filtered items
+        setupPaginationForItems(filteredItems);
     }
 
-    function filterTableRows(searchTerm) {
+    function filterGridItems(searchTerm) {
         if (!searchTerm) {
-            // Reset all rows
-            document.querySelectorAll('#inventoryTable tbody tr.active-page').forEach(row => {
-                row.style.display = '';
+            // Show all cards
+            document.querySelectorAll('.inventory-card').forEach(card => {
+                card.style.display = '';
             });
             return;
         }
 
         searchTerm = searchTerm.toLowerCase();
 
-        document.querySelectorAll('#inventoryTable tbody tr.active-page').forEach(row => {
-            const text = row.textContent.toLowerCase();
+        // Filter the cards in the current view
+        document.querySelectorAll('.inventory-card').forEach(card => {
+            const text = card.textContent.toLowerCase();
             if (text.includes(searchTerm)) {
-                row.style.display = '';
+                card.style.display = '';
             } else {
-                row.style.display = 'none';
+                card.style.display = 'none';
             }
         });
     }
@@ -2430,7 +2452,11 @@
 
     function setupPagination() {
         const filteredItems = getFilteredItems();
-        const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+        setupPaginationForItems(filteredItems);
+    }
+
+    function setupPaginationForItems(items) {
+        const totalPages = Math.ceil(items.length / itemsPerPage);
         const pagination = document.getElementById('pagination');
         if (!pagination) return;
 
@@ -2719,80 +2745,6 @@
                 console.error('Error fetching item details:', error);
                 alert('Failed to load item details. Please try again.');
             });
-    };
-
-    // Function to show edit modal - needs to be globally accessible for onclick handlers
-    window.showEditModal = function(itemId) {
-        showSpinner();
-
-        // Fetch item details
-        fetch(`/admin/inventory/api/items/${itemId}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + getToken()
-            }
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`Server responded with status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(item => {
-                hideSpinner();
-
-                // Populate the edit form
-                document.getElementById('editItemId').value = item.itemId;
-                document.getElementById('editItemName').value = item.name;
-                document.getElementById('editItemCategory').value = item.category;
-                document.getElementById('editCurrentStock').value = parseFloat(item.currentStock).toFixed(2);
-                document.getElementById('editUnitPrice').value = parseFloat(item.unitPrice).toFixed(2);
-                document.getElementById('editReorderLevel').value = parseFloat(item.reorderLevel).toFixed(2);
-
-                // Show the modal
-                const modal = new bootstrap.Modal(document.getElementById('editInventoryModal'));
-                modal.show();
-            })
-            .catch(error => {
-                hideSpinner();
-                console.error('Error fetching item details for editing:', error);
-                alert('Failed to load item details for editing. Please try again.');
-            });
-    };
-
-    // Function to delete inventory item - needs to be globally accessible for onclick handlers
-    window.deleteInventoryItem = function(itemId) {
-        if (confirm('Are you sure you want to delete this item?')) {
-            showSpinner();
-
-            // Call the API to delete the inventory item
-            fetch(`/admin/inventory/api/items/${itemId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + getToken()
-                }
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`Server responded with status: ${response.status}`);
-                    }
-
-                    hideSpinner();
-
-                    // Show success message
-                    showSuccessModal('Item Deleted', 'The inventory item has been deleted successfully.');
-
-                    // Refresh inventory list
-                    loadInventoryItems();
-                })
-                .catch(error => {
-                    hideSpinner();
-                    console.error('Error deleting inventory item:', error);
-                    alert('Failed to delete inventory item. Please try again.');
-                });
-        }
     };
 </script>
 </body>

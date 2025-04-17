@@ -1,23 +1,24 @@
 package com.albany.restapi.controller;
 
+import com.albany.restapi.dto.CustomerRequest;
 import com.albany.restapi.dto.ServiceRequestDTO;
-import com.albany.restapi.model.Vehicle;
-import com.albany.restapi.repository.CustomerProfileRepository;
-import com.albany.restapi.repository.VehicleRepository;
+import com.albany.restapi.model.*;
+import com.albany.restapi.repository.*;
 import com.albany.restapi.service.ServiceRequestService;
-import com.albany.restapi.model.ServiceRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/admin/api")
@@ -25,205 +26,214 @@ import java.util.Optional;
 @Slf4j
 public class AdminController {
 
-    private final VehicleRepository vehicleRepository;
+    private final UserRepository userRepository;
     private final CustomerProfileRepository customerProfileRepository;
-    private final VehicleController vehicleController;
-    private final CustomerController customerController;
+    private final VehicleRepository vehicleRepository;
+    private final ServiceRequestRepository serviceRequestRepository;
     private final ServiceRequestService serviceRequestService;
+    private final PasswordEncoder passwordEncoder;
 
-    /**
-     * Get all customers
-     */
+    // Customer Management Endpoints
+
     @GetMapping("/customers")
     @PreAuthorize("hasAnyRole('ADMIN', 'admin')")
-    public ResponseEntity<?> getAllCustomers() {
-        log.info("Admin API: Getting all customers");
-        return customerController.getAllCustomers();
+    public ResponseEntity<List<Map<String, Object>>> getAllCustomers() {
+        List<CustomerProfile> customers = customerProfileRepository.findAllActive();
+
+        List<Map<String, Object>> response = customers.stream()
+                .map(this::convertToCustomerResponseDto)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(response);
     }
 
-    /**
-     * Get customer by ID
-     */
-    @GetMapping("/customers/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'admin')")
-    public ResponseEntity<?> getCustomerById(@PathVariable Integer id) {
-        log.info("Admin API: Getting customer with ID: {}", id);
-        return customerController.getCustomerById(id);
-    }
-
-    /**
-     * Create a new customer
-     */
     @PostMapping("/customers")
     @PreAuthorize("hasAnyRole('ADMIN', 'admin')")
-    public ResponseEntity<?> createCustomer(@RequestBody Map<String, Object> request) {
-        log.info("Admin API: Creating new customer");
-        return customerController.createCustomer(request);
-    }
-
-    /**
-     * Update a customer
-     */
-    @PutMapping("/customers/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'admin')")
-    public ResponseEntity<?> updateCustomer(
-            @PathVariable Integer id,
-            @RequestBody Map<String, Object> request) {
-        log.info("Admin API: Updating customer with ID: {}", id);
-        return customerController.updateCustomer(id, request);
-    }
-
-    /**
-     * Delete a customer
-     */
-    @DeleteMapping("/customers/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'admin')")
-    public ResponseEntity<?> deleteCustomer(@PathVariable Integer id) {
-        log.info("Admin API: Deleting customer with ID: {}", id);
-        return customerController.deleteCustomer(id);
-    }
-
-    /**
-     * Get all vehicles for a specific customer - admin version
-     */
-    // Methods related to vehicles in AdminController.java
-
-    /**
-     * Get all vehicles for a specific customer - admin version
-     */
-    @GetMapping("/customers/{customerId}/vehicles")
-    @PreAuthorize("hasAnyRole('ADMIN', 'admin')")
-    public ResponseEntity<?> getVehiclesForCustomer(@PathVariable Integer customerId) {
-        log.info("Admin API: Getting vehicles for customer ID: {}", customerId);
+    @Transactional
+    public ResponseEntity<?> createCustomer(@Valid @RequestBody CustomerRequest request) {
+        // Check if email already exists
+        if (userRepository.existsByEmail(request.getEmail())) {
+            return ResponseEntity.badRequest().body(Map.of("error",
+                    "A user with this email already exists. Please use a different email address."));
+        }
 
         try {
-            List<Vehicle> vehicles = vehicleRepository.findByCustomer_CustomerId(customerId);
-            return ResponseEntity.ok(vehicles);
+            // Create User entity
+            User user = new User();
+            user.setFirstName(request.getFirstName());
+            user.setLastName(request.getLastName());
+            user.setEmail(request.getEmail());
+            user.setPhoneNumber(request.getPhoneNumber());
+            user.setRole(Role.customer);
+            user.setActive(true);
+
+            // Generate a temporary password
+            String tempPassword = "Customer" + System.currentTimeMillis() % 10000;
+            user.setPassword(passwordEncoder.encode(tempPassword));
+
+            // Save the user
+            User savedUser = userRepository.save(user);
+
+            // Create CustomerProfile
+            CustomerProfile profile = new CustomerProfile();
+            profile.setCustomerId(savedUser.getUserId());
+            profile.setUser(savedUser);
+            profile.setStreet(request.getStreet());
+            profile.setCity(request.getCity());
+            profile.setState(request.getState());
+            profile.setPostalCode(request.getPostalCode());
+            profile.setMembershipStatus(request.getMembershipStatus());
+            profile.setTotalServices(0);
+
+            // Save the profile
+            CustomerProfile savedProfile = customerProfileRepository.save(profile);
+
+            // Return the created customer
+            Map<String, Object> response = convertToCustomerResponseDto(savedProfile);
+            response.put("tempPassword", tempPassword);
+
+            return ResponseEntity.ok(response);
+
         } catch (Exception e) {
-            log.error("Error getting vehicles for customer: {}", e.getMessage(), e);
-            Map<String, String> response = new HashMap<>();
-            response.put("error", "Failed to get vehicles: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            log.error("Error creating customer", e);
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
 
-    /**
-     * Create a new vehicle for a customer - admin version
-     */
-    @PostMapping("/customers/{customerId}/vehicles")
+    @GetMapping("/customers/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'admin')")
+    public ResponseEntity<Map<String, Object>> getCustomerById(@PathVariable Integer id) {
+        return customerProfileRepository.findById(id)
+                .map(this::convertToCustomerResponseDto)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/customers/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'admin')")
     @Transactional
-    public ResponseEntity<?> createVehicleForCustomer(
-            @PathVariable Integer customerId,
-            @RequestBody Map<String, Object> vehicleData) {
-
-        log.info("Admin API: Creating vehicle for customer ID: {}", customerId);
-
-        // Add the customerId to the vehicle data
-        vehicleData.put("customerId", customerId);
-
-        // Delegate to the vehicle controller's createVehicle method
-        return vehicleController.createVehicle(vehicleData);
-    }
-
-    /**
-     * Get vehicle by ID - admin version
-     */
-    @GetMapping("/vehicles/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'admin')")
-    public ResponseEntity<?> getVehicleById(@PathVariable Integer id) {
-        log.info("Admin API: Getting vehicle with ID: {}", id);
-        return vehicleController.getVehicleById(id);
-    }
-
-    /**
-     * Update a vehicle - admin version
-     */
-    @PutMapping("/vehicles/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'admin')")
-    public ResponseEntity<?> updateVehicle(
+    public ResponseEntity<Map<String, Object>> updateCustomer(
             @PathVariable Integer id,
-            @RequestBody Map<String, Object> vehicleData) {
+            @Valid @RequestBody CustomerRequest request) {
+        try {
+            CustomerProfile profile = customerProfileRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Customer not found"));
 
-        log.info("Admin API: Updating vehicle with ID: {}", id);
-        return vehicleController.updateVehicle(id, vehicleData);
+            // Check if email is being changed to one that already exists
+            String newEmail = request.getEmail();
+            String currentEmail = profile.getUser().getEmail();
+
+            if (!newEmail.equals(currentEmail) && userRepository.existsByEmail(newEmail)) {
+                return ResponseEntity.badRequest().body(Map.of("error",
+                        "A user with this email already exists. Please use a different email address."));
+            }
+
+            // Update User
+            User user = profile.getUser();
+            user.setFirstName(request.getFirstName());
+            user.setLastName(request.getLastName());
+            user.setEmail(newEmail);
+            user.setPhoneNumber(request.getPhoneNumber());
+
+            // Update CustomerProfile
+            profile.setStreet(request.getStreet());
+            profile.setCity(request.getCity());
+            profile.setState(request.getState());
+            profile.setPostalCode(request.getPostalCode());
+            profile.setMembershipStatus(request.getMembershipStatus());
+
+            // Save updates
+            userRepository.save(user);
+            CustomerProfile updatedProfile = customerProfileRepository.save(profile);
+
+            return ResponseEntity.ok(convertToCustomerResponseDto(updatedProfile));
+        } catch (Exception e) {
+            log.error("Error updating customer", e);
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
-    /**
-     * Delete a vehicle - admin version
-     */
-    @DeleteMapping("/vehicles/{id}")
+    @DeleteMapping("/customers/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'admin')")
-    public ResponseEntity<?> deleteVehicle(@PathVariable Integer id) {
-        log.info("Admin API: Deleting vehicle with ID: {}", id);
-        return vehicleController.deleteVehicle(id);
+    @Transactional
+    public ResponseEntity<Void> deleteCustomer(@PathVariable Integer id) {
+        return customerProfileRepository.findById(id)
+                .map(profile -> {
+                    // Soft delete - mark as inactive
+                    User user = profile.getUser();
+                    user.setActive(false);
+                    userRepository.save(user);
+
+                    return ResponseEntity.noContent().<Void>build();
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 
-    /**
-     * Get all service requests - admin version
-     */
+    // Vehicle Management Endpoints
+
+    @GetMapping("/vehicles")
+    @PreAuthorize("hasAnyRole('ADMIN', 'admin')")
+    public ResponseEntity<List<Vehicle>> getAllVehicles() {
+        return ResponseEntity.ok(vehicleRepository.findAll());
+    }
+
+    @GetMapping("/customers/{customerId}/vehicles")
+    @PreAuthorize("hasAnyRole('ADMIN', 'admin')")
+    public ResponseEntity<List<Vehicle>> getVehiclesForCustomer(@PathVariable Integer customerId) {
+        return ResponseEntity.ok(vehicleRepository.findByCustomer_CustomerId(customerId));
+    }
+
+    // Service Request Management Endpoints
+
     @GetMapping("/service-requests")
     @PreAuthorize("hasAnyRole('ADMIN', 'admin')")
     public ResponseEntity<List<ServiceRequestDTO>> getAllServiceRequests() {
-        log.info("Admin API: Getting all service requests");
-        List<ServiceRequestDTO> serviceRequests = serviceRequestService.getAllServiceRequests();
-        return ResponseEntity.ok(serviceRequests);
+        return ResponseEntity.ok(serviceRequestService.getAllServiceRequests());
     }
 
-    /**
-     * Get service request by ID - admin version
-     */
-    @GetMapping("/service-requests/{id}")
+    @GetMapping("/service-requests/{status}")
     @PreAuthorize("hasAnyRole('ADMIN', 'admin')")
-    public ResponseEntity<ServiceRequestDTO> getServiceRequestById(@PathVariable Integer id) {
-        log.info("Admin API: Getting service request with ID: {}", id);
-        ServiceRequestDTO serviceRequest = serviceRequestService.getServiceRequestById(id);
-        return ResponseEntity.ok(serviceRequest);
+    public ResponseEntity<List<ServiceRequestDTO>> getServiceRequestsByStatus(@PathVariable ServiceRequest.Status status) {
+        return ResponseEntity.ok(serviceRequestService.getServiceRequestsByStatus(status));
     }
 
-    /**
-     * Create a new service request - admin version
-     */
     @PostMapping("/service-requests")
     @PreAuthorize("hasAnyRole('ADMIN', 'admin')")
     public ResponseEntity<ServiceRequestDTO> createServiceRequest(@RequestBody ServiceRequestDTO requestDTO) {
-        log.info("Admin API: Creating new service request");
-        ServiceRequestDTO createdRequest = serviceRequestService.createServiceRequest(requestDTO);
-        return ResponseEntity.ok(createdRequest);
+        return ResponseEntity.ok(serviceRequestService.createServiceRequest(requestDTO));
     }
 
-    /**
-     * Assign service advisor to a request - admin version
-     */
     @PutMapping("/service-requests/{id}/assign")
     @PreAuthorize("hasAnyRole('ADMIN', 'admin')")
     public ResponseEntity<ServiceRequestDTO> assignServiceAdvisor(
             @PathVariable Integer id,
             @RequestBody Map<String, Integer> request) {
-        
-        log.info("Admin API: Assigning service advisor to request ID: {}", id);
         Integer advisorId = request.get("advisorId");
-        ServiceRequestDTO updatedRequest = serviceRequestService.assignServiceAdvisor(id, advisorId);
-        return ResponseEntity.ok(updatedRequest);
+        return ResponseEntity.ok(serviceRequestService.assignServiceAdvisor(id, advisorId));
     }
 
-    /**
-     * Update service request status - admin version
-     */
-    @PutMapping("/service-requests/{id}/status")
-    @PreAuthorize("hasAnyRole('ADMIN', 'admin')")
-    public ResponseEntity<ServiceRequestDTO> updateServiceRequestStatus(
-            @PathVariable Integer id,
-            @RequestBody Map<String, String> request) {
-        
-        log.info("Admin API: Updating status for service request ID: {}", id);
-        try {
-            ServiceRequest.Status status = ServiceRequest.Status.valueOf(request.get("status"));
-            ServiceRequestDTO updatedRequest = serviceRequestService.updateServiceRequestStatus(id, status);
-            return ResponseEntity.ok(updatedRequest);
-        } catch (IllegalArgumentException e) {
-            log.error("Invalid status value: {}", request.get("status"));
-            throw new RuntimeException("Invalid status value: " + request.get("status"));
-        }
+    // Helper Methods
+
+    private Map<String, Object> convertToCustomerResponseDto(CustomerProfile profile) {
+        Map<String, Object> dto = new HashMap<>();
+
+        User user = profile.getUser();
+
+        dto.put("customerId", profile.getCustomerId());
+        dto.put("userId", user.getUserId());
+        dto.put("firstName", user.getFirstName());
+        dto.put("lastName", user.getLastName());
+        dto.put("email", user.getEmail());
+        dto.put("phoneNumber", user.getPhoneNumber());
+        dto.put("street", profile.getStreet());
+        dto.put("city", profile.getCity());
+        dto.put("state", profile.getState());
+        dto.put("postalCode", profile.getPostalCode());
+        dto.put("totalServices", profile.getTotalServices());
+        dto.put("lastServiceDate", profile.getLastServiceDate());
+        dto.put("membershipStatus", profile.getMembershipStatus());
+        dto.put("isActive", user.isActive());
+
+        return dto;
     }
 }

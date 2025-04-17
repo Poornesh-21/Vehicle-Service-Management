@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 @Data
 @Builder
@@ -16,7 +17,7 @@ class CompletedServiceDTO {
     private String vehicleName;
     private String registrationNumber;
     private String customerName;
-    private String completedDate;
+    private LocalDate completedDate;  // Change from String to LocalDate
     private String serviceAdvisorName;
     private BigDecimal totalCost;
     private boolean hasInvoice;

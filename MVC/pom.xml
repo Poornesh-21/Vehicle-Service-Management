@@ -33,6 +33,7 @@
 		<lombok.version>1.18.32</lombok.version>
 	</properties>
 	<dependencies>
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>

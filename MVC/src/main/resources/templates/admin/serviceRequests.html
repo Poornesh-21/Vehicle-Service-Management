@@ -1552,18 +1552,18 @@
                         </a>
                     </li>
 
-                    <li class="sidebar-menu-item">
-                        <a href="#" class="sidebar-menu-link">
-                            <i class="fas fa-file-invoice-dollar"></i>
-                            <span>Invoices</span>
-                        </a>
-                    </li>
-                    <li class="sidebar-menu-item">
-                        <a href="#" class="sidebar-menu-link">
-                            <i class="fas fa-rupee-sign"></i>
-                            <span>Payments</span>
-                        </a>
-                    </li>
+<!--                    <li class="sidebar-menu-item">-->
+<!--                        <a href="#" class="sidebar-menu-link">-->
+<!--                            <i class="fas fa-file-invoice-dollar"></i>-->
+<!--                            <span>Invoices</span>-->
+<!--                        </a>-->
+<!--                    </li>-->
+<!--                    <li class="sidebar-menu-item">-->
+<!--                        <a href="#" class="sidebar-menu-link">-->
+<!--                            <i class="fas fa-rupee-sign"></i>-->
+<!--                            <span>Payments</span>-->
+<!--                        </a>-->
+<!--                    </li>-->
                 </ul>
             </div>
         </div>
@@ -2042,7 +2042,7 @@
     }
 
     function setupLogout() {
-        const logoutBtn = document.getElementById('logoutBtn');
+        const logoutBtn = document.querySelector('.logout-btn');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', function() {
                 // Show confirmation dialog
@@ -2162,6 +2162,7 @@
             customerIdSelect.addEventListener('change', function() {
                 const customerId = this.value;
                 const addNewVehicleBtn = document.getElementById('addNewVehicleBtn');
+                const newVehicleForm = document.getElementById('newVehicleForm');
 
                 if (customerId) {
                     loadVehiclesForCustomer(customerId);
@@ -2176,9 +2177,7 @@
                         addNewVehicleBtn.disabled = true;
                     }
                     // Hide new vehicle form if it's open
-                    document.getElementById('newVehicleForm').style.display = 'none';
-                    // Remove required attributes from new vehicle form
-                    removeRequiredFromVehicleForm();
+                    newVehicleForm.style.display = 'none';
                 }
             });
         }
@@ -2187,9 +2186,12 @@
         const addNewVehicleBtn = document.getElementById('addNewVehicleBtn');
         if (addNewVehicleBtn) {
             addNewVehicleBtn.addEventListener('click', function() {
-                document.getElementById('newVehicleForm').style.display = 'block';
-                // Add required attributes when form is shown
-                addRequiredToVehicleForm();
+                const newVehicleForm = document.getElementById('newVehicleForm');
+                newVehicleForm.style.display = 'block';
+
+                // Disable the vehicle dropdown when adding a new vehicle
+                const vehicleDropdown = document.getElementById('vehicleId');
+                if (vehicleDropdown) vehicleDropdown.disabled = true;
             });
         }
 
@@ -2197,9 +2199,12 @@
         const cancelNewVehicleBtn = document.getElementById('cancelNewVehicleBtn');
         if (cancelNewVehicleBtn) {
             cancelNewVehicleBtn.addEventListener('click', function() {
-                document.getElementById('newVehicleForm').style.display = 'none';
-                // Fixed function name - was calling removeRequiredToVehicleForm
-                removeRequiredFromVehicleForm();
+                const newVehicleForm = document.getElementById('newVehicleForm');
+                newVehicleForm.style.display = 'none';
+
+                // Enable the vehicle dropdown when not adding a new vehicle
+                const vehicleDropdown = document.getElementById('vehicleId');
+                if (vehicleDropdown) vehicleDropdown.disabled = false;
             });
         }
 
@@ -2228,25 +2233,6 @@
         }
     }
 
-    // Helper functions to add/remove required attributes
-    function addRequiredToVehicleForm() {
-        // Add required attribute to all form elements
-        document.getElementById('vehicleBrand').setAttribute('required', 'required');
-        document.getElementById('vehicleModel').setAttribute('required', 'required');
-        document.getElementById('vehicleRegNumber').setAttribute('required', 'required');
-        document.getElementById('vehicleCategory').setAttribute('required', 'required');
-        document.getElementById('vehicleYear').setAttribute('required', 'required');
-    }
-
-    function removeRequiredFromVehicleForm() {
-        // Remove required attribute from all form elements
-        document.getElementById('vehicleBrand').removeAttribute('required');
-        document.getElementById('vehicleModel').removeAttribute('required');
-        document.getElementById('vehicleRegNumber').removeAttribute('required');
-        document.getElementById('vehicleCategory').removeAttribute('required');
-        document.getElementById('vehicleYear').removeAttribute('required');
-    }
-
     // API Functions
     function getToken() {
         return localStorage.getItem('jwt-token') || sessionStorage.getItem('jwt-token');
@@ -2266,11 +2252,11 @@
         }
     }
 
-    function loadServiceRequests() {
-        showSpinner();
+    // Fixed loadCustomers function with better error handling and logging
+    function loadCustomers() {
+        console.log("Loading customers...");
 
-        // API call to get service requests
-        fetch('/admin/service-requests/api/all', {
+        fetch('/admin/customers/api', {  // Changed to the correct endpoint
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -2282,60 +2268,157 @@
                     window.location.href = '/admin/login?error=session_expired';
                     throw new Error('Session expired');
                 }
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
                 return response.json();
             })
             .then(data => {
-                hideSpinner();
+                console.log("Customers loaded:", data);
 
-                const loadingRow = document.getElementById('loading-row');
-                if (loadingRow) {
-                    loadingRow.style.display = 'none';
+                if (!data || !Array.isArray(data)) {
+                    console.error("Invalid customers data format:", data);
+                    showToast("Failed to load customers: Invalid data format", "error");
+                    return;
                 }
 
-                if (data && data.length > 0) {
-                    // Process membership status for each service request
-                    serviceRequests = data.map(request => {
-                        // If membershipStatus is not set, determine it based on some criteria
-                        if (!request.membershipStatus) {
-                            // Example: Set as Premium if customer has a specific flag or property
-                            request.membershipStatus = request.isPremiumCustomer ? 'Premium' : 'Standard';
-                        }
-                        return request;
-                    });
+                customers = data;
 
-                    renderServiceRequests();
-                    setupPagination();
+                // Check if we got customer data
+                if (customers.length > 0) {
+                    console.log(`Loaded ${customers.length} customers`);
 
-                    // Add membership filters after loading data
-                    addMembershipFilters();
+                    // Log sample customer for debugging
+                    console.log("Sample customer:", customers[0]);
                 } else {
-                    const emptyRow = document.getElementById('empty-row');
-                    if (emptyRow) {
-                        emptyRow.style.display = 'table-row';
-                    }
+                    console.warn("No customers loaded");
                 }
+
+                populateCustomerDropdown();
             })
             .catch(error => {
-                hideSpinner();
-
-                const loadingRow = document.getElementById('loading-row');
-                if (loadingRow) {
-                    loadingRow.style.display = 'none';
-                }
-
-                const emptyRow = document.getElementById('empty-row');
-                if (emptyRow) {
-                    emptyRow.style.display = 'table-row';
-                }
-
-                console.error('Error loading service requests:', error);
-                showToast('Failed to load service requests. Please try again.', 'error');
+                console.error('Error loading customers:', error);
+                showToast("Failed to load customers: " + error.message, "error");
             });
-
-        // Load customers and service advisors for forms
-        loadCustomers();
-        loadServiceAdvisors();
     }
+
+    // Improved populateCustomerDropdown function with more robust property access
+    function populateCustomerDropdown() {
+        console.log("Populating customer dropdown with", customers.length, "customers");
+
+        const dropdown = document.getElementById('customerId');
+        if (!dropdown) {
+            console.error("Customer dropdown element not found");
+            return;
+        }
+
+        dropdown.innerHTML = '<option value="">Select Customer</option>';
+
+        if (!customers || customers.length === 0) {
+            dropdown.innerHTML += '<option value="" disabled>No customers available</option>';
+            return;
+        }
+
+        customers.forEach(customer => {
+            try {
+                // Use safe property access with fallbacks
+                const customerId = customer.customerId || customer.userId || customer.id;
+                const firstName = customer.firstName || '';
+                const lastName = customer.lastName || '';
+                const membershipStatus = customer.membershipStatus || 'Standard';
+
+                if (!customerId) {
+                    console.warn("Customer missing ID:", customer);
+                    return;
+                }
+
+                const option = document.createElement('option');
+                option.value = customerId;
+                option.textContent = `${firstName} ${lastName} (${membershipStatus})`;
+                dropdown.appendChild(option);
+            } catch (e) {
+                console.error("Error processing customer for dropdown:", e, customer);
+            }
+        });
+
+        console.log(`Added ${dropdown.options.length - 1} customers to dropdown`);
+    }
+
+    // Alternative implementation using direct API calls if the customers array doesn't work
+    function loadCustomersDirectly() {
+        console.log("Loading customers directly for dropdown...");
+
+        const dropdown = document.getElementById('customerId');
+        if (!dropdown) {
+            console.error("Customer dropdown element not found");
+            return;
+        }
+
+        dropdown.innerHTML = '<option value="">Loading customers...</option>';
+        dropdown.disabled = true;
+
+        fetch('/admin/customers/api', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + getToken()
+            }
+        })
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                console.log("Direct customer data:", data);
+
+                dropdown.innerHTML = '<option value="">Select Customer</option>';
+
+                if (!data || !Array.isArray(data) || data.length === 0) {
+                    dropdown.innerHTML += '<option value="" disabled>No customers available</option>';
+                    return;
+                }
+
+                data.forEach(customer => {
+                    try {
+                        const customerId = customer.customerId || customer.userId || customer.id;
+                        const firstName = customer.firstName || '';
+                        const lastName = customer.lastName || '';
+                        const membershipStatus = customer.membershipStatus || 'Standard';
+
+                        if (!customerId) return;
+
+                        const option = document.createElement('option');
+                        option.value = customerId;
+                        option.textContent = `${firstName} ${lastName} (${membershipStatus})`;
+                        dropdown.appendChild(option);
+                    } catch (e) {
+                        console.error("Error processing customer:", e);
+                    }
+                });
+
+                dropdown.disabled = false;
+            })
+            .catch(error => {
+                console.error('Error directly loading customers:', error);
+                dropdown.innerHTML = '<option value="">Error loading customers</option>';
+                dropdown.disabled = true;
+                showToast("Failed to load customers: " + error.message, "error");
+            });
+    }
+
+    // Add this to your initialization code
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add event listener for Add Service Request modal
+        const addServiceRequestModal = document.getElementById('addServiceRequestModal');
+        if (addServiceRequestModal) {
+            addServiceRequestModal.addEventListener('show.bs.modal', function() {
+                // Load customers when the modal is shown
+                loadCustomersDirectly();
+            });
+        }
+
+        // Rest of your initialization code...
+    });
 
     function loadCustomers() {
         fetch('/admin/api/customers', {
@@ -2749,111 +2832,84 @@
         }
     }
 
-    // Function to save a new vehicle
-    function saveNewVehicle() {
-        const customerId = document.getElementById('customerId').value;
-
-        if (!customerId) {
-            showToast('Please select a customer first', 'error');
-            return;
-        }
-
-        // Validate form
-        const brand = document.getElementById('vehicleBrand').value;
-        const model = document.getElementById('vehicleModel').value;
-        const regNumber = document.getElementById('vehicleRegNumber').value;
-        const category = document.getElementById('vehicleCategory').value;
-        const year = document.getElementById('vehicleYear').value;
-
-        if (!brand || !model || !regNumber || !category || !year) {
-            showToast('Please fill all required fields', 'error');
-            return;
-        }
-
-        const vehicleData = {
-            brand: brand,
-            model: model,
-            registrationNumber: regNumber,
-            category: category,
-            year: parseInt(year)
-        };
-
-        showSpinner();
-
-        // Get the token
-        const token = getToken();
-
-        // IMPORTANT: Use the correct endpoint URL - use the admin API path
-        fetch(`/admin/api/customers/${customerId}/vehicles${token ? `?token=${token}` : ''}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(vehicleData)
-        })
-            .then(response => {
-                if (response.status === 401) {
-                    window.location.href = '/admin/login?error=session_expired';
-                    throw new Error('Session expired');
-                }
-                if (!response.ok) {
-                    return response.json().then(errorData => {
-                        throw new Error(errorData.error || 'Failed to create vehicle');
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                hideSpinner();
-
-                console.log('Vehicle created successfully:', data);
-
-                // Add new vehicle to the vehicles array
-                vehicles.push(data);
-
-                // Update dropdown and select the new vehicle
-                const dropdown = document.getElementById('vehicleId');
-                const option = document.createElement('option');
-                option.value = data.vehicleId;
-                option.textContent = `${data.brand} ${data.model} (${data.registrationNumber})`;
-                dropdown.appendChild(option);
-                dropdown.value = data.vehicleId;
-
-                // Hide the form
-                document.getElementById('newVehicleForm').style.display = 'none';
-
-                // Remove required attributes
-                removeRequiredFromVehicleForm();
-
-                // Clear form fields
-                document.getElementById('vehicleBrand').value = '';
-                document.getElementById('vehicleModel').value = '';
-                document.getElementById('vehicleRegNumber').value = '';
-                document.getElementById('vehicleCategory').value = '';
-                document.getElementById('vehicleYear').value = '';
-
-                showToast('Vehicle added successfully', 'success');
-            })
-            .catch(error => {
-                hideSpinner();
-                console.error('Error saving vehicle:', error);
-                showToast('Failed to create vehicle: ' + error.message, 'error');
-            });
-    }
-
+    // Fixed saveServiceRequest function
     function saveServiceRequest() {
         const form = document.getElementById('addServiceRequestForm');
         if (!form) return;
 
-        if (!form.checkValidity()) {
-            form.reportValidity();
+        // Check if we're adding a new vehicle
+        const newVehicleForm = document.getElementById('newVehicleForm');
+        const isAddingNewVehicle = newVehicleForm.style.display !== 'none';
+
+        // We need to handle validation differently based on what the user is doing
+        let formValid = true;
+
+        // Validate main form fields
+        const customerId = document.getElementById('customerId').value;
+        const serviceType = document.getElementById('serviceType').value;
+        const deliveryDate = document.getElementById('deliveryDate').value;
+
+        if (!customerId) {
+            showToast('Please select a customer', 'error');
+            formValid = false;
             return;
         }
 
+        if (!serviceType) {
+            showToast('Please select a service type', 'error');
+            formValid = false;
+            return;
+        }
+
+        if (!deliveryDate) {
+            showToast('Please select a delivery date', 'error');
+            formValid = false;
+            return;
+        }
+
+        // Different validation based on whether we're adding a new vehicle or using an existing one
+        if (isAddingNewVehicle) {
+            // Validate new vehicle fields
+            const brand = document.getElementById('vehicleBrand').value;
+            const model = document.getElementById('vehicleModel').value;
+            const regNumber = document.getElementById('vehicleRegNumber').value;
+            const category = document.getElementById('vehicleCategory').value;
+            const year = document.getElementById('vehicleYear').value;
+
+            if (!brand || !model || !regNumber || !category || !year) {
+                showToast('Please fill all required vehicle information', 'error');
+                formValid = false;
+                return;
+            }
+
+            // If vehicle form is valid, first save the vehicle
+            if (formValid) {
+                saveNewVehicle(function(newVehicleId) {
+                    // After vehicle is saved, create the service request with the new vehicle ID
+                    createServiceRequestWithVehicle(newVehicleId);
+                });
+                return; // Return early as we'll create the service request in the callback
+            }
+        } else {
+            // Validate vehicle selection
+            const vehicleId = document.getElementById('vehicleId').value;
+            if (!vehicleId) {
+                showToast('Please select a vehicle', 'error');
+                formValid = false;
+                return;
+            }
+
+            // If form is valid, create the service request with the selected vehicle
+            if (formValid) {
+                createServiceRequestWithVehicle(vehicleId);
+            }
+        }
+    }
+
+    // Helper function to create service request with a specific vehicle ID
+    function createServiceRequestWithVehicle(vehicleId) {
         const serviceRequest = {
-            customerId: document.getElementById('customerId').value,
-            vehicleId: document.getElementById('vehicleId').value,
+            vehicleId: vehicleId,
             serviceType: document.getElementById('serviceType').value,
             deliveryDate: document.getElementById('deliveryDate').value,
             additionalDescription: document.getElementById('description').value
@@ -2861,7 +2917,6 @@
 
         showSpinner();
 
-        // Fixed URL - use direct path instead of apiBaseUrl variable
         fetch('/admin/service-requests/api', {
             method: 'POST',
             headers: {
@@ -2891,7 +2946,8 @@
                 }
 
                 // Reset form
-                form.reset();
+                document.getElementById('addServiceRequestForm').reset();
+                document.getElementById('newVehicleForm').style.display = 'none';
 
                 // Show success message
                 showSuccessModal('Service Request Created', 'The service request has been created successfully.');
@@ -2905,6 +2961,91 @@
                 hideSpinner();
                 console.error('Error creating service request:', error);
                 showToast('Failed to create service request. Please try again.', 'error');
+            });
+    }
+
+    // Modified saveNewVehicle function with callback
+    function saveNewVehicle(callback) {
+        const customerId = document.getElementById('customerId').value;
+
+        if (!customerId) {
+            showToast('Please select a customer first', 'error');
+            return;
+        }
+
+        // Get form values
+        const brand = document.getElementById('vehicleBrand').value;
+        const model = document.getElementById('vehicleModel').value;
+        const regNumber = document.getElementById('vehicleRegNumber').value;
+        const category = document.getElementById('vehicleCategory').value;
+        const year = document.getElementById('vehicleYear').value;
+
+        if (!brand || !model || !regNumber || !category || !year) {
+            showToast('Please fill all required vehicle fields', 'error');
+            return;
+        }
+
+        const vehicleData = {
+            brand: brand,
+            model: model,
+            registrationNumber: regNumber,
+            category: category,
+            year: parseInt(year)
+        };
+
+        showSpinner();
+
+        // Get the token
+        const token = getToken();
+
+        // Use the correct endpoint URL
+        fetch(`/admin/api/customers/${customerId}/vehicles${token ? `?token=${token}` : ''}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(vehicleData)
+        })
+            .then(response => {
+                if (response.status === 401) {
+                    window.location.href = '/admin/login?error=session_expired';
+                    throw new Error('Session expired');
+                }
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.error || 'Failed to create vehicle');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Hide the form
+                document.getElementById('newVehicleForm').style.display = 'none';
+
+                // Add new vehicle to the vehicles array
+                vehicles.push(data);
+
+                // Update dropdown
+                const dropdown = document.getElementById('vehicleId');
+                const option = document.createElement('option');
+                option.value = data.vehicleId;
+                option.textContent = `${data.brand} ${data.model} (${data.registrationNumber})`;
+                dropdown.appendChild(option);
+                dropdown.value = data.vehicleId;
+
+                // Execute callback with the new vehicle ID
+                if (callback && typeof callback === 'function') {
+                    callback(data.vehicleId);
+                } else {
+                    hideSpinner();
+                    showToast('Vehicle added successfully', 'success');
+                }
+            })
+            .catch(error => {
+                hideSpinner();
+                console.error('Error saving vehicle:', error);
+                showToast('Failed to create vehicle: ' + error.message, 'error');
             });
     }
 

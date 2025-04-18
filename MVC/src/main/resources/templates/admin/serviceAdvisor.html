@@ -558,36 +558,6 @@
       font-weight: 500;
     }
 
-    .specialization-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem 1rem;
-      border-radius: 50px;
-      font-size: 0.85rem;
-      font-weight: 600;
-      margin-top: 0.25rem;
-    }
-
-    .specialization-badge.mechanical {
-      background-color: rgba(66, 165, 245, 0.15);
-      color: var(--info);
-    }
-
-    .specialization-badge.electrical {
-      background-color: rgba(255, 202, 40, 0.15);
-      color: #ff8f00;
-    }
-
-    .specialization-badge.bodywork {
-      background-color: rgba(156, 39, 176, 0.15);
-      color: #7b1fa2;
-    }
-
-    .specialization-badge.diagnostics {
-      background-color: rgba(76, 175, 80, 0.15);
-      color: #388e3c;
-    }
 
     .advisor-card-footer {
       padding: 1rem 1.25rem;
@@ -1510,18 +1480,18 @@
             </a>
           </li>
 
-          <li class="sidebar-menu-item">
-            <a href="#" class="sidebar-menu-link">
-              <i class="fas fa-file-invoice-dollar"></i>
-              <span>Invoices</span>
-            </a>
-          </li>
-          <li class="sidebar-menu-item">
-            <a href="#" class="sidebar-menu-link">
-              <i class="fas fa-rupee-sign"></i>
-              <span>Payments</span>
-            </a>
-          </li>
+<!--          <li class="sidebar-menu-item">-->
+<!--            <a href="#" class="sidebar-menu-link">-->
+<!--              <i class="fas fa-file-invoice-dollar"></i>-->
+<!--              <span>Invoices</span>-->
+<!--            </a>-->
+<!--          </li>-->
+<!--          <li class="sidebar-menu-item">-->
+<!--            <a href="#" class="sidebar-menu-link">-->
+<!--              <i class="fas fa-rupee-sign"></i>-->
+<!--              <span>Payments</span>-->
+<!--            </a>-->
+<!--          </li>-->
         </ul>
       </div>
     </div>
@@ -1663,10 +1633,6 @@
                   <div class="profile-value" id="viewAdvisorDepartment">Mechanical Services</div>
                 </div>
                 <div class="profile-detail">
-                  <div class="profile-label">Specialization</div>
-                  <div class="profile-value" id="viewAdvisorSpecialization">Engine Repairs</div>
-                </div>
-                <div class="profile-detail">
                   <div class="profile-label">Hire Date</div>
                   <div class="profile-value" id="viewAdvisorHireDate">March 15, 2023</div>
                 </div>
@@ -1779,18 +1745,6 @@
                     <option value="Customer Service">Customer Service</option>
                   </select>
                 </div>
-                <div class="form-group">
-                  <label for="specialization" class="form-label">Specialization *</label>
-                  <select class="form-select" id="specialization" name="specialization" required>
-                    <option value="">Select Specialization</option>
-                    <option value="Engine Repairs">Engine Repairs</option>
-                    <option value="Transmission">Transmission</option>
-                    <option value="Electrical Systems">Electrical Systems</option>
-                    <option value="Body Work">Body Work</option>
-                    <option value="Diagnostics">Diagnostics</option>
-                    <option value="General Maintenance">General Maintenance</option>
-                  </select>
-                </div>
               </div>
               <div class="alert alert-info mt-3">
                 <i class="fas fa-info-circle me-2"></i>
@@ -1867,18 +1821,6 @@
                     <option value="Body Shop">Body Shop</option>
                     <option value="Diagnostics">Diagnostics</option>
                     <option value="Customer Service">Customer Service</option>
-                  </select>
-                </div>
-                <div class="form-group">
-                  <label for="editSpecialization" class="form-label">Specialization *</label>
-                  <select class="form-select" id="editSpecialization" name="specialization" required>
-                    <option value="">Select Specialization</option>
-                    <option value="Engine Repairs">Engine Repairs</option>
-                    <option value="Transmission">Transmission</option>
-                    <option value="Electrical Systems">Electrical Systems</option>
-                    <option value="Body Work">Body Work</option>
-                    <option value="Diagnostics">Diagnostics</option>
-                    <option value="General Maintenance">General Maintenance</option>
                   </select>
                 </div>
               </div>
@@ -2330,19 +2272,6 @@ function renderServiceAdvisors() {
             <div class="advisor-detail-value">${advisor.department || 'Not assigned'}</div>
           </div>
         </div>
-        <div class="advisor-detail">
-          <div class="advisor-detail-icon">
-            <i class="fas fa-${getSpecializationIcon(advisor.specialization)}"></i>
-          </div>
-          <div class="advisor-detail-content">
-            <div class="advisor-detail-label">Specialization</div>
-            <div class="advisor-detail-value">
-              <span class="specialization-badge ${getSpecializationClass(advisor.specialization)}">
-                ${advisor.specialization || 'None'}
-              </span>
-            </div>
-          </div>
-        </div>
       </div>
       <div class="advisor-card-footer">
         <div class="workload-container">
@@ -2460,41 +2389,6 @@ function getStatusIcon(status) {
   }
 }
 
-function getSpecializationClass(specialization) {
-  if (!specialization) return '';
-
-  const spec = specialization.toLowerCase();
-  if (spec.includes('engine') || spec.includes('mechanical')) {
-    return 'mechanical';
-  } else if (spec.includes('electrical')) {
-    return 'electrical';
-  } else if (spec.includes('body')) {
-    return 'bodywork';
-  } else if (spec.includes('diagnostics')) {
-    return 'diagnostics';
-  }
-
-  return '';
-}
-
-function getSpecializationIcon(specialization) {
-  if (!specialization) return 'question-circle';
-
-  const spec = specialization.toLowerCase();
-  if (spec.includes('engine') || spec.includes('mechanical')) {
-    return 'cogs';
-  } else if (spec.includes('electrical')) {
-    return 'bolt';
-  } else if (spec.includes('body')) {
-    return 'car';
-  } else if (spec.includes('diagnostics')) {
-    return 'stethoscope';
-  } else if (spec.includes('general')) {
-    return 'tools';
-  }
-
-  return 'wrench';
-}
 
 function getWorkloadText(percentage) {
   if (percentage >= 75) {
@@ -2527,7 +2421,6 @@ function showAdvisorDetails(advisor) {
   document.getElementById('viewAdvisorPhone').textContent = advisor.phoneNumber;
   document.getElementById('viewAdvisorId').textContent = advisor.formattedId || ('SA-' + advisor.advisorId);
   document.getElementById('viewAdvisorDepartment').textContent = advisor.department || 'Not assigned';
-  document.getElementById('viewAdvisorSpecialization').textContent = advisor.specialization || 'None';
   document.getElementById('viewAdvisorHireDate').textContent = advisor.hireDate ? new Date(advisor.hireDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Not available';
 
   // Workload Tab
@@ -2584,7 +2477,6 @@ function saveServiceAdvisor() {
     email: document.getElementById('email').value,
     phoneNumber: document.getElementById('phone').value,
     department: document.getElementById('department').value,
-    specialization: document.getElementById('specialization').value,
     password: generatedPassword // Add the generated password to the request
   };
 
@@ -2675,7 +2567,6 @@ function showEditModal(advisorId) {
             document.getElementById('editEmail').value = advisor.email;
             document.getElementById('editPhone').value = advisor.phoneNumber;
             document.getElementById('editDepartment').value = advisor.department;
-            document.getElementById('editSpecialization').value = advisor.specialization;
             document.getElementById('editPassword').value = '';
 
             // Show edit modal
@@ -2710,8 +2601,7 @@ function updateServiceAdvisor() {
     lastName: document.getElementById('editLastName').value,
     email: document.getElementById('editEmail').value,
     phoneNumber: document.getElementById('editPhone').value,
-    department: document.getElementById('editDepartment').value,
-    specialization: document.getElementById('editSpecialization').value
+    department: document.getElementById('editDepartment').value
   };
 
   // Add password if provided

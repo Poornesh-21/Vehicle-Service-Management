@@ -10,10 +10,10 @@ import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,7 +28,7 @@ public class InventoryController {
     @Value("${api.base-url}")
     private String apiBaseUrl;
 
-    // Main inventory page
+    // Page rendering method
     @GetMapping
     public String inventoryPage(
             @RequestParam(required = false) String token,
@@ -68,19 +68,11 @@ public class InventoryController {
 
         try {
             HttpHeaders headers = new HttpHeaders();
-
-            // Enhanced logging & handling
-            log.debug("Token value first 10 chars: {}",
-                    validToken.substring(0, Math.min(10, validToken.length())));
-
-            // Direct header setting with bearer prefix
             headers.set("Authorization", "Bearer " + validToken);
-
-            log.debug("Request headers: {}", headers);
 
             HttpEntity<Void> entity = new HttpEntity<>(headers);
 
-            // FIXED URL Construction - removing duplicate /api segment
+            // FIXED URL Construction
             String fullUrl = apiBaseUrl.replace("/api", "") + "/admin/inventory";
             log.debug("Making request to: {}", fullUrl);
 
@@ -94,10 +86,6 @@ public class InventoryController {
             log.debug("API response for inventory items: {}", response.getStatusCode());
             return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
 
-        } catch (HttpClientErrorException.Forbidden e) {
-            log.error("403 Forbidden response from API. Token might be invalid or expired.");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Access denied. Your session may have expired."));
         } catch (Exception e) {
             log.error("Error fetching inventory items: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -140,10 +128,6 @@ public class InventoryController {
             log.debug("API response for inventory stats: {}", response.getStatusCode());
             return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
 
-        } catch (HttpClientErrorException.Forbidden e) {
-            log.error("403 Forbidden response from API. Token might be invalid or expired.");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Access denied. Your session may have expired."));
         } catch (Exception e) {
             log.error("Error fetching inventory stats: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -151,7 +135,7 @@ public class InventoryController {
         }
     }
 
-    // API endpoint for getting item details
+    // API endpoint for getting an item by ID
     @GetMapping("/api/items/{id}")
     @ResponseBody
     public ResponseEntity<?> getInventoryItemById(
@@ -175,6 +159,7 @@ public class InventoryController {
 
             // FIXED URL Construction
             String fullUrl = apiBaseUrl.replace("/api", "") + "/admin/inventory/" + id;
+            log.debug("Making request to: {}", fullUrl);
 
             ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
                     fullUrl,
@@ -186,10 +171,6 @@ public class InventoryController {
             log.debug("API response for inventory item: {}", response.getStatusCode());
             return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
 
-        } catch (HttpClientErrorException.Forbidden e) {
-            log.error("403 Forbidden response from API. Token might be invalid or expired.");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Access denied. Your session may have expired."));
         } catch (Exception e) {
             log.error("Error fetching inventory item: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -232,10 +213,6 @@ public class InventoryController {
             log.debug("API response for usage history: {}", response.getStatusCode());
             return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
 
-        } catch (HttpClientErrorException.Forbidden e) {
-            log.error("403 Forbidden response from API. Token might be invalid or expired.");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Access denied. Your session may have expired."));
         } catch (Exception e) {
             log.error("Error fetching usage history: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -244,7 +221,7 @@ public class InventoryController {
     }
 
     // API endpoint for creating an inventory item
-    @PostMapping("/api/items")
+    @PostMapping
     @ResponseBody
     public ResponseEntity<?> createInventoryItem(
             @RequestBody Map<String, Object> itemData,
@@ -281,10 +258,6 @@ public class InventoryController {
             log.info("Inventory item created successfully");
             return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
 
-        } catch (HttpClientErrorException.Forbidden e) {
-            log.error("403 Forbidden response from API. Token might be invalid or expired.");
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("error", "Access denied. Your session may have expired."));
         } catch (Exception e) {
             log.error("Error creating inventory item: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -292,18 +265,101 @@ public class InventoryController {
         }
     }
 
-    // Continue with other methods...
+    // API endpoint for updating an inventory item
+    @PutMapping("/{id}")
+    @ResponseBody
+    public ResponseEntity<?> updateInventoryItem(
+            @PathVariable Integer id,
+            @RequestBody Map<String, Object> itemData,
+            @RequestParam(required = false) String token,
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            HttpServletRequest request) {
 
-    /**
-     * Gets a valid token from various sources
-     */
+        // Get token from various sources
+        String validToken = getValidToken(token, authHeader, request);
+
+        if (validToken == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Bearer " + validToken);
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(itemData, headers);
+
+            // FIXED URL Construction
+            String fullUrl = apiBaseUrl.replace("/api", "") + "/admin/inventory/" + id;
+            log.debug("Making PUT request to: {}", fullUrl);
+            log.debug("Request body: {}", itemData);
+
+            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                    fullUrl,
+                    HttpMethod.PUT,
+                    entity,
+                    new ParameterizedTypeReference<Map<String, Object>>() {}
+            );
+
+            log.info("Inventory item updated successfully");
+            return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
+
+        } catch (Exception e) {
+            log.error("Error updating inventory item: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to update inventory item: " + e.getMessage()));
+        }
+    }
+
+    // API endpoint for deleting an inventory item
+    @DeleteMapping("/{id}")
+    @ResponseBody
+    public ResponseEntity<?> deleteInventoryItem(
+            @PathVariable Integer id,
+            @RequestParam(required = false) String token,
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            HttpServletRequest request) {
+
+        // Get token from various sources
+        String validToken = getValidToken(token, authHeader, request);
+
+        if (validToken == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Authorization", "Bearer " + validToken);
+
+            HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+            // FIXED URL Construction
+            String fullUrl = apiBaseUrl.replace("/api", "") + "/admin/inventory/" + id;
+            log.debug("Making DELETE request to: {}", fullUrl);
+
+            ResponseEntity<Void> response = restTemplate.exchange(
+                    fullUrl,
+                    HttpMethod.DELETE,
+                    entity,
+                    Void.class
+            );
+
+            log.info("Inventory item deleted successfully");
+            return ResponseEntity.status(response.getStatusCode()).build();
+
+        } catch (Exception e) {
+            log.error("Error deleting inventory item: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to delete inventory item: " + e.getMessage()));
+        }
+    }
+
+    // Helper method to get token from various sources
     private String getValidToken(String tokenParam, HttpServletRequest request) {
         return getValidToken(tokenParam, null, request);
     }
 
-    /**
-     * Gets a valid token from various sources with Auth header
-     */
+    // Helper method to get token from various sources with Authorization header
     private String getValidToken(String tokenParam, String authHeader, HttpServletRequest request) {
         // Check parameter first
         if (tokenParam != null && !tokenParam.isEmpty()) {

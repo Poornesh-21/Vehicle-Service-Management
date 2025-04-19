@@ -1,7 +1,6 @@
 package com.albany.mvc.controller;
 
 import com.albany.mvc.security.JwtUtil;
-import com.albany.mvc.service.VehicleTrackingService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -11,19 +10,16 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
-@RequestMapping("/admin")
 @RequiredArgsConstructor
 @Slf4j
-public class VehiclePageController {
+public class VehiclesPageController {
 
     private final JwtUtil jwtUtil;
-    private final VehicleTrackingService vehicleTrackingService;
 
-    @GetMapping("/vehicles")
+    @GetMapping("/admin/vehicles")
     public String vehiclesPage(
             @RequestParam(required = false) String token,
             Model model,
@@ -38,7 +34,7 @@ public class VehiclePageController {
             return "redirect:/admin/login?error=session_expired";
         }
 
-        // Set the admin's name for the page (in a real app, get from user session or JWT)
+        // Set the admin's name for the page
         model.addAttribute("userName", "Arthur Morgan");
 
         return "admin/Vehicle";

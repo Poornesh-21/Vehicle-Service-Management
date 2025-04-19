@@ -2329,7 +2329,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    // Vehicles Page JavaScript
+    // Vehicle Tracking System JavaScript
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize app
         initializeApp();
@@ -2337,11 +2337,11 @@
         // Set up event listeners
         setupEventListeners();
 
-        // Load vehicles under service
-        loadVehiclesUnderService();
+        // Load vehicles under service from API
+        loadVehiclesUnderServiceFromAPI();
 
-        // Load completed services
-        loadCompletedServices();
+        // Load completed services from API
+        loadCompletedServicesFromAPI();
     });
 
     // Global variables
@@ -2351,6 +2351,20 @@
     let currentCompletedPage = 1;
     const itemsPerPage = 5;
 
+    // Get JWT token from storage or URL
+    function getJwtToken() {
+        // First check URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const tokenFromUrl = urlParams.get('token');
+
+        if (tokenFromUrl) {
+            return tokenFromUrl;
+        }
+
+        // Then check local storage
+        return localStorage.getItem("jwt-token") || sessionStorage.getItem("jwt-token");
+    }
+
     // Initialize app
     function initializeApp() {
         // Setup mobile menu toggle
@@ -2359,7 +2373,7 @@
         // Setup logout button
         setupLogout();
 
-        // Set up token-based authentication
+        // Setup token-based authentication
         setupAuthentication();
 
         // Set current date if element exists
@@ -2407,7 +2421,7 @@
 
     function setupAuthentication() {
         // Get token from storage
-        const tokenFromStorage = localStorage.getItem("jwt-token") || sessionStorage.getItem("jwt-token");
+        const tokenFromStorage = getJwtToken();
 
         if (tokenFromStorage) {
             console.log("Token found in storage");
@@ -2544,10 +2558,10 @@
         // Generate Invoice button click
         document.getElementById('generateInvoiceBtn').addEventListener('click', function() {
             // Get service ID from the current service details modal
-            const serviceId = document.getElementById('viewServiceId').textContent;
+            const serviceId = document.getElementById('viewServiceId').textContent.replace('REQ-', '');
 
             // Find the service in the completed services array
-            const service = completedServices.find(s => s.requestId === parseInt(serviceId.replace('REQ-', '')));
+            const service = completedServices.find(s => s.serviceId === parseInt(serviceId) || s.requestId === parseInt(serviceId));
 
             // If service exists, populate the generate invoice modal
             if (service) {
@@ -2567,9 +2581,9 @@
             if (e.target && e.target.id === 'markAsPaidBtn' || e.target.closest('#markAsPaidBtn')) {
                 const serviceId = e.target.closest('tr').getAttribute('data-id');
                 if (serviceId) {
-                    const service = completedServices.find(s => s.requestId === parseInt(serviceId));
+                    const service = completedServices.find(s => s.serviceId === parseInt(serviceId) || s.requestId === parseInt(serviceId));
                     if (service) {
-                        document.getElementById('paidServiceId').textContent = 'REQ-' + service.requestId;
+                        document.getElementById('paidServiceId').textContent = 'REQ-' + serviceId;
                         $('#markAsPaidModal').modal('show');
                     }
                 }
@@ -2586,7 +2600,7 @@
             if (e.target && e.target.id === 'dispatchVehicleBtn' || e.target.closest('#dispatchVehicleBtn')) {
                 const serviceId = e.target.closest('tr').getAttribute('data-id');
                 if (serviceId) {
-                    const service = completedServices.find(s => s.requestId === parseInt(serviceId));
+                    const service = completedServices.find(s => s.serviceId === parseInt(serviceId) || s.requestId === parseInt(serviceId));
                     if (service) {
                         document.getElementById('dispatchVehicleName').textContent = service.vehicleName;
                         document.getElementById('dispatchRegistrationNumber').textContent = service.registrationNumber;
@@ -2673,6 +2687,124 @@
         });
     }
 
+    // Load vehicles under service from API
+    function loadVehiclesUnderServiceFromAPI() {
+        // Show loading spinner
+        document.getElementById('loading-row-service').style.display = '';
+        document.getElementById('empty-row-service').style.display = 'none';
+
+        // Get token
+        const token = getJwtToken();
+        if (!token) {
+            console.error('No token found');
+            return;
+        }
+
+        // API call to fetch vehicles under service
+        fetch('/admin/api/vehicle-tracking/under-service?token=' + encodeURIComponent(token))
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('API call failed: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                vehiclesUnderService = data;
+
+                // Update count
+                document.getElementById('underServiceCount').textContent = vehiclesUnderService.length;
+
+                // Hide loading spinner
+                document.getElementById('loading-row-service').style.display = 'none';
+
+                // Check if there are vehicles to display
+                if (vehiclesUnderService.length > 0) {
+                    // Update pagination
+                    updateServicePagination();
+
+                    // Show first page
+                    showVehiclesUnderServicePage(currentServicePage);
+                } else {
+                    // Show empty state
+                    document.getElementById('empty-row-service').style.display = '';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching vehicles under service:', error);
+                // Hide loading spinner and show empty state with error
+                document.getElementById('loading-row-service').style.display = 'none';
+                document.getElementById('empty-row-service').style.display = '';
+                document.getElementById('empty-row-service').innerHTML = `
+                <td colspan="9" class="text-center py-4">
+                    <div class="my-5">
+                        <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                        <h5>Error Loading Vehicles</h5>
+                        <p class="text-muted">Failed to load vehicles: ${error.message}</p>
+                    </div>
+                </td>
+            `;
+            });
+    }
+
+    // Load completed services from API
+    function loadCompletedServicesFromAPI() {
+        // Show loading spinner
+        document.getElementById('loading-row-completed').style.display = '';
+        document.getElementById('empty-row-completed').style.display = 'none';
+
+        // Get token
+        const token = getJwtToken();
+        if (!token) {
+            console.error('No token found');
+            return;
+        }
+
+        // API call to fetch completed services
+        fetch('/admin/api/vehicle-tracking/completed-services?token=' + encodeURIComponent(token))
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('API call failed: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                completedServices = data;
+
+                // Update count
+                document.getElementById('completedCount').textContent = completedServices.length;
+
+                // Hide loading spinner
+                document.getElementById('loading-row-completed').style.display = 'none';
+
+                // Check if there are services to display
+                if (completedServices.length > 0) {
+                    // Update pagination
+                    updateCompletedPagination();
+
+                    // Show first page
+                    showCompletedServicesPage(currentCompletedPage);
+                } else {
+                    // Show empty state
+                    document.getElementById('empty-row-completed').style.display = '';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching completed services:', error);
+                // Hide loading spinner and show empty state with error
+                document.getElementById('loading-row-completed').style.display = 'none';
+                document.getElementById('empty-row-completed').style.display = '';
+                document.getElementById('empty-row-completed').innerHTML = `
+                <td colspan="9" class="text-center py-4">
+                    <div class="my-5">
+                        <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                        <h5>Error Loading Completed Services</h5>
+                        <p class="text-muted">Failed to load data: ${error.message}</p>
+                    </div>
+                </td>
+            `;
+            });
+    }
+
     // Filter vehicles under service
     function filterVehiclesUnderService(searchText) {
         if (!searchText || searchText.trim() === '') {
@@ -2756,434 +2888,6 @@
         });
     }
 
-    // Load vehicles under service
-    function loadVehiclesUnderService() {
-        // Show loading spinner
-        document.getElementById('loading-row-service').style.display = '';
-        document.getElementById('empty-row-service').style.display = 'none';
-
-        // Here you would typically make an API call to fetch vehicles under service
-        // For demonstration, we'll use mock data
-        setTimeout(() => {
-            vehiclesUnderService = [
-                {
-                    requestId: 1001,
-                    vehicleName: 'Honda City',
-                    registrationNumber: 'MH02AB1234',
-                    customerName: 'Rajesh Kumar',
-                    customerEmail: 'rajesh.kumar@example.com',
-                    customerPhone: '+91 9876543210',
-                    customerMembership: 'Premium',
-                    serviceType: 'Engine Repair',
-                    status: 'Diagnosis',
-                    serviceAdvisorName: 'Amit Sharma',
-                    serviceAdvisorId: 'SA-001',
-                    startDate: '2025-04-10',
-                    estimatedCompletion: '2025-04-15',
-                    progressPercentage: 45,
-                    progressNotes: 'Engine teardown complete, waiting for parts.',
-                    vehicleCategory: 'Car',
-                    description: 'Vehicle is showing check engine light and making unusual noise when accelerating.'
-                },
-                {
-                    requestId: 1002,
-                    vehicleName: 'Royal Enfield Classic 350',
-                    registrationNumber: 'KA03CD5678',
-                    customerName: 'Priya Sharma',
-                    customerEmail: 'priya.sharma@example.com',
-                    customerPhone: '+91 8765432109',
-                    customerMembership: 'Standard',
-                    serviceType: 'Regular Maintenance',
-                    status: 'Repair',
-                    serviceAdvisorName: 'Vijay Mehta',
-                    serviceAdvisorId: 'SA-003',
-                    startDate: '2025-04-12',
-                    estimatedCompletion: '2025-04-14',
-                    progressPercentage: 75,
-                    progressNotes: 'Oil change done, brake adjustment in progress.',
-                    vehicleCategory: 'Bike',
-                    description: 'Regular 5000km service and brake adjustment.'
-                },
-                {
-                    requestId: 1003,
-                    vehicleName: 'Maruti Suzuki Swift',
-                    registrationNumber: 'DL05EF9012',
-                    customerName: 'Aditya Singh',
-                    customerEmail: 'aditya.singh@example.com',
-                    customerPhone: '+91 7654321098',
-                    customerMembership: 'Premium',
-                    serviceType: 'Brake Service',
-                    status: 'Repair',
-                    serviceAdvisorName: 'Ravi Kapoor',
-                    serviceAdvisorId: 'SA-002',
-                    startDate: '2025-04-11',
-                    estimatedCompletion: '2025-04-13',
-                    progressPercentage: 80,
-                    progressNotes: 'Brake pads replaced, testing brake system.',
-                    vehicleCategory: 'Car',
-                    description: 'Brake pads worn out, need replacement. Also check brake fluid.'
-                },
-                {
-                    requestId: 1004,
-                    vehicleName: 'Tata Nexon',
-                    registrationNumber: 'TN07GH3456',
-                    customerName: 'Kavita Patel',
-                    customerEmail: 'kavita.patel@example.com',
-                    customerPhone: '+91 6543210987',
-                    customerMembership: 'Standard',
-                    serviceType: 'Battery Replacement',
-                    status: 'Diagnosis',
-                    serviceAdvisorName: 'Pradeep Kumar',
-                    serviceAdvisorId: 'SA-004',
-                    startDate: '2025-04-13',
-                    estimatedCompletion: '2025-04-14',
-                    progressPercentage: 30,
-                    progressNotes: 'Testing electrical system to confirm battery issue.',
-                    vehicleCategory: 'Car',
-                    description: 'Vehicle not starting, suspecting battery failure.'
-                },
-                {
-                    requestId: 1005,
-                    vehicleName: 'Yamaha FZ',
-                    registrationNumber: 'KL09IJ7890',
-                    customerName: 'Rahul Menon',
-                    customerEmail: 'rahul.menon@example.com',
-                    customerPhone: '+91 5432109876',
-                    customerMembership: 'Standard',
-                    serviceType: 'Tire Rotation',
-                    status: 'Received',
-                    serviceAdvisorName: 'Not Assigned',
-                    serviceAdvisorId: 'N/A',
-                    startDate: '2025-04-14',
-                    estimatedCompletion: '2025-04-15',
-                    progressPercentage: 0,
-                    progressNotes: 'Vehicle received, awaiting service advisor assignment.',
-                    vehicleCategory: 'Bike',
-                    description: 'Tire rotation and wheel alignment check.'
-                },
-                {
-                    requestId: 1006,
-                    vehicleName: 'Hyundai Creta',
-                    registrationNumber: 'UP11KL2345',
-                    customerName: 'Neha Gupta',
-                    customerEmail: 'neha.gupta@example.com',
-                    customerPhone: '+91 4321098765',
-                    customerMembership: 'Premium',
-                    serviceType: 'Air Conditioning',
-                    status: 'Repair',
-                    serviceAdvisorName: 'Amit Sharma',
-                    serviceAdvisorId: 'SA-001',
-                    startDate: '2025-04-12',
-                    estimatedCompletion: '2025-04-16',
-                    progressPercentage: 60,
-                    progressNotes: 'AC compressor replaced, refilling refrigerant.',
-                    vehicleCategory: 'Car',
-                    description: 'AC not cooling properly, strange noise from AC unit.'
-                },
-                {
-                    requestId: 1007,
-                    vehicleName: 'Bajaj Pulsar',
-                    registrationNumber: 'HR13MN6789',
-                    customerName: 'Sanjay Rathore',
-                    customerEmail: 'sanjay.rathore@example.com',
-                    customerPhone: '+91 3210987654',
-                    customerMembership: 'Standard',
-                    serviceType: 'Engine Oil Change',
-                    status: 'Diagnosis',
-                    serviceAdvisorName: 'Vijay Mehta',
-                    serviceAdvisorId: 'SA-003',
-                    startDate: '2025-04-13',
-                    estimatedCompletion: '2025-04-14',
-                    progressPercentage: 20,
-                    progressNotes: 'Initial inspection complete, preparing for oil change.',
-                    vehicleCategory: 'Bike',
-                    description: 'Regular oil change and general checkup.'
-                },
-                {
-                    requestId: 1008,
-                    vehicleName: 'Mahindra Thar',
-                    registrationNumber: 'MP15OP0123',
-                    customerName: 'Vishal Malhotra',
-                    customerEmail: 'vishal.malhotra@example.com',
-                    customerPhone: '+91 2109876543',
-                    customerMembership: 'Premium',
-                    serviceType: 'Suspension Repair',
-                    status: 'Repair',
-                    serviceAdvisorName: 'Ravi Kapoor',
-                    serviceAdvisorId: 'SA-002',
-                    startDate: '2025-04-11',
-                    estimatedCompletion: '2025-04-17',
-                    progressPercentage: 50,
-                    progressNotes: 'Front shock absorbers replaced, checking rear suspension.',
-                    vehicleCategory: 'Car',
-                    description: 'Vehicle bouncing excessively on bumps, suspension feels loose.'
-                }
-            ];
-
-            // Update count
-            document.getElementById('underServiceCount').textContent = vehiclesUnderService.length;
-
-            // Hide loading spinner
-            document.getElementById('loading-row-service').style.display = 'none';
-
-            // Check if there are vehicles to display
-            if (vehiclesUnderService.length > 0) {
-                // Update pagination
-                updateServicePagination();
-
-                // Show first page
-                showVehiclesUnderServicePage(currentServicePage);
-            } else {
-                // Show empty state
-                document.getElementById('empty-row-service').style.display = '';
-            }
-        }, 1000); // Simulate API delay
-    }
-
-    // Load completed services
-    function loadCompletedServices() {
-        // Show loading spinner
-        document.getElementById('loading-row-completed').style.display = '';
-        document.getElementById('empty-row-completed').style.display = 'none';
-
-        // Here you would typically make an API call to fetch completed services
-        // For demonstration, we'll use mock data
-        setTimeout(() => {
-            completedServices = [
-                {
-                    requestId: 1201,
-                    vehicleName: 'Toyota Innova',
-                    registrationNumber: 'GJ17QR9876',
-                    customerName: 'Suresh Patel',
-                    customerEmail: 'suresh.patel@example.com',
-                    customerPhone: '+91 9876543210',
-                    customerMembership: 'Premium',
-                    serviceType: 'Major Service',
-                    completionDate: '2025-04-08',
-                    totalAmount: 15800,
-                    paymentStatus: 'Paid',
-                    invoiceGenerated: true,
-                    vehicleCategory: 'Car',
-                    hasInvoice: true,
-                    materialsUsed: [
-                        { item: 'Engine Oil', quantity: 5, unitPrice: 950, total: 4750 },
-                        { item: 'Oil Filter', quantity: 1, unitPrice: 450, total: 450 },
-                        { item: 'Air Filter', quantity: 1, unitPrice: 650, total: 650 },
-                        { item: 'Cabin Filter', quantity: 1, unitPrice: 750, total: 750 },
-                        { item: 'Spark Plugs', quantity: 4, unitPrice: 320, total: 1280 }
-                    ],
-                    laborCharges: [
-                        { description: 'Full Service', hours: 4, ratePerHour: 800, total: 3200 },
-                        { description: 'Diagnostic Check', hours: 1, ratePerHour: 600, total: 600 }
-                    ],
-                    subtotal: 11680,
-                    gst: 2102.40,
-                    grandTotal: 13782.40
-                },
-                {
-                    requestId: 1202,
-                    vehicleName: 'Honda Activa',
-                    registrationNumber: 'KA19ST4567',
-                    customerName: 'Ananya Desai',
-                    customerEmail: 'ananya.desai@example.com',
-                    customerPhone: '+91 8765432109',
-                    customerMembership: 'Standard',
-                    serviceType: 'Regular Maintenance',
-                    completionDate: '2025-04-09',
-                    totalAmount: 2500,
-                    paymentStatus: 'Pending',
-                    invoiceGenerated: false,
-                    vehicleCategory: 'Bike',
-                    hasInvoice: false,
-                    materialsUsed: [
-                        { item: 'Engine Oil', quantity: 1, unitPrice: 650, total: 650 },
-                        { item: 'Oil Filter', quantity: 1, unitPrice: 250, total: 250 },
-                        { item: 'Air Filter', quantity: 1, unitPrice: 350, total: 350 }
-                    ],
-                    laborCharges: [
-                        { description: 'Basic Service', hours: 1, ratePerHour: 500, total: 500 }
-                    ],
-                    subtotal: 1750,
-                    gst: 315,
-                    grandTotal: 2065
-                },
-                {
-                    requestId: 1203,
-                    vehicleName: 'Ford EcoSport',
-                    registrationNumber: 'MH04UV2345',
-                    customerName: 'Arjun Kapoor',
-                    customerEmail: 'arjun.kapoor@example.com',
-                    customerPhone: '+91 7654321098',
-                    customerMembership: 'Premium',
-                    serviceType: 'Brake Replacement',
-                    completionDate: '2025-04-10',
-                    totalAmount: 8500,
-                    paymentStatus: 'Paid',
-                    invoiceGenerated: true,
-                    vehicleCategory: 'Car',
-                    hasInvoice: true,
-                    materialsUsed: [
-                        { item: 'Front Brake Pads', quantity: 1, unitPrice: 2200, total: 2200 },
-                        { item: 'Rear Brake Pads', quantity: 1, unitPrice: 1800, total: 1800 },
-                        { item: 'Brake Fluid', quantity: 1, unitPrice: 450, total: 450 }
-                    ],
-                    laborCharges: [
-                        { description: 'Brake System Service', hours: 3, ratePerHour: 800, total: 2400 }
-                    ],
-                    subtotal: 6850,
-                    gst: 1233,
-                    grandTotal: 8083
-                },
-                {
-                    requestId: 1204,
-                    vehicleName: 'TVS Apache',
-                    registrationNumber: 'AP21WX7890',
-                    customerName: 'Karthik Reddy',
-                    customerEmail: 'karthik.reddy@example.com',
-                    customerPhone: '+91 6543210987',
-                    customerMembership: 'Standard',
-                    serviceType: 'Tire Replacement',
-                    completionDate: '2025-04-11',
-                    totalAmount: 4200,
-                    paymentStatus: 'Paid',
-                    invoiceGenerated: true,
-                    vehicleCategory: 'Bike',
-                    hasInvoice: true,
-                    materialsUsed: [
-                        { item: 'Front Tire', quantity: 1, unitPrice: 1500, total: 1500 },
-                        { item: 'Rear Tire', quantity: 1, unitPrice: 1800, total: 1800 }
-                    ],
-                    laborCharges: [
-                        { description: 'Tire Fitting', hours: 1, ratePerHour: 500, total: 500 }
-                    ],
-                    subtotal: 3800,
-                    gst: 684,
-                    grandTotal: 4484
-                },
-                {
-                    requestId: 1205,
-                    vehicleName: 'Kia Seltos',
-                    registrationNumber: 'PB23YZ0123',
-                    customerName: 'Manpreet Singh',
-                    customerEmail: 'manpreet.singh@example.com',
-                    customerPhone: '+91 5432109876',
-                    customerMembership: 'Premium',
-                    serviceType: 'Transmission Service',
-                    completionDate: '2025-04-12',
-                    totalAmount: 12000,
-                    paymentStatus: 'Pending',
-                    invoiceGenerated: true,
-                    vehicleCategory: 'Car',
-                    hasInvoice: true,
-                    materialsUsed: [
-                        { item: 'Transmission Fluid', quantity: 6, unitPrice: 850, total: 5100 },
-                        { item: 'Transmission Filter', quantity: 1, unitPrice: 1200, total: 1200 },
-                        { item: 'Gasket', quantity: 1, unitPrice: 350, total: 350 }
-                    ],
-                    laborCharges: [
-                        { description: 'Transmission Service', hours: 4, ratePerHour: 900, total: 3600 }
-                    ],
-                    subtotal: 10250,
-                    gst: 1845,
-                    grandTotal: 12095
-                },
-                {
-                    requestId: 1206,
-                    vehicleName: 'Maruti Suzuki Baleno',
-                    registrationNumber: 'DL25AB3456',
-                    customerName: 'Sneha Sharma',
-                    customerEmail: 'sneha.sharma@example.com',
-                    customerPhone: '+91 4321098765',
-                    customerMembership: 'Standard',
-                    serviceType: 'Battery Replacement',
-                    completionDate: '2025-04-12',
-                    totalAmount: 5500,
-                    paymentStatus: 'Pending',
-                    invoiceGenerated: false,
-                    vehicleCategory: 'Car',
-                    hasInvoice: false,
-                    materialsUsed: [
-                        { item: 'Car Battery', quantity: 1, unitPrice: 4500, total: 4500 }
-                    ],
-                    laborCharges: [
-                        { description: 'Battery Replacement', hours: 0.5, ratePerHour: 600, total: 300 }
-                    ],
-                    subtotal: 4800,
-                    gst: 864,
-                    grandTotal: 5664
-                },
-                {
-                    requestId: 1207,
-                    vehicleName: 'Hero Splendor',
-                    registrationNumber: 'RJ27CD6789',
-                    customerName: 'Rajesh Meena',
-                    customerEmail: 'rajesh.meena@example.com',
-                    customerPhone: '+91 3210987654',
-                    customerMembership: 'Standard',
-                    serviceType: 'Oil Change',
-                    completionDate: '2025-04-13',
-                    totalAmount: 1200,
-                    paymentStatus: 'Paid',
-                    invoiceGenerated: true,
-                    vehicleCategory: 'Bike',
-                    hasInvoice: true,
-                    materialsUsed: [
-                        { item: 'Engine Oil', quantity: 1, unitPrice: 550, total: 550 },
-                        { item: 'Oil Filter', quantity: 1, unitPrice: 150, total: 150 }
-                    ],
-                    laborCharges: [
-                        { description: 'Oil Change', hours: 0.5, ratePerHour: 400, total: 200 }
-                    ],
-                    subtotal: 900,
-                    gst: 162,
-                    grandTotal: 1062
-                },
-                {
-                    requestId: 1208,
-                    vehicleName: 'Tata Harrier',
-                    registrationNumber: 'GJ29EF0123',
-                    customerName: 'Hardik Shah',
-                    customerEmail: 'hardik.shah@example.com',
-                    customerPhone: '+91 2109876543',
-                    customerMembership: 'Premium',
-                    serviceType: 'Wheel Alignment',
-                    completionDate: '2025-04-13',
-                    totalAmount: 3500,
-                    paymentStatus: 'Paid',
-                    invoiceGenerated: true,
-                    vehicleCategory: 'Car',
-                    hasInvoice: true,
-                    materialsUsed: [],
-                    laborCharges: [
-                        { description: 'Wheel Alignment', hours: 1.5, ratePerHour: 800, total: 1200 },
-                        { description: 'Wheel Balancing', hours: 1, ratePerHour: 700, total: 700 }
-                    ],
-                    subtotal: 1900,
-                    gst: 342,
-                    grandTotal: 2242
-                }
-            ];
-
-            // Update count
-            document.getElementById('completedCount').textContent = completedServices.length;
-
-            // Hide loading spinner
-            document.getElementById('loading-row-completed').style.display = 'none';
-
-            // Check if there are services to display
-            if (completedServices.length > 0) {
-                // Update pagination
-                updateCompletedPagination();
-
-                // Show first page
-                showCompletedServicesPage(currentCompletedPage);
-            } else {
-                // Show empty state
-                document.getElementById('empty-row-completed').style.display = '';
-            }
-        }, 1000); // Simulate API delay
-    }
-
     // Show vehicles under service page
     function showVehiclesUnderServicePage(page) {
         const startIndex = (page - 1) * itemsPerPage;
@@ -3236,7 +2940,7 @@
                 day: 'numeric'
             });
 
-            const estimatedCompletion = new Date(vehicle.estimatedCompletion).toLocaleDateString('en-US', {
+            const estimatedCompletion = new Date(vehicle.estimatedCompletionDate).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'short',
                 day: 'numeric'
@@ -3263,39 +2967,39 @@
 
             // Build the row HTML
             row.innerHTML = `
-                <td>REQ-${vehicle.requestId}</td>
-                <td>
-                    <div class="vehicle-info">
-                        <div class="vehicle-icon">
-                            <i class="fas fa-${vehicle.vehicleCategory.toLowerCase() === 'bike' ? 'motorcycle' : 'car'}"></i>
-                        </div>
-                        <div class="vehicle-details">
-                            <h5>${vehicle.vehicleName}</h5>
-                            <p>${vehicle.registrationNumber}</p>
-                        </div>
+            <td>REQ-${vehicle.requestId}</td>
+            <td>
+                <div class="vehicle-info">
+                    <div class="vehicle-icon">
+                        <i class="fas fa-${vehicle.category.toLowerCase() === 'bike' ? 'motorcycle' : 'car'}"></i>
                     </div>
-                </td>
-                <td>
-                    <div class="person-info">
-                        <h5>${vehicle.customerName}</h5>
-                        <p>${vehicle.customerMembership === 'Premium' ?
+                    <div class="vehicle-details">
+                        <h5>${vehicle.vehicleName}</h5>
+                        <p>${vehicle.registrationNumber}</p>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <div class="person-info">
+                    <h5>${vehicle.customerName}</h5>
+                    <p>${vehicle.membershipStatus === 'Premium' ?
                 '<span class="membership-badge membership-premium"><i class="fas fa-crown"></i> Premium</span>' :
                 '<span class="membership-badge membership-standard"><i class="fas fa-user"></i> Standard</span>'}</p>
-                    </div>
-                </td>
-                <td>${vehicle.serviceType}</td>
-                <td>${statusBadge}</td>
-                <td>${vehicle.serviceAdvisorName}</td>
-                <td>${startDate}</td>
-                <td>${estimatedCompletion}</td>
-                <td>
-                    <div class="table-actions-cell">
-                        <button class="btn-table-action" id="viewServiceBtn" title="View Details">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                </td>
-            `;
+                </div>
+            </td>
+            <td>${vehicle.serviceType}</td>
+            <td>${statusBadge}</td>
+            <td>${vehicle.serviceAdvisorName}</td>
+            <td>${startDate}</td>
+            <td>${estimatedCompletion}</td>
+            <td>
+                <div class="table-actions-cell">
+                    <button class="btn-table-action" id="viewServiceBtn" title="View Details">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </td>
+        `;
 
             tableBody.appendChild(row);
         });
@@ -3325,11 +3029,11 @@
         // Add service rows
         services.forEach(service => {
             const row = document.createElement('tr');
-            row.setAttribute('data-id', service.requestId);
+            row.setAttribute('data-id', service.serviceId || service.requestId);
             row.classList.add('active-page');
 
             // Format the date strings
-            const completionDate = new Date(service.completionDate).toLocaleDateString('en-US', {
+            const completionDate = new Date(service.completedDate).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'short',
                 day: 'numeric'
@@ -3340,11 +3044,12 @@
                 style: 'currency',
                 currency: 'INR',
                 maximumFractionDigits: 0
-            }).format(service.totalAmount);
+            }).format(service.totalCost || 0);
 
             // Create payment status badge
+            let paymentStatus = service.paymentStatus || 'Pending';
             let paymentStatusBadge = '';
-            switch (service.paymentStatus.toLowerCase()) {
+            switch (paymentStatus.toLowerCase()) {
                 case 'paid':
                     paymentStatusBadge = `<span class="status-badge status-paid"><i class="fas fa-check-circle"></i> Paid</span>`;
                     break;
@@ -3355,7 +3060,7 @@
                     paymentStatusBadge = `<span class="status-badge status-dispatched"><i class="fas fa-truck"></i> Dispatched</span>`;
                     break;
                 default:
-                    paymentStatusBadge = `<span class="status-badge">${service.paymentStatus}</span>`;
+                    paymentStatusBadge = `<span class="status-badge">${paymentStatus}</span>`;
             }
 
             // Create invoice badge
@@ -3368,59 +3073,59 @@
 
             // Create action buttons based on status
             let actionButtons = '';
-            if (service.paymentStatus.toLowerCase() === 'pending') {
+            if (paymentStatus.toLowerCase() === 'pending') {
                 actionButtons = `
-                    <button class="btn-table-action success" id="markAsPaidBtn" title="Mark as Paid">
-                        <i class="fas fa-money-bill-wave"></i>
-                    </button>
-                `;
-            } else if (service.paymentStatus.toLowerCase() === 'paid') {
+                <button class="btn-table-action success" id="markAsPaidBtn" title="Mark as Paid">
+                    <i class="fas fa-money-bill-wave"></i>
+                </button>
+            `;
+            } else if (paymentStatus.toLowerCase() === 'paid') {
                 actionButtons = `
-                    <button class="btn-table-action info" id="dispatchVehicleBtn" title="Dispatch Vehicle">
-                        <i class="fas fa-truck"></i>
-                    </button>
-                `;
+                <button class="btn-table-action info" id="dispatchVehicleBtn" title="Dispatch Vehicle">
+                    <i class="fas fa-truck"></i>
+                </button>
+            `;
             }
 
             actionButtons += `
-                <button class="btn-table-action" id="viewServiceBtn" title="View Details">
-                    <i class="fas fa-eye"></i>
-                </button>
-            `;
+            <button class="btn-table-action" id="viewServiceBtn" title="View Details">
+                <i class="fas fa-eye"></i>
+            </button>
+        `;
 
             // Build the row HTML
             row.innerHTML = `
-                <td>REQ-${service.requestId}</td>
-                <td>
-                    <div class="vehicle-info">
-                        <div class="vehicle-icon">
-                            <i class="fas fa-${service.vehicleCategory.toLowerCase() === 'bike' ? 'motorcycle' : 'car'}"></i>
-                        </div>
-                        <div class="vehicle-details">
-                            <h5>${service.vehicleName}</h5>
-                            <p>${service.registrationNumber}</p>
-                        </div>
+            <td>REQ-${service.serviceId || service.requestId}</td>
+            <td>
+                <div class="vehicle-info">
+                    <div class="vehicle-icon">
+                        <i class="fas fa-${(service.category || '').toLowerCase() === 'bike' ? 'motorcycle' : 'car'}"></i>
                     </div>
-                </td>
-                <td>
-                    <div class="person-info">
-                        <h5>${service.customerName}</h5>
-                        <p>${service.customerMembership === 'Premium' ?
+                    <div class="vehicle-details">
+                        <h5>${service.vehicleName}</h5>
+                        <p>${service.registrationNumber}</p>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <div class="person-info">
+                    <h5>${service.customerName}</h5>
+                    <p>${(service.membershipStatus || 'Standard') === 'Premium' ?
                 '<span class="membership-badge membership-premium"><i class="fas fa-crown"></i> Premium</span>' :
                 '<span class="membership-badge membership-standard"><i class="fas fa-user"></i> Standard</span>'}</p>
-                    </div>
-                </td>
-                <td>${service.serviceType}</td>
-                <td>${completionDate}</td>
-                <td>${formattedAmount}</td>
-                <td>${paymentStatusBadge}</td>
-                <td>${invoiceBadge}</td>
-                <td>
-                    <div class="table-actions-cell">
-                        ${actionButtons}
-                    </div>
-                </td>
-            `;
+                </div>
+            </td>
+            <td>${service.serviceType || 'Regular Service'}</td>
+            <td>${completionDate}</td>
+            <td>${formattedAmount}</td>
+            <td>${paymentStatusBadge}</td>
+            <td>${invoiceBadge}</td>
+            <td>
+                <div class="table-actions-cell">
+                    ${actionButtons}
+                </div>
+            </td>
+        `;
 
             tableBody.appendChild(row);
         });
@@ -3488,345 +3193,342 @@
 
     // View service details for vehicles under service
     function viewServiceUnderServiceDetails(serviceId) {
-        const service = vehiclesUnderService.find(v => v.requestId === parseInt(serviceId));
-        if (!service) return;
+        // Show spinner
+        document.getElementById('spinnerOverlay').classList.add('show');
 
-        // Format dates
-        const startDate = new Date(service.startDate).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
+        // Get token
+        const token = getJwtToken();
+        if (!token) {
+            console.error('No token found');
+            return;
+        }
 
-        const estimatedCompletion = new Date(service.estimatedCompletion).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
+        // Fetch service details from API
+        fetch(`/admin/api/vehicle-tracking/service-request/${serviceId}?token=${encodeURIComponent(token)}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('API call failed: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(service => {
+                // Hide spinner
+                document.getElementById('spinnerOverlay').classList.remove('show');
 
-        // Hide completed service footer and show under service footer
-        document.getElementById('completedServiceFooter').style.display = 'none';
-        document.getElementById('underServiceFooter').style.display = '';
+                // Format dates
+                const startDate = new Date(service.startDate || service.createdAt).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
 
-        // Hide materials section since it's still in progress
-        document.getElementById('materialsSection').style.display = 'none';
+                const estimatedCompletion = new Date(service.estimatedCompletionDate || service.deliveryDate).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
 
-        // Update modal content
-        document.getElementById('viewServiceId').textContent = 'REQ-' + service.requestId;
+                // Hide completed service footer and show under service footer
+                document.getElementById('completedServiceFooter').style.display = 'none';
+                document.getElementById('underServiceFooter').style.display = '';
 
-        // Status badge
-        let statusBadge = '';
-        switch (service.status.toLowerCase()) {
+                // Hide materials section since it's still in progress
+                document.getElementById('materialsSection').style.display = 'none';
+
+                // Update modal content
+                document.getElementById('viewServiceId').textContent = 'REQ-' + serviceId;
+
+                // Status badge
+                let statusBadge = '';
+                switch ((service.status || '').toLowerCase()) {
+                    case 'received':
+                        statusBadge = `<span class="status-badge status-received"><i class="fas fa-clock"></i> Received</span>`;
+                        break;
+                    case 'diagnosis':
+                        statusBadge = `<span class="status-badge status-diagnosis"><i class="fas fa-search"></i> Diagnosis</span>`;
+                        break;
+                    case 'repair':
+                        statusBadge = `<span class="status-badge status-repair"><i class="fas fa-wrench"></i> Repair</span>`;
+                        break;
+                    case 'completed':
+                        statusBadge = `<span class="status-badge status-completed"><i class="fas fa-check-circle"></i> Completed</span>`;
+                        break;
+                    default:
+                        statusBadge = `<span class="status-badge">${service.status || 'Unknown'}</span>`;
+                }
+
+                document.getElementById('viewStatus').innerHTML = statusBadge;
+                document.getElementById('viewStartDate').textContent = startDate;
+                document.getElementById('viewVehicleName').textContent = service.vehicleName || 'Unknown';
+                document.getElementById('viewRegistrationNumber').textContent = service.registrationNumber || 'Unknown';
+                document.getElementById('viewVehicleCategory').textContent = service.category || 'Unknown';
+                document.getElementById('viewCustomerName').textContent = service.customerName || 'Unknown';
+                document.getElementById('viewCustomerContact').textContent = service.customerPhone || service.customerEmail || 'Unknown';
+
+                // Membership badge
+                let membershipBadge = '';
+                if (service.membershipStatus === 'Premium') {
+                    membershipBadge = '<span class="membership-badge membership-premium"><i class="fas fa-crown"></i> Premium</span>';
+                } else {
+                    membershipBadge = '<span class="membership-badge membership-standard"><i class="fas fa-user"></i> Standard</span>';
+                }
+
+                document.getElementById('viewMembership').innerHTML = membershipBadge;
+                document.getElementById('viewServiceType').textContent = service.serviceType || 'Unknown';
+                document.getElementById('viewEstimatedCompletion').textContent = estimatedCompletion;
+                document.getElementById('viewServiceAdvisor').textContent = service.serviceAdvisorName || 'Not Assigned';
+                document.getElementById('viewServiceDescription').textContent = service.additionalDescription || 'No description provided.';
+
+                // Progress bar
+                const progressBar = document.querySelector('.progress-bar');
+                const progressPercentage = calculateProgressPercentage(service.status);
+                progressBar.style.width = progressPercentage + '%';
+                progressBar.textContent = progressPercentage + '%';
+                progressBar.setAttribute('aria-valuenow', progressPercentage);
+
+                document.getElementById('viewProgressNotes').textContent = getProgressNotes(service) || 'No progress notes available.';
+
+                // Show the modal
+                $('#viewServiceDetailsModal').modal('show');
+            })
+            .catch(error => {
+                // Hide spinner
+                document.getElementById('spinnerOverlay').classList.remove('show');
+                console.error('Error fetching service details:', error);
+                alert('Failed to load service details: ' + error.message);
+            });
+    }
+
+    // Calculate progress percentage based on status
+    function calculateProgressPercentage(status) {
+        switch ((status || '').toLowerCase()) {
             case 'received':
-                statusBadge = `<span class="status-badge status-received"><i class="fas fa-clock"></i> Received</span>`;
-                break;
+                return 10;
             case 'diagnosis':
-                statusBadge = `<span class="status-badge status-diagnosis"><i class="fas fa-search"></i> Diagnosis</span>`;
-                break;
+                return 40;
             case 'repair':
-                statusBadge = `<span class="status-badge status-repair"><i class="fas fa-wrench"></i> Repair</span>`;
-                break;
+                return 70;
             case 'completed':
-                statusBadge = `<span class="status-badge status-completed"><i class="fas fa-check-circle"></i> Completed</span>`;
-                break;
+                return 100;
             default:
-                statusBadge = `<span class="status-badge">${service.status}</span>`;
+                return 0;
         }
+    }
 
-        document.getElementById('viewStatus').innerHTML = statusBadge;
-        document.getElementById('viewStartDate').textContent = startDate;
-        document.getElementById('viewVehicleName').textContent = service.vehicleName;
-        document.getElementById('viewRegistrationNumber').textContent = service.registrationNumber;
-        document.getElementById('viewVehicleCategory').textContent = service.vehicleCategory;
-        document.getElementById('viewCustomerName').textContent = service.customerName;
-        document.getElementById('viewCustomerContact').textContent = service.customerPhone;
-
-        // Membership badge
-        let membershipBadge = '';
-        if (service.customerMembership === 'Premium') {
-            membershipBadge = '<span class="membership-badge membership-premium"><i class="fas fa-crown"></i> Premium</span>';
-        } else {
-            membershipBadge = '<span class="membership-badge membership-standard"><i class="fas fa-user"></i> Standard</span>';
+    // Get progress notes based on service details
+    function getProgressNotes(service) {
+        switch ((service.status || '').toLowerCase()) {
+            case 'received':
+                return 'Vehicle received and awaiting diagnosis. Service advisor will be assigned soon.';
+            case 'diagnosis':
+                return `Diagnosis in progress by ${service.serviceAdvisorName}. Checking for issues related to ${service.serviceType}.`;
+            case 'repair':
+                return `Repair work in progress. Estimated completion on ${new Date(service.estimatedCompletionDate || service.deliveryDate).toLocaleDateString()}.`;
+            case 'completed':
+                return 'Service completed. Vehicle ready for pickup.';
+            default:
+                return 'Status updates will appear here.';
         }
-
-        document.getElementById('viewMembership').innerHTML = membershipBadge;
-        document.getElementById('viewServiceType').textContent = service.serviceType;
-        document.getElementById('viewEstimatedCompletion').textContent = estimatedCompletion;
-        document.getElementById('viewServiceAdvisor').textContent = service.serviceAdvisorName;
-        document.getElementById('viewServiceDescription').textContent = service.description || 'No description provided.';
-
-        // Progress bar
-        const progressBar = document.querySelector('.progress-bar');
-        progressBar.style.width = service.progressPercentage + '%';
-        progressBar.textContent = service.progressPercentage + '%';
-        progressBar.setAttribute('aria-valuenow', service.progressPercentage);
-
-        document.getElementById('viewProgressNotes').textContent = service.progressNotes || 'No progress notes available.';
-
-        // Show the modal
-        $('#viewServiceDetailsModal').modal('show');
     }
 
     // View completed service details
     function viewCompletedServiceDetails(serviceId) {
-        const service = completedServices.find(s => s.requestId === parseInt(serviceId));
-        if (!service) return;
+        // Show spinner
+        document.getElementById('spinnerOverlay').classList.add('show');
 
-        // Format dates
-        const completionDate = new Date(service.completionDate).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
-
-        // Hide under service footer and show completed service footer
-        document.getElementById('underServiceFooter').style.display = 'none';
-        document.getElementById('completedServiceFooter').style.display = '';
-
-        // Show materials section
-        document.getElementById('materialsSection').style.display = '';
-
-        // Update modal content
-        document.getElementById('viewServiceId').textContent = 'REQ-' + service.requestId;
-
-        // Status badge (always Completed for completed services)
-        const statusBadge = `<span class="status-badge status-completed"><i class="fas fa-check-circle"></i> Completed</span>`;
-        document.getElementById('viewStatus').innerHTML = statusBadge;
-
-        document.getElementById('viewStartDate').textContent = completionDate;
-        document.getElementById('viewVehicleName').textContent = service.vehicleName;
-        document.getElementById('viewRegistrationNumber').textContent = service.registrationNumber;
-        document.getElementById('viewVehicleCategory').textContent = service.vehicleCategory;
-        document.getElementById('viewCustomerName').textContent = service.customerName;
-        document.getElementById('viewCustomerContact').textContent = service.customerPhone;
-
-        // Membership badge
-        let membershipBadge = '';
-        if (service.customerMembership === 'Premium') {
-            membershipBadge = '<span class="membership-badge membership-premium"><i class="fas fa-crown"></i> Premium</span>';
-        } else {
-            membershipBadge = '<span class="membership-badge membership-standard"><i class="fas fa-user"></i> Standard</span>';
+        // Get token
+        const token = getJwtToken();
+        if (!token) {
+            console.error('No token found');
+            return;
         }
 
-        document.getElementById('viewMembership').innerHTML = membershipBadge;
-        document.getElementById('viewServiceType').textContent = service.serviceType;
-        document.getElementById('viewEstimatedCompletion').textContent = completionDate;
-        document.getElementById('viewServiceAdvisor').textContent = service.serviceAdvisorName || 'Not Assigned';
-        document.getElementById('viewServiceDescription').textContent = service.description || 'No description provided.';
+        // Fetch service details from API
+        fetch(`/admin/api/vehicle-tracking/service-request/${serviceId}?token=${encodeURIComponent(token)}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('API call failed: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(service => {
+                // Hide spinner
+                document.getElementById('spinnerOverlay').classList.remove('show');
 
-        // Hide progress section for completed services
-        document.querySelector('.progress').style.display = 'none';
-        document.getElementById('viewProgressNotes').style.display = 'none';
+                const completedService = completedServices.find(s => s.serviceId === parseInt(serviceId) || s.requestId === parseInt(serviceId));
 
-        // Populate materials table
+                // Format dates
+                const completionDate = new Date(completedService?.completedDate || service.completedDate || Date.now()).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+
+                // Hide under service footer and show completed service footer
+                document.getElementById('underServiceFooter').style.display = 'none';
+                document.getElementById('completedServiceFooter').style.display = '';
+
+                // Show materials section
+                document.getElementById('materialsSection').style.display = '';
+
+                // Update modal content
+                document.getElementById('viewServiceId').textContent = 'REQ-' + serviceId;
+
+                // Status badge (always Completed for completed services)
+                const statusBadge = `<span class="status-badge status-completed"><i class="fas fa-check-circle"></i> Completed</span>`;
+                document.getElementById('viewStatus').innerHTML = statusBadge;
+
+                document.getElementById('viewStartDate').textContent = completionDate;
+                document.getElementById('viewVehicleName').textContent = service.vehicleName || completedService?.vehicleName || 'Unknown';
+                document.getElementById('viewRegistrationNumber').textContent = service.registrationNumber || completedService?.registrationNumber || 'Unknown';
+                document.getElementById('viewVehicleCategory').textContent = service.category || completedService?.category || 'Unknown';
+                document.getElementById('viewCustomerName').textContent = service.customerName || completedService?.customerName || 'Unknown';
+                document.getElementById('viewCustomerContact').textContent = service.customerPhone || service.customerEmail || completedService?.customerEmail || 'Unknown';
+
+                // Membership badge
+                let membershipBadge = '';
+                if ((service.membershipStatus || completedService?.membershipStatus) === 'Premium') {
+                    membershipBadge = '<span class="membership-badge membership-premium"><i class="fas fa-crown"></i> Premium</span>';
+                } else {
+                    membershipBadge = '<span class="membership-badge membership-standard"><i class="fas fa-user"></i> Standard</span>';
+                }
+
+                document.getElementById('viewMembership').innerHTML = membershipBadge;
+                document.getElementById('viewServiceType').textContent = service.serviceType || completedService?.serviceType || 'Regular Service';
+                document.getElementById('viewEstimatedCompletion').textContent = completionDate;
+                document.getElementById('viewServiceAdvisor').textContent = service.serviceAdvisorName || completedService?.serviceAdvisorName || 'Not Assigned';
+                document.getElementById('viewServiceDescription').textContent = service.additionalDescription || 'No description provided.';
+
+                // Hide progress section for completed services
+                document.querySelector('.progress').style.display = 'none';
+                document.getElementById('viewProgressNotes').style.display = 'none';
+
+                // Populate materials table (sample data - in production, this would come from API)
+                populateSampleMaterialsAndCosts();
+
+                // Show or hide Generate Invoice button based on invoice status
+                const generateInvoiceBtn = document.getElementById('generateInvoiceBtn');
+                if (service.hasInvoice || completedService?.hasInvoice) {
+                    // If invoice is already generated, hide the generate button
+                    generateInvoiceBtn.style.display = 'none';
+                } else {
+                    // If invoice is not generated yet, show the generate button
+                    generateInvoiceBtn.style.display = '';
+                }
+
+                // Show the modal
+                $('#viewServiceDetailsModal').modal('show');
+            })
+            .catch(error => {
+                // Hide spinner
+                document.getElementById('spinnerOverlay').classList.remove('show');
+                console.error('Error fetching completed service details:', error);
+                alert('Failed to load service details: ' + error.message);
+            });
+    }
+
+    // Populate sample materials and costs for demo purposes
+    function populateSampleMaterialsAndCosts() {
+        // In a production app, this data would come from the API
         const materialsTableBody = document.getElementById('materialsTableBody');
         materialsTableBody.innerHTML = '';
 
+        // Sample materials data
+        const materials = [
+            { item: 'Engine Oil', quantity: 4, unitPrice: 850, total: 3400 },
+            { item: 'Oil Filter', quantity: 1, unitPrice: 350, total: 350 },
+            { item: 'Air Filter', quantity: 1, unitPrice: 650, total: 650 }
+        ];
+
         let materialsTotal = 0;
 
-        if (service.materialsUsed && service.materialsUsed.length > 0) {
-            service.materialsUsed.forEach(material => {
-                const row = document.createElement('tr');
-
-                // Format the price values
-                const unitPrice = new Intl.NumberFormat('en-IN', {
-                    style: 'currency',
-                    currency: 'INR',
-                    maximumFractionDigits: 2
-                }).format(material.unitPrice);
-
-                const totalPrice = new Intl.NumberFormat('en-IN', {
-                    style: 'currency',
-                    currency: 'INR',
-                    maximumFractionDigits: 2
-                }).format(material.total);
-
-                row.innerHTML = `
-                    <td>${material.item}</td>
-                    <td>${material.quantity}</td>
-                    <td>${unitPrice}</td>
-                    <td>${totalPrice}</td>
-                `;
-
-                materialsTableBody.appendChild(row);
-                materialsTotal += material.total;
-            });
-        } else {
+        // Add material rows
+        materials.forEach(material => {
             const row = document.createElement('tr');
-            row.innerHTML = `<td colspan="4" class="text-center">No materials used</td>`;
+            row.innerHTML = `
+            <td>${material.item}</td>
+            <td>${material.quantity}</td>
+            <td>₹${material.unitPrice.toFixed(2)}</td>
+            <td>₹${material.total.toFixed(2)}</td>
+        `;
             materialsTableBody.appendChild(row);
-        }
+            materialsTotal += material.total;
+        });
 
         // Add materials total row
-        const totalRow = document.createElement('tr');
-        totalRow.innerHTML = `
-            <td colspan="3" class="text-end">Materials Total</td>
-            <td>${new Intl.NumberFormat('en-IN', {
-            style: 'currency',
-            currency: 'INR',
-            maximumFractionDigits: 2
-        }).format(materialsTotal)}</td>
-        `;
-        materialsTableBody.appendChild(totalRow);
+        const materialsTotalRow = document.createElement('tr');
+        materialsTotalRow.innerHTML = `
+        <td colspan="3" class="text-end">Materials Total</td>
+        <td>₹${materialsTotal.toFixed(2)}</td>
+    `;
+        materialsTableBody.appendChild(materialsTotalRow);
 
-        // Populate labor charges table
+        // Sample labor data
         const laborTableBody = document.getElementById('laborChargesTableBody');
         laborTableBody.innerHTML = '';
 
+        const laborCharges = [
+            { description: 'Regular Service', hours: 2, ratePerHour: 600, total: 1200 }
+        ];
+
         let laborTotal = 0;
 
-        if (service.laborCharges && service.laborCharges.length > 0) {
-            service.laborCharges.forEach(labor => {
-                const row = document.createElement('tr');
-
-                // Format the price values
-                const ratePerHour = new Intl.NumberFormat('en-IN', {
-                    style: 'currency',
-                    currency: 'INR',
-                    maximumFractionDigits: 2
-                }).format(labor.ratePerHour);
-
-                const totalPrice = new Intl.NumberFormat('en-IN', {
-                    style: 'currency',
-                    currency: 'INR',
-                    maximumFractionDigits: 2
-                }).format(labor.total);
-
-                row.innerHTML = `
-                    <td>${labor.description}</td>
-                    <td>${labor.hours}</td>
-                    <td>${ratePerHour}</td>
-                    <td>${totalPrice}</td>
-                `;
-
-                laborTableBody.appendChild(row);
-                laborTotal += labor.total;
-            });
-        } else {
+        // Add labor rows
+        laborCharges.forEach(labor => {
             const row = document.createElement('tr');
-            row.innerHTML = `<td colspan="4" class="text-center">No labor charges</td>`;
+            row.innerHTML = `
+            <td>${labor.description}</td>
+            <td>${labor.hours}</td>
+            <td>₹${labor.ratePerHour.toFixed(2)}</td>
+            <td>₹${labor.total.toFixed(2)}</td>
+        `;
             laborTableBody.appendChild(row);
-        }
+            laborTotal += labor.total;
+        });
 
         // Add labor total row
         const laborTotalRow = document.createElement('tr');
         laborTotalRow.innerHTML = `
-            <td colspan="3" class="text-end">Labor Total</td>
-            <td>${new Intl.NumberFormat('en-IN', {
-            style: 'currency',
-            currency: 'INR',
-            maximumFractionDigits: 2
-        }).format(laborTotal)}</td>
-        `;
+        <td colspan="3" class="text-end">Labor Total</td>
+        <td>₹${laborTotal.toFixed(2)}</td>
+    `;
         laborTableBody.appendChild(laborTotalRow);
 
         // Update invoice summary
+        const subtotal = materialsTotal + laborTotal;
+        const gst = subtotal * 0.18;
+        const grandTotal = subtotal + gst;
+
+        // Update invoice summary sections
         const invoiceSummary = document.querySelectorAll('.invoice-summary-row');
-
-        // Format currency values
-        const materialsValue = new Intl.NumberFormat('en-IN', {
-            style: 'currency',
-            currency: 'INR',
-            maximumFractionDigits: 2
-        }).format(materialsTotal);
-
-        const laborValue = new Intl.NumberFormat('en-IN', {
-            style: 'currency',
-            currency: 'INR',
-            maximumFractionDigits: 2
-        }).format(laborTotal);
-
-        const subtotalValue = new Intl.NumberFormat('en-IN', {
-            style: 'currency',
-            currency: 'INR',
-            maximumFractionDigits: 2
-        }).format(service.subtotal || (materialsTotal + laborTotal));
-
-        const gstValue = new Intl.NumberFormat('en-IN', {
-            style: 'currency',
-            currency: 'INR',
-            maximumFractionDigits: 2
-        }).format(service.gst || ((materialsTotal + laborTotal) * 0.18));
-
-        const grandTotalValue = new Intl.NumberFormat('en-IN', {
-            style: 'currency',
-            currency: 'INR',
-            maximumFractionDigits: 2
-        }).format(service.grandTotal || ((materialsTotal + laborTotal) * 1.18));
-
-        invoiceSummary[0].querySelector('.invoice-summary-value').textContent = materialsValue;
-        invoiceSummary[1].querySelector('.invoice-summary-value').textContent = laborValue;
-        invoiceSummary[2].querySelector('.invoice-summary-value').textContent = subtotalValue;
-        invoiceSummary[3].querySelector('.invoice-summary-value').textContent = gstValue;
-        invoiceSummary[4].querySelector('.invoice-summary-value').textContent = grandTotalValue;
-
-        // Show or hide Generate Invoice button based on invoice status
-        const generateInvoiceBtn = document.getElementById('generateInvoiceBtn');
-        if (service.hasInvoice) {
-            // If invoice is already generated, hide the generate button
-            generateInvoiceBtn.style.display = 'none';
-        } else {
-            // If invoice is not generated yet, show the generate button
-            generateInvoiceBtn.style.display = '';
-        }
-
-        // Show the modal
-        $('#viewServiceDetailsModal').modal('show');
+        invoiceSummary[0].querySelector('.invoice-summary-value').textContent = `₹${materialsTotal.toFixed(2)}`;
+        invoiceSummary[1].querySelector('.invoice-summary-value').textContent = `₹${laborTotal.toFixed(2)}`;
+        invoiceSummary[2].querySelector('.invoice-summary-value').textContent = `₹${subtotal.toFixed(2)}`;
+        invoiceSummary[3].querySelector('.invoice-summary-value').textContent = `₹${gst.toFixed(2)}`;
+        invoiceSummary[4].querySelector('.invoice-summary-value').textContent = `₹${grandTotal.toFixed(2)}`;
     }
 
     // Populate Generate Invoice modal
     function populateGenerateInvoiceModal(service) {
-        document.getElementById('invoiceServiceId').textContent = 'REQ-' + service.requestId;
+        document.getElementById('invoiceServiceId').textContent = 'REQ-' + (service.serviceId || service.requestId);
         document.getElementById('invoiceCustomerName').textContent = service.customerName;
         document.getElementById('invoiceVehicleName').textContent = service.vehicleName;
         document.getElementById('invoiceRegistrationNumber').textContent = service.registrationNumber;
-        document.getElementById('invoiceServiceType').textContent = service.serviceType;
+        document.getElementById('invoiceServiceType').textContent = service.serviceType || 'Regular Service';
 
-        // Calculate totals
-        let materialsTotal = 0;
-        if (service.materialsUsed && service.materialsUsed.length > 0) {
-            materialsTotal = service.materialsUsed.reduce((total, material) => total + material.total, 0);
-        }
+        // Get invoice values from the service details modal
+        const materialsTotal = document.querySelector('.invoice-summary-row:nth-child(1) .invoice-summary-value').textContent;
+        const laborTotal = document.querySelector('.invoice-summary-row:nth-child(2) .invoice-summary-value').textContent;
+        const subtotal = document.querySelector('.invoice-summary-row:nth-child(3) .invoice-summary-value').textContent;
+        const gst = document.querySelector('.invoice-summary-row:nth-child(4) .invoice-summary-value').textContent;
+        const grandTotal = document.querySelector('.invoice-summary-row:nth-child(5) .invoice-summary-value').textContent;
 
-        let laborTotal = 0;
-        if (service.laborCharges && service.laborCharges.length > 0) {
-            laborTotal = service.laborCharges.reduce((total, labor) => total + labor.total, 0);
-        }
-
-        const subtotal = service.subtotal || (materialsTotal + laborTotal);
-        const gst = service.gst || (subtotal * 0.18);
-        const grandTotal = service.grandTotal || (subtotal + gst);
-
-        // Format currency values
-        document.getElementById('invoiceMaterialsTotal').textContent = new Intl.NumberFormat('en-IN', {
-            style: 'currency',
-            currency: 'INR',
-            maximumFractionDigits: 2
-        }).format(materialsTotal);
-
-        document.getElementById('invoiceLaborTotal').textContent = new Intl.NumberFormat('en-IN', {
-            style: 'currency',
-            currency: 'INR',
-            maximumFractionDigits: 2
-        }).format(laborTotal);
-
-        document.getElementById('invoiceSubtotal').textContent = new Intl.NumberFormat('en-IN', {
-            style: 'currency',
-            currency: 'INR',
-            maximumFractionDigits: 2
-        }).format(subtotal);
-
-        document.getElementById('invoiceGST').textContent = new Intl.NumberFormat('en-IN', {
-            style: 'currency',
-            currency: 'INR',
-            maximumFractionDigits: 2
-        }).format(gst);
-
-        document.getElementById('invoiceGrandTotal').textContent = new Intl.NumberFormat('en-IN', {
-            style: 'currency',
-            currency: 'INR',
-            maximumFractionDigits: 2
-        }).format(grandTotal);
+        // Set invoice values
+        document.getElementById('invoiceMaterialsTotal').textContent = materialsTotal;
+        document.getElementById('invoiceLaborTotal').textContent = laborTotal;
+        document.getElementById('invoiceSubtotal').textContent = subtotal;
+        document.getElementById('invoiceGST').textContent = gst;
+        document.getElementById('invoiceGrandTotal').textContent = grandTotal;
 
         // Clear notes
         document.getElementById('invoiceNotes').value = '';
@@ -3842,40 +3544,61 @@
 
         // Get service ID
         const serviceId = document.getElementById('invoiceServiceId').textContent.replace('REQ-', '');
-        const service = completedServices.find(s => s.requestId === parseInt(serviceId));
 
-        if (!service) {
-            // Hide spinner
-            document.getElementById('spinnerOverlay').classList.remove('show');
-            alert('Service not found');
+        // Get token
+        const token = getJwtToken();
+        if (!token) {
+            console.error('No token found');
             return;
         }
 
-        // Get additional notes
-        const notes = document.getElementById('invoiceNotes').value;
-        const sendEmail = document.getElementById('sendEmailCheck').checked;
+        // Prepare invoice details
+        const invoiceDetails = {
+            notes: document.getElementById('invoiceNotes').value,
+            sendEmail: document.getElementById('sendEmailCheck').checked
+        };
 
-        // In a real application, you would make an API call here to generate the invoice
+        // API call to generate invoice
+        fetch(`/admin/api/vehicle-tracking/service-request/${serviceId}/invoice?token=${encodeURIComponent(token)}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(invoiceDetails)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('API call failed: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Hide spinner
+                document.getElementById('spinnerOverlay').classList.remove('show');
 
-        // Simulate API call
-        setTimeout(() => {
-            // Update service to mark invoice as generated
-            service.hasInvoice = true;
+                // Update the completedServices array to mark invoice as generated
+                const service = completedServices.find(s => s.serviceId === parseInt(serviceId) || s.requestId === parseInt(serviceId));
+                if (service) {
+                    service.hasInvoice = true;
+                }
 
-            // Hide spinner
-            document.getElementById('spinnerOverlay').classList.remove('show');
+                // Hide the generate invoice modal
+                $('#generateInvoiceModal').modal('hide');
 
-            // Hide the generate invoice modal
-            $('#generateInvoiceModal').modal('hide');
+                // Show success modal
+                document.getElementById('successTitle').textContent = 'Invoice Generated!';
+                document.getElementById('successMessage').textContent = `The invoice for service REQ-${serviceId} has been successfully generated${invoiceDetails.sendEmail ? ' and sent to the customer via email' : ''}.`;
+                $('#successModal').modal('show');
 
-            // Show success modal
-            document.getElementById('successTitle').textContent = 'Invoice Generated!';
-            document.getElementById('successMessage').textContent = `The invoice for service REQ-${service.requestId} has been successfully generated${sendEmail ? ' and sent to the customer via email' : ''}.`;
-            $('#successModal').modal('show');
-
-            // Refresh the completed services table
-            showCompletedServicesPage(currentCompletedPage);
-        }, 2000);
+                // Refresh the completed services table
+                showCompletedServicesPage(currentCompletedPage);
+            })
+            .catch(error => {
+                // Hide spinner
+                document.getElementById('spinnerOverlay').classList.remove('show');
+                console.error('Error generating invoice:', error);
+                alert('Failed to generate invoice: ' + error.message);
+            });
     }
 
     // Mark as paid
@@ -3885,50 +3608,71 @@
 
         // Get service ID
         const serviceId = document.getElementById('paidServiceId').textContent.replace('REQ-', '');
-        const service = completedServices.find(s => s.requestId === parseInt(serviceId));
 
-        if (!service) {
-            // Hide spinner
-            document.getElementById('spinnerOverlay').classList.remove('show');
-            alert('Service not found');
+        // Get token
+        const token = getJwtToken();
+        if (!token) {
+            console.error('No token found');
             return;
         }
 
         // Get payment details
-        const paymentMethod = document.getElementById('paymentMethod').value;
-        const transactionId = document.getElementById('transactionId').value;
-        const paidAmount = document.getElementById('paidAmount').value;
-        const paymentNotes = document.getElementById('paymentNotes').value;
+        const paymentDetails = {
+            paymentMethod: document.getElementById('paymentMethod').value,
+            transactionId: document.getElementById('transactionId').value,
+            amount: document.getElementById('paidAmount').value,
+            notes: document.getElementById('paymentNotes').value
+        };
 
         // Validate payment method
-        if (!paymentMethod) {
+        if (!paymentDetails.paymentMethod) {
             // Hide spinner
             document.getElementById('spinnerOverlay').classList.remove('show');
             alert('Please select a payment method');
             return;
         }
 
-        // In a real application, you would make an API call here to record the payment
+        // API call to record payment
+        fetch(`/admin/api/vehicle-tracking/service-request/${serviceId}/payment?token=${encodeURIComponent(token)}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(paymentDetails)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('API call failed: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Hide spinner
+                document.getElementById('spinnerOverlay').classList.remove('show');
 
-        // Simulate API call
-        setTimeout(() => {
-            // Update service payment status
-            service.paymentStatus = 'Paid';
+                // Update the completedServices array to mark payment as completed
+                const service = completedServices.find(s => s.serviceId === parseInt(serviceId) || s.requestId === parseInt(serviceId));
+                if (service) {
+                    service.paymentStatus = 'Paid';
+                }
 
-            // Hide spinner
-            document.getElementById('spinnerOverlay').classList.remove('show');
+                // Hide the mark as paid modal
+                $('#markAsPaidModal').modal('hide');
 
-            // Hide the mark as paid modal
-            $('#markAsPaidModal').modal('hide');
+                // Show success modal
+                document.getElementById('successTitle').textContent = 'Payment Recorded!';
+                document.getElementById('successMessage').textContent = `The payment for service REQ-${serviceId} has been successfully recorded.`;
+                $('#successModal').modal('show');
 
-            // Show success modal
-            document.getElementById('successTitle').textContent = 'Payment Recorded!';
-            document.getElementById('successMessage').textContent = `The payment for service REQ-${service.requestId} has been successfully recorded.`;
-            $('#successModal').modal('show');
-
-            // Refresh the completed services table
-            showCompletedServicesPage(currentCompletedPage);
-        }, 2000);
+                // Refresh the completed services table
+                showCompletedServicesPage(currentCompletedPage);
+            })
+            .catch(error => {
+                // Hide spinner
+                document.getElementById('spinnerOverlay').classList.remove('show');
+                console.error('Error recording payment:', error);
+                alert('Failed to record payment: ' + error.message);
+            });
     }
 
     // Dispatch vehicle
@@ -3937,60 +3681,78 @@
         document.getElementById('spinnerOverlay').classList.add('show');
 
         // Get vehicle details
-        const vehicleName = document.getElementById('dispatchVehicleName').textContent;
-        const registrationNumber = document.getElementById('dispatchRegistrationNumber').textContent;
+        const serviceId = document.querySelector('#dispatchVehicleName').closest('.modal-body').querySelector('.alert strong:first-child').textContent.replace('REQ-', '');
 
-        // Find service by registration number
-        const service = completedServices.find(s => s.registrationNumber === registrationNumber);
-
-        if (!service) {
-            // Hide spinner
-            document.getElementById('spinnerOverlay').classList.remove('show');
-            alert('Service not found');
+        // Get token
+        const token = getJwtToken();
+        if (!token) {
+            console.error('No token found');
             return;
         }
 
         // Get dispatch details
-        const handoverPerson = document.getElementById('handoverPerson').value;
-        const dispatchNotes = document.getElementById('dispatchNotes').value;
-        const confirmDispatch = document.getElementById('confirmDispatchCheck').checked;
+        const dispatchDetails = {
+            handoverPerson: document.getElementById('handoverPerson').value,
+            dispatchNotes: document.getElementById('dispatchNotes').value,
+            confirmed: document.getElementById('confirmDispatchCheck').checked
+        };
 
         // Validate
-        if (!handoverPerson) {
+        if (!dispatchDetails.handoverPerson) {
             // Hide spinner
             document.getElementById('spinnerOverlay').classList.remove('show');
             alert('Please enter the name of the person receiving the vehicle');
             return;
         }
 
-        if (!confirmDispatch) {
+        if (!dispatchDetails.confirmed) {
             // Hide spinner
             document.getElementById('spinnerOverlay').classList.remove('show');
             alert('Please confirm that all service work has been completed and payment has been received');
             return;
         }
 
-        // In a real application, you would make an API call here to record the dispatch
+        // API call to dispatch vehicle
+        fetch(`/admin/api/vehicle-tracking/service-request/${serviceId}/dispatch?token=${encodeURIComponent(token)}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(dispatchDetails)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('API call failed: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Hide spinner
+                document.getElementById('spinnerOverlay').classList.remove('show');
 
-        // Simulate API call
-        setTimeout(() => {
-            // Update service status
-            service.paymentStatus = 'Dispatched';
+                // Update the completedServices array to mark as dispatched
+                const service = completedServices.find(s => s.serviceId === parseInt(serviceId) || s.requestId === parseInt(serviceId));
+                if (service) {
+                    service.paymentStatus = 'Dispatched';
+                }
 
-            // Hide spinner
-            document.getElementById('spinnerOverlay').classList.remove('show');
+                // Hide the dispatch modal
+                $('#dispatchVehicleModal').modal('hide');
 
-            // Hide the dispatch modal
-            $('#dispatchVehicleModal').modal('hide');
+                // Show success modal
+                document.getElementById('successTitle').textContent = 'Vehicle Dispatched!';
+                document.getElementById('successMessage').textContent = `The vehicle has been successfully dispatched to ${dispatchDetails.handoverPerson}.`;
+                $('#successModal').modal('show');
 
-            // Show success modal
-            document.getElementById('successTitle').textContent = 'Vehicle Dispatched!';
-            document.getElementById('successMessage').textContent = `The vehicle ${vehicleName} with registration number ${registrationNumber} has been successfully dispatched to ${handoverPerson}.`;
-            $('#successModal').modal('show');
-
-            // Refresh the completed services table
-            showCompletedServicesPage(currentCompletedPage);
-        }, 2000);
+                // Refresh the completed services table
+                showCompletedServicesPage(currentCompletedPage);
+            })
+            .catch(error => {
+                // Hide spinner
+                document.getElementById('spinnerOverlay').classList.remove('show');
+                console.error('Error dispatching vehicle:', error);
+                alert('Failed to dispatch vehicle: ' + error.message);
+            });
     }
 
     // Apply filters
@@ -4003,100 +3765,135 @@
         const dateFrom = document.getElementById('filterDateFrom').value;
         const dateTo = document.getElementById('filterDateTo').value;
 
+        // Get token
+        const token = getJwtToken();
+        if (!token) {
+            console.error('No token found');
+            return;
+        }
+
+        // Prepare filter criteria
+        const filterCriteria = {
+            vehicleType: vehicleType || null,
+            serviceType: serviceType || null,
+            status: status || null,
+            paymentStatus: paymentStatus || null,
+            dateFrom: dateFrom || null,
+            dateTo: dateTo || null
+        };
+
         // Filter active tab data
         const activeTab = document.querySelector('.tab-pane.active');
 
         if (activeTab.id === 'under-service-tab-pane') {
-            // Filter vehicles under service
-            let filteredVehicles = [...vehiclesUnderService];
+            // Show loading
+            document.getElementById('loading-row-service').style.display = '';
+            document.getElementById('empty-row-service').style.display = 'none';
 
-            if (vehicleType) {
-                filteredVehicles = filteredVehicles.filter(v => v.vehicleCategory === vehicleType);
-            }
+            // API call to filter vehicles under service
+            fetch(`/admin/api/vehicle-tracking/under-service/filter?token=${encodeURIComponent(token)}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(filterCriteria)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('API call failed: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Update filtered vehicles
+                    vehiclesUnderService = data;
 
-            if (serviceType) {
-                filteredVehicles = filteredVehicles.filter(v => v.serviceType === serviceType);
-            }
+                    // Hide loading
+                    document.getElementById('loading-row-service').style.display = 'none';
 
-            if (status) {
-                filteredVehicles = filteredVehicles.filter(v => v.status === status);
-            }
+                    // Display filtered vehicles
+                    if (vehiclesUnderService.length > 0) {
+                        displayVehiclesUnderService(vehiclesUnderService);
+                        updateServicePagination();
+                    } else {
+                        document.getElementById('empty-row-service').style.display = '';
+                    }
 
-            if (dateFrom) {
-                const fromDate = new Date(dateFrom);
-                filteredVehicles = filteredVehicles.filter(v => new Date(v.startDate) >= fromDate);
-            }
+                    // Hide filter modal
+                    $('#filterVehiclesModal').modal('hide');
+                })
+                .catch(error => {
+                    // Hide loading
+                    document.getElementById('loading-row-service').style.display = 'none';
+                    document.getElementById('empty-row-service').style.display = '';
 
-            if (dateTo) {
-                const toDate = new Date(dateTo);
-                filteredVehicles = filteredVehicles.filter(v => new Date(v.estimatedCompletion) <= toDate);
-            }
-
-            // Display filtered vehicles
-            displayVehiclesUnderService(filteredVehicles);
-
-            // Update pagination
-            updateServicePagination(filteredVehicles.length);
+                    console.error('Error applying filters to vehicles under service:', error);
+                    alert('Failed to apply filters: ' + error.message);
+                });
 
         } else if (activeTab.id === 'completed-tab-pane') {
-            // Filter completed services
-            let filteredServices = [...completedServices];
+            // Show loading
+            document.getElementById('loading-row-completed').style.display = '';
+            document.getElementById('empty-row-completed').style.display = 'none';
 
-            if (vehicleType) {
-                filteredServices = filteredServices.filter(s => s.vehicleCategory === vehicleType);
-            }
+            // API call to filter completed services
+            fetch(`/admin/api/vehicle-tracking/completed-services/filter?token=${encodeURIComponent(token)}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(filterCriteria)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('API call failed: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Update filtered services
+                    completedServices = data;
 
-            if (serviceType) {
-                filteredServices = filteredServices.filter(s => s.serviceType === serviceType);
-            }
+                    // Hide loading
+                    document.getElementById('loading-row-completed').style.display = 'none';
 
-            if (paymentStatus) {
-                filteredServices = filteredServices.filter(s => s.paymentStatus === paymentStatus);
-            }
+                    // Display filtered services
+                    if (completedServices.length > 0) {
+                        displayCompletedServices(completedServices);
+                        updateCompletedPagination();
+                    } else {
+                        document.getElementById('empty-row-completed').style.display = '';
+                    }
 
-            if (dateFrom) {
-                const fromDate = new Date(dateFrom);
-                filteredServices = filteredServices.filter(s => new Date(s.completionDate) >= fromDate);
-            }
+                    // Hide filter modal
+                    $('#filterVehiclesModal').modal('hide');
+                })
+                .catch(error => {
+                    // Hide loading
+                    document.getElementById('loading-row-completed').style.display = 'none';
+                    document.getElementById('empty-row-completed').style.display = '';
 
-            if (dateTo) {
-                const toDate = new Date(dateTo);
-                filteredServices = filteredServices.filter(s => new Date(s.completionDate) <= toDate);
-            }
-
-            // Display filtered services
-            displayCompletedServices(filteredServices);
-
-            // Update pagination
-            updateCompletedPagination(filteredServices.length);
+                    console.error('Error applying filters to completed services:', error);
+                    alert('Failed to apply filters: ' + error.message);
+                });
         }
-
-        // Hide filter modal
-        $('#filterVehiclesModal').modal('hide');
     }
 
     // Update service status
     function updateServiceStatus(serviceId) {
-        const service = vehiclesUnderService.find(v => v.requestId === parseInt(serviceId));
-        if (!service) return;
+        // Get current status
+        const currentStatus = document.getElementById('viewStatus').textContent.trim();
+        let nextStatus = '';
 
         // Determine next status
-        let nextStatus = '';
-        switch (service.status.toLowerCase()) {
-            case 'received':
-                nextStatus = 'Diagnosis';
-                break;
-            case 'diagnosis':
-                nextStatus = 'Repair';
-                break;
-            case 'repair':
-                nextStatus = 'Completed';
-                break;
-            case 'completed':
-                nextStatus = 'Completed'; // No change
-                break;
-            default:
-                nextStatus = 'Diagnosis';
+        if (currentStatus.includes('Received')) {
+            nextStatus = 'Diagnosis';
+        } else if (currentStatus.includes('Diagnosis')) {
+            nextStatus = 'Repair';
+        } else if (currentStatus.includes('Repair')) {
+            nextStatus = 'Completed';
+        } else {
+            nextStatus = 'Diagnosis'; // Default
         }
 
         // Show confirmation dialog
@@ -4104,71 +3901,61 @@
             // Show spinner
             document.getElementById('spinnerOverlay').classList.add('show');
 
-            // In a real application, you would make an API call here to update the status
+            // Get token
+            const token = getJwtToken();
+            if (!token) {
+                console.error('No token found');
+                return;
+            }
 
-            // Simulate API call
-            setTimeout(() => {
-                // Update service status
-                service.status = nextStatus;
+            // API call to update status
+            fetch(`/admin/api/vehicle-tracking/service-request/${serviceId}/status?token=${encodeURIComponent(token)}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    status: nextStatus
+                })
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('API call failed: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Hide spinner
+                    document.getElementById('spinnerOverlay').classList.remove('show');
 
-                // If status is now Completed, move to completed services
-                if (nextStatus === 'Completed') {
-                    // Create a new completed service
-                    const completedService = {
-                        requestId: service.requestId,
-                        vehicleName: service.vehicleName,
-                        registrationNumber: service.registrationNumber,
-                        customerName: service.customerName,
-                        customerEmail: service.customerEmail,
-                        customerPhone: service.customerPhone,
-                        customerMembership: service.customerMembership,
-                        serviceType: service.serviceType,
-                        completionDate: new Date().toISOString().split('T')[0],
-                        totalAmount: Math.floor(Math.random() * 10000) + 5000, // Random amount for demo
-                        paymentStatus: 'Pending',
-                        invoiceGenerated: false,
-                        vehicleCategory: service.vehicleCategory,
-                        hasInvoice: false,
-                        materialsUsed: [
-                            // Sample materials for demo
-                            { item: 'Sample Material 1', quantity: 1, unitPrice: 1000, total: 1000 },
-                            { item: 'Sample Material 2', quantity: 2, unitPrice: 500, total: 1000 }
-                        ],
-                        laborCharges: [
-                            // Sample labor for demo
-                            { description: 'Sample Labor', hours: 2, ratePerHour: 800, total: 1600 }
-                        ],
-                        subtotal: 3600,
-                        gst: 648,
-                        grandTotal: 4248
-                    };
+                    // If status is now Completed, move to completed services
+                    if (nextStatus === 'Completed') {
+                        // Refresh data from API
+                        loadVehiclesUnderServiceFromAPI();
+                        loadCompletedServicesFromAPI();
+                    } else {
+                        // Update the status in the vehiclesUnderService array
+                        const serviceIndex = vehiclesUnderService.findIndex(v => v.requestId === parseInt(serviceId));
+                        if (serviceIndex !== -1) {
+                            vehiclesUnderService[serviceIndex].status = nextStatus;
+                            showVehiclesUnderServicePage(currentServicePage);
+                        }
+                    }
 
-                    // Add to completed services
-                    completedServices.push(completedService);
+                    // Hide the service details modal
+                    $('#viewServiceDetailsModal').modal('hide');
 
-                    // Remove from vehicles under service
-                    vehiclesUnderService = vehiclesUnderService.filter(v => v.requestId !== parseInt(serviceId));
-
-                    // Update counts
-                    document.getElementById('underServiceCount').textContent = vehiclesUnderService.length;
-                    document.getElementById('completedCount').textContent = completedServices.length;
-                }
-
-                // Hide spinner
-                document.getElementById('spinnerOverlay').classList.remove('show');
-
-                // Hide the service details modal
-                $('#viewServiceDetailsModal').modal('hide');
-
-                // Show success modal
-                document.getElementById('successTitle').textContent = 'Status Updated!';
-                document.getElementById('successMessage').textContent = `The status for service REQ-${serviceId} has been successfully updated to ${nextStatus}.`;
-                $('#successModal').modal('show');
-
-                // Refresh the tables
-                showVehiclesUnderServicePage(currentServicePage);
-                updateServicePagination();
-            }, 2000);
+                    // Show success modal
+                    document.getElementById('successTitle').textContent = 'Status Updated!';
+                    document.getElementById('successMessage').textContent = `The status for service REQ-${serviceId} has been successfully updated to ${nextStatus}.`;
+                    $('#successModal').modal('show');
+                })
+                .catch(error => {
+                    // Hide spinner
+                    document.getElementById('spinnerOverlay').classList.remove('show');
+                    console.error('Error updating service status:', error);
+                    alert('Failed to update status: ' + error.message);
+                });
         }
     }
 </script>

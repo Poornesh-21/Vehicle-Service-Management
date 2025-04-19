@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/admin/api/vehicle-tracking") // Changed to a different path to avoid conflicts
+@RequestMapping("/admin/api/vehicle-tracking")
 @RequiredArgsConstructor
 @Slf4j
 public class VehicleTrackingApiController {
@@ -77,11 +77,11 @@ public class VehicleTrackingApiController {
         }
 
         Map<String, Object> serviceRequest = vehicleTrackingService.getServiceRequestById(id, validToken);
-        
+
         if (serviceRequest.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-        
+
         return ResponseEntity.ok(serviceRequest);
     }
 
@@ -108,7 +108,7 @@ public class VehicleTrackingApiController {
         }
 
         boolean updated = vehicleTrackingService.updateServiceStatus(id, status, validToken);
-        
+
         if (updated) {
             return ResponseEntity.ok(Collections.singletonMap("message", "Status updated successfully"));
         } else {
@@ -134,13 +134,13 @@ public class VehicleTrackingApiController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        boolean recorded = vehicleTrackingService.recordPayment(id, paymentDetails, validToken);
-        
-        if (recorded) {
-            return ResponseEntity.ok(Collections.singletonMap("message", "Payment recorded successfully"));
-        } else {
+        Map<String, Object> result = vehicleTrackingService.recordPayment(id, paymentDetails, validToken);
+
+        if (result.containsKey("error")) {
             return ResponseEntity.internalServerError()
-                    .body(Collections.singletonMap("error", "Failed to record payment"));
+                    .body(Collections.singletonMap("error", result.get("error")));
+        } else {
+            return ResponseEntity.ok(result);
         }
     }
 
@@ -161,13 +161,13 @@ public class VehicleTrackingApiController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        boolean generated = vehicleTrackingService.generateInvoice(id, invoiceDetails, validToken);
-        
-        if (generated) {
-            return ResponseEntity.ok(Collections.singletonMap("message", "Invoice generated successfully"));
-        } else {
+        Map<String, Object> result = vehicleTrackingService.generateInvoice(id, invoiceDetails, validToken);
+
+        if (result.containsKey("error")) {
             return ResponseEntity.internalServerError()
-                    .body(Collections.singletonMap("error", "Failed to generate invoice"));
+                    .body(Collections.singletonMap("error", result.get("error")));
+        } else {
+            return ResponseEntity.ok(result);
         }
     }
 
@@ -188,13 +188,13 @@ public class VehicleTrackingApiController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        boolean dispatched = vehicleTrackingService.dispatchVehicle(id, dispatchDetails, validToken);
-        
-        if (dispatched) {
-            return ResponseEntity.ok(Collections.singletonMap("message", "Vehicle dispatched successfully"));
-        } else {
+        Map<String, Object> result = vehicleTrackingService.dispatchVehicle(id, dispatchDetails, validToken);
+
+        if (result.containsKey("error")) {
             return ResponseEntity.internalServerError()
-                    .body(Collections.singletonMap("error", "Failed to dispatch vehicle"));
+                    .body(Collections.singletonMap("error", result.get("error")));
+        } else {
+            return ResponseEntity.ok(result);
         }
     }
 
@@ -216,7 +216,7 @@ public class VehicleTrackingApiController {
 
         List<Map<String, Object>> filteredVehicles = vehicleTrackingService.filterVehiclesUnderService(
                 filterCriteria, validToken);
-        
+
         return ResponseEntity.ok(filteredVehicles);
     }
 
@@ -238,7 +238,7 @@ public class VehicleTrackingApiController {
 
         List<Map<String, Object>> filteredServices = vehicleTrackingService.filterCompletedServices(
                 filterCriteria, validToken);
-        
+
         return ResponseEntity.ok(filteredServices);
     }
 
@@ -260,19 +260,19 @@ public class VehicleTrackingApiController {
 
         // Create search criteria
         Map<String, Object> searchCriteria = Collections.singletonMap("search", query);
-        
+
         // Get filtered results
         List<Map<String, Object>> vehiclesUnderService = vehicleTrackingService.filterVehiclesUnderService(
                 searchCriteria, validToken);
-                
+
         List<Map<String, Object>> completedServices = vehicleTrackingService.filterCompletedServices(
                 searchCriteria, validToken);
-        
+
         // Combine results
         Map<String, List<Map<String, Object>>> results = new HashMap<>();
         results.put("vehiclesUnderService", vehiclesUnderService);
         results.put("completedServices", completedServices);
-        
+
         return ResponseEntity.ok(results);
     }
 

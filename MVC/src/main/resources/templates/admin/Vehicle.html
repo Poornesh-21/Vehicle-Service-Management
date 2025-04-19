@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Albany Motors - Vehicle Management</title>
+    <title>Albany Motors - Vehicle Tracking</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
@@ -88,7 +88,7 @@
             min-height: 100vh;
         }
 
-        /* Sidebar Styles - Fixed visibility issues */
+        /* Sidebar Styles */
         .sidebar {
             width: 280px;
             background: var(--wine-gradient);
@@ -355,71 +355,16 @@
         }
 
         .btn-premium.secondary:hover {
-            background-color: var(--light-gray);
-            box-shadow: var(--shadow-md);
+            background-color: var(--light-bg);
+            box-shadow: var(--shadow-lg);
             transform: translateY(-2px);
-        }
-
-        /* Mobile menu toggle button */
-        .mobile-menu-toggle {
-            position: fixed;
-            top: 15px;
-            right: 15px;
-            background: var(--wine);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 45px;
-            height: 45px;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 1100;
-            box-shadow: var(--shadow-md);
-            transition: var(--transition);
-        }
-
-        .mobile-menu-toggle:hover {
-            background: var(--wine-light);
-        }
-
-        /* Tab styles */
-        .nav-tabs {
-            border-bottom: 2px solid var(--light-gray);
-            margin-bottom: 1.5rem;
-        }
-
-        .nav-tabs .nav-item {
-            margin-bottom: -2px;
-        }
-
-        .nav-tabs .nav-link {
-            border: none;
-            color: var(--medium-gray);
-            font-weight: 600;
-            padding: 1rem 1.5rem;
-            background: transparent;
-            border-bottom: 2px solid transparent;
-            transition: var(--transition);
-            margin-right: 0.5rem;
-        }
-
-        .nav-tabs .nav-link:hover {
-            color: var(--wine);
-        }
-
-        .nav-tabs .nav-link.active {
-            color: var(--wine);
-            background: transparent;
-            border-bottom: 2px solid var(--wine);
         }
 
         /* Search Box */
         .search-box {
             position: relative;
             max-width: 400px;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
         }
 
         .search-input {
@@ -448,700 +393,3784 @@
             pointer-events: none;
         }
 
-        /* Table Styles */
-        .table-container {
-            background-color: var(--white);
-            border-radius: var(--radius-lg);
-            box-shadow: var(--shadow-lg);
+        /* Tabs Section */
+        .tabs-section {
             margin-bottom: 2rem;
-            overflow: hidden;
         }
 
-        .table {
+        .nav-tabs {
+            border-bottom: none;
+            gap: 1rem;
+        }
+
+        .nav-tabs .nav-item {
             margin-bottom: 0;
         }
 
-        .table thead {
-            background-color: var(--light-bg);
-            border-bottom: 2px solid var(--light-gray);
-        }
-
-        .table thead th {
-            padding: 1.2rem 1.5rem;
-            font-weight: 700;
-            color: var(--wine);
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 0.5px;
-            white-space: nowrap;
-            border: none;
-        }
-
-        .table tbody td {
-            padding: 1.2rem 1.5rem;
-            vertical-align: middle;
+        .nav-tabs .nav-link {
             color: var(--dark-gray);
-            border-color: var(--light-gray);
-        }
-
-        .table tbody tr {
-            transition: var(--transition);
-        }
-
-        .table tbody tr:hover {
-            background-color: var(--light-bg);
-        }
-
-        .table tbody tr:last-child td {
-            border-bottom: none;
-        }
-
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.4rem 1rem;
-            border-radius: 50px;
-            font-size: 0.8rem;
             font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .status-badge.status-in-progress {
-            background-color: var(--info);
-            color: #0a3b5e;
-        }
-
-        .status-badge.status-completed {
-            background-color: var(--success);
-            color: #1e441f;
-        }
-
-        .status-badge i {
-            margin-right: 0.5rem;
-        }
-
-        .action-cell {
-            white-space: nowrap;
-        }
-
-        /* Empty state */
-        .empty-state {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 5rem 2rem;
-            text-align: center;
-            background-color: var(--white);
+            padding: 1rem 1.5rem;
+            border: none;
             border-radius: var(--radius-lg);
+            background-color: var(--light-bg);
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .nav-tabs .nav-link:hover:not(.active) {
+            background-color: var(--light-gray);
+            transform: translateY(-2px);
             box-shadow: var(--shadow-md);
         }
 
-        .empty-state i {
-            font-size: 3.5rem;
-            color: var(--light-gray);
-            margin-bottom: 1.5rem;
+        .nav-tabs .nav-link.active {
+            color: var(--white);
+            background: var(--wine-gradient);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
         }
 
-        .empty-state h4 {
+        .nav-tabs .nav-link .count-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.2);
+            color: inherit;
+            font-size: 0.85rem;
             font-weight: 700;
+        }
+
+        .nav-tabs .nav-link.active .count-badge {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Table Section */
+        .table-section {
+            background-color: var(--white);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            margin-bottom: 2rem;
+            transition: var(--transition);
+            border: 1px solid rgba(114, 47, 55, 0.1);
+        }
+
+        .table-section:hover {
+            box-shadow: 0 15px 30px rgba(114, 47, 55, 0.15), 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .table-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--wine);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .table-title i {
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--dutch-white-light);
+            color: var(--wine);
+            border-radius: var(--radius-sm);
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .search-box-sm {
+            position: relative;
+        }
+
+        .search-input-sm {
+            padding: 0.65rem 1rem 0.65rem 2.5rem;
+            border: 1px solid var(--light-gray);
+            border-radius: var(--radius-lg);
+            width: 250px;
+            font-size: 0.9rem;
             color: var(--dark-gray);
+            transition: var(--transition);
+        }
+
+        .search-input-sm:focus {
+            outline: none;
+            border-color: var(--wine-light);
+            box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
+        }
+
+        .search-icon-sm {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--medium-gray);
+            pointer-events: none;
+        }
+
+        .premium-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .premium-table thead th {
+            background-color: var(--bg-light);
+            color: var(--dark-gray);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 1.25rem 1rem;
+            border-bottom: 1px solid var(--light-gray);
+            text-align: left;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .premium-table tbody td {
+            padding: 1.25rem 1rem;
+            vertical-align: middle;
+            border-bottom: 1px solid var(--light-gray);
+            font-size: 0.95rem;
+        }
+
+        .premium-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .premium-table tbody tr {
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .premium-table tbody tr:hover {
+            background-color: rgba(114, 47, 55, 0.05);
+        }
+
+        /* Status Badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 2rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            line-height: 1;
+        }
+
+        .status-received {
+            background-color: rgba(255, 202, 40, 0.15);
+            color: #d68000;
+        }
+
+        .status-received i {
+            color: var(--warning);
+        }
+
+        .status-diagnosis {
+            background-color: rgba(66, 165, 245, 0.15);
+            color: #0069c0;
+        }
+
+        .status-diagnosis i {
+            color: var(--info);
+        }
+
+        .status-repair {
+            background-color: rgba(255, 87, 51, 0.15);
+            color: #ff3c00;
+        }
+
+        .status-repair i {
+            color: #ff3c00;
+        }
+
+        .status-completed {
+            background-color: rgba(102, 187, 106, 0.15);
+            color: #00701a;
+        }
+
+        .status-completed i {
+            color: var(--success);
+        }
+
+        .status-pending {
+            background-color: rgba(255, 202, 40, 0.15);
+            color: #d68000;
+        }
+
+        .status-pending i {
+            color: var(--warning);
+        }
+
+        .status-paid {
+            background-color: rgba(102, 187, 106, 0.15);
+            color: #00701a;
+        }
+
+        .status-paid i {
+            color: var(--success);
+        }
+
+        .status-dispatched {
+            background-color: rgba(156, 39, 176, 0.15);
+            color: #7b1fa2;
+        }
+
+        .status-dispatched i {
+            color: #7b1fa2;
+        }
+
+        /* Vehicle Info Cell Styles */
+        .vehicle-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .vehicle-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            background-color: var(--dutch-white-light);
+            color: var(--wine);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .vehicle-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .vehicle-details h5 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--wine);
+        }
+
+        .vehicle-details p {
+            font-size: 0.8rem;
+            color: var(--medium-gray);
+            margin: 0;
+        }
+
+        .person-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .person-details h5 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--wine);
+        }
+
+        .person-details p {
+            font-size: 0.8rem;
+            color: var(--medium-gray);
+            margin: 0;
+        }
+
+        /* Membership Badge */
+        .membership-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .membership-standard {
+            background-color: rgba(66, 165, 245, 0.15);
+            color: var(--info);
+        }
+
+        .membership-premium {
+            background: linear-gradient(to right, rgba(212, 175, 55, 0.2), rgba(212, 175, 55, 0.3));
+            color: #b8860b;
+        }
+
+        /* Table Action Buttons */
+        .table-actions-cell {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+        }
+
+        .btn-table-action {
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--white);
+            color: var(--wine);
+            border: 1px solid var(--light-gray);
+            border-radius: 50%;
+            font-size: 0.85rem;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-table-action:hover {
+            background-color: var(--light-bg);
+            border-color: var(--wine-light);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .btn-table-action.success {
+            background-color: rgba(102, 187, 106, 0.1);
+            color: #00701a;
+            border-color: rgba(102, 187, 106, 0.3);
+        }
+
+        .btn-table-action.warning {
+            background-color: rgba(255, 202, 40, 0.1);
+            color: #d68000;
+            border-color: rgba(255, 202, 40, 0.3);
+        }
+
+        .btn-table-action.info {
+            background-color: rgba(66, 165, 245, 0.1);
+            color: #0069c0;
+            border-color: rgba(66, 165, 245, 0.3);
+        }
+
+        .btn-action {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-lg);
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: 1px solid var(--light-gray);
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-action.success {
+            background-color: rgba(102, 187, 106, 0.1);
+            color: #00701a;
+            border-color: rgba(102, 187, 106, 0.3);
+        }
+
+        .btn-action.success:hover {
+            background-color: rgba(102, 187, 106, 0.2);
+            border-color: rgba(102, 187, 106, 0.5);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-action.warning {
+            background-color: rgba(255, 202, 40, 0.1);
+            color: #d68000;
+            border-color: rgba(255, 202, 40, 0.3);
+        }
+
+        .btn-action.warning:hover {
+            background-color: rgba(255, 202, 40, 0.2);
+            border-color: rgba(255, 202, 40, 0.5);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-action.info {
+            background-color: rgba(66, 165, 245, 0.1);
+            color: #0069c0;
+            border-color: rgba(66, 165, 245, 0.3);
+        }
+
+        .btn-action.info:hover {
+            background-color: rgba(66, 165, 245, 0.2);
+            border-color: rgba(66, 165, 245, 0.5);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Pagination */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .pagination {
+            display: flex;
+            gap: 0.35rem;
+            background-color: white;
+            border-radius: 50px;
+            padding: 0.5rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .page-item .page-link {
+            width: 2.5rem;
+            height: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            color: var(--dark-gray);
+            font-weight: 500;
+            border: none;
+            transition: var(--transition);
+            background-color: transparent;
+        }
+
+        .page-item .page-link:hover {
+            background-color: var(--light-gray);
+        }
+
+        .page-item.active .page-link {
+            background-color: var(--wine);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .page-item.disabled .page-link {
+            color: var(--medium-gray);
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        /* Modal Styles - Premium */
+        .modal-premium .modal-content {
+            border: none;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .modal-premium .modal-header {
+            background: var(--wine-gradient);
+            color: white;
+            border-bottom: none;
+            padding: 1.75rem 2rem;
+            position: relative;
+        }
+
+        .modal-premium .modal-title {
+            font-weight: 700;
+            font-size: 1.35rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .modal-premium .modal-title i {
+            width: 2.5rem;
+            height: 2.5rem;
+            background-color: rgba(255, 255, 255, 0.15);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .modal-premium .modal-body {
+            padding: 2.5rem;
+        }
+
+        .modal-premium .modal-footer {
+            padding: 1.5rem 2.5rem;
+            border-top: 1px solid var(--light-gray);
+            background-color: rgba(248, 249, 250, 0.5);
+        }
+
+        .modal-premium .btn-close {
+            background: rgba(255, 255, 255, 0.2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23FFF'%3E%3Cpath d='M.293.293a1 1 0 011.414 0L8 6.586 14.293.293a1 1 0 111.414 1.414L9.414 8l6.293 6.293a1 1 0 01-1.414 1.414L8 9.414l-6.293 6.293a1 1 0 01-1.414-1.414L6.586 8 .293 1.707a1 1 0 010-1.414z'/%3E%3C/svg%3E") center/1em auto no-repeat;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            opacity: 0.8;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-premium .btn-close:hover {
+            opacity: 1;
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Service Details */
+        .service-detail-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .service-detail-col {
+            flex: 1;
+            min-width: 200px;
+            padding-right: 1.5rem;
+        }
+
+        .detail-label {
+            font-size: 0.85rem;
+            color: var(--medium-gray);
+            margin-bottom: 0.35rem;
+        }
+
+        .detail-value {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--dark-gray);
+        }
+
+        .materials-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 1.5rem;
+            background-color: var(--light-bg);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+
+        .materials-table th {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+            padding: 0.75rem 1rem;
+            text-align: left;
+            background-color: var(--light-bg);
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .materials-table td {
+            font-size: 0.9rem;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .materials-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .materials-table tbody tr:last-child {
+            background-color: rgba(102, 187, 106, 0.05);
+            font-weight: 600;
+        }
+
+        /* Labor Charges Table */
+        .labor-charges-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 1.5rem;
+            background-color: var(--light-bg);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+
+        .labor-charges-table th {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--dark-gray);
+            padding: 0.75rem 1rem;
+            text-align: left;
+            background-color: var(--light-bg);
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .labor-charges-table td {
+            font-size: 0.9rem;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .labor-charges-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .invoice-summary {
+            background-color: var(--light-bg);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .invoice-summary-row {
+            display: flex;
+            justify-content: space-between;
             margin-bottom: 0.75rem;
         }
 
-        .empty-state p {
-            color: var(--medium-gray);
-            max-width: 500px;
-            margin-bottom: 1.5rem;
+        .invoice-summary-row:last-child {
+            margin-bottom: 0;
+            padding-top: 0.75rem;
+            border-top: 1px dashed var(--light-gray);
+            font-weight: 700;
+            font-size: 1.1rem;
         }
 
-        /* Responsive styles */
+        .invoice-summary-label {
+            color: var(--dark-gray);
+        }
+
+        .invoice-summary-value {
+            color: var(--wine);
+        }
+
+        /* Albany Spinner */
+        .spinner-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        .spinner-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .spinner-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            perspective: 300px;
+        }
+
+        .albany-spinner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: spin 3s infinite cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+
+        .spinner-letter {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 72px;
+            font-weight: 800;
+            color: var(--wine);
+            text-shadow: 0 0 5px rgba(114, 47, 55, 0.3);
+            backface-visibility: hidden;
+            transform: rotateY(0deg) translateZ(60px);
+        }
+
+        .spinner-circle {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            width: calc(100% + 20px);
+            height: calc(100% + 20px);
+            border-radius: 50%;
+            border: 4px solid transparent;
+            border-top-color: var(--wine);
+            border-bottom-color: var(--dutch-white);
+            animation: spin-reverse 1.5s linear infinite;
+        }
+
+        .spinner-circle:nth-child(2) {
+            top: -5px;
+            left: -5px;
+            width: calc(100% + 10px);
+            height: calc(100% + 10px);
+            border-top-color: var(--dutch-white);
+            border-bottom-color: var(--wine);
+            animation-duration: 2s;
+        }
+
+        .spinner-text {
+            position: absolute;
+            bottom: -40px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--wine);
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotateY(0deg);
+            }
+            25% {
+                transform: rotateY(90deg);
+            }
+            50% {
+                transform: rotateY(180deg);
+            }
+            75% {
+                transform: rotateY(270deg);
+            }
+            100% {
+                transform: rotateY(360deg);
+            }
+        }
+
+        @keyframes spin-reverse {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Success Modal */
+        .success-modal .modal-content {
+            border: none;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+            background-color: var(--white);
+            position: relative;
+        }
+
+        .success-modal .modal-body {
+            padding: 3.5rem 2.5rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .success-modal .modal-body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 15px;
+            background: var(--wine-gradient);
+        }
+
+        .success-icon-container {
+            margin-bottom: 2rem;
+            position: relative;
+            display: inline-flex;
+        }
+
+        .success-icon-wrapper {
+            width: 8rem;
+            height: 8rem;
+            border-radius: 50%;
+            background: linear-gradient(145deg, rgba(102, 187, 106, 0.15), rgba(102, 187, 106, 0.05));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            position: relative;
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(102, 187, 106, 0.6);
+            }
+            70% {
+                box-shadow: 0 0 0 15px rgba(102, 187, 106, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(102, 187, 106, 0);
+            }
+        }
+
+        .success-icon {
+            width: 6rem;
+            height: 6rem;
+            border-radius: 50%;
+            background-color: var(--success);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            box-shadow: 0 10px 30px rgba(102, 187, 106, 0.3);
+            animation: scale-in 0.5s ease-out;
+        }
+
+        @keyframes scale-in {
+            0% {
+                transform: scale(0);
+            }
+            80% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .success-modal .success-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark-gray);
+            margin-bottom: 1rem;
+        }
+
+        .success-modal .success-message {
+            font-size: 1.1rem;
+            color: var(--medium-gray);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+            max-width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .success-modal .continue-btn {
+            padding: 1rem 3rem;
+            font-size: 1.1rem;
+            border-radius: var(--radius-lg);
+            background: var(--wine-gradient);
+            color: white;
+            border: none;
+            font-weight: 600;
+            transition: var(--transition);
+            box-shadow: var(--shadow-lg);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .success-modal .continue-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(114, 47, 55, 0.2);
+        }
+
+        /* Footer */
+        .app-footer {
+            margin-top: 3rem;
+            padding-bottom: 2rem;
+        }
+
+        .footer-content {
+            background: var(--wine-gradient);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-lg);
+            color: white;
+            text-align: center;
+        }
+
+        .footer-text {
+            margin: 0;
+            font-size: 0.95rem;
+            opacity: 0.9;
+        }
+
+        .footer-brand {
+            font-weight: 600;
+            color: var(--dutch-white-light);
+        }
+
+        /* Mobile menu toggle */
+        .mobile-menu-toggle {
+            display: none;
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1060;
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            background: var(--wine-gradient);
+            color: white;
+            border: none;
+            box-shadow: 0 4px 12px rgba(114, 47, 55, 0.25);
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .mobile-menu-toggle:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 16px rgba(114, 47, 55, 0.3);
+        }
+
+        /* Responsive Design */
         @media (max-width: 991.98px) {
             .sidebar {
-                transform: translateX(-100%);
+                width: 5rem;
+                box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+            }
+
+            .sidebar-header h2,
+            .sidebar-menu-link span,
+            .user-info,
+            .nav-section-title,
+            .logout-btn span {
+                display: none;
+            }
+
+            .sidebar-menu-link {
+                justify-content: center;
+                padding: 0.75rem;
+            }
+
+            .sidebar-menu-link i {
+                margin-right: 0;
+                font-size: 1.25rem;
+            }
+
+            .sidebar-menu-link.active::before {
+                left: -0.5rem;
+            }
+
+            .sidebar-footer {
+                justify-content: center;
+                padding: 1rem;
+            }
+
+            .logout-btn {
+                padding: 0.5rem;
+                justify-content: center;
             }
 
             .main-content {
-                margin-left: 0;
+                margin-left: 5rem;
             }
 
-            .mobile-menu-toggle {
-                display: flex;
-            }
-
-            .sidebar.show {
-                transform: translateX(0);
-            }
-
-            .sidebar.show + .main-content {
-                margin-left: 0;
-            }
-        }
-
-        @media (max-width: 767.98px) {
             .page-header {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 1rem;
             }
 
-            .action-buttons {
-                width: 100%;
-                justify-content: flex-end;
+            .header-left h1 {
+                font-size: 2rem;
             }
 
-            .table-responsive {
-                border-radius: var(--radius-lg);
+            .table-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .table-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .search-box-sm {
+                width: 100%;
+            }
+
+            .search-input-sm {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .sidebar {
+                z-index: 1050;
+            }
+
+            .table-section {
+                overflow-x: auto;
+            }
+
+            .premium-table {
+                min-width: 1000px;
+            }
+
+            .mobile-menu-toggle {
+                display: flex;
+            }
+
+            .sidebar {
+                width: 0;
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                width: 280px;
+                transform: translateX(0);
+            }
+
+            .sidebar.active .sidebar-header h2,
+            .sidebar.active .sidebar-menu-link span,
+            .sidebar.active .user-info,
+            .sidebar.active .nav-section-title,
+            .sidebar.active .logout-btn span {
+                display: block;
+            }
+
+            .sidebar.active .sidebar-menu-link {
+                justify-content: flex-start;
+                padding: 0.85rem 1rem;
+            }
+
+            .sidebar.active .sidebar-menu-link i {
+                margin-right: 0.75rem;
+            }
+
+            .sidebar.active .logout-btn {
+                padding: 0.5rem 1rem;
+                justify-content: space-between;
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .page-header {
+                padding-top: 4rem;
+            }
+
+            .nav-tabs {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .nav-tabs .nav-link {
+                width: 100%;
+                justify-content: space-between;
             }
         }
 
         @media (max-width: 575.98px) {
             .main-content {
-                padding: 1.5rem 1rem;
+                padding: 1rem;
+            }
+
+            .page-header {
+                margin-bottom: 1.5rem;
             }
 
             .header-left h1 {
-                font-size: 2rem;
+                font-size: 1.75rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+                gap: 0.75rem;
+                width: 100%;
             }
 
             .btn-premium {
-                padding: 0.6rem 1.2rem;
-                font-size: 0.9rem;
+                width: 100%;
+                justify-content: center;
             }
+
+            .search-box {
+                max-width: 100%;
+            }
+
+            .service-detail-row {
+                flex-direction: column;
+            }
+
+            .service-detail-col {
+                width: 100%;
+                padding-right: 0;
+                margin-bottom: 1rem;
+            }
+        }
+
+        /* Hide all table rows except the first 5 by default */
+        .premium-table tbody tr {
+            display: none;
+        }
+
+        .premium-table tbody tr.active-page {
+            display: table-row;
         }
     </style>
 </head>
 <body>
-<div class="app-container">
-    <!-- Mobile Menu Toggle Button -->
-    <button class="mobile-menu-toggle" id="mobileMenuToggle">
-        <i class="fas fa-bars"></i>
-    </button>
-
-    <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <h2>Albany Motors</h2>
+<!-- Albany Spinner Overlay -->
+<div class="spinner-overlay" id="spinnerOverlay">
+    <div class="spinner-container">
+        <div class="albany-spinner">
+            <div class="spinner-letter">A</div>
+            <div class="spinner-circle"></div>
+            <div class="spinner-circle"></div>
         </div>
+        <div class="spinner-text">Loading...</div>
+    </div>
+</div>
+
+<!-- Mobile Menu Toggle Button -->
+<button class="mobile-menu-toggle" id="mobileMenuToggle">
+    <i class="fas fa-bars"></i>
+</button>
+
+<div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>Albany</h2>
+        </div>
+
         <div class="sidebar-content">
             <div class="nav-section">
                 <div class="nav-section-title">Main</div>
                 <ul class="sidebar-menu">
                     <li class="sidebar-menu-item">
-                        <a href="/dashboard" class="sidebar-menu-link">
+                        <a th:href="@{/admin/dashboard}" class="sidebar-menu-link">
                             <i class="fas fa-tachometer-alt"></i>
                             <span>Dashboard</span>
                         </a>
                     </li>
+                </ul>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Management</div>
+                <ul class="sidebar-menu">
                     <li class="sidebar-menu-item">
-                        <a href="/service-requests" class="sidebar-menu-link">
+                        <a th:href="@{/admin/service-requests}" class="sidebar-menu-link">
                             <i class="fas fa-clipboard-list"></i>
                             <span>Service Requests</span>
                         </a>
                     </li>
                     <li class="sidebar-menu-item">
-                        <a href="/vehicles" class="sidebar-menu-link active">
+                        <a th:href="@{/admin/vehicles}" class="sidebar-menu-link active">
                             <i class="fas fa-car"></i>
                             <span>Vehicles</span>
                         </a>
                     </li>
                     <li class="sidebar-menu-item">
-                        <a href="/customers" class="sidebar-menu-link">
+                        <a th:href="@{/admin/customers}" class="sidebar-menu-link">
                             <i class="fas fa-users"></i>
                             <span>Customers</span>
                         </a>
                     </li>
                     <li class="sidebar-menu-item">
-                        <a href="/invoices" class="sidebar-menu-link">
-                            <i class="fas fa-file-invoice-dollar"></i>
-                            <span>Invoices</span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
-            <div class="nav-section">
-                <div class="nav-section-title">Management</div>
-                <ul class="sidebar-menu">
-                    <li class="sidebar-menu-item">
-                        <a href="/service-advisors" class="sidebar-menu-link">
+                        <a th:href="@{/admin/service-advisors}" class="sidebar-menu-link">
                             <i class="fas fa-user-tie"></i>
                             <span>Service Advisors</span>
                         </a>
                     </li>
                     <li class="sidebar-menu-item">
-                        <a href="/mechanics" class="sidebar-menu-link">
-                            <i class="fas fa-user-cog"></i>
-                            <span>Mechanics</span>
-                        </a>
-                    </li>
-                    <li class="sidebar-menu-item">
-                        <a href="/inventory" class="sidebar-menu-link">
-                            <i class="fas fa-tools"></i>
+                        <a th:href="@{/admin/inventory}" class="sidebar-menu-link">
+                            <i class="fas fa-boxes"></i>
                             <span>Inventory</span>
                         </a>
                     </li>
                 </ul>
             </div>
-            <div class="nav-section">
-                <div class="nav-section-title">Analytics</div>
-                <ul class="sidebar-menu">
-                    <li class="sidebar-menu-item">
-                        <a href="/reports" class="sidebar-menu-link">
-                            <i class="fas fa-chart-line"></i>
-                            <span>Reports</span>
-                        </a>
-                    </li>
-                    <li class="sidebar-menu-item">
-                        <a href="/statistics" class="sidebar-menu-link">
-                            <i class="fas fa-chart-pie"></i>
-                            <span>Statistics</span>
-                        </a>
-                    </li>
-                </ul>
-            </div>
         </div>
+
         <div class="sidebar-footer">
             <div class="user-info">
-                <div class="user-name">John Smith</div>
+                <div class="user-name">Arthur Morgan</div>
                 <div class="user-role">Administrator</div>
             </div>
-            <form action="/logout" method="post">
-                <button type="submit" class="logout-btn">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Logout</span>
-                </button>
-            </form>
+            <button class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </button>
         </div>
-    </div>
+    </aside>
 
     <!-- Main Content -->
-    <div class="main-content">
+    <main class="main-content">
         <!-- Page Header -->
-        <div class="page-header">
+        <header class="page-header">
             <div class="header-left">
-                <h1>Vehicle Management</h1>
+                <h1>Vehicle Tracking</h1>
                 <div class="header-subtitle">
-                    <i class="fas fa-car-side me-1"></i>
-                    <span>Track and manage all vehicles</span>
+                    <i class="fas fa-car"></i>
+                    Track vehicles in service and completed services
                 </div>
             </div>
+
             <div class="action-buttons">
-                <button class="btn-premium secondary">
-                    <i class="fas fa-file-export"></i>
-                    <span>Export</span>
+                <button class="btn-premium primary" data-bs-toggle="modal" data-bs-target="#filterVehiclesModal">
+                    <i class="fas fa-filter"></i>
+                    Filter Vehicles
                 </button>
-                <button class="btn-premium primary">
-                    <i class="fas fa-plus"></i>
-                    <span>Add Vehicle</span>
-                </button>
+            </div>
+        </header>
+
+        <!-- Search Box -->
+        <div class="search-box">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search by vehicle, registration number, customer...">
+            <i class="fas fa-search search-icon"></i>
+        </div>
+
+        <!-- Tabs Section -->
+        <div class="tabs-section">
+            <ul class="nav nav-tabs" id="vehiclesTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="under-service-tab" data-bs-toggle="tab" data-bs-target="#under-service-tab-pane" type="button" role="tab" aria-controls="under-service-tab-pane" aria-selected="true">
+                        <i class="fas fa-tools"></i>
+                        Vehicles Under Service
+                        <span class="count-badge" id="underServiceCount">12</span>
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed-tab-pane" type="button" role="tab" aria-controls="completed-tab-pane" aria-selected="false">
+                        <i class="fas fa-check-circle"></i>
+                        Completed Services
+                        <span class="count-badge" id="completedCount">8</span>
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <div class="tab-content" id="vehiclesTabsContent">
+            <!-- Vehicles Under Service Tab -->
+            <div class="tab-pane fade show active" id="under-service-tab-pane" role="tabpanel" aria-labelledby="under-service-tab" tabindex="0">
+                <!-- Vehicles Under Service Table -->
+                <section class="table-section">
+                    <div class="table-header">
+                        <h3 class="table-title">
+                            <i class="fas fa-tools"></i>
+                            Vehicles Under Service
+                        </h3>
+                        <div class="table-actions">
+                            <div class="search-box-sm">
+                                <input type="text" class="search-input-sm" placeholder="Filter vehicles...">
+                                <i class="fas fa-search search-icon-sm"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="premium-table" id="vehiclesUnderServiceTable">
+                            <thead>
+                            <tr>
+                                <th>Service ID</th>
+                                <th>Vehicle</th>
+                                <th>Customer</th>
+                                <th>Service Type</th>
+                                <th>Status</th>
+                                <th>Service Advisor</th>
+                                <th>Started On</th>
+                                <th>Expected Completion</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody id="vehiclesUnderServiceTableBody">
+                            <!-- Will be populated dynamically via JavaScript -->
+                            <tr id="loading-row-service">
+                                <td colspan="9" class="text-center py-4">
+                                    <div class="spinner-border text-wine" role="status"></div>
+                                    <p class="mt-2">Loading vehicles under service...</p>
+                                </td>
+                            </tr>
+                            <tr id="empty-row-service" style="display: none;">
+                                <td colspan="9" class="text-center py-4">
+                                    <div class="my-5">
+                                        <i class="fas fa-tools fa-3x text-muted mb-3"></i>
+                                        <h5>No vehicles currently under service</h5>
+                                        <p class="text-muted">All vehicles have been serviced or no service requests have been created</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="pagination-container">
+                        <ul class="pagination" id="paginationService">
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" id="prevBtnService" aria-label="Previous">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item active"><a class="page-link" href="#" data-page="1">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#" data-page="2">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#" data-page="3">3</a></li>
+                            <li class="page-item">
+                                <a class="page-link" href="#" id="nextBtnService" aria-label="Next">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Completed Services Tab -->
+            <div class="tab-pane fade" id="completed-tab-pane" role="tabpanel" aria-labelledby="completed-tab" tabindex="0">
+                <!-- Completed Services Table -->
+                <section class="table-section">
+                    <div class="table-header">
+                        <h3 class="table-title">
+                            <i class="fas fa-check-circle"></i>
+                            Completed Services
+                        </h3>
+                        <div class="table-actions">
+                            <div class="search-box-sm">
+                                <input type="text" class="search-input-sm" placeholder="Filter completed services...">
+                                <i class="fas fa-search search-icon-sm"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="premium-table" id="completedServicesTable">
+                            <thead>
+                            <tr>
+                                <th>Service ID</th>
+                                <th>Vehicle</th>
+                                <th>Customer</th>
+                                <th>Service Type</th>
+                                <th>Completion Date</th>
+                                <th>Total Amount</th>
+                                <th>Payment Status</th>
+                                <th>Invoice</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody id="completedServicesTableBody">
+                            <!-- Will be populated dynamically via JavaScript -->
+                            <tr id="loading-row-completed">
+                                <td colspan="9" class="text-center py-4">
+                                    <div class="spinner-border text-wine" role="status"></div>
+                                    <p class="mt-2">Loading completed services...</p>
+                                </td>
+                            </tr>
+                            <tr id="empty-row-completed" style="display: none;">
+                                <td colspan="9" class="text-center py-4">
+                                    <div class="my-5">
+                                        <i class="fas fa-check-circle fa-3x text-muted mb-3"></i>
+                                        <h5>No completed services found</h5>
+                                        <p class="text-muted">Once services are completed, they will appear here</p>
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="pagination-container">
+                        <ul class="pagination" id="paginationCompleted">
+                            <li class="page-item disabled">
+                                <a class="page-link" href="#" id="prevBtnCompleted" aria-label="Previous">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                            <li class="page-item active"><a class="page-link" href="#" data-page="1">1</a></li>
+                            <li class="page-item"><a class="page-link" href="#" data-page="2">2</a></li>
+                            <li class="page-item"><a class="page-link" href="#" data-page="3">3</a></li>
+                            <li class="page-item">
+                                <a class="page-link" href="#" id="nextBtnCompleted" aria-label="Next">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </section>
             </div>
         </div>
 
-        <!-- Tabs Navigation -->
-        <ul class="nav nav-tabs" id="vehicleTabs" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="under-service-tab" data-bs-toggle="tab" data-bs-target="#under-service" type="button" role="tab" aria-controls="under-service" aria-selected="true">
-                    <i class="fas fa-tools me-2"></i>Under Service
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" type="button" role="tab" aria-controls="completed" aria-selected="false">
-                    <i class="fas fa-check-circle me-2"></i>Completed Vehicles
-                </button>
-            </li>
-        </ul>
-
-        <!-- Tab Content -->
-        <div class="tab-content" id="vehicleTabsContent">
-            <!-- Under Service Vehicles Tab -->
-            <div class="tab-pane fade show active" id="under-service" role="tabpanel" aria-labelledby="under-service-tab">
-                <!-- Search Box -->
-                <div class="search-box">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" class="search-input" id="underServiceSearch" placeholder="Search vehicles..." oninput="filterUnderServiceTable()">
-                </div>
-
-                <!-- Table -->
-                <div class="table-container">
-                    <div class="table-responsive">
-                        <table class="table" id="underServiceTable">
-                            <thead>
-                            <tr>
-                                <th>Vehicle</th>
-                                <th>Owner</th>
-                                <th>Service ID</th>
-                                <th>Check-in Date</th>
-                                <th>Est. Completion</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr>
-                                <td>Toyota Camry - ABC1234</td>
-                                <td>John Smith</td>
-                                <td>#SRV-2023-001</td>
-                                <td>Jan 12, 2023</td>
-                                <td>Jan 18, 2023</td>
-                                <td><span class="status-badge status-in-progress"><i class="fas fa-cog fa-spin"></i>In Progress</span></td>
-                                <td class="action-cell">
-                                    <button class="btn btn-sm btn-outline-secondary me-1" onclick="viewVehicleDetails('SRV-2023-001')">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-primary" onclick="updateVehicleStatus('SRV-2023-001')">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Honda Civic - XYZ5678</td>
-                                <td>Sarah Johnson</td>
-                                <td>#SRV-2023-002</td>
-                                <td>Jan 14, 2023</td>
-                                <td>Jan 20, 2023</td>
-                                <td><span class="status-badge status-in-progress"><i class="fas fa-cog fa-spin"></i>In Progress</span></td>
-                                <td class="action-cell">
-                                    <button class="btn btn-sm btn-outline-secondary me-1" onclick="viewVehicleDetails('SRV-2023-002')">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-primary" onclick="updateVehicleStatus('SRV-2023-002')">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Ford Mustang - DEF9012</td>
-                                <td>Michael Brown</td>
-                                <td>#SRV-2023-003</td>
-                                <td>Jan 15, 2023</td>
-                                <td>Jan 21, 2023</td>
-                                <td><span class="status-badge status-in-progress"><i class="fas fa-cog fa-spin"></i>In Progress</span></td>
-                                <td class="action-cell">
-                                    <button class="btn btn-sm btn-outline-secondary me-1" onclick="viewVehicleDetails('SRV-2023-003')">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-primary" onclick="updateVehicleStatus('SRV-2023-003')">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- Empty State (hidden by default) -->
-                <div class="empty-state" id="underServiceEmptyState" style="display: none;">
-                    <i class="fas fa-car"></i>
-                    <h4>No vehicles under service</h4>
-                    <p>There are currently no vehicles in the service process. New service vehicles will appear here.</p>
-                    <button class="btn-premium primary" onclick="location.href='/service-requests/new'">
-                        <i class="fas fa-plus"></i>
-                        <span>Add New Service Request</span>
-                    </button>
-                </div>
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <p class="footer-text">
+                    &copy; 2025 <span class="footer-brand">Albany</span>. All Rights Reserved.
+                </p>
             </div>
+        </footer>
+    </main>
+</div>
 
-            <!-- Completed Vehicles Tab -->
-            <div class="tab-pane fade" id="completed" role="tabpanel" aria-labelledby="completed-tab">
-                <!-- Search Box -->
-                <div class="search-box">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" class="search-input" id="completedSearch" placeholder="Search completed vehicles..." oninput="filterCompletedTable()">
-                </div>
-
-                <!-- Table -->
-                <div class="table-container">
-                    <div class="table-responsive">
-                        <table class="table" id="completedTable">
-                            <thead>
-                            <tr>
-                                <th>Vehicle</th>
-                                <th>Owner</th>
-                                <th>Service ID</th>
-                                <th>Check-in Date</th>
-                                <th>Completion Date</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr>
-                                <td>Nissan Altima - GHI3456</td>
-                                <td>Emily Wilson</td>
-                                <td>#SRV-2022-098</td>
-                                <td>Dec 27, 2022</td>
-                                <td>Jan 5, 2023</td>
-                                <td><span class="status-badge status-completed"><i class="fas fa-check"></i>Completed</span></td>
-                                <td class="action-cell">
-                                    <button class="btn btn-sm btn-outline-secondary me-1" onclick="viewVehicleDetails('SRV-2022-098')">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-primary me-1" onclick="generateInvoice('SRV-2022-098')">
-                                        <i class="fas fa-file-invoice"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-success" onclick="sendToCustomer('SRV-2022-098')">
-                                        <i class="fas fa-envelope"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>Chevrolet Malibu - JKL7890</td>
-                                <td>David Thompson</td>
-                                <td>#SRV-2022-099</td>
-                                <td>Dec 29, 2022</td>
-                                <td>Jan 9, 2023</td>
-                                <td><span class="status-badge status-completed"><i class="fas fa-check"></i>Completed</span></td>
-                                <td class="action-cell">
-                                    <button class="btn btn-sm btn-outline-secondary me-1" onclick="viewVehicleDetails('SRV-2022-099')">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-primary me-1" onclick="generateInvoice('SRV-2022-099')">
-                                        <i class="fas fa-file-invoice"></i>
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-success" onclick="sendToCustomer('SRV-2022-099')">
-                                        <i class="fas fa-envelope"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
+<!-- Filter Vehicles Modal -->
+<div class="modal fade modal-premium" id="filterVehiclesModal" tabindex="-1" aria-labelledby="filterVehiclesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="filterVehiclesModalLabel">
+                    <i class="fas fa-filter"></i>
+                    Filter Vehicles
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="filterVehiclesForm">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="filterByVehicleType" class="form-label">Vehicle Type</label>
+                            <select class="form-select" id="filterByVehicleType">
+                                <option value="">All Types</option>
+                                <option value="Car">Car</option>
+                                <option value="Bike">Bike</option>
+                                <option value="Truck">Truck</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="filterByServiceType" class="form-label">Service Type</label>
+                            <select class="form-select" id="filterByServiceType">
+                                <option value="">All Service Types</option>
+                                <option value="Oil Change">Oil Change</option>
+                                <option value="Brake Service">Brake Service</option>
+                                <option value="Tire Rotation">Tire Rotation</option>
+                                <option value="Engine Repair">Engine Repair</option>
+                                <option value="Transmission Service">Transmission Service</option>
+                                <option value="Regular Maintenance">Regular Maintenance</option>
+                                <option value="Battery Replacement">Battery Replacement</option>
+                                <option value="Diagnostics">Diagnostics</option>
+                            </select>
+                        </div>
                     </div>
-                </div>
-
-                <!-- Empty State (hidden by default) -->
-                <div class="empty-state" id="completedEmptyState" style="display: none;">
-                    <i class="fas fa-clipboard-check"></i>
-                    <h4>No completed vehicles</h4>
-                    <p>There are currently no completed service vehicles. Vehicles will appear here once service is completed.</p>
-                </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="filterByStatus" class="form-label">Status</label>
+                            <select class="form-select" id="filterByStatus">
+                                <option value="">All Statuses</option>
+                                <option value="Received">Received</option>
+                                <option value="Diagnosis">Diagnosis</option>
+                                <option value="Repair">Repair</option>
+                                <option value="Completed">Completed</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="filterByPaymentStatus" class="form-label">Payment Status</label>
+                            <select class="form-select" id="filterByPaymentStatus">
+                                <option value="">All Payment Statuses</option>
+                                <option value="Pending">Pending</option>
+                                <option value="Paid">Paid</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="filterDateFrom" class="form-label">From Date</label>
+                            <input type="date" class="form-control" id="filterDateFrom">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="filterDateTo" class="form-label">To Date</label>
+                            <input type="date" class="form-control" id="filterDateTo">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-premium secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn-premium primary" id="applyFilterBtn">
+                    <i class="fas fa-check"></i>
+                    Apply Filters
+                </button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Bootstrap JS Bundle with Popper -->
+<!-- View Service Details Modal -->
+<div class="modal fade modal-premium" id="viewServiceDetailsModal" tabindex="-1" aria-labelledby="viewServiceDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewServiceDetailsModalLabel">
+                    <i class="fas fa-info-circle"></i>
+                    Service Details
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="service-detail-row">
+                    <div class="service-detail-col">
+                        <div class="detail-label">Service ID</div>
+                        <div class="detail-value" id="viewServiceId">REQ-1001</div>
+                    </div>
+                    <div class="service-detail-col">
+                        <div class="detail-label">Status</div>
+                        <div class="detail-value" id="viewStatus">
+                            <span class="status-badge status-repair">
+                                <i class="fas fa-wrench"></i> Repair
+                            </span>
+                        </div>
+                    </div>
+                    <div class="service-detail-col">
+                        <div class="detail-label">Start Date</div>
+                        <div class="detail-value" id="viewStartDate">April 10, 2025</div>
+                    </div>
+                </div>
+
+                <div class="service-detail-row">
+                    <div class="service-detail-col">
+                        <div class="detail-label">Vehicle</div>
+                        <div class="detail-value" id="viewVehicleName">Honda City</div>
+                    </div>
+                    <div class="service-detail-col">
+                        <div class="detail-label">Registration Number</div>
+                        <div class="detail-value" id="viewRegistrationNumber">MH02AB1234</div>
+                    </div>
+                    <div class="service-detail-col">
+                        <div class="detail-label">Vehicle Category</div>
+                        <div class="detail-value" id="viewVehicleCategory">Car</div>
+                    </div>
+                </div>
+
+                <div class="service-detail-row">
+                    <div class="service-detail-col">
+                        <div class="detail-label">Customer</div>
+                        <div class="detail-value" id="viewCustomerName">Rajesh Kumar</div>
+                    </div>
+                    <div class="service-detail-col">
+                        <div class="detail-label">Contact</div>
+                        <div class="detail-value" id="viewCustomerContact">+91 98765 43210</div>
+                    </div>
+                    <div class="service-detail-col">
+                        <div class="detail-label">Membership</div>
+                        <div class="detail-value" id="viewMembership">Premium</div>
+                    </div>
+                </div>
+
+                <div class="service-detail-row">
+                    <div class="service-detail-col">
+                        <div class="detail-label">Service Type</div>
+                        <div class="detail-value" id="viewServiceType">Engine Repair</div>
+                    </div>
+                    <div class="service-detail-col">
+                        <div class="detail-label">Estimated Completion</div>
+                        <div class="detail-value" id="viewEstimatedCompletion">April 15, 2025</div>
+                    </div>
+                    <div class="service-detail-col">
+                        <div class="detail-label">Service Advisor</div>
+                        <div class="detail-value" id="viewServiceAdvisor">Amit Sharma</div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="detail-label">Service Description</div>
+                    <div class="detail-value" id="viewServiceDescription">
+                        <p>Vehicle is showing check engine light and making unusual noise when accelerating.</p>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <h5>Work Progress</h5>
+                    <div class="progress mt-2" style="height: 20px;">
+                        <div class="progress-bar bg-wine" role="progressbar" style="width: 65%;" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100">65%</div>
+                    </div>
+                    <p class="text-muted mt-2" id="viewProgressNotes">Current work: Replacing engine timing components and testing.</p>
+                </div>
+
+                <div id="materialsSection">
+                    <h5 class="mt-4 mb-3">Materials Used</h5>
+                    <table class="materials-table" id="materialsTable">
+                        <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Quantity</th>
+                            <th>Unit Price</th>
+                            <th>Total</th>
+                        </tr>
+                        </thead>
+                        <tbody id="materialsTableBody">
+                        <!-- Will be populated dynamically -->
+                        <tr>
+                            <td>Engine Timing Belt</td>
+                            <td>1</td>
+                            <td>₹2,500.00</td>
+                            <td>₹2,500.00</td>
+                        </tr>
+                        <tr>
+                            <td>Timing Belt Tensioner</td>
+                            <td>1</td>
+                            <td>₹1,200.00</td>
+                            <td>₹1,200.00</td>
+                        </tr>
+                        <tr>
+                            <td>Engine Oil</td>
+                            <td>4</td>
+                            <td>₹800.00</td>
+                            <td>₹3,200.00</td>
+                        </tr>
+                        <tr>
+                            <td>Oil Filter</td>
+                            <td>1</td>
+                            <td>₹350.00</td>
+                            <td>₹350.00</td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" class="text-end">Materials Total</td>
+                            <td>₹7,250.00</td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                    <h5 class="mt-4 mb-3">Labor Charges</h5>
+                    <table class="labor-charges-table" id="laborChargesTable">
+                        <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Hours</th>
+                            <th>Rate/Hour</th>
+                            <th>Total</th>
+                        </tr>
+                        </thead>
+                        <tbody id="laborChargesTableBody">
+                        <!-- Will be populated dynamically -->
+                        <tr>
+                            <td>Engine Timing Belt Replacement</td>
+                            <td>3.5</td>
+                            <td>₹800.00</td>
+                            <td>₹2,800.00</td>
+                        </tr>
+                        <tr>
+                            <td>Engine Diagnostics</td>
+                            <td>1.0</td>
+                            <td>₹600.00</td>
+                            <td>₹600.00</td>
+                        </tr>
+                        <tr>
+                            <td>Oil Change</td>
+                            <td>0.5</td>
+                            <td>₹400.00</td>
+                            <td>₹200.00</td>
+                        </tr>
+                        <tr>
+                            <td colspan="3" class="text-end">Labor Total</td>
+                            <td>₹3,600.00</td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="invoice-summary">
+                        <div class="invoice-summary-row">
+                            <div class="invoice-summary-label">Materials Total</div>
+                            <div class="invoice-summary-value">₹7,250.00</div>
+                        </div>
+                        <div class="invoice-summary-row">
+                            <div class="invoice-summary-label">Labor Total</div>
+                            <div class="invoice-summary-value">₹3,600.00</div>
+                        </div>
+                        <div class="invoice-summary-row">
+                            <div class="invoice-summary-label">Subtotal</div>
+                            <div class="invoice-summary-value">₹10,850.00</div>
+                        </div>
+                        <div class="invoice-summary-row">
+                            <div class="invoice-summary-label">GST (18%)</div>
+                            <div class="invoice-summary-value">₹1,953.00</div>
+                        </div>
+                        <div class="invoice-summary-row">
+                            <div class="invoice-summary-label">Grand Total</div>
+                            <div class="invoice-summary-value">₹12,803.00</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer" id="underServiceFooter">
+                <button type="button" class="btn-premium secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn-premium primary" id="updateStatusBtn">
+                    <i class="fas fa-edit"></i>
+                    Update Status
+                </button>
+            </div>
+            <div class="modal-footer" id="completedServiceFooter" style="display: none;">
+                <button type="button" class="btn-premium secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn-action info" id="viewInvoiceBtn">
+                    <i class="fas fa-file-invoice"></i>
+                    View Invoice
+                </button>
+                <button type="button" class="btn-premium primary" id="generateInvoiceBtn">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    Generate Invoice
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Generate Invoice Modal -->
+<div class="modal fade modal-premium" id="generateInvoiceModal" tabindex="-1" aria-labelledby="generateInvoiceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="generateInvoiceModalLabel">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    Generate Invoice
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info mb-4">
+                    <i class="fas fa-info-circle me-2"></i>
+                    You are about to generate an invoice for service <strong id="invoiceServiceId">REQ-1001</strong> for customer <strong id="invoiceCustomerName">Rajesh Kumar</strong>. The invoice will be sent to the customer's email address.
+                </div>
+
+                <div class="service-detail-row">
+                    <div class="service-detail-col">
+                        <div class="detail-label">Vehicle</div>
+                        <div class="detail-value" id="invoiceVehicleName">Honda City</div>
+                    </div>
+                    <div class="service-detail-col">
+                        <div class="detail-label">Registration Number</div>
+                        <div class="detail-value" id="invoiceRegistrationNumber">MH02AB1234</div>
+                    </div>
+                    <div class="service-detail-col">
+                        <div class="detail-label">Service Type</div>
+                        <div class="detail-value" id="invoiceServiceType">Engine Repair</div>
+                    </div>
+                </div>
+
+                <div class="invoice-summary">
+                    <div class="invoice-summary-row">
+                        <div class="invoice-summary-label">Materials Total</div>
+                        <div class="invoice-summary-value" id="invoiceMaterialsTotal">₹7,250.00</div>
+                    </div>
+                    <div class="invoice-summary-row">
+                        <div class="invoice-summary-label">Labor Total</div>
+                        <div class="invoice-summary-value" id="invoiceLaborTotal">₹3,600.00</div>
+                    </div>
+                    <div class="invoice-summary-row">
+                        <div class="invoice-summary-label">Subtotal</div>
+                        <div class="invoice-summary-value" id="invoiceSubtotal">₹10,850.00</div>
+                    </div>
+                    <div class="invoice-summary-row">
+                        <div class="invoice-summary-label">GST (18%)</div>
+                        <div class="invoice-summary-value" id="invoiceGST">₹1,953.00</div>
+                    </div>
+                    <div class="invoice-summary-row">
+                        <div class="invoice-summary-label">Grand Total</div>
+                        <div class="invoice-summary-value" id="invoiceGrandTotal">₹12,803.00</div>
+                    </div>
+                </div>
+
+                <div class="form-group mt-4">
+                    <label for="invoiceNotes" class="form-label">Additional Notes</label>
+                    <textarea class="form-control" id="invoiceNotes" rows="3" placeholder="Add any additional notes to be included in the invoice"></textarea>
+                </div>
+
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" value="" id="sendEmailCheck" checked>
+                    <label class="form-check-label" for="sendEmailCheck">
+                        Send invoice to customer via email
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-premium secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn-premium primary" id="confirmGenerateInvoiceBtn">
+                    <i class="fas fa-paper-plane"></i>
+                    Generate & Send Invoice
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mark as Paid Modal -->
+<div class="modal fade modal-premium" id="markAsPaidModal" tabindex="-1" aria-labelledby="markAsPaidModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="markAsPaidModalLabel">
+                    <i class="fas fa-money-bill-wave"></i>
+                    Mark Payment as Received
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info mb-4">
+                    <i class="fas fa-info-circle me-2"></i>
+                    You are about to mark the payment for service <strong id="paidServiceId">REQ-1001</strong> as received.
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="paymentMethod" class="form-label">Payment Method</label>
+                    <select class="form-select" id="paymentMethod" required>
+                        <option value="">Select Payment Method</option>
+                        <option value="UPI">UPI</option>
+                        <option value="Card">Credit/Debit Card</option>
+                        <option value="Net Banking">Net Banking</option>
+                        <option value="Cash">Cash</option>
+                    </select>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="transactionId" class="form-label">Transaction ID</label>
+                    <input type="text" class="form-control" id="transactionId" placeholder="Enter transaction ID">
+                    <small class="form-text text-muted">Enter transaction ID or reference number (if available)</small>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="paidAmount" class="form-label">Amount Paid</label>
+                    <div class="input-group">
+                        <span class="input-group-text">₹</span>
+                        <input type="number" class="form-control" id="paidAmount" placeholder="Enter amount" value="12803" required>
+                    </div>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="paymentNotes" class="form-label">Payment Notes</label>
+                    <textarea class="form-control" id="paymentNotes" rows="2" placeholder="Optional notes about this payment"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-premium secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn-premium primary" id="confirmMarkAsPaidBtn">
+                    <i class="fas fa-check-circle"></i>
+                    Confirm Payment
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Dispatch Vehicle Modal -->
+<div class="modal fade modal-premium" id="dispatchVehicleModal" tabindex="-1" aria-labelledby="dispatchVehicleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="dispatchVehicleModalLabel">
+                    <i class="fas fa-truck"></i>
+                    Dispatch Vehicle
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info mb-4">
+                    <i class="fas fa-info-circle me-2"></i>
+                    You are about to dispatch the vehicle <strong id="dispatchVehicleName">Honda City</strong> with registration number <strong id="dispatchRegistrationNumber">MH02AB1234</strong>.
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="handoverPerson" class="form-label">Handed Over To</label>
+                    <input type="text" class="form-control" id="handoverPerson" placeholder="Enter name of person receiving the vehicle" required>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="dispatchNotes" class="form-label">Dispatch Notes</label>
+                    <textarea class="form-control" id="dispatchNotes" rows="3" placeholder="Enter any notes or instructions for the customer"></textarea>
+                </div>
+
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="confirmDispatchCheck" required>
+                    <label class="form-check-label" for="confirmDispatchCheck">
+                        I confirm that all service work has been completed and payment has been received
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-premium secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn-premium primary" id="confirmDispatchBtn">
+                    <i class="fas fa-check-circle"></i>
+                    Confirm Dispatch
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade success-modal" id="successModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="success-icon-container">
+                    <div class="success-icon-wrapper">
+                        <div class="success-icon">
+                            <i class="fas fa-check"></i>
+                        </div>
+                    </div>
+                </div>
+                <h3 class="success-title" id="successTitle">Success!</h3>
+                <p class="success-message" id="successMessage">Operation completed successfully.</p>
+                <button type="button" class="continue-btn" data-bs-dismiss="modal">
+                    <i class="fas fa-check-circle"></i>
+                    Continue
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- jQuery and Bootstrap JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 
-<!-- Custom JavaScript -->
 <script>
-    // Toggle mobile menu
-    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-    const sidebar = document.getElementById('sidebar');
-
-    if (mobileMenuToggle) {
-        mobileMenuToggle.addEventListener('click', function() {
-            sidebar.classList.toggle('show');
-
-            // Change icon based on sidebar state
-            const icon = this.querySelector('i');
-            if (sidebar.classList.contains('show')) {
-                icon.classList.remove('fa-bars');
-                icon.classList.add('fa-times');
-            } else {
-                icon.classList.remove('fa-times');
-                icon.classList.add('fa-bars');
-            }
-        });
-    }
-
-    // Close sidebar when clicking outside on mobile
-    document.addEventListener('click', function(event) {
-        const isClickInsideSidebar = sidebar.contains(event.target);
-        const isClickOnToggle = mobileMenuToggle.contains(event.target);
-
-        if (window.innerWidth < 992 && !isClickInsideSidebar && !isClickOnToggle && sidebar.classList.contains('show')) {
-            sidebar.classList.remove('show');
-
-            // Reset icon
-            const icon = mobileMenuToggle.querySelector('i');
-            icon.classList.remove('fa-times');
-            icon.classList.add('fa-bars');
-        }
-    });
-
-    // Handle window resize
-    window.addEventListener('resize', function() {
-        if (window.innerWidth >= 992) {
-            sidebar.classList.remove('show');
-
-            // Reset icon
-            const icon = mobileMenuToggle.querySelector('i');
-            icon.classList.remove('fa-times');
-            icon.classList.add('fa-bars');
-        }
-    });
-
-    // Table search functionality for Under Service tab
-    function filterUnderServiceTable() {
-        const input = document.getElementById('underServiceSearch');
-        const filter = input.value.toUpperCase();
-        const table = document.getElementById('underServiceTable');
-        const rows = table.getElementsByTagName('tr');
-        let visibleRows = 0;
-
-        // Loop through all table rows except the header
-        for (let i = 1; i < rows.length; i++) {
-            let showRow = false;
-            const cells = rows[i].getElementsByTagName('td');
-
-            // Loop through all cells in the row
-            for (let j = 0; j < cells.length; j++) {
-                const cell = cells[j];
-                if (cell) {
-                    const textValue = cell.textContent || cell.innerText;
-                    if (textValue.toUpperCase().indexOf(filter) > -1) {
-                        showRow = true;
-                        break;
-                    }
-                }
-            }
-
-            // Show/hide the row based on search
-            if (showRow) {
-                rows[i].style.display = '';
-                visibleRows++;
-            } else {
-                rows[i].style.display = 'none';
-            }
-        }
-
-        // Show empty state if no rows match the search
-        const emptyState = document.getElementById('underServiceEmptyState');
-        const tableContainer = table.closest('.table-container');
-
-        if (visibleRows === 0) {
-            tableContainer.style.display = 'none';
-            emptyState.style.display = 'flex';
-        } else {
-            tableContainer.style.display = 'block';
-            emptyState.style.display = 'none';
-        }
-    }
-
-    // Table search functionality for Completed tab
-    function filterCompletedTable() {
-        const input = document.getElementById('completedSearch');
-        const filter = input.value.toUpperCase();
-        const table = document.getElementById('completedTable');
-        const rows = table.getElementsByTagName('tr');
-        let visibleRows = 0;
-
-        // Loop through all table rows except the header
-        for (let i = 1; i < rows.length; i++) {
-            let showRow = false;
-            const cells = rows[i].getElementsByTagName('td');
-
-            // Loop through all cells in the row
-            for (let j = 0; j < cells.length; j++) {
-                const cell = cells[j];
-                if (cell) {
-                    const textValue = cell.textContent || cell.innerText;
-                    if (textValue.toUpperCase().indexOf(filter) > -1) {
-                        showRow = true;
-                        break;
-                    }
-                }
-            }
-
-            // Show/hide the row based on search
-            if (showRow) {
-                rows[i].style.display = '';
-                visibleRows++;
-            } else {
-                rows[i].style.display = 'none';
-            }
-        }
-
-        // Show empty state if no rows match the search
-        const emptyState = document.getElementById('completedEmptyState');
-        const tableContainer = table.closest('.table-container');
-
-        if (visibleRows === 0) {
-            tableContainer.style.display = 'none';
-            emptyState.style.display = 'flex';
-        } else {
-            tableContainer.style.display = 'block';
-            emptyState.style.display = 'none';
-        }
-    }
-
-    // Check if tables have data on page load
+    // Vehicles Page JavaScript
     document.addEventListener('DOMContentLoaded', function() {
-        checkTableData('underServiceTable', 'underServiceEmptyState');
-        checkTableData('completedTable', 'completedEmptyState');
+        // Initialize app
+        initializeApp();
 
-        // Initialize tabs with event listeners
-        const tabs = document.querySelectorAll('button[data-bs-toggle="tab"]');
-        tabs.forEach(tab => {
-            tab.addEventListener('shown.bs.tab', function(e) {
-                if (e.target.id === 'under-service-tab') {
-                    checkTableData('underServiceTable', 'underServiceEmptyState');
-                } else if (e.target.id === 'completed-tab') {
-                    checkTableData('completedTable', 'completedEmptyState');
+        // Set up event listeners
+        setupEventListeners();
+
+        // Load vehicles under service
+        loadVehiclesUnderService();
+
+        // Load completed services
+        loadCompletedServices();
+    });
+
+    // Global variables
+    let vehiclesUnderService = [];
+    let completedServices = [];
+    let currentServicePage = 1;
+    let currentCompletedPage = 1;
+    const itemsPerPage = 5;
+
+    // Initialize app
+    function initializeApp() {
+        // Setup mobile menu toggle
+        setupMobileMenu();
+
+        // Setup logout button
+        setupLogout();
+
+        // Set up token-based authentication
+        setupAuthentication();
+
+        // Set current date if element exists
+        setupDateDisplay();
+    }
+
+    function setupMobileMenu() {
+        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+        if (mobileMenuToggle) {
+            mobileMenuToggle.addEventListener('click', function() {
+                document.getElementById('sidebar').classList.toggle('active');
+            });
+        }
+    }
+
+    function setupLogout() {
+        const logoutBtn = document.querySelector('.logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', function() {
+                // Show confirmation dialog
+                if (confirm('Are you sure you want to logout?')) {
+                    // Clear storage
+                    localStorage.removeItem("jwt-token");
+                    sessionStorage.removeItem("jwt-token");
+                    localStorage.removeItem("user-role");
+                    localStorage.removeItem("user-name");
+                    sessionStorage.removeItem("user-role");
+                    sessionStorage.removeItem("user-name");
+
+                    // Redirect to logout
+                    window.location.href = '/admin/logout';
+                }
+            });
+        }
+    }
+
+    function setupDateDisplay() {
+        const dateElement = document.getElementById('current-date');
+        if (dateElement) {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const today = new Date();
+            dateElement.textContent = today.toLocaleDateString('en-US', options);
+        }
+    }
+
+    function setupAuthentication() {
+        // Get token from storage
+        const tokenFromStorage = localStorage.getItem("jwt-token") || sessionStorage.getItem("jwt-token");
+
+        if (tokenFromStorage) {
+            console.log("Token found in storage");
+
+            // Check if current URL already has a token parameter
+            const currentUrl = new URL(window.location.href);
+            const urlToken = currentUrl.searchParams.get('token');
+
+            // If URL doesn't have the token, update all navigation links
+            if (!urlToken) {
+                // Add token to all sidebar navigation links
+                document.querySelectorAll('.sidebar-menu-link').forEach(link => {
+                    const href = link.getAttribute('href');
+                    if (href && !href.includes('token=')) {
+                        const separator = href.includes('?') ? '&' : '?';
+                        link.setAttribute('href', href + separator + 'token=' + encodeURIComponent(tokenFromStorage));
+                    }
+                });
+
+                // Add token to current URL for refresh protection
+                if (window.location.href.indexOf('token=') === -1) {
+                    const separator = window.location.href.indexOf('?') === -1 ? '?' : '&';
+                    const newUrl = window.location.href + separator + 'token=' + encodeURIComponent(tokenFromStorage);
+                    window.history.replaceState({}, document.title, newUrl);
+                }
+            }
+        } else {
+            console.warn("No token found in storage");
+            // If no token is found, redirect to login
+            window.location.href = '/admin/login?error=session_expired';
+        }
+    }
+
+    function setupEventListeners() {
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('keyup', function() {
+                const activeTab = document.querySelector('.tab-pane.active');
+                if (activeTab.id === 'under-service-tab-pane') {
+                    filterVehiclesUnderService(this.value);
+                } else if (activeTab.id === 'completed-tab-pane') {
+                    filterCompletedServices(this.value);
+                }
+            });
+        }
+
+        // Table search for Vehicles Under Service
+        const serviceTableSearchInput = document.querySelector('#under-service-tab-pane .search-input-sm');
+        if (serviceTableSearchInput) {
+            serviceTableSearchInput.addEventListener('keyup', function() {
+                filterTableRows(this.value, 'vehiclesUnderServiceTable');
+            });
+        }
+
+        // Table search for Completed Services
+        const completedTableSearchInput = document.querySelector('#completed-tab-pane .search-input-sm');
+        if (completedTableSearchInput) {
+            completedTableSearchInput.addEventListener('keyup', function() {
+                filterTableRows(this.value, 'completedServicesTable');
+            });
+        }
+
+        // Table pagination for Vehicles Under Service
+        document.querySelectorAll('#paginationService .page-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (!this.parentElement.classList.contains('disabled')) {
+                    const page = this.getAttribute('data-page');
+                    if (page) {
+                        currentServicePage = parseInt(page);
+                        updateServicePagination();
+                        showVehiclesUnderServicePage(currentServicePage);
+                    }
                 }
             });
         });
-    });
 
-    function checkTableData(tableId, emptyStateId) {
-        const table = document.getElementById(tableId);
-        const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
-        const emptyState = document.getElementById(emptyStateId);
-        const tableContainer = table.closest('.table-container');
+        // Table pagination for Completed Services
+        document.querySelectorAll('#paginationCompleted .page-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (!this.parentElement.classList.contains('disabled')) {
+                    const page = this.getAttribute('data-page');
+                    if (page) {
+                        currentCompletedPage = parseInt(page);
+                        updateCompletedPagination();
+                        showCompletedServicesPage(currentCompletedPage);
+                    }
+                }
+            });
+        });
 
-        if (rows.length === 0) {
-            tableContainer.style.display = 'none';
-            emptyState.style.display = 'flex';
-        } else {
-            tableContainer.style.display = 'block';
-            emptyState.style.display = 'none';
-        }
-    }
-
-    // Vehicle management functions
-    function viewVehicleDetails(serviceId) {
-        console.log(`Viewing details for service ${serviceId}`);
-        // Implement view details functionality
-        // This could open a modal or navigate to a details page
-        window.location.href = `/vehicles/details/${serviceId}`;
-    }
-
-    function updateVehicleStatus(serviceId) {
-        console.log(`Updating status for service ${serviceId}`);
-        // Implement status update functionality
-        // This could open a modal with status options
-        alert(`Updating status for service ${serviceId}`);
-    }
-
-    function generateInvoice(serviceId) {
-        console.log(`Generating invoice for service ${serviceId}`);
-        // Implement invoice generation
-        window.location.href = `/invoices/generate/${serviceId}`;
-    }
-
-    function sendToCustomer(serviceId) {
-        console.log(`Sending invoice to customer for service ${serviceId}`);
-        // Implement sending functionality
-        alert(`Sending invoice to customer for service ${serviceId}`);
-    }
-
-    // Current page highlighting
-    document.addEventListener('DOMContentLoaded', function() {
-        // Get current URL path
-        const path = window.location.pathname;
-
-        // Find sidebar links
-        const sidebarLinks = document.querySelectorAll('.sidebar-menu-link');
-
-        // Remove active class from all links
-        sidebarLinks.forEach(link => {
-            if (link.getAttribute('href') === path) {
-                link.classList.add('active');
+        // Previous & Next buttons for Vehicles Under Service
+        document.getElementById('prevBtnService').addEventListener('click', function(e) {
+            e.preventDefault();
+            if (currentServicePage > 1) {
+                currentServicePage--;
+                updateServicePagination();
+                showVehiclesUnderServicePage(currentServicePage);
             }
         });
-    });
+
+        document.getElementById('nextBtnService').addEventListener('click', function(e) {
+            e.preventDefault();
+            const totalPages = Math.ceil(vehiclesUnderService.length / itemsPerPage);
+            if (currentServicePage < totalPages) {
+                currentServicePage++;
+                updateServicePagination();
+                showVehiclesUnderServicePage(currentServicePage);
+            }
+        });
+
+        // Previous & Next buttons for Completed Services
+        document.getElementById('prevBtnCompleted').addEventListener('click', function(e) {
+            e.preventDefault();
+            if (currentCompletedPage > 1) {
+                currentCompletedPage--;
+                updateCompletedPagination();
+                showCompletedServicesPage(currentCompletedPage);
+            }
+        });
+
+        document.getElementById('nextBtnCompleted').addEventListener('click', function(e) {
+            e.preventDefault();
+            const totalPages = Math.ceil(completedServices.length / itemsPerPage);
+            if (currentCompletedPage < totalPages) {
+                currentCompletedPage++;
+                updateCompletedPagination();
+                showCompletedServicesPage(currentCompletedPage);
+            }
+        });
+
+        // Generate Invoice button click
+        document.getElementById('generateInvoiceBtn').addEventListener('click', function() {
+            // Get service ID from the current service details modal
+            const serviceId = document.getElementById('viewServiceId').textContent;
+
+            // Find the service in the completed services array
+            const service = completedServices.find(s => s.requestId === parseInt(serviceId.replace('REQ-', '')));
+
+            // If service exists, populate the generate invoice modal
+            if (service) {
+                populateGenerateInvoiceModal(service);
+                $('#viewServiceDetailsModal').modal('hide');
+                $('#generateInvoiceModal').modal('show');
+            }
+        });
+
+        // Confirm Generate Invoice button click
+        document.getElementById('confirmGenerateInvoiceBtn').addEventListener('click', function() {
+            generateInvoice();
+        });
+
+        // Mark as Paid button click
+        document.addEventListener('click', function(e) {
+            if (e.target && e.target.id === 'markAsPaidBtn' || e.target.closest('#markAsPaidBtn')) {
+                const serviceId = e.target.closest('tr').getAttribute('data-id');
+                if (serviceId) {
+                    const service = completedServices.find(s => s.requestId === parseInt(serviceId));
+                    if (service) {
+                        document.getElementById('paidServiceId').textContent = 'REQ-' + service.requestId;
+                        $('#markAsPaidModal').modal('show');
+                    }
+                }
+            }
+        });
+
+        // Confirm Payment button click
+        document.getElementById('confirmMarkAsPaidBtn').addEventListener('click', function() {
+            markAsPaid();
+        });
+
+        // Dispatch Vehicle button click
+        document.addEventListener('click', function(e) {
+            if (e.target && e.target.id === 'dispatchVehicleBtn' || e.target.closest('#dispatchVehicleBtn')) {
+                const serviceId = e.target.closest('tr').getAttribute('data-id');
+                if (serviceId) {
+                    const service = completedServices.find(s => s.requestId === parseInt(serviceId));
+                    if (service) {
+                        document.getElementById('dispatchVehicleName').textContent = service.vehicleName;
+                        document.getElementById('dispatchRegistrationNumber').textContent = service.registrationNumber;
+                        $('#dispatchVehicleModal').modal('show');
+                    }
+                }
+            }
+        });
+
+        // Confirm Dispatch button click
+        document.getElementById('confirmDispatchBtn').addEventListener('click', function() {
+            dispatchVehicle();
+        });
+
+        // Apply Filter button click
+        document.getElementById('applyFilterBtn').addEventListener('click', function() {
+            applyFilters();
+        });
+
+        // Tab change event
+        const vehiclesTabs = document.getElementById('vehiclesTabs');
+        if (vehiclesTabs) {
+            vehiclesTabs.addEventListener('shown.bs.tab', function(e) {
+                // Reset search input
+                document.getElementById('searchInput').value = '';
+
+                // Update UI based on active tab
+                if (e.target.id === 'under-service-tab') {
+                    currentServicePage = 1;
+                    updateServicePagination();
+                    showVehiclesUnderServicePage(currentServicePage);
+                } else if (e.target.id === 'completed-tab') {
+                    currentCompletedPage = 1;
+                    updateCompletedPagination();
+                    showCompletedServicesPage(currentCompletedPage);
+                }
+            });
+        }
+
+        // View Service Details
+        document.addEventListener('click', function(e) {
+            // For view vehicle details button in the under service table
+            if (e.target && (e.target.id === 'viewServiceBtn' || e.target.closest('#viewServiceBtn'))) {
+                const row = e.target.closest('tr');
+                if (row) {
+                    const serviceId = row.getAttribute('data-id');
+                    if (serviceId) {
+                        // Determine which table this is from
+                        const isCompleted = row.closest('#completedServicesTable') !== null;
+
+                        if (isCompleted) {
+                            viewCompletedServiceDetails(serviceId);
+                        } else {
+                            viewServiceUnderServiceDetails(serviceId);
+                        }
+                    }
+                }
+            }
+
+            // For clicking on a row in the under service table
+            if (e.target && e.target.tagName !== 'BUTTON' && e.target.closest('tr') && !e.target.closest('thead')) {
+                const row = e.target.closest('tr');
+                if (row.id !== 'loading-row-service' && row.id !== 'empty-row-service' &&
+                    row.id !== 'loading-row-completed' && row.id !== 'empty-row-completed') {
+                    const serviceId = row.getAttribute('data-id');
+                    if (serviceId) {
+                        // Determine which table this is from
+                        const isCompleted = row.closest('#completedServicesTable') !== null;
+
+                        if (isCompleted) {
+                            viewCompletedServiceDetails(serviceId);
+                        } else {
+                            viewServiceUnderServiceDetails(serviceId);
+                        }
+                    }
+                }
+            }
+        });
+
+        // Update Status button click
+        document.getElementById('updateStatusBtn').addEventListener('click', function() {
+            const serviceId = document.getElementById('viewServiceId').textContent.replace('REQ-', '');
+            updateServiceStatus(serviceId);
+        });
+    }
+
+    // Filter vehicles under service
+    function filterVehiclesUnderService(searchText) {
+        if (!searchText || searchText.trim() === '') {
+            // Reset to show all vehicles
+            showVehiclesUnderServicePage(currentServicePage);
+            updateServicePagination();
+            return;
+        }
+
+        searchText = searchText.toLowerCase().trim();
+
+        // Filter vehicles based on search text
+        const filteredVehicles = vehiclesUnderService.filter(vehicle => {
+            return (
+                (vehicle.vehicleName && vehicle.vehicleName.toLowerCase().includes(searchText)) ||
+                (vehicle.registrationNumber && vehicle.registrationNumber.toLowerCase().includes(searchText)) ||
+                (vehicle.customerName && vehicle.customerName.toLowerCase().includes(searchText)) ||
+                (vehicle.serviceType && vehicle.serviceType.toLowerCase().includes(searchText)) ||
+                (vehicle.status && vehicle.status.toLowerCase().includes(searchText)) ||
+                (vehicle.serviceAdvisorName && vehicle.serviceAdvisorName.toLowerCase().includes(searchText))
+            );
+        });
+
+        // Display filtered vehicles
+        displayVehiclesUnderService(filteredVehicles);
+
+        // Update pagination
+        updateServicePagination(filteredVehicles.length);
+    }
+
+    // Filter completed services
+    function filterCompletedServices(searchText) {
+        if (!searchText || searchText.trim() === '') {
+            // Reset to show all services
+            showCompletedServicesPage(currentCompletedPage);
+            updateCompletedPagination();
+            return;
+        }
+
+        searchText = searchText.toLowerCase().trim();
+
+        // Filter services based on search text
+        const filteredServices = completedServices.filter(service => {
+            return (
+                (service.vehicleName && service.vehicleName.toLowerCase().includes(searchText)) ||
+                (service.registrationNumber && service.registrationNumber.toLowerCase().includes(searchText)) ||
+                (service.customerName && service.customerName.toLowerCase().includes(searchText)) ||
+                (service.serviceType && service.serviceType.toLowerCase().includes(searchText)) ||
+                (service.paymentStatus && service.paymentStatus.toLowerCase().includes(searchText))
+            );
+        });
+
+        // Display filtered services
+        displayCompletedServices(filteredServices);
+
+        // Update pagination
+        updateCompletedPagination(filteredServices.length);
+    }
+
+    // Filter table rows
+    function filterTableRows(searchText, tableId) {
+        const table = document.getElementById(tableId);
+        if (!table) return;
+
+        const rows = table.querySelectorAll('tbody tr');
+        if (!rows.length) return;
+
+        searchText = searchText.toLowerCase().trim();
+
+        rows.forEach(row => {
+            if (row.id.includes('loading-row') || row.id.includes('empty-row')) {
+                return; // Skip loading and empty rows
+            }
+
+            const text = row.textContent.toLowerCase();
+            if (text.includes(searchText) || !searchText) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    // Load vehicles under service
+    function loadVehiclesUnderService() {
+        // Show loading spinner
+        document.getElementById('loading-row-service').style.display = '';
+        document.getElementById('empty-row-service').style.display = 'none';
+
+        // Here you would typically make an API call to fetch vehicles under service
+        // For demonstration, we'll use mock data
+        setTimeout(() => {
+            vehiclesUnderService = [
+                {
+                    requestId: 1001,
+                    vehicleName: 'Honda City',
+                    registrationNumber: 'MH02AB1234',
+                    customerName: 'Rajesh Kumar',
+                    customerEmail: 'rajesh.kumar@example.com',
+                    customerPhone: '+91 9876543210',
+                    customerMembership: 'Premium',
+                    serviceType: 'Engine Repair',
+                    status: 'Diagnosis',
+                    serviceAdvisorName: 'Amit Sharma',
+                    serviceAdvisorId: 'SA-001',
+                    startDate: '2025-04-10',
+                    estimatedCompletion: '2025-04-15',
+                    progressPercentage: 45,
+                    progressNotes: 'Engine teardown complete, waiting for parts.',
+                    vehicleCategory: 'Car',
+                    description: 'Vehicle is showing check engine light and making unusual noise when accelerating.'
+                },
+                {
+                    requestId: 1002,
+                    vehicleName: 'Royal Enfield Classic 350',
+                    registrationNumber: 'KA03CD5678',
+                    customerName: 'Priya Sharma',
+                    customerEmail: 'priya.sharma@example.com',
+                    customerPhone: '+91 8765432109',
+                    customerMembership: 'Standard',
+                    serviceType: 'Regular Maintenance',
+                    status: 'Repair',
+                    serviceAdvisorName: 'Vijay Mehta',
+                    serviceAdvisorId: 'SA-003',
+                    startDate: '2025-04-12',
+                    estimatedCompletion: '2025-04-14',
+                    progressPercentage: 75,
+                    progressNotes: 'Oil change done, brake adjustment in progress.',
+                    vehicleCategory: 'Bike',
+                    description: 'Regular 5000km service and brake adjustment.'
+                },
+                {
+                    requestId: 1003,
+                    vehicleName: 'Maruti Suzuki Swift',
+                    registrationNumber: 'DL05EF9012',
+                    customerName: 'Aditya Singh',
+                    customerEmail: 'aditya.singh@example.com',
+                    customerPhone: '+91 7654321098',
+                    customerMembership: 'Premium',
+                    serviceType: 'Brake Service',
+                    status: 'Repair',
+                    serviceAdvisorName: 'Ravi Kapoor',
+                    serviceAdvisorId: 'SA-002',
+                    startDate: '2025-04-11',
+                    estimatedCompletion: '2025-04-13',
+                    progressPercentage: 80,
+                    progressNotes: 'Brake pads replaced, testing brake system.',
+                    vehicleCategory: 'Car',
+                    description: 'Brake pads worn out, need replacement. Also check brake fluid.'
+                },
+                {
+                    requestId: 1004,
+                    vehicleName: 'Tata Nexon',
+                    registrationNumber: 'TN07GH3456',
+                    customerName: 'Kavita Patel',
+                    customerEmail: 'kavita.patel@example.com',
+                    customerPhone: '+91 6543210987',
+                    customerMembership: 'Standard',
+                    serviceType: 'Battery Replacement',
+                    status: 'Diagnosis',
+                    serviceAdvisorName: 'Pradeep Kumar',
+                    serviceAdvisorId: 'SA-004',
+                    startDate: '2025-04-13',
+                    estimatedCompletion: '2025-04-14',
+                    progressPercentage: 30,
+                    progressNotes: 'Testing electrical system to confirm battery issue.',
+                    vehicleCategory: 'Car',
+                    description: 'Vehicle not starting, suspecting battery failure.'
+                },
+                {
+                    requestId: 1005,
+                    vehicleName: 'Yamaha FZ',
+                    registrationNumber: 'KL09IJ7890',
+                    customerName: 'Rahul Menon',
+                    customerEmail: 'rahul.menon@example.com',
+                    customerPhone: '+91 5432109876',
+                    customerMembership: 'Standard',
+                    serviceType: 'Tire Rotation',
+                    status: 'Received',
+                    serviceAdvisorName: 'Not Assigned',
+                    serviceAdvisorId: 'N/A',
+                    startDate: '2025-04-14',
+                    estimatedCompletion: '2025-04-15',
+                    progressPercentage: 0,
+                    progressNotes: 'Vehicle received, awaiting service advisor assignment.',
+                    vehicleCategory: 'Bike',
+                    description: 'Tire rotation and wheel alignment check.'
+                },
+                {
+                    requestId: 1006,
+                    vehicleName: 'Hyundai Creta',
+                    registrationNumber: 'UP11KL2345',
+                    customerName: 'Neha Gupta',
+                    customerEmail: 'neha.gupta@example.com',
+                    customerPhone: '+91 4321098765',
+                    customerMembership: 'Premium',
+                    serviceType: 'Air Conditioning',
+                    status: 'Repair',
+                    serviceAdvisorName: 'Amit Sharma',
+                    serviceAdvisorId: 'SA-001',
+                    startDate: '2025-04-12',
+                    estimatedCompletion: '2025-04-16',
+                    progressPercentage: 60,
+                    progressNotes: 'AC compressor replaced, refilling refrigerant.',
+                    vehicleCategory: 'Car',
+                    description: 'AC not cooling properly, strange noise from AC unit.'
+                },
+                {
+                    requestId: 1007,
+                    vehicleName: 'Bajaj Pulsar',
+                    registrationNumber: 'HR13MN6789',
+                    customerName: 'Sanjay Rathore',
+                    customerEmail: 'sanjay.rathore@example.com',
+                    customerPhone: '+91 3210987654',
+                    customerMembership: 'Standard',
+                    serviceType: 'Engine Oil Change',
+                    status: 'Diagnosis',
+                    serviceAdvisorName: 'Vijay Mehta',
+                    serviceAdvisorId: 'SA-003',
+                    startDate: '2025-04-13',
+                    estimatedCompletion: '2025-04-14',
+                    progressPercentage: 20,
+                    progressNotes: 'Initial inspection complete, preparing for oil change.',
+                    vehicleCategory: 'Bike',
+                    description: 'Regular oil change and general checkup.'
+                },
+                {
+                    requestId: 1008,
+                    vehicleName: 'Mahindra Thar',
+                    registrationNumber: 'MP15OP0123',
+                    customerName: 'Vishal Malhotra',
+                    customerEmail: 'vishal.malhotra@example.com',
+                    customerPhone: '+91 2109876543',
+                    customerMembership: 'Premium',
+                    serviceType: 'Suspension Repair',
+                    status: 'Repair',
+                    serviceAdvisorName: 'Ravi Kapoor',
+                    serviceAdvisorId: 'SA-002',
+                    startDate: '2025-04-11',
+                    estimatedCompletion: '2025-04-17',
+                    progressPercentage: 50,
+                    progressNotes: 'Front shock absorbers replaced, checking rear suspension.',
+                    vehicleCategory: 'Car',
+                    description: 'Vehicle bouncing excessively on bumps, suspension feels loose.'
+                }
+            ];
+
+            // Update count
+            document.getElementById('underServiceCount').textContent = vehiclesUnderService.length;
+
+            // Hide loading spinner
+            document.getElementById('loading-row-service').style.display = 'none';
+
+            // Check if there are vehicles to display
+            if (vehiclesUnderService.length > 0) {
+                // Update pagination
+                updateServicePagination();
+
+                // Show first page
+                showVehiclesUnderServicePage(currentServicePage);
+            } else {
+                // Show empty state
+                document.getElementById('empty-row-service').style.display = '';
+            }
+        }, 1000); // Simulate API delay
+    }
+
+    // Load completed services
+    function loadCompletedServices() {
+        // Show loading spinner
+        document.getElementById('loading-row-completed').style.display = '';
+        document.getElementById('empty-row-completed').style.display = 'none';
+
+        // Here you would typically make an API call to fetch completed services
+        // For demonstration, we'll use mock data
+        setTimeout(() => {
+            completedServices = [
+                {
+                    requestId: 1201,
+                    vehicleName: 'Toyota Innova',
+                    registrationNumber: 'GJ17QR9876',
+                    customerName: 'Suresh Patel',
+                    customerEmail: 'suresh.patel@example.com',
+                    customerPhone: '+91 9876543210',
+                    customerMembership: 'Premium',
+                    serviceType: 'Major Service',
+                    completionDate: '2025-04-08',
+                    totalAmount: 15800,
+                    paymentStatus: 'Paid',
+                    invoiceGenerated: true,
+                    vehicleCategory: 'Car',
+                    hasInvoice: true,
+                    materialsUsed: [
+                        { item: 'Engine Oil', quantity: 5, unitPrice: 950, total: 4750 },
+                        { item: 'Oil Filter', quantity: 1, unitPrice: 450, total: 450 },
+                        { item: 'Air Filter', quantity: 1, unitPrice: 650, total: 650 },
+                        { item: 'Cabin Filter', quantity: 1, unitPrice: 750, total: 750 },
+                        { item: 'Spark Plugs', quantity: 4, unitPrice: 320, total: 1280 }
+                    ],
+                    laborCharges: [
+                        { description: 'Full Service', hours: 4, ratePerHour: 800, total: 3200 },
+                        { description: 'Diagnostic Check', hours: 1, ratePerHour: 600, total: 600 }
+                    ],
+                    subtotal: 11680,
+                    gst: 2102.40,
+                    grandTotal: 13782.40
+                },
+                {
+                    requestId: 1202,
+                    vehicleName: 'Honda Activa',
+                    registrationNumber: 'KA19ST4567',
+                    customerName: 'Ananya Desai',
+                    customerEmail: 'ananya.desai@example.com',
+                    customerPhone: '+91 8765432109',
+                    customerMembership: 'Standard',
+                    serviceType: 'Regular Maintenance',
+                    completionDate: '2025-04-09',
+                    totalAmount: 2500,
+                    paymentStatus: 'Pending',
+                    invoiceGenerated: false,
+                    vehicleCategory: 'Bike',
+                    hasInvoice: false,
+                    materialsUsed: [
+                        { item: 'Engine Oil', quantity: 1, unitPrice: 650, total: 650 },
+                        { item: 'Oil Filter', quantity: 1, unitPrice: 250, total: 250 },
+                        { item: 'Air Filter', quantity: 1, unitPrice: 350, total: 350 }
+                    ],
+                    laborCharges: [
+                        { description: 'Basic Service', hours: 1, ratePerHour: 500, total: 500 }
+                    ],
+                    subtotal: 1750,
+                    gst: 315,
+                    grandTotal: 2065
+                },
+                {
+                    requestId: 1203,
+                    vehicleName: 'Ford EcoSport',
+                    registrationNumber: 'MH04UV2345',
+                    customerName: 'Arjun Kapoor',
+                    customerEmail: 'arjun.kapoor@example.com',
+                    customerPhone: '+91 7654321098',
+                    customerMembership: 'Premium',
+                    serviceType: 'Brake Replacement',
+                    completionDate: '2025-04-10',
+                    totalAmount: 8500,
+                    paymentStatus: 'Paid',
+                    invoiceGenerated: true,
+                    vehicleCategory: 'Car',
+                    hasInvoice: true,
+                    materialsUsed: [
+                        { item: 'Front Brake Pads', quantity: 1, unitPrice: 2200, total: 2200 },
+                        { item: 'Rear Brake Pads', quantity: 1, unitPrice: 1800, total: 1800 },
+                        { item: 'Brake Fluid', quantity: 1, unitPrice: 450, total: 450 }
+                    ],
+                    laborCharges: [
+                        { description: 'Brake System Service', hours: 3, ratePerHour: 800, total: 2400 }
+                    ],
+                    subtotal: 6850,
+                    gst: 1233,
+                    grandTotal: 8083
+                },
+                {
+                    requestId: 1204,
+                    vehicleName: 'TVS Apache',
+                    registrationNumber: 'AP21WX7890',
+                    customerName: 'Karthik Reddy',
+                    customerEmail: 'karthik.reddy@example.com',
+                    customerPhone: '+91 6543210987',
+                    customerMembership: 'Standard',
+                    serviceType: 'Tire Replacement',
+                    completionDate: '2025-04-11',
+                    totalAmount: 4200,
+                    paymentStatus: 'Paid',
+                    invoiceGenerated: true,
+                    vehicleCategory: 'Bike',
+                    hasInvoice: true,
+                    materialsUsed: [
+                        { item: 'Front Tire', quantity: 1, unitPrice: 1500, total: 1500 },
+                        { item: 'Rear Tire', quantity: 1, unitPrice: 1800, total: 1800 }
+                    ],
+                    laborCharges: [
+                        { description: 'Tire Fitting', hours: 1, ratePerHour: 500, total: 500 }
+                    ],
+                    subtotal: 3800,
+                    gst: 684,
+                    grandTotal: 4484
+                },
+                {
+                    requestId: 1205,
+                    vehicleName: 'Kia Seltos',
+                    registrationNumber: 'PB23YZ0123',
+                    customerName: 'Manpreet Singh',
+                    customerEmail: 'manpreet.singh@example.com',
+                    customerPhone: '+91 5432109876',
+                    customerMembership: 'Premium',
+                    serviceType: 'Transmission Service',
+                    completionDate: '2025-04-12',
+                    totalAmount: 12000,
+                    paymentStatus: 'Pending',
+                    invoiceGenerated: true,
+                    vehicleCategory: 'Car',
+                    hasInvoice: true,
+                    materialsUsed: [
+                        { item: 'Transmission Fluid', quantity: 6, unitPrice: 850, total: 5100 },
+                        { item: 'Transmission Filter', quantity: 1, unitPrice: 1200, total: 1200 },
+                        { item: 'Gasket', quantity: 1, unitPrice: 350, total: 350 }
+                    ],
+                    laborCharges: [
+                        { description: 'Transmission Service', hours: 4, ratePerHour: 900, total: 3600 }
+                    ],
+                    subtotal: 10250,
+                    gst: 1845,
+                    grandTotal: 12095
+                },
+                {
+                    requestId: 1206,
+                    vehicleName: 'Maruti Suzuki Baleno',
+                    registrationNumber: 'DL25AB3456',
+                    customerName: 'Sneha Sharma',
+                    customerEmail: 'sneha.sharma@example.com',
+                    customerPhone: '+91 4321098765',
+                    customerMembership: 'Standard',
+                    serviceType: 'Battery Replacement',
+                    completionDate: '2025-04-12',
+                    totalAmount: 5500,
+                    paymentStatus: 'Pending',
+                    invoiceGenerated: false,
+                    vehicleCategory: 'Car',
+                    hasInvoice: false,
+                    materialsUsed: [
+                        { item: 'Car Battery', quantity: 1, unitPrice: 4500, total: 4500 }
+                    ],
+                    laborCharges: [
+                        { description: 'Battery Replacement', hours: 0.5, ratePerHour: 600, total: 300 }
+                    ],
+                    subtotal: 4800,
+                    gst: 864,
+                    grandTotal: 5664
+                },
+                {
+                    requestId: 1207,
+                    vehicleName: 'Hero Splendor',
+                    registrationNumber: 'RJ27CD6789',
+                    customerName: 'Rajesh Meena',
+                    customerEmail: 'rajesh.meena@example.com',
+                    customerPhone: '+91 3210987654',
+                    customerMembership: 'Standard',
+                    serviceType: 'Oil Change',
+                    completionDate: '2025-04-13',
+                    totalAmount: 1200,
+                    paymentStatus: 'Paid',
+                    invoiceGenerated: true,
+                    vehicleCategory: 'Bike',
+                    hasInvoice: true,
+                    materialsUsed: [
+                        { item: 'Engine Oil', quantity: 1, unitPrice: 550, total: 550 },
+                        { item: 'Oil Filter', quantity: 1, unitPrice: 150, total: 150 }
+                    ],
+                    laborCharges: [
+                        { description: 'Oil Change', hours: 0.5, ratePerHour: 400, total: 200 }
+                    ],
+                    subtotal: 900,
+                    gst: 162,
+                    grandTotal: 1062
+                },
+                {
+                    requestId: 1208,
+                    vehicleName: 'Tata Harrier',
+                    registrationNumber: 'GJ29EF0123',
+                    customerName: 'Hardik Shah',
+                    customerEmail: 'hardik.shah@example.com',
+                    customerPhone: '+91 2109876543',
+                    customerMembership: 'Premium',
+                    serviceType: 'Wheel Alignment',
+                    completionDate: '2025-04-13',
+                    totalAmount: 3500,
+                    paymentStatus: 'Paid',
+                    invoiceGenerated: true,
+                    vehicleCategory: 'Car',
+                    hasInvoice: true,
+                    materialsUsed: [],
+                    laborCharges: [
+                        { description: 'Wheel Alignment', hours: 1.5, ratePerHour: 800, total: 1200 },
+                        { description: 'Wheel Balancing', hours: 1, ratePerHour: 700, total: 700 }
+                    ],
+                    subtotal: 1900,
+                    gst: 342,
+                    grandTotal: 2242
+                }
+            ];
+
+            // Update count
+            document.getElementById('completedCount').textContent = completedServices.length;
+
+            // Hide loading spinner
+            document.getElementById('loading-row-completed').style.display = 'none';
+
+            // Check if there are services to display
+            if (completedServices.length > 0) {
+                // Update pagination
+                updateCompletedPagination();
+
+                // Show first page
+                showCompletedServicesPage(currentCompletedPage);
+            } else {
+                // Show empty state
+                document.getElementById('empty-row-completed').style.display = '';
+            }
+        }, 1000); // Simulate API delay
+    }
+
+    // Show vehicles under service page
+    function showVehiclesUnderServicePage(page) {
+        const startIndex = (page - 1) * itemsPerPage;
+        const endIndex = Math.min(startIndex + itemsPerPage, vehiclesUnderService.length);
+        const vehiclesToShow = vehiclesUnderService.slice(startIndex, endIndex);
+
+        displayVehiclesUnderService(vehiclesToShow);
+    }
+
+    // Show completed services page
+    function showCompletedServicesPage(page) {
+        const startIndex = (page - 1) * itemsPerPage;
+        const endIndex = Math.min(startIndex + itemsPerPage, completedServices.length);
+        const servicesToShow = completedServices.slice(startIndex, endIndex);
+
+        displayCompletedServices(servicesToShow);
+    }
+
+    // Display vehicles under service
+    function displayVehiclesUnderService(vehicles) {
+        const tableBody = document.getElementById('vehiclesUnderServiceTableBody');
+
+        // Clear existing rows except loading and empty state rows
+        const loadingRow = document.getElementById('loading-row-service');
+        const emptyRow = document.getElementById('empty-row-service');
+
+        tableBody.innerHTML = '';
+        tableBody.appendChild(loadingRow);
+        tableBody.appendChild(emptyRow);
+
+        loadingRow.style.display = 'none';
+
+        if (vehicles.length === 0) {
+            emptyRow.style.display = '';
+            return;
+        }
+
+        emptyRow.style.display = 'none';
+
+        // Add vehicle rows
+        vehicles.forEach(vehicle => {
+            const row = document.createElement('tr');
+            row.setAttribute('data-id', vehicle.requestId);
+            row.classList.add('active-page');
+
+            // Format the date strings
+            const startDate = new Date(vehicle.startDate).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+
+            const estimatedCompletion = new Date(vehicle.estimatedCompletion).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+
+            // Create status badge based on status
+            let statusBadge = '';
+            switch (vehicle.status.toLowerCase()) {
+                case 'received':
+                    statusBadge = `<span class="status-badge status-received"><i class="fas fa-clock"></i> Received</span>`;
+                    break;
+                case 'diagnosis':
+                    statusBadge = `<span class="status-badge status-diagnosis"><i class="fas fa-search"></i> Diagnosis</span>`;
+                    break;
+                case 'repair':
+                    statusBadge = `<span class="status-badge status-repair"><i class="fas fa-wrench"></i> Repair</span>`;
+                    break;
+                case 'completed':
+                    statusBadge = `<span class="status-badge status-completed"><i class="fas fa-check-circle"></i> Completed</span>`;
+                    break;
+                default:
+                    statusBadge = `<span class="status-badge">${vehicle.status}</span>`;
+            }
+
+            // Build the row HTML
+            row.innerHTML = `
+                <td>REQ-${vehicle.requestId}</td>
+                <td>
+                    <div class="vehicle-info">
+                        <div class="vehicle-icon">
+                            <i class="fas fa-${vehicle.vehicleCategory.toLowerCase() === 'bike' ? 'motorcycle' : 'car'}"></i>
+                        </div>
+                        <div class="vehicle-details">
+                            <h5>${vehicle.vehicleName}</h5>
+                            <p>${vehicle.registrationNumber}</p>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="person-info">
+                        <h5>${vehicle.customerName}</h5>
+                        <p>${vehicle.customerMembership === 'Premium' ?
+                '<span class="membership-badge membership-premium"><i class="fas fa-crown"></i> Premium</span>' :
+                '<span class="membership-badge membership-standard"><i class="fas fa-user"></i> Standard</span>'}</p>
+                    </div>
+                </td>
+                <td>${vehicle.serviceType}</td>
+                <td>${statusBadge}</td>
+                <td>${vehicle.serviceAdvisorName}</td>
+                <td>${startDate}</td>
+                <td>${estimatedCompletion}</td>
+                <td>
+                    <div class="table-actions-cell">
+                        <button class="btn-table-action" id="viewServiceBtn" title="View Details">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+
+            tableBody.appendChild(row);
+        });
+    }
+
+    // Display completed services
+    function displayCompletedServices(services) {
+        const tableBody = document.getElementById('completedServicesTableBody');
+
+        // Clear existing rows except loading and empty state rows
+        const loadingRow = document.getElementById('loading-row-completed');
+        const emptyRow = document.getElementById('empty-row-completed');
+
+        tableBody.innerHTML = '';
+        tableBody.appendChild(loadingRow);
+        tableBody.appendChild(emptyRow);
+
+        loadingRow.style.display = 'none';
+
+        if (services.length === 0) {
+            emptyRow.style.display = '';
+            return;
+        }
+
+        emptyRow.style.display = 'none';
+
+        // Add service rows
+        services.forEach(service => {
+            const row = document.createElement('tr');
+            row.setAttribute('data-id', service.requestId);
+            row.classList.add('active-page');
+
+            // Format the date strings
+            const completionDate = new Date(service.completionDate).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+
+            // Format the amount
+            const formattedAmount = new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                maximumFractionDigits: 0
+            }).format(service.totalAmount);
+
+            // Create payment status badge
+            let paymentStatusBadge = '';
+            switch (service.paymentStatus.toLowerCase()) {
+                case 'paid':
+                    paymentStatusBadge = `<span class="status-badge status-paid"><i class="fas fa-check-circle"></i> Paid</span>`;
+                    break;
+                case 'pending':
+                    paymentStatusBadge = `<span class="status-badge status-pending"><i class="fas fa-clock"></i> Pending</span>`;
+                    break;
+                case 'dispatched':
+                    paymentStatusBadge = `<span class="status-badge status-dispatched"><i class="fas fa-truck"></i> Dispatched</span>`;
+                    break;
+                default:
+                    paymentStatusBadge = `<span class="status-badge">${service.paymentStatus}</span>`;
+            }
+
+            // Create invoice badge
+            let invoiceBadge = '';
+            if (service.hasInvoice) {
+                invoiceBadge = `<span class="status-badge status-completed"><i class="fas fa-file-invoice"></i> Generated</span>`;
+            } else {
+                invoiceBadge = `<span class="status-badge status-pending"><i class="fas fa-file-invoice"></i> Not Generated</span>`;
+            }
+
+            // Create action buttons based on status
+            let actionButtons = '';
+            if (service.paymentStatus.toLowerCase() === 'pending') {
+                actionButtons = `
+                    <button class="btn-table-action success" id="markAsPaidBtn" title="Mark as Paid">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </button>
+                `;
+            } else if (service.paymentStatus.toLowerCase() === 'paid') {
+                actionButtons = `
+                    <button class="btn-table-action info" id="dispatchVehicleBtn" title="Dispatch Vehicle">
+                        <i class="fas fa-truck"></i>
+                    </button>
+                `;
+            }
+
+            actionButtons += `
+                <button class="btn-table-action" id="viewServiceBtn" title="View Details">
+                    <i class="fas fa-eye"></i>
+                </button>
+            `;
+
+            // Build the row HTML
+            row.innerHTML = `
+                <td>REQ-${service.requestId}</td>
+                <td>
+                    <div class="vehicle-info">
+                        <div class="vehicle-icon">
+                            <i class="fas fa-${service.vehicleCategory.toLowerCase() === 'bike' ? 'motorcycle' : 'car'}"></i>
+                        </div>
+                        <div class="vehicle-details">
+                            <h5>${service.vehicleName}</h5>
+                            <p>${service.registrationNumber}</p>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class="person-info">
+                        <h5>${service.customerName}</h5>
+                        <p>${service.customerMembership === 'Premium' ?
+                '<span class="membership-badge membership-premium"><i class="fas fa-crown"></i> Premium</span>' :
+                '<span class="membership-badge membership-standard"><i class="fas fa-user"></i> Standard</span>'}</p>
+                    </div>
+                </td>
+                <td>${service.serviceType}</td>
+                <td>${completionDate}</td>
+                <td>${formattedAmount}</td>
+                <td>${paymentStatusBadge}</td>
+                <td>${invoiceBadge}</td>
+                <td>
+                    <div class="table-actions-cell">
+                        ${actionButtons}
+                    </div>
+                </td>
+            `;
+
+            tableBody.appendChild(row);
+        });
+    }
+
+    // Update service pagination
+    function updateServicePagination(filteredCount) {
+        const totalItems = filteredCount !== undefined ? filteredCount : vehiclesUnderService.length;
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+        // Update page numbers
+        const pagination = document.getElementById('paginationService');
+        const pageLinks = pagination.querySelectorAll('.page-link[data-page]');
+
+        // Update visibility of page numbers
+        pageLinks.forEach((link, index) => {
+            const pageNumber = index + 1;
+            const pageItem = link.parentElement;
+
+            if (pageNumber <= totalPages) {
+                pageItem.style.display = '';
+                pageItem.classList.toggle('active', pageNumber === currentServicePage);
+            } else {
+                pageItem.style.display = 'none';
+            }
+        });
+
+        // Update prev/next buttons
+        const prevBtn = document.getElementById('prevBtnService');
+        const nextBtn = document.getElementById('nextBtnService');
+
+        prevBtn.parentElement.classList.toggle('disabled', currentServicePage === 1);
+        nextBtn.parentElement.classList.toggle('disabled', currentServicePage === totalPages || totalPages === 0);
+    }
+
+    // Update completed pagination
+    function updateCompletedPagination(filteredCount) {
+        const totalItems = filteredCount !== undefined ? filteredCount : completedServices.length;
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+        // Update page numbers
+        const pagination = document.getElementById('paginationCompleted');
+        const pageLinks = pagination.querySelectorAll('.page-link[data-page]');
+
+        // Update visibility of page numbers
+        pageLinks.forEach((link, index) => {
+            const pageNumber = index + 1;
+            const pageItem = link.parentElement;
+
+            if (pageNumber <= totalPages) {
+                pageItem.style.display = '';
+                pageItem.classList.toggle('active', pageNumber === currentCompletedPage);
+            } else {
+                pageItem.style.display = 'none';
+            }
+        });
+
+        // Update prev/next buttons
+        const prevBtn = document.getElementById('prevBtnCompleted');
+        const nextBtn = document.getElementById('nextBtnCompleted');
+
+        prevBtn.parentElement.classList.toggle('disabled', currentCompletedPage === 1);
+        nextBtn.parentElement.classList.toggle('disabled', currentCompletedPage === totalPages || totalPages === 0);
+    }
+
+    // View service details for vehicles under service
+    function viewServiceUnderServiceDetails(serviceId) {
+        const service = vehiclesUnderService.find(v => v.requestId === parseInt(serviceId));
+        if (!service) return;
+
+        // Format dates
+        const startDate = new Date(service.startDate).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+
+        const estimatedCompletion = new Date(service.estimatedCompletion).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+
+        // Hide completed service footer and show under service footer
+        document.getElementById('completedServiceFooter').style.display = 'none';
+        document.getElementById('underServiceFooter').style.display = '';
+
+        // Hide materials section since it's still in progress
+        document.getElementById('materialsSection').style.display = 'none';
+
+        // Update modal content
+        document.getElementById('viewServiceId').textContent = 'REQ-' + service.requestId;
+
+        // Status badge
+        let statusBadge = '';
+        switch (service.status.toLowerCase()) {
+            case 'received':
+                statusBadge = `<span class="status-badge status-received"><i class="fas fa-clock"></i> Received</span>`;
+                break;
+            case 'diagnosis':
+                statusBadge = `<span class="status-badge status-diagnosis"><i class="fas fa-search"></i> Diagnosis</span>`;
+                break;
+            case 'repair':
+                statusBadge = `<span class="status-badge status-repair"><i class="fas fa-wrench"></i> Repair</span>`;
+                break;
+            case 'completed':
+                statusBadge = `<span class="status-badge status-completed"><i class="fas fa-check-circle"></i> Completed</span>`;
+                break;
+            default:
+                statusBadge = `<span class="status-badge">${service.status}</span>`;
+        }
+
+        document.getElementById('viewStatus').innerHTML = statusBadge;
+        document.getElementById('viewStartDate').textContent = startDate;
+        document.getElementById('viewVehicleName').textContent = service.vehicleName;
+        document.getElementById('viewRegistrationNumber').textContent = service.registrationNumber;
+        document.getElementById('viewVehicleCategory').textContent = service.vehicleCategory;
+        document.getElementById('viewCustomerName').textContent = service.customerName;
+        document.getElementById('viewCustomerContact').textContent = service.customerPhone;
+
+        // Membership badge
+        let membershipBadge = '';
+        if (service.customerMembership === 'Premium') {
+            membershipBadge = '<span class="membership-badge membership-premium"><i class="fas fa-crown"></i> Premium</span>';
+        } else {
+            membershipBadge = '<span class="membership-badge membership-standard"><i class="fas fa-user"></i> Standard</span>';
+        }
+
+        document.getElementById('viewMembership').innerHTML = membershipBadge;
+        document.getElementById('viewServiceType').textContent = service.serviceType;
+        document.getElementById('viewEstimatedCompletion').textContent = estimatedCompletion;
+        document.getElementById('viewServiceAdvisor').textContent = service.serviceAdvisorName;
+        document.getElementById('viewServiceDescription').textContent = service.description || 'No description provided.';
+
+        // Progress bar
+        const progressBar = document.querySelector('.progress-bar');
+        progressBar.style.width = service.progressPercentage + '%';
+        progressBar.textContent = service.progressPercentage + '%';
+        progressBar.setAttribute('aria-valuenow', service.progressPercentage);
+
+        document.getElementById('viewProgressNotes').textContent = service.progressNotes || 'No progress notes available.';
+
+        // Show the modal
+        $('#viewServiceDetailsModal').modal('show');
+    }
+
+    // View completed service details
+    function viewCompletedServiceDetails(serviceId) {
+        const service = completedServices.find(s => s.requestId === parseInt(serviceId));
+        if (!service) return;
+
+        // Format dates
+        const completionDate = new Date(service.completionDate).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+
+        // Hide under service footer and show completed service footer
+        document.getElementById('underServiceFooter').style.display = 'none';
+        document.getElementById('completedServiceFooter').style.display = '';
+
+        // Show materials section
+        document.getElementById('materialsSection').style.display = '';
+
+        // Update modal content
+        document.getElementById('viewServiceId').textContent = 'REQ-' + service.requestId;
+
+        // Status badge (always Completed for completed services)
+        const statusBadge = `<span class="status-badge status-completed"><i class="fas fa-check-circle"></i> Completed</span>`;
+        document.getElementById('viewStatus').innerHTML = statusBadge;
+
+        document.getElementById('viewStartDate').textContent = completionDate;
+        document.getElementById('viewVehicleName').textContent = service.vehicleName;
+        document.getElementById('viewRegistrationNumber').textContent = service.registrationNumber;
+        document.getElementById('viewVehicleCategory').textContent = service.vehicleCategory;
+        document.getElementById('viewCustomerName').textContent = service.customerName;
+        document.getElementById('viewCustomerContact').textContent = service.customerPhone;
+
+        // Membership badge
+        let membershipBadge = '';
+        if (service.customerMembership === 'Premium') {
+            membershipBadge = '<span class="membership-badge membership-premium"><i class="fas fa-crown"></i> Premium</span>';
+        } else {
+            membershipBadge = '<span class="membership-badge membership-standard"><i class="fas fa-user"></i> Standard</span>';
+        }
+
+        document.getElementById('viewMembership').innerHTML = membershipBadge;
+        document.getElementById('viewServiceType').textContent = service.serviceType;
+        document.getElementById('viewEstimatedCompletion').textContent = completionDate;
+        document.getElementById('viewServiceAdvisor').textContent = service.serviceAdvisorName || 'Not Assigned';
+        document.getElementById('viewServiceDescription').textContent = service.description || 'No description provided.';
+
+        // Hide progress section for completed services
+        document.querySelector('.progress').style.display = 'none';
+        document.getElementById('viewProgressNotes').style.display = 'none';
+
+        // Populate materials table
+        const materialsTableBody = document.getElementById('materialsTableBody');
+        materialsTableBody.innerHTML = '';
+
+        let materialsTotal = 0;
+
+        if (service.materialsUsed && service.materialsUsed.length > 0) {
+            service.materialsUsed.forEach(material => {
+                const row = document.createElement('tr');
+
+                // Format the price values
+                const unitPrice = new Intl.NumberFormat('en-IN', {
+                    style: 'currency',
+                    currency: 'INR',
+                    maximumFractionDigits: 2
+                }).format(material.unitPrice);
+
+                const totalPrice = new Intl.NumberFormat('en-IN', {
+                    style: 'currency',
+                    currency: 'INR',
+                    maximumFractionDigits: 2
+                }).format(material.total);
+
+                row.innerHTML = `
+                    <td>${material.item}</td>
+                    <td>${material.quantity}</td>
+                    <td>${unitPrice}</td>
+                    <td>${totalPrice}</td>
+                `;
+
+                materialsTableBody.appendChild(row);
+                materialsTotal += material.total;
+            });
+        } else {
+            const row = document.createElement('tr');
+            row.innerHTML = `<td colspan="4" class="text-center">No materials used</td>`;
+            materialsTableBody.appendChild(row);
+        }
+
+        // Add materials total row
+        const totalRow = document.createElement('tr');
+        totalRow.innerHTML = `
+            <td colspan="3" class="text-end">Materials Total</td>
+            <td>${new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            maximumFractionDigits: 2
+        }).format(materialsTotal)}</td>
+        `;
+        materialsTableBody.appendChild(totalRow);
+
+        // Populate labor charges table
+        const laborTableBody = document.getElementById('laborChargesTableBody');
+        laborTableBody.innerHTML = '';
+
+        let laborTotal = 0;
+
+        if (service.laborCharges && service.laborCharges.length > 0) {
+            service.laborCharges.forEach(labor => {
+                const row = document.createElement('tr');
+
+                // Format the price values
+                const ratePerHour = new Intl.NumberFormat('en-IN', {
+                    style: 'currency',
+                    currency: 'INR',
+                    maximumFractionDigits: 2
+                }).format(labor.ratePerHour);
+
+                const totalPrice = new Intl.NumberFormat('en-IN', {
+                    style: 'currency',
+                    currency: 'INR',
+                    maximumFractionDigits: 2
+                }).format(labor.total);
+
+                row.innerHTML = `
+                    <td>${labor.description}</td>
+                    <td>${labor.hours}</td>
+                    <td>${ratePerHour}</td>
+                    <td>${totalPrice}</td>
+                `;
+
+                laborTableBody.appendChild(row);
+                laborTotal += labor.total;
+            });
+        } else {
+            const row = document.createElement('tr');
+            row.innerHTML = `<td colspan="4" class="text-center">No labor charges</td>`;
+            laborTableBody.appendChild(row);
+        }
+
+        // Add labor total row
+        const laborTotalRow = document.createElement('tr');
+        laborTotalRow.innerHTML = `
+            <td colspan="3" class="text-end">Labor Total</td>
+            <td>${new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            maximumFractionDigits: 2
+        }).format(laborTotal)}</td>
+        `;
+        laborTableBody.appendChild(laborTotalRow);
+
+        // Update invoice summary
+        const invoiceSummary = document.querySelectorAll('.invoice-summary-row');
+
+        // Format currency values
+        const materialsValue = new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            maximumFractionDigits: 2
+        }).format(materialsTotal);
+
+        const laborValue = new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            maximumFractionDigits: 2
+        }).format(laborTotal);
+
+        const subtotalValue = new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            maximumFractionDigits: 2
+        }).format(service.subtotal || (materialsTotal + laborTotal));
+
+        const gstValue = new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            maximumFractionDigits: 2
+        }).format(service.gst || ((materialsTotal + laborTotal) * 0.18));
+
+        const grandTotalValue = new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            maximumFractionDigits: 2
+        }).format(service.grandTotal || ((materialsTotal + laborTotal) * 1.18));
+
+        invoiceSummary[0].querySelector('.invoice-summary-value').textContent = materialsValue;
+        invoiceSummary[1].querySelector('.invoice-summary-value').textContent = laborValue;
+        invoiceSummary[2].querySelector('.invoice-summary-value').textContent = subtotalValue;
+        invoiceSummary[3].querySelector('.invoice-summary-value').textContent = gstValue;
+        invoiceSummary[4].querySelector('.invoice-summary-value').textContent = grandTotalValue;
+
+        // Show or hide Generate Invoice button based on invoice status
+        const generateInvoiceBtn = document.getElementById('generateInvoiceBtn');
+        if (service.hasInvoice) {
+            // If invoice is already generated, hide the generate button
+            generateInvoiceBtn.style.display = 'none';
+        } else {
+            // If invoice is not generated yet, show the generate button
+            generateInvoiceBtn.style.display = '';
+        }
+
+        // Show the modal
+        $('#viewServiceDetailsModal').modal('show');
+    }
+
+    // Populate Generate Invoice modal
+    function populateGenerateInvoiceModal(service) {
+        document.getElementById('invoiceServiceId').textContent = 'REQ-' + service.requestId;
+        document.getElementById('invoiceCustomerName').textContent = service.customerName;
+        document.getElementById('invoiceVehicleName').textContent = service.vehicleName;
+        document.getElementById('invoiceRegistrationNumber').textContent = service.registrationNumber;
+        document.getElementById('invoiceServiceType').textContent = service.serviceType;
+
+        // Calculate totals
+        let materialsTotal = 0;
+        if (service.materialsUsed && service.materialsUsed.length > 0) {
+            materialsTotal = service.materialsUsed.reduce((total, material) => total + material.total, 0);
+        }
+
+        let laborTotal = 0;
+        if (service.laborCharges && service.laborCharges.length > 0) {
+            laborTotal = service.laborCharges.reduce((total, labor) => total + labor.total, 0);
+        }
+
+        const subtotal = service.subtotal || (materialsTotal + laborTotal);
+        const gst = service.gst || (subtotal * 0.18);
+        const grandTotal = service.grandTotal || (subtotal + gst);
+
+        // Format currency values
+        document.getElementById('invoiceMaterialsTotal').textContent = new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            maximumFractionDigits: 2
+        }).format(materialsTotal);
+
+        document.getElementById('invoiceLaborTotal').textContent = new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            maximumFractionDigits: 2
+        }).format(laborTotal);
+
+        document.getElementById('invoiceSubtotal').textContent = new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            maximumFractionDigits: 2
+        }).format(subtotal);
+
+        document.getElementById('invoiceGST').textContent = new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            maximumFractionDigits: 2
+        }).format(gst);
+
+        document.getElementById('invoiceGrandTotal').textContent = new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            maximumFractionDigits: 2
+        }).format(grandTotal);
+
+        // Clear notes
+        document.getElementById('invoiceNotes').value = '';
+
+        // Keep checkbox checked by default
+        document.getElementById('sendEmailCheck').checked = true;
+    }
+
+    // Generate invoice
+    function generateInvoice() {
+        // Show spinner
+        document.getElementById('spinnerOverlay').classList.add('show');
+
+        // Get service ID
+        const serviceId = document.getElementById('invoiceServiceId').textContent.replace('REQ-', '');
+        const service = completedServices.find(s => s.requestId === parseInt(serviceId));
+
+        if (!service) {
+            // Hide spinner
+            document.getElementById('spinnerOverlay').classList.remove('show');
+            alert('Service not found');
+            return;
+        }
+
+        // Get additional notes
+        const notes = document.getElementById('invoiceNotes').value;
+        const sendEmail = document.getElementById('sendEmailCheck').checked;
+
+        // In a real application, you would make an API call here to generate the invoice
+
+        // Simulate API call
+        setTimeout(() => {
+            // Update service to mark invoice as generated
+            service.hasInvoice = true;
+
+            // Hide spinner
+            document.getElementById('spinnerOverlay').classList.remove('show');
+
+            // Hide the generate invoice modal
+            $('#generateInvoiceModal').modal('hide');
+
+            // Show success modal
+            document.getElementById('successTitle').textContent = 'Invoice Generated!';
+            document.getElementById('successMessage').textContent = `The invoice for service REQ-${service.requestId} has been successfully generated${sendEmail ? ' and sent to the customer via email' : ''}.`;
+            $('#successModal').modal('show');
+
+            // Refresh the completed services table
+            showCompletedServicesPage(currentCompletedPage);
+        }, 2000);
+    }
+
+    // Mark as paid
+    function markAsPaid() {
+        // Show spinner
+        document.getElementById('spinnerOverlay').classList.add('show');
+
+        // Get service ID
+        const serviceId = document.getElementById('paidServiceId').textContent.replace('REQ-', '');
+        const service = completedServices.find(s => s.requestId === parseInt(serviceId));
+
+        if (!service) {
+            // Hide spinner
+            document.getElementById('spinnerOverlay').classList.remove('show');
+            alert('Service not found');
+            return;
+        }
+
+        // Get payment details
+        const paymentMethod = document.getElementById('paymentMethod').value;
+        const transactionId = document.getElementById('transactionId').value;
+        const paidAmount = document.getElementById('paidAmount').value;
+        const paymentNotes = document.getElementById('paymentNotes').value;
+
+        // Validate payment method
+        if (!paymentMethod) {
+            // Hide spinner
+            document.getElementById('spinnerOverlay').classList.remove('show');
+            alert('Please select a payment method');
+            return;
+        }
+
+        // In a real application, you would make an API call here to record the payment
+
+        // Simulate API call
+        setTimeout(() => {
+            // Update service payment status
+            service.paymentStatus = 'Paid';
+
+            // Hide spinner
+            document.getElementById('spinnerOverlay').classList.remove('show');
+
+            // Hide the mark as paid modal
+            $('#markAsPaidModal').modal('hide');
+
+            // Show success modal
+            document.getElementById('successTitle').textContent = 'Payment Recorded!';
+            document.getElementById('successMessage').textContent = `The payment for service REQ-${service.requestId} has been successfully recorded.`;
+            $('#successModal').modal('show');
+
+            // Refresh the completed services table
+            showCompletedServicesPage(currentCompletedPage);
+        }, 2000);
+    }
+
+    // Dispatch vehicle
+    function dispatchVehicle() {
+        // Show spinner
+        document.getElementById('spinnerOverlay').classList.add('show');
+
+        // Get vehicle details
+        const vehicleName = document.getElementById('dispatchVehicleName').textContent;
+        const registrationNumber = document.getElementById('dispatchRegistrationNumber').textContent;
+
+        // Find service by registration number
+        const service = completedServices.find(s => s.registrationNumber === registrationNumber);
+
+        if (!service) {
+            // Hide spinner
+            document.getElementById('spinnerOverlay').classList.remove('show');
+            alert('Service not found');
+            return;
+        }
+
+        // Get dispatch details
+        const handoverPerson = document.getElementById('handoverPerson').value;
+        const dispatchNotes = document.getElementById('dispatchNotes').value;
+        const confirmDispatch = document.getElementById('confirmDispatchCheck').checked;
+
+        // Validate
+        if (!handoverPerson) {
+            // Hide spinner
+            document.getElementById('spinnerOverlay').classList.remove('show');
+            alert('Please enter the name of the person receiving the vehicle');
+            return;
+        }
+
+        if (!confirmDispatch) {
+            // Hide spinner
+            document.getElementById('spinnerOverlay').classList.remove('show');
+            alert('Please confirm that all service work has been completed and payment has been received');
+            return;
+        }
+
+        // In a real application, you would make an API call here to record the dispatch
+
+        // Simulate API call
+        setTimeout(() => {
+            // Update service status
+            service.paymentStatus = 'Dispatched';
+
+            // Hide spinner
+            document.getElementById('spinnerOverlay').classList.remove('show');
+
+            // Hide the dispatch modal
+            $('#dispatchVehicleModal').modal('hide');
+
+            // Show success modal
+            document.getElementById('successTitle').textContent = 'Vehicle Dispatched!';
+            document.getElementById('successMessage').textContent = `The vehicle ${vehicleName} with registration number ${registrationNumber} has been successfully dispatched to ${handoverPerson}.`;
+            $('#successModal').modal('show');
+
+            // Refresh the completed services table
+            showCompletedServicesPage(currentCompletedPage);
+        }, 2000);
+    }
+
+    // Apply filters
+    function applyFilters() {
+        // Get filter values
+        const vehicleType = document.getElementById('filterByVehicleType').value;
+        const serviceType = document.getElementById('filterByServiceType').value;
+        const status = document.getElementById('filterByStatus').value;
+        const paymentStatus = document.getElementById('filterByPaymentStatus').value;
+        const dateFrom = document.getElementById('filterDateFrom').value;
+        const dateTo = document.getElementById('filterDateTo').value;
+
+        // Filter active tab data
+        const activeTab = document.querySelector('.tab-pane.active');
+
+        if (activeTab.id === 'under-service-tab-pane') {
+            // Filter vehicles under service
+            let filteredVehicles = [...vehiclesUnderService];
+
+            if (vehicleType) {
+                filteredVehicles = filteredVehicles.filter(v => v.vehicleCategory === vehicleType);
+            }
+
+            if (serviceType) {
+                filteredVehicles = filteredVehicles.filter(v => v.serviceType === serviceType);
+            }
+
+            if (status) {
+                filteredVehicles = filteredVehicles.filter(v => v.status === status);
+            }
+
+            if (dateFrom) {
+                const fromDate = new Date(dateFrom);
+                filteredVehicles = filteredVehicles.filter(v => new Date(v.startDate) >= fromDate);
+            }
+
+            if (dateTo) {
+                const toDate = new Date(dateTo);
+                filteredVehicles = filteredVehicles.filter(v => new Date(v.estimatedCompletion) <= toDate);
+            }
+
+            // Display filtered vehicles
+            displayVehiclesUnderService(filteredVehicles);
+
+            // Update pagination
+            updateServicePagination(filteredVehicles.length);
+
+        } else if (activeTab.id === 'completed-tab-pane') {
+            // Filter completed services
+            let filteredServices = [...completedServices];
+
+            if (vehicleType) {
+                filteredServices = filteredServices.filter(s => s.vehicleCategory === vehicleType);
+            }
+
+            if (serviceType) {
+                filteredServices = filteredServices.filter(s => s.serviceType === serviceType);
+            }
+
+            if (paymentStatus) {
+                filteredServices = filteredServices.filter(s => s.paymentStatus === paymentStatus);
+            }
+
+            if (dateFrom) {
+                const fromDate = new Date(dateFrom);
+                filteredServices = filteredServices.filter(s => new Date(s.completionDate) >= fromDate);
+            }
+
+            if (dateTo) {
+                const toDate = new Date(dateTo);
+                filteredServices = filteredServices.filter(s => new Date(s.completionDate) <= toDate);
+            }
+
+            // Display filtered services
+            displayCompletedServices(filteredServices);
+
+            // Update pagination
+            updateCompletedPagination(filteredServices.length);
+        }
+
+        // Hide filter modal
+        $('#filterVehiclesModal').modal('hide');
+    }
+
+    // Update service status
+    function updateServiceStatus(serviceId) {
+        const service = vehiclesUnderService.find(v => v.requestId === parseInt(serviceId));
+        if (!service) return;
+
+        // Determine next status
+        let nextStatus = '';
+        switch (service.status.toLowerCase()) {
+            case 'received':
+                nextStatus = 'Diagnosis';
+                break;
+            case 'diagnosis':
+                nextStatus = 'Repair';
+                break;
+            case 'repair':
+                nextStatus = 'Completed';
+                break;
+            case 'completed':
+                nextStatus = 'Completed'; // No change
+                break;
+            default:
+                nextStatus = 'Diagnosis';
+        }
+
+        // Show confirmation dialog
+        if (confirm(`Are you sure you want to update the status to ${nextStatus}?`)) {
+            // Show spinner
+            document.getElementById('spinnerOverlay').classList.add('show');
+
+            // In a real application, you would make an API call here to update the status
+
+            // Simulate API call
+            setTimeout(() => {
+                // Update service status
+                service.status = nextStatus;
+
+                // If status is now Completed, move to completed services
+                if (nextStatus === 'Completed') {
+                    // Create a new completed service
+                    const completedService = {
+                        requestId: service.requestId,
+                        vehicleName: service.vehicleName,
+                        registrationNumber: service.registrationNumber,
+                        customerName: service.customerName,
+                        customerEmail: service.customerEmail,
+                        customerPhone: service.customerPhone,
+                        customerMembership: service.customerMembership,
+                        serviceType: service.serviceType,
+                        completionDate: new Date().toISOString().split('T')[0],
+                        totalAmount: Math.floor(Math.random() * 10000) + 5000, // Random amount for demo
+                        paymentStatus: 'Pending',
+                        invoiceGenerated: false,
+                        vehicleCategory: service.vehicleCategory,
+                        hasInvoice: false,
+                        materialsUsed: [
+                            // Sample materials for demo
+                            { item: 'Sample Material 1', quantity: 1, unitPrice: 1000, total: 1000 },
+                            { item: 'Sample Material 2', quantity: 2, unitPrice: 500, total: 1000 }
+                        ],
+                        laborCharges: [
+                            // Sample labor for demo
+                            { description: 'Sample Labor', hours: 2, ratePerHour: 800, total: 1600 }
+                        ],
+                        subtotal: 3600,
+                        gst: 648,
+                        grandTotal: 4248
+                    };
+
+                    // Add to completed services
+                    completedServices.push(completedService);
+
+                    // Remove from vehicles under service
+                    vehiclesUnderService = vehiclesUnderService.filter(v => v.requestId !== parseInt(serviceId));
+
+                    // Update counts
+                    document.getElementById('underServiceCount').textContent = vehiclesUnderService.length;
+                    document.getElementById('completedCount').textContent = completedServices.length;
+                }
+
+                // Hide spinner
+                document.getElementById('spinnerOverlay').classList.remove('show');
+
+                // Hide the service details modal
+                $('#viewServiceDetailsModal').modal('hide');
+
+                // Show success modal
+                document.getElementById('successTitle').textContent = 'Status Updated!';
+                document.getElementById('successMessage').textContent = `The status for service REQ-${serviceId} has been successfully updated to ${nextStatus}.`;
+                $('#successModal').modal('show');
+
+                // Refresh the tables
+                showVehiclesUnderServicePage(currentServicePage);
+                updateServicePagination();
+            }, 2000);
+        }
+    }
 </script>
 </body>
 </html>

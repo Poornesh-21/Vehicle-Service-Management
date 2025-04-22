@@ -1,151 +1,48 @@
 package com.albany.mvc.controller;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-@Controller
-@RequestMapping("/admin")
+/**
+ * REST API controller for customer operations
+ */
+@RestController
+@RequestMapping("/admin/api")
 @RequiredArgsConstructor
 @Slf4j
 public class CustomerController {
 
     private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
 
     @Value("${api.base-url}")
     private String apiBaseUrl;
 
     /**
-     * Render the customers page
+     * Create a new customer with improved error handling
      */
-    @GetMapping("/customers")
-    public String customersPage(
-            @RequestParam(required = false) String token,
-            Model model,
-            HttpServletRequest request) {
-
-        log.info("Accessing customers page");
-
-        // Get token from various sources
-        String validToken = getValidToken(token, request);
-
-        if (validToken == null) {
-            log.warn("No valid token found, redirecting to login");
-            return "redirect:/admin/login?error=session_expired";
-        }
-
-        // Set the admin's name for the page
-        model.addAttribute("userName", "Arthur Morgan");
-
-        return "admin/customers";
-    }
-
-    /**
-     * Get all customers via API
-     */
-    @GetMapping("/customers/api")
-    @ResponseBody
-    public ResponseEntity<List<Map<String, Object>>> getAllCustomers(
-            @RequestParam(required = false) String token,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            HttpServletRequest request) {
-
-        try {
-            // Get token from various sources
-            String validToken = getValidToken(token, authHeader, request);
-
-            if (validToken == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.emptyList());
-            }
-
-            // Forward the request to the backend API
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", "Bearer " + validToken);
-
-            HttpEntity<Void> entity = new HttpEntity<>(headers);
-
-            // Make the API call to the backend
-            ResponseEntity<List<Map<String, Object>>> response = restTemplate.exchange(
-                    apiBaseUrl + "/customers",
-                    HttpMethod.GET,
-                    entity,
-                    new ParameterizedTypeReference<List<Map<String, Object>>>() {}
-            );
-
-            log.debug("API response for all customers: {}", response.getStatusCode());
-            return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
-
-        } catch (Exception e) {
-            log.error("Error fetching customers: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
-        }
-    }
-
-    /**
-     * Get a specific customer by ID
-     */
-    @GetMapping("/api/customers/{id}")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> getCustomerById(
-            @PathVariable Integer id,
-            @RequestParam(required = false) String token,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            HttpServletRequest request) {
-
-        try {
-            // Get token from various sources
-            String validToken = getValidToken(token, authHeader, request);
-
-            if (validToken == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            }
-
-            // Forward the request to the backend API
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", "Bearer " + validToken);
-
-            HttpEntity<Void> entity = new HttpEntity<>(headers);
-
-            // Make the API call to the backend
-            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
-                    apiBaseUrl + "/customers/" + id,
-                    HttpMethod.GET,
-                    entity,
-                    new ParameterizedTypeReference<Map<String, Object>>() {}
-            );
-
-            log.debug("Customer API response status: {}", response.getStatusCode());
-            return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
-
-        } catch (Exception e) {
-            log.error("Error fetching customer details: {}", e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
-    }
-
-    /**
-     * Create a new customer
-     */
-    @PostMapping("/api/customers")
+    @PostMapping("/customers")
     @ResponseBody
     public ResponseEntity<?> createCustomer(
             @RequestBody Map<String, Object> customerData,
             @RequestParam(required = false) String token,
             @RequestHeader(value = "Authorization", required = false) String authHeader,
             HttpServletRequest request) {
+
+        log.info("Creating customer with data: {}", customerData);
 
         try {
             // Get token from various sources
@@ -170,16 +67,47 @@ public class CustomerController {
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(customerData, headers);
 
             // Make the API call to the backend
-            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+            ResponseEntity<String> response = restTemplate.exchange(
                     apiBaseUrl + "/customers",
                     HttpMethod.POST,
                     entity,
-                    new ParameterizedTypeReference<Map<String, Object>>() {}
+                    String.class
             );
 
             log.info("Customer created successfully");
-            return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
 
+            // Parse and return the response
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                try {
+                    Map<String, Object> responseBody = objectMapper.readValue(
+                            response.getBody(),
+                            new TypeReference<Map<String, Object>>() {}
+                    );
+                    return ResponseEntity.status(response.getStatusCode()).body(responseBody);
+                } catch (Exception e) {
+                    log.warn("Error parsing success response body: {}", e.getMessage());
+                    return ResponseEntity.ok(response.getBody());
+                }
+            } else {
+                return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
+            }
+        } catch (HttpClientErrorException e) {
+            log.error("API client error: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
+
+            // Try to parse and return the detailed error message from the API
+            try {
+                Map<String, Object> errorResponse = objectMapper.readValue(
+                        e.getResponseBodyAsString(),
+                        new TypeReference<Map<String, Object>>() {}
+                );
+
+                return ResponseEntity.status(e.getStatusCode()).body(errorResponse);
+            } catch (Exception ex) {
+                log.error("Error parsing error response: {}", ex.getMessage());
+                Map<String, String> errorResponse = new HashMap<>();
+                errorResponse.put("error", "Failed to create customer: " + e.getMessage());
+                return ResponseEntity.status(e.getStatusCode()).body(errorResponse);
+            }
         } catch (Exception e) {
             log.error("Error creating customer: {}", e.getMessage(), e);
             Map<String, String> errorResponse = new HashMap<>();
@@ -189,101 +117,11 @@ public class CustomerController {
     }
 
     /**
-     * Update an existing customer
-     */
-    @PutMapping("/api/customers/{id}")
-    @ResponseBody
-    public ResponseEntity<?> updateCustomer(
-            @PathVariable Integer id,
-            @RequestBody Map<String, Object> customerData,
-            @RequestParam(required = false) String token,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            HttpServletRequest request) {
-
-        try {
-            // Get token from various sources
-            String validToken = getValidToken(token, authHeader, request);
-
-            if (validToken == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            }
-
-            // Forward the request to the backend API
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", "Bearer " + validToken);
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(customerData, headers);
-
-            // Make the API call to the backend
-            ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
-                    apiBaseUrl + "/customers/" + id,
-                    HttpMethod.PUT,
-                    entity,
-                    new ParameterizedTypeReference<Map<String, Object>>() {}
-            );
-
-            log.info("Customer updated successfully");
-            return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
-
-        } catch (Exception e) {
-            log.error("Error updating customer: {}", e.getMessage(), e);
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("error", "Failed to update customer: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-        }
-    }
-
-    /**
-     * Delete a customer
-     */
-    @DeleteMapping("/api/customers/{id}")
-    @ResponseBody
-    public ResponseEntity<?> deleteCustomer(
-            @PathVariable Integer id,
-            @RequestParam(required = false) String token,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            HttpServletRequest request) {
-
-        try {
-            // Get token from various sources
-            String validToken = getValidToken(token, authHeader, request);
-
-            if (validToken == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            }
-
-            // Forward the request to the backend API
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Authorization", "Bearer " + validToken);
-
-            HttpEntity<Void> entity = new HttpEntity<>(headers);
-
-            // Make the API call to the backend
-            ResponseEntity<Void> response = restTemplate.exchange(
-                    apiBaseUrl + "/customers/" + id,
-                    HttpMethod.DELETE,
-                    entity,
-                    Void.class
-            );
-
-            log.info("Customer deleted successfully");
-            return ResponseEntity.status(response.getStatusCode()).build();
-
-        } catch (Exception e) {
-            log.error("Error deleting customer: {}", e.getMessage(), e);
-            Map<String, String> errorResponse = new HashMap<>();
-            errorResponse.put("error", "Failed to delete customer: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-        }
-    }
-
-    /**
-     * Generate a temporary password
+     * Generate a temporary password for new customers
      */
     private String generateTempPassword() {
-        final String letters = "ABCDEFGHJKLMNPQRSTUVWXYZ"; // Excluded I and O
-        final String numbers = "123456789"; // Excluded 0
+        final String letters = "ABCDEFGHJKLMNPQRSTUVWXYZ"; // Excluded confusing characters
+        final String numbers = "123456789"; // Excluded 0 to avoid confusion with O
 
         StringBuilder password = new StringBuilder("CUS2025-");
 
@@ -305,20 +143,10 @@ public class CustomerController {
     /**
      * Gets a valid token from various sources
      */
-    private String getValidToken(String tokenParam, HttpServletRequest request) {
-        return getValidToken(tokenParam, null, request);
-    }
-
-    /**
-     * Gets a valid token from various sources with Auth header
-     */
     private String getValidToken(String tokenParam, String authHeader, HttpServletRequest request) {
         // Check parameter first
         if (tokenParam != null && !tokenParam.isEmpty()) {
             log.debug("Using token from parameter");
-            // Store token in session
-            HttpSession session = request.getSession();
-            session.setAttribute("jwt-token", tokenParam);
             return tokenParam;
         }
 

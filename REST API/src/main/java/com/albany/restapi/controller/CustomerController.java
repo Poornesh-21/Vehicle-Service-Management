@@ -44,6 +44,15 @@ public class CustomerController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'admin')")
+    public ResponseEntity<Map<String, Object>> getCustomerById(@PathVariable Integer id) {
+        return customerProfileRepository.findById(id)
+                .map(this::convertToResponseDto)
+                .map(ResponseEntity::ok)
+                .orElseThrow(() -> new CustomerNotFoundException("Customer not found with ID: " + id));
+    }
+
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'admin')")
     public ResponseEntity<?> createCustomer(@Valid @RequestBody CustomerRequest request) {
@@ -92,15 +101,6 @@ public class CustomerController {
         } catch (Exception e) {
             throw new CustomerValidationException("Error creating customer: " + e.getMessage());
         }
-    }
-
-    @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'admin')")
-    public ResponseEntity<Map<String, Object>> getCustomerById(@PathVariable Integer id) {
-        return customerProfileRepository.findById(id)
-                .map(this::convertToResponseDto)
-                .map(ResponseEntity::ok)
-                .orElseThrow(() -> new CustomerNotFoundException("Customer not found with ID: " + id));
     }
 
     @PutMapping("/{id}")

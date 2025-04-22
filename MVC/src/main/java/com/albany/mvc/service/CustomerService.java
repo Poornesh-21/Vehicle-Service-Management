@@ -98,6 +98,58 @@ public class CustomerService {
     }
 
     /**
+     * Process customer dates to ensure they're properly formatted for display
+     */
+    private void processCustomerDates(Map<String, Object> customer) {
+        // Handle lastServiceDate
+        if (customer.containsKey("lastServiceDate") && customer.get("lastServiceDate") != null) {
+            String formattedDate;
+            try {
+                // Try to parse as LocalDate
+                Object dateObj = customer.get("lastServiceDate");
+                LocalDate date;
+
+                if (dateObj instanceof String) {
+                    // If it's a string, try to parse it as ISO date (yyyy-MM-dd)
+                    date = LocalDate.parse((String) dateObj);
+                } else if (dateObj instanceof Long) {
+                    // If it's a timestamp (milliseconds since epoch)
+                    date = LocalDate.ofEpochDay((Long) dateObj / (24*60*60*1000));
+                } else {
+                    // Otherwise use toString and try to parse
+                    date = LocalDate.parse(dateObj.toString());
+                }
+
+                // Format the date in a nice readable format
+                formattedDate = date.format(DateTimeFormatter.ofPattern("MMM dd, yyyy"));
+            } catch (DateTimeParseException e) {
+                log.warn("Could not parse date: {}", customer.get("lastServiceDate"));
+                formattedDate = "Invalid date format";
+            }
+
+            // Add the formatted date to the customer data
+            customer.put("formattedLastServiceDate", formattedDate);
+        } else {
+            customer.put("formattedLastServiceDate", "No service yet");
+        }
+    }
+
+    /**
+     * Helper to create auth headers with token
+     */
+    private HttpHeaders createAuthHeaders(String token) {
+        HttpHeaders headers = new HttpHeaders();
+        if (token != null && !token.isEmpty()) {
+            if (token.startsWith("Bearer ")) {
+                headers.set("Authorization", token);
+            } else {
+                headers.setBearerAuth(token);
+            }
+        }
+        return headers;
+    }
+
+    /**
      * Create a new customer
      */
     public Map<String, Object> createCustomer(Map<String, Object> customerData, String token) {
@@ -191,57 +243,5 @@ public class CustomerService {
             log.error("Error deleting customer: {}", e.getMessage(), e);
             return false;
         }
-    }
-
-    /**
-     * Process customer dates to ensure they're properly formatted for display
-     */
-    private void processCustomerDates(Map<String, Object> customer) {
-        // Handle lastServiceDate
-        if (customer.containsKey("lastServiceDate") && customer.get("lastServiceDate") != null) {
-            String formattedDate;
-            try {
-                // Try to parse as LocalDate
-                Object dateObj = customer.get("lastServiceDate");
-                LocalDate date;
-
-                if (dateObj instanceof String) {
-                    // If it's a string, try to parse it as ISO date (yyyy-MM-dd)
-                    date = LocalDate.parse((String) dateObj);
-                } else if (dateObj instanceof Long) {
-                    // If it's a timestamp (milliseconds since epoch)
-                    date = LocalDate.ofEpochDay((Long) dateObj / (24*60*60*1000));
-                } else {
-                    // Otherwise use toString and try to parse
-                    date = LocalDate.parse(dateObj.toString());
-                }
-
-                // Format the date in a nice readable format
-                formattedDate = date.format(DateTimeFormatter.ofPattern("MMM dd, yyyy"));
-            } catch (DateTimeParseException e) {
-                log.warn("Could not parse date: {}", customer.get("lastServiceDate"));
-                formattedDate = "Invalid date format";
-            }
-
-            // Add the formatted date to the customer data
-            customer.put("formattedLastServiceDate", formattedDate);
-        } else {
-            customer.put("formattedLastServiceDate", "No service yet");
-        }
-    }
-
-    /**
-     * Helper to create auth headers with token
-     */
-    private HttpHeaders createAuthHeaders(String token) {
-        HttpHeaders headers = new HttpHeaders();
-        if (token != null && !token.isEmpty()) {
-            if (token.startsWith("Bearer ")) {
-                headers.set("Authorization", token);
-            } else {
-                headers.setBearerAuth(token);
-            }
-        }
-        return headers;
     }
 }

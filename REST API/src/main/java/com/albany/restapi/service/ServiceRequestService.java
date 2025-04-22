@@ -1,6 +1,7 @@
 package com.albany.restapi.service;
 
 import com.albany.restapi.dto.ServiceRequestDTO;
+import com.albany.restapi.exception.ResourceNotFoundException;
 import com.albany.restapi.model.*;
 import com.albany.restapi.repository.*;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -82,7 +82,7 @@ public class ServiceRequestService {
                 .map(this::convertToDTO)
                 .orElseThrow(() -> {
                     log.warn("Service request not found with ID: {}", requestId);
-                    return new RuntimeException("Service request not found with ID: " + requestId);
+                    return new ResourceNotFoundException("Service request not found with ID: " + requestId);
                 });
     }
 
@@ -111,7 +111,7 @@ public class ServiceRequestService {
             Vehicle vehicle = vehicleRepository.findById(requestDTO.getVehicleId())
                     .orElseThrow(() -> {
                         log.warn("Vehicle not found with ID: {}", requestDTO.getVehicleId());
-                        return new RuntimeException("Vehicle not found with ID: " + requestDTO.getVehicleId());
+                        return new ResourceNotFoundException("Vehicle not found with ID: " + requestDTO.getVehicleId());
                     });
 
             log.debug("Found vehicle: {} {}, Registration: {}",
@@ -123,12 +123,33 @@ public class ServiceRequestService {
             serviceRequest.setServiceType(requestDTO.getServiceType());
             serviceRequest.setDeliveryDate(requestDTO.getDeliveryDate());
             serviceRequest.setAdditionalDescription(requestDTO.getAdditionalDescription());
-            serviceRequest.setStatus(ServiceRequest.Status.Received);
+
+            // Parse status string to enum if provided, otherwise default to RECEIVED
+            if (requestDTO.getStatus() != null) {
+                try {
+                    serviceRequest.setStatus(ServiceRequest.Status.valueOf(requestDTO.getStatus()));
+                } catch (IllegalArgumentException e) {
+                    log.warn("Invalid status value: {}. Defaulting to RECEIVED", requestDTO.getStatus());
+                    serviceRequest.setStatus(ServiceRequest.Status.Received);
+                }
+            } else {
+                serviceRequest.setStatus(ServiceRequest.Status.Received);
+            }
+
             serviceRequest.setCreatedAt(LocalDateTime.now());
 
             // If admin ID is provided, set admin
             if (requestDTO.getAdminId() != null) {
-                adminProfileRepository.findById(requestDTO.getAdminId()).ifPresent(serviceRequest::setAdmin);
+                AdminProfile admin = adminProfileRepository.findById(requestDTO.getAdminId())
+                        .orElse(null);
+                serviceRequest.setAdmin(admin);
+            }
+
+            // If service advisor ID is provided, set service advisor
+            if (requestDTO.getServiceAdvisorId() != null) {
+                ServiceAdvisorProfile advisor = serviceAdvisorRepository.findById(requestDTO.getServiceAdvisorId())
+                        .orElse(null);
+                serviceRequest.setServiceAdvisor(advisor);
             }
 
             // Save the service request
@@ -140,12 +161,21 @@ public class ServiceRequestService {
             if (vehicle.getCustomer() != null) {
                 CustomerProfile customer = vehicle.getCustomer();
                 customer.setLastServiceDate(LocalDate.now());
-                customer.setTotalServices(customer.getTotalServices() + 1);
+                // Increment total services count
+                Integer totalServices = customer.getTotalServices();
+                if (totalServices == null) {
+                    totalServices = 0;
+                }
+                customer.setTotalServices(totalServices + 1);
                 customerProfileRepository.save(customer);
                 log.debug("Updated customer service information");
             }
 
             return convertToDTO(savedRequest);
+        } catch (ResourceNotFoundException e) {
+            // Re-throw our custom exceptions directly for better handling
+            log.error("Resource not found: {}", e.getMessage());
+            throw e;
         } catch (Exception e) {
             log.error("Error creating service request: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to create service request: " + e.getMessage(), e);
@@ -164,14 +194,14 @@ public class ServiceRequestService {
             ServiceRequest serviceRequest = serviceRequestRepository.findById(requestId)
                     .orElseThrow(() -> {
                         log.warn("Service request not found with ID: {}", requestId);
-                        return new RuntimeException("Service request not found with ID: " + requestId);
+                        return new ResourceNotFoundException("Service request not found with ID: " + requestId);
                     });
 
             // Get the service advisor
             ServiceAdvisorProfile advisor = serviceAdvisorRepository.findById(advisorId)
                     .orElseThrow(() -> {
                         log.warn("Service advisor not found with ID: {}", advisorId);
-                        return new RuntimeException("Service advisor not found with ID: " + advisorId);
+                        return new ResourceNotFoundException("Service advisor not found with ID: " + advisorId);
                     });
 
             // Assign advisor
@@ -188,6 +218,9 @@ public class ServiceRequestService {
             log.info("Service advisor assigned successfully");
 
             return convertToDTO(updatedRequest);
+        } catch (ResourceNotFoundException e) {
+            // Re-throw our custom exceptions directly for better handling
+            throw e;
         } catch (Exception e) {
             log.error("Error assigning service advisor: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to assign service advisor: " + e.getMessage(), e);
@@ -206,7 +239,7 @@ public class ServiceRequestService {
             ServiceRequest serviceRequest = serviceRequestRepository.findById(requestId)
                     .orElseThrow(() -> {
                         log.warn("Service request not found with ID: {}", requestId);
-                        return new RuntimeException("Service request not found with ID: " + requestId);
+                        return new ResourceNotFoundException("Service request not found with ID: " + requestId);
                     });
 
             // Update status
@@ -217,6 +250,9 @@ public class ServiceRequestService {
             log.info("Service request status updated successfully");
 
             return convertToDTO(updatedRequest);
+        } catch (ResourceNotFoundException e) {
+            // Re-throw our custom exceptions directly
+            throw e;
         } catch (Exception e) {
             log.error("Error updating service request status: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to update service request status: " + e.getMessage(), e);

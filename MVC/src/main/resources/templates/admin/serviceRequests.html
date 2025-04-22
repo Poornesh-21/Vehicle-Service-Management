@@ -2231,6 +2231,15 @@
                 assignServiceAdvisor();
             });
         }
+
+        // Add event listener for Add Service Request modal
+        const addServiceRequestModal = document.getElementById('addServiceRequestModal');
+        if (addServiceRequestModal) {
+            addServiceRequestModal.addEventListener('show.bs.modal', function() {
+                // Load customers when the modal is shown
+                loadCustomersDirectly();
+            });
+        }
     }
 
     // API Functions
@@ -2252,15 +2261,18 @@
         }
     }
 
-    // Fixed loadCustomers function with better error handling and logging
-    function loadCustomers() {
-        console.log("Loading customers...");
+    // Function to load service requests with error handling
+    function loadServiceRequests() {
+        console.log("Loading service requests...");
 
-        fetch('/admin/customers/api', {  // Changed to the correct endpoint
+        // Get the token
+        const token = getToken();
+
+        fetch('/admin/service-requests/api' + (token ? `?token=${token}` : ''), {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + getToken()
+                'Authorization': `Bearer ${token}`
             }
         })
             .then(response => {
@@ -2268,83 +2280,51 @@
                     window.location.href = '/admin/login?error=session_expired';
                     throw new Error('Session expired');
                 }
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
                 return response.json();
             })
             .then(data => {
-                console.log("Customers loaded:", data);
+                console.log("Service requests loaded:", data);
 
-                if (!data || !Array.isArray(data)) {
-                    console.error("Invalid customers data format:", data);
-                    showToast("Failed to load customers: Invalid data format", "error");
-                    return;
-                }
-
-                customers = data;
-
-                // Check if we got customer data
-                if (customers.length > 0) {
-                    console.log(`Loaded ${customers.length} customers`);
-
-                    // Log sample customer for debugging
-                    console.log("Sample customer:", customers[0]);
+                // Handle null or empty data
+                if (!data) {
+                    serviceRequests = [];
                 } else {
-                    console.warn("No customers loaded");
+                    serviceRequests = Array.isArray(data) ? data : [];
                 }
 
-                populateCustomerDropdown();
+                renderServiceRequests();
+                setupPagination();
+
+                // Hide loading row
+                const loadingRow = document.getElementById('loading-row');
+                if (loadingRow) loadingRow.style.display = 'none';
+
+                // Show empty row if no data
+                if (serviceRequests.length === 0) {
+                    const emptyRow = document.getElementById('empty-row');
+                    if (emptyRow) emptyRow.style.display = 'table-row';
+                }
             })
             .catch(error => {
-                console.error('Error loading customers:', error);
-                showToast("Failed to load customers: " + error.message, "error");
+                console.error("Error loading service requests:", error);
+
+                // Hide loading row and show error
+                const loadingRow = document.getElementById('loading-row');
+                if (loadingRow) {
+                    loadingRow.innerHTML = `
+                <td colspan="9" class="text-center py-4">
+                    <div class="my-3">
+                        <i class="fas fa-exclamation-circle fa-2x text-danger mb-3"></i>
+                        <h5>Error loading service requests</h5>
+                        <p class="text-muted">${error.message || 'Please try again later'}</p>
+                    </div>
+                </td>
+            `;
+                }
             });
     }
 
-    // Improved populateCustomerDropdown function with more robust property access
-    function populateCustomerDropdown() {
-        console.log("Populating customer dropdown with", customers.length, "customers");
-
-        const dropdown = document.getElementById('customerId');
-        if (!dropdown) {
-            console.error("Customer dropdown element not found");
-            return;
-        }
-
-        dropdown.innerHTML = '<option value="">Select Customer</option>';
-
-        if (!customers || customers.length === 0) {
-            dropdown.innerHTML += '<option value="" disabled>No customers available</option>';
-            return;
-        }
-
-        customers.forEach(customer => {
-            try {
-                // Use safe property access with fallbacks
-                const customerId = customer.customerId || customer.userId || customer.id;
-                const firstName = customer.firstName || '';
-                const lastName = customer.lastName || '';
-                const membershipStatus = customer.membershipStatus || 'Standard';
-
-                if (!customerId) {
-                    console.warn("Customer missing ID:", customer);
-                    return;
-                }
-
-                const option = document.createElement('option');
-                option.value = customerId;
-                option.textContent = `${firstName} ${lastName} (${membershipStatus})`;
-                dropdown.appendChild(option);
-            } catch (e) {
-                console.error("Error processing customer for dropdown:", e, customer);
-            }
-        });
-
-        console.log(`Added ${dropdown.options.length - 1} customers to dropdown`);
-    }
-
-    // Alternative implementation using direct API calls if the customers array doesn't work
+    // Improved loadCustomersDirectly function with better error handling
     function loadCustomersDirectly() {
         console.log("Loading customers directly for dropdown...");
 
@@ -2357,15 +2337,20 @@
         dropdown.innerHTML = '<option value="">Loading customers...</option>';
         dropdown.disabled = true;
 
-        fetch('/admin/customers/api', {
+        // Get the token
+        const token = getToken();
+
+        fetch('/admin/customers/api' + (token ? `?token=${token}` : ''), {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + getToken()
+                'Authorization': `Bearer ${token}`
             }
         })
             .then(response => {
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
                 return response.json();
             })
             .then(data => {
@@ -2373,11 +2358,14 @@
 
                 dropdown.innerHTML = '<option value="">Select Customer</option>';
 
+                // Ensure data is an array before proceeding
                 if (!data || !Array.isArray(data) || data.length === 0) {
                     dropdown.innerHTML += '<option value="" disabled>No customers available</option>';
+                    dropdown.disabled = true;
                     return;
                 }
 
+                // Process each customer
                 data.forEach(customer => {
                     try {
                         const customerId = customer.customerId || customer.userId || customer.id;
@@ -2385,7 +2373,10 @@
                         const lastName = customer.lastName || '';
                         const membershipStatus = customer.membershipStatus || 'Standard';
 
-                        if (!customerId) return;
+                        if (!customerId) {
+                            console.warn("Customer missing ID:", customer);
+                            return;
+                        }
 
                         const option = document.createElement('option');
                         option.value = customerId;
@@ -2403,67 +2394,6 @@
                 dropdown.innerHTML = '<option value="">Error loading customers</option>';
                 dropdown.disabled = true;
                 showToast("Failed to load customers: " + error.message, "error");
-            });
-    }
-
-    // Add this to your initialization code
-    document.addEventListener('DOMContentLoaded', function() {
-        // Add event listener for Add Service Request modal
-        const addServiceRequestModal = document.getElementById('addServiceRequestModal');
-        if (addServiceRequestModal) {
-            addServiceRequestModal.addEventListener('show.bs.modal', function() {
-                // Load customers when the modal is shown
-                loadCustomersDirectly();
-            });
-        }
-
-        // Rest of your initialization code...
-    });
-
-    function loadCustomers() {
-        fetch('/admin/api/customers', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + getToken()
-            }
-        })
-            .then(response => {
-                if (response.status === 401) {
-                    window.location.href = '/admin/login?error=session_expired';
-                    throw new Error('Session expired');
-                }
-                return response.json();
-            })
-            .then(data => {
-                customers = data;
-                populateCustomerDropdown();
-            })
-            .catch(error => {
-                console.error('Error loading customers:', error);
-            });
-    }
-
-    function loadServiceAdvisors() {
-        fetch('/admin/service-advisors/api/advisors', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + getToken()
-            }
-        })
-            .then(response => {
-                if (response.status === 401) {
-                    window.location.href = '/admin/login?error=session_expired';
-                    throw new Error('Session expired');
-                }
-                return response.json();
-            })
-            .then(data => {
-                serviceAdvisors = data;
-            })
-            .catch(error => {
-                console.error('Error loading service advisors:', error);
             });
     }
 
@@ -2832,7 +2762,7 @@
         }
     }
 
-    // Fixed saveServiceRequest function
+    // Updated saveServiceRequest function
     function saveServiceRequest() {
         const form = document.getElementById('addServiceRequestForm');
         if (!form) return;
@@ -2841,10 +2771,8 @@
         const newVehicleForm = document.getElementById('newVehicleForm');
         const isAddingNewVehicle = newVehicleForm.style.display !== 'none';
 
-        // We need to handle validation differently based on what the user is doing
-        let formValid = true;
-
         // Validate main form fields
+        let formValid = true;
         const customerId = document.getElementById('customerId').value;
         const serviceType = document.getElementById('serviceType').value;
         const deliveryDate = document.getElementById('deliveryDate').value;
@@ -2917,11 +2845,14 @@
 
         showSpinner();
 
-        fetch('/admin/service-requests/api', {
+        // Get token for authentication
+        const token = getToken();
+
+        fetch('/admin/service-requests/api' + (token ? `?token=${token}` : ''), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + getToken()
+                'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify(serviceRequest)
         })
@@ -2932,7 +2863,14 @@
                 }
 
                 if (!response.ok) {
-                    throw new Error('Failed to create service request');
+                    return response.text().then(text => {
+                        try {
+                            const error = JSON.parse(text);
+                            throw new Error(error.error || error.message || 'Failed to create service request');
+                        } catch (e) {
+                            throw new Error('Failed to create service request: ' + text);
+                        }
+                    });
                 }
                 return response.json();
             })
@@ -2960,7 +2898,7 @@
             .catch(error => {
                 hideSpinner();
                 console.error('Error creating service request:', error);
-                showToast('Failed to create service request. Please try again.', 'error');
+                showToast('Failed to create service request: ' + error.message, 'error');
             });
     }
 

@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -23,141 +25,207 @@ public class ServiceRequestService {
     private final ServiceAdvisorProfileRepository serviceAdvisorRepository;
     private final CustomerProfileRepository customerProfileRepository;
 
+    /**
+     * Get all service requests
+     */
     public List<ServiceRequestDTO> getAllServiceRequests() {
-        log.info("Getting all service requests");
-        return serviceRequestRepository.findAll().stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-    }
-
-    public List<ServiceRequestDTO> getServiceRequestsByCustomer(Integer customerId) {
-        log.info("Getting service requests for customer ID: {}", customerId);
-        // Try both with customer ID and user ID
-        List<ServiceRequest> requests = serviceRequestRepository.findByVehicle_Customer_CustomerId(customerId);
-
-        if (requests.isEmpty()) {
-            // Try finding by user ID
-            CustomerProfile customerProfile = customerProfileRepository.findByUserId(customerId);
-            if (customerProfile != null) {
-                requests = serviceRequestRepository.findByVehicle_Customer_CustomerId(customerProfile.getCustomerId());
-            }
-        }
-
+        log.info("Fetching all service requests");
+        List<ServiceRequest> requests = serviceRequestRepository.findAll();
+        log.debug("Found {} service requests", requests.size());
         return requests.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Get service requests by customer ID
+     */
+    public List<ServiceRequestDTO> getServiceRequestsByCustomer(Integer customerId) {
+        log.info("Fetching service requests for customer: {}", customerId);
+        List<ServiceRequest> requests = serviceRequestRepository.findByVehicle_Customer_User_UserId(customerId);
+        log.debug("Found {} service requests for customer {}", requests.size(), customerId);
+        return requests.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Get service requests by advisor ID
+     */
     public List<ServiceRequestDTO> getServiceRequestsByAdvisor(Integer advisorId) {
-        log.info("Getting service requests for advisor ID: {}", advisorId);
-        return serviceRequestRepository.findByServiceAdvisor_AdvisorId(advisorId).stream()
+        log.info("Fetching service requests for advisor: {}", advisorId);
+        List<ServiceRequest> requests = serviceRequestRepository.findByServiceAdvisor_AdvisorId(advisorId);
+        log.debug("Found {} service requests for advisor {}", requests.size(), advisorId);
+        return requests.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Get service requests by status
+     */
     public List<ServiceRequestDTO> getServiceRequestsByStatus(ServiceRequest.Status status) {
-        log.info("Getting service requests with status: {}", status);
-        return serviceRequestRepository.findByStatus(status).stream()
+        log.info("Fetching service requests with status: {}", status);
+        List<ServiceRequest> requests = serviceRequestRepository.findByStatus(status);
+        log.debug("Found {} service requests with status {}", requests.size(), status);
+        return requests.stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Get service request by ID
+     */
     public ServiceRequestDTO getServiceRequestById(Integer requestId) {
-        log.info("Getting service request by ID: {}", requestId);
+        log.info("Fetching service request with ID: {}", requestId);
         return serviceRequestRepository.findById(requestId)
                 .map(this::convertToDTO)
-                .orElseThrow(() -> new RuntimeException("Service request not found with ID: " + requestId));
+                .orElseThrow(() -> {
+                    log.warn("Service request not found with ID: {}", requestId);
+                    return new RuntimeException("Service request not found with ID: " + requestId);
+                });
     }
 
+    /**
+     * Create a new service request
+     */
     @Transactional
     public ServiceRequestDTO createServiceRequest(ServiceRequestDTO requestDTO) {
-        log.info("Creating new service request for vehicle ID: {}", requestDTO.getVehicleId());
-
         try {
+            log.info("Creating new service request: {}", requestDTO);
+
+            // Validate required fields
+            if (requestDTO.getVehicleId() == null) {
+                throw new IllegalArgumentException("Vehicle ID is required");
+            }
+
+            if (requestDTO.getServiceType() == null || requestDTO.getServiceType().trim().isEmpty()) {
+                throw new IllegalArgumentException("Service type is required");
+            }
+
+            if (requestDTO.getDeliveryDate() == null) {
+                throw new IllegalArgumentException("Delivery date is required");
+            }
+
             // Get the vehicle
             Vehicle vehicle = vehicleRepository.findById(requestDTO.getVehicleId())
-                    .orElseThrow(() -> new RuntimeException("Vehicle not found with ID: " + requestDTO.getVehicleId()));
+                    .orElseThrow(() -> {
+                        log.warn("Vehicle not found with ID: {}", requestDTO.getVehicleId());
+                        return new RuntimeException("Vehicle not found with ID: " + requestDTO.getVehicleId());
+                    });
 
-            log.debug("Found vehicle: {}", vehicle);
+            log.debug("Found vehicle: {} {}, Registration: {}",
+                    vehicle.getBrand(), vehicle.getModel(), vehicle.getRegistrationNumber());
 
-            // Create service request
+            // Create new service request
             ServiceRequest serviceRequest = new ServiceRequest();
             serviceRequest.setVehicle(vehicle);
             serviceRequest.setServiceType(requestDTO.getServiceType());
             serviceRequest.setDeliveryDate(requestDTO.getDeliveryDate());
             serviceRequest.setAdditionalDescription(requestDTO.getAdditionalDescription());
             serviceRequest.setStatus(ServiceRequest.Status.Received);
+            serviceRequest.setCreatedAt(LocalDateTime.now());
 
-            // If admin ID is provided, set it
+            // If admin ID is provided, set admin
             if (requestDTO.getAdminId() != null) {
-                AdminProfile admin = adminProfileRepository.findById(requestDTO.getAdminId())
-                        .orElse(null);
-                serviceRequest.setAdmin(admin);
+                adminProfileRepository.findById(requestDTO.getAdminId()).ifPresent(serviceRequest::setAdmin);
             }
 
-            // If advisor ID is provided, set it
-            if (requestDTO.getServiceAdvisorId() != null) {
-                ServiceAdvisorProfile advisor = serviceAdvisorRepository.findById(requestDTO.getServiceAdvisorId())
-                        .orElse(null);
-                serviceRequest.setServiceAdvisor(advisor);
-            }
-
-            // Save service request
+            // Save the service request
+            log.debug("Saving service request");
             ServiceRequest savedRequest = serviceRequestRepository.save(serviceRequest);
-            log.info("Successfully created service request with ID: {}", savedRequest.getRequestId());
+            log.info("Service request created successfully with ID: {}", savedRequest.getRequestId());
+
+            // Update customer's last service date if applicable
+            if (vehicle.getCustomer() != null) {
+                CustomerProfile customer = vehicle.getCustomer();
+                customer.setLastServiceDate(LocalDate.now());
+                customer.setTotalServices(customer.getTotalServices() + 1);
+                customerProfileRepository.save(customer);
+                log.debug("Updated customer service information");
+            }
 
             return convertToDTO(savedRequest);
         } catch (Exception e) {
             log.error("Error creating service request: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to create service request: " + e.getMessage());
+            throw new RuntimeException("Failed to create service request: " + e.getMessage(), e);
         }
     }
 
+    /**
+     * Assign a service advisor to a service request
+     */
     @Transactional
     public ServiceRequestDTO assignServiceAdvisor(Integer requestId, Integer advisorId) {
-        log.info("Assigning advisor ID: {} to service request ID: {}", advisorId, requestId);
+        try {
+            log.info("Assigning service advisor {} to request {}", advisorId, requestId);
 
-        // Get the service request
-        ServiceRequest serviceRequest = serviceRequestRepository.findById(requestId)
-                .orElseThrow(() -> new RuntimeException("Service request not found with ID: " + requestId));
+            // Get the service request
+            ServiceRequest serviceRequest = serviceRequestRepository.findById(requestId)
+                    .orElseThrow(() -> {
+                        log.warn("Service request not found with ID: {}", requestId);
+                        return new RuntimeException("Service request not found with ID: " + requestId);
+                    });
 
-        // Get the service advisor
-        ServiceAdvisorProfile advisor = serviceAdvisorRepository.findById(advisorId)
-                .orElseThrow(() -> new RuntimeException("Service advisor not found with ID: " + advisorId));
+            // Get the service advisor
+            ServiceAdvisorProfile advisor = serviceAdvisorRepository.findById(advisorId)
+                    .orElseThrow(() -> {
+                        log.warn("Service advisor not found with ID: {}", advisorId);
+                        return new RuntimeException("Service advisor not found with ID: " + advisorId);
+                    });
 
-        // Assign advisor
-        serviceRequest.setServiceAdvisor(advisor);
+            // Assign advisor
+            serviceRequest.setServiceAdvisor(advisor);
 
-        // Changed status to Diagnosis when advisor is assigned if the status is still Received
-        if (serviceRequest.getStatus() == ServiceRequest.Status.Received) {
-            serviceRequest.setStatus(ServiceRequest.Status.Diagnosis);
+            // Change status to Diagnosis when advisor is assigned if the status is still Received
+            if (serviceRequest.getStatus() == ServiceRequest.Status.Received) {
+                serviceRequest.setStatus(ServiceRequest.Status.Diagnosis);
+                log.debug("Updated status to Diagnosis");
+            }
+
+            // Save and return
+            ServiceRequest updatedRequest = serviceRequestRepository.save(serviceRequest);
+            log.info("Service advisor assigned successfully");
+
+            return convertToDTO(updatedRequest);
+        } catch (Exception e) {
+            log.error("Error assigning service advisor: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to assign service advisor: " + e.getMessage(), e);
         }
-
-        // Save and return
-        ServiceRequest updatedRequest = serviceRequestRepository.save(serviceRequest);
-        log.info("Successfully assigned advisor to service request");
-
-        return convertToDTO(updatedRequest);
     }
 
+    /**
+     * Update the status of a service request
+     */
     @Transactional
     public ServiceRequestDTO updateServiceRequestStatus(Integer requestId, ServiceRequest.Status newStatus) {
-        log.info("Updating service request ID: {} to status: {}", requestId, newStatus);
+        try {
+            log.info("Updating service request {} status to {}", requestId, newStatus);
 
-        // Get the service request
-        ServiceRequest serviceRequest = serviceRequestRepository.findById(requestId)
-                .orElseThrow(() -> new RuntimeException("Service request not found with ID: " + requestId));
+            // Get the service request
+            ServiceRequest serviceRequest = serviceRequestRepository.findById(requestId)
+                    .orElseThrow(() -> {
+                        log.warn("Service request not found with ID: {}", requestId);
+                        return new RuntimeException("Service request not found with ID: " + requestId);
+                    });
 
-        // Update status
-        serviceRequest.setStatus(newStatus);
+            // Update status
+            serviceRequest.setStatus(newStatus);
 
-        // Save and return
-        ServiceRequest updatedRequest = serviceRequestRepository.save(serviceRequest);
-        log.info("Successfully updated service request status");
+            // Save and return
+            ServiceRequest updatedRequest = serviceRequestRepository.save(serviceRequest);
+            log.info("Service request status updated successfully");
 
-        return convertToDTO(updatedRequest);
+            return convertToDTO(updatedRequest);
+        } catch (Exception e) {
+            log.error("Error updating service request status: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to update service request status: " + e.getMessage(), e);
+        }
     }
 
+    /**
+     * Convert service request entity to DTO
+     */
     private ServiceRequestDTO convertToDTO(ServiceRequest serviceRequest) {
         ServiceRequestDTO dto = new ServiceRequestDTO();
 

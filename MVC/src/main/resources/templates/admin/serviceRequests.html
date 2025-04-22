@@ -1994,7 +1994,14 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    // Service Requests Page JavaScript
+    // Global variables
+    let serviceRequests = [];
+    let customers = [];
+    let serviceAdvisors = [];
+    let vehicles = [];
+    let currentPage = 1;
+    const itemsPerPage = 5;
+
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize app
         initializeApp();
@@ -2004,17 +2011,20 @@
 
         // Load service requests
         loadServiceRequests();
+
+        // Add event listener for Add Service Request modal
+        const addServiceRequestModal = document.getElementById('addServiceRequestModal');
+        if (addServiceRequestModal) {
+            addServiceRequestModal.addEventListener('show.bs.modal', function() {
+                // Load customers when the modal is shown
+                loadCustomersDirectly();
+            });
+        }
     });
 
-    // Global variables
-    let serviceRequests = [];
-    let customers = [];
-    let serviceAdvisors = [];
-    let vehicles = [];
-    let currentPage = 1;
-    const itemsPerPage = 5;
-
-    // Initialize app
+    /**
+     * Initialize the application
+     */
     function initializeApp() {
         // Setup mobile menu toggle
         setupMobileMenu();
@@ -2032,6 +2042,9 @@
         setupDateDisplay();
     }
 
+    /**
+     * Set up mobile menu toggle
+     */
     function setupMobileMenu() {
         const mobileMenuToggle = document.getElementById('mobileMenuToggle');
         if (mobileMenuToggle) {
@@ -2041,6 +2054,9 @@
         }
     }
 
+    /**
+     * Set up logout button
+     */
     function setupLogout() {
         const logoutBtn = document.querySelector('.logout-btn');
         if (logoutBtn) {
@@ -2062,6 +2078,9 @@
         }
     }
 
+    /**
+     * Set up date display
+     */
     function setupDateDisplay() {
         const dateElement = document.getElementById('current-date');
         if (dateElement) {
@@ -2071,6 +2090,9 @@
         }
     }
 
+    /**
+     * Set up authentication token for all requests
+     */
     function setupAuthentication() {
         // Get token from storage
         const tokenFromStorage = localStorage.getItem("jwt-token") || sessionStorage.getItem("jwt-token");
@@ -2107,6 +2129,46 @@
         }
     }
 
+    /**
+     * Add CSS for membership filters
+     */
+    function addMembershipFilterStyles() {
+        // Check if styles already exist
+        if (!document.getElementById('membership-filter-styles')) {
+            const style = document.createElement('style');
+            style.id = 'membership-filter-styles';
+            style.textContent = `
+            .membership-filters {
+                display: flex;
+                align-items: center;
+            }
+
+            .membership-filters .btn-group {
+                box-shadow: var(--shadow-sm);
+                border-radius: var(--radius-lg);
+                overflow: hidden;
+            }
+
+            .membership-filters .btn {
+                padding: 0.4rem 0.75rem;
+                font-size: 0.85rem;
+                font-weight: 500;
+                border-radius: 0;
+            }
+
+            .membership-filters .btn.active {
+                background-color: var(--wine);
+                color: white;
+                border-color: var(--wine);
+            }
+        `;
+            document.head.appendChild(style);
+        }
+    }
+
+    /**
+     * Set up event listeners
+     */
     function setupEventListeners() {
         // Search functionality
         const searchInput = document.getElementById('searchInput');
@@ -2177,7 +2239,9 @@
                         addNewVehicleBtn.disabled = true;
                     }
                     // Hide new vehicle form if it's open
-                    newVehicleForm.style.display = 'none';
+                    if (newVehicleForm) {
+                        newVehicleForm.style.display = 'none';
+                    }
                 }
             });
         }
@@ -2187,11 +2251,13 @@
         if (addNewVehicleBtn) {
             addNewVehicleBtn.addEventListener('click', function() {
                 const newVehicleForm = document.getElementById('newVehicleForm');
-                newVehicleForm.style.display = 'block';
+                if (newVehicleForm) {
+                    newVehicleForm.style.display = 'block';
 
-                // Disable the vehicle dropdown when adding a new vehicle
-                const vehicleDropdown = document.getElementById('vehicleId');
-                if (vehicleDropdown) vehicleDropdown.disabled = true;
+                    // Disable the vehicle dropdown when adding a new vehicle
+                    const vehicleDropdown = document.getElementById('vehicleId');
+                    if (vehicleDropdown) vehicleDropdown.disabled = true;
+                }
             });
         }
 
@@ -2200,11 +2266,13 @@
         if (cancelNewVehicleBtn) {
             cancelNewVehicleBtn.addEventListener('click', function() {
                 const newVehicleForm = document.getElementById('newVehicleForm');
-                newVehicleForm.style.display = 'none';
+                if (newVehicleForm) {
+                    newVehicleForm.style.display = 'none';
 
-                // Enable the vehicle dropdown when not adding a new vehicle
-                const vehicleDropdown = document.getElementById('vehicleId');
-                if (vehicleDropdown) vehicleDropdown.disabled = false;
+                    // Enable the vehicle dropdown when not adding a new vehicle
+                    const vehicleDropdown = document.getElementById('vehicleId');
+                    if (vehicleDropdown) vehicleDropdown.disabled = false;
+                }
             });
         }
 
@@ -2231,22 +2299,18 @@
                 assignServiceAdvisor();
             });
         }
-
-        // Add event listener for Add Service Request modal
-        const addServiceRequestModal = document.getElementById('addServiceRequestModal');
-        if (addServiceRequestModal) {
-            addServiceRequestModal.addEventListener('show.bs.modal', function() {
-                // Load customers when the modal is shown
-                loadCustomersDirectly();
-            });
-        }
     }
 
-    // API Functions
+    /**
+     * Get the authentication token
+     */
     function getToken() {
         return localStorage.getItem('jwt-token') || sessionStorage.getItem('jwt-token');
     }
 
+    /**
+     * Show the loading spinner
+     */
     function showSpinner() {
         const spinnerOverlay = document.getElementById('spinnerOverlay');
         if (spinnerOverlay) {
@@ -2254,6 +2318,9 @@
         }
     }
 
+    /**
+     * Hide the loading spinner
+     */
     function hideSpinner() {
         const spinnerOverlay = document.getElementById('spinnerOverlay');
         if (spinnerOverlay) {
@@ -2261,14 +2328,32 @@
         }
     }
 
-    // Function to load service requests with error handling
+    /**
+     * Load service requests from API
+     */
     function loadServiceRequests() {
         console.log("Loading service requests...");
 
+        // Show loading state
+        const tableBody = document.getElementById('serviceRequestsTableBody');
+        if (!tableBody) return;
+
+        const loadingRow = document.getElementById('loading-row');
+        const emptyRow = document.getElementById('empty-row');
+
+        if (loadingRow) loadingRow.style.display = 'table-row';
+        if (emptyRow) emptyRow.style.display = 'none';
+
         // Get the token
         const token = getToken();
+        if (!token) {
+            console.error("No auth token found");
+            window.location.href = '/admin/login?error=session_expired';
+            return;
+        }
 
-        fetch('/admin/service-requests/api' + (token ? `?token=${token}` : ''), {
+        // Fetch service requests from API
+        fetch(`/admin/service-requests/api${token ? `?token=${token}` : ''}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -2280,51 +2365,45 @@
                     window.location.href = '/admin/login?error=session_expired';
                     throw new Error('Session expired');
                 }
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
                 return response.json();
             })
             .then(data => {
                 console.log("Service requests loaded:", data);
 
-                // Handle null or empty data
-                if (!data) {
-                    serviceRequests = [];
-                } else {
-                    serviceRequests = Array.isArray(data) ? data : [];
-                }
-
-                renderServiceRequests();
-                setupPagination();
-
                 // Hide loading row
-                const loadingRow = document.getElementById('loading-row');
                 if (loadingRow) loadingRow.style.display = 'none';
 
-                // Show empty row if no data
+                // Process the response
+                serviceRequests = data || [];
+
                 if (serviceRequests.length === 0) {
-                    const emptyRow = document.getElementById('empty-row');
                     if (emptyRow) emptyRow.style.display = 'table-row';
+                } else {
+                    renderServiceRequests();
+                    setupPagination();
                 }
             })
             .catch(error => {
                 console.error("Error loading service requests:", error);
+                if (loadingRow) loadingRow.style.display = 'none';
 
-                // Hide loading row and show error
-                const loadingRow = document.getElementById('loading-row');
-                if (loadingRow) {
-                    loadingRow.innerHTML = `
-                <td colspan="9" class="text-center py-4">
-                    <div class="my-3">
-                        <i class="fas fa-exclamation-circle fa-2x text-danger mb-3"></i>
-                        <h5>Error loading service requests</h5>
-                        <p class="text-muted">${error.message || 'Please try again later'}</p>
-                    </div>
-                </td>
-            `;
+                // Show empty state with error message
+                if (emptyRow) {
+                    emptyRow.style.display = 'table-row';
+                    const errorMessage = emptyRow.querySelector('p');
+                    if (errorMessage) {
+                        errorMessage.textContent = 'Error loading service requests. Please try again.';
+                    }
                 }
             });
     }
 
-    // Improved loadCustomersDirectly function with better error handling
+    /**
+     * Load customers for the dropdown with better error handling
+     */
     function loadCustomersDirectly() {
         console.log("Loading customers directly for dropdown...");
 
@@ -2337,31 +2416,54 @@
         dropdown.innerHTML = '<option value="">Loading customers...</option>';
         dropdown.disabled = true;
 
-        // Get the token
+        // Get token
         const token = getToken();
+        if (!token) {
+            console.error("No auth token found");
+            dropdown.innerHTML = '<option value="">Error loading customers - No authentication</option>';
+            dropdown.disabled = true;
+            return;
+        }
 
-        fetch('/admin/customers/api' + (token ? `?token=${token}` : ''), {
+        // Try using the correct endpoint
+        fetch('/admin/api/customers', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                'Authorization': 'Bearer ' + token
             }
         })
             .then(response => {
+                if (response.status === 401) {
+                    window.location.href = '/admin/login?error=session_expired';
+                    throw new Error('Session expired');
+                }
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    // If first attempt fails, try alternative endpoint
+                    console.warn("Primary endpoint failed, trying alternative endpoint");
+                    return fetch('/admin/customers/api', {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + token
+                        }
+                    });
+                }
+                return response;
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
                 }
                 return response.json();
             })
             .then(data => {
-                console.log("Direct customer data:", data);
+                console.log("Customer data loaded:", data);
 
                 dropdown.innerHTML = '<option value="">Select Customer</option>';
 
-                // Ensure data is an array before proceeding
                 if (!data || !Array.isArray(data) || data.length === 0) {
                     dropdown.innerHTML += '<option value="" disabled>No customers available</option>';
-                    dropdown.disabled = true;
                     return;
                 }
 
@@ -2383,377 +2485,88 @@
                         option.textContent = `${firstName} ${lastName} (${membershipStatus})`;
                         dropdown.appendChild(option);
                     } catch (e) {
-                        console.error("Error processing customer:", e);
+                        console.error("Error processing customer for dropdown:", e, customer);
                     }
                 });
 
                 dropdown.disabled = false;
+                console.log(`Added ${dropdown.options.length - 1} customers to dropdown`);
             })
             .catch(error => {
-                console.error('Error directly loading customers:', error);
+                console.error('Error loading customers:', error);
                 dropdown.innerHTML = '<option value="">Error loading customers</option>';
                 dropdown.disabled = true;
                 showToast("Failed to load customers: " + error.message, "error");
             });
     }
 
+    /**
+     * Load vehicles for a specific customer
+     */
     function loadVehiclesForCustomer(customerId) {
         const vehicleDropdown = document.getElementById('vehicleId');
-        if (vehicleDropdown) {
-            vehicleDropdown.disabled = true;
-            vehicleDropdown.innerHTML = '<option value="">Loading vehicles...</option>';
+        if (!vehicleDropdown) return;
 
-            const token = getToken();
+        vehicleDropdown.disabled = true;
+        vehicleDropdown.innerHTML = '<option value="">Loading vehicles...</option>';
 
-            // Use the correct admin API endpoint
-            fetch(`/admin/api/customers/${customerId}/vehicles${token ? `?token=${token}` : ''}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+        // Get token
+        const token = getToken();
+        if (!token) {
+            console.error("No auth token found");
+            resetVehicleDropdown('Error loading vehicles - No authentication');
+            return;
+        }
+
+        // Use the correct admin API endpoint
+        fetch(`/admin/api/customers/${customerId}/vehicles${token ? `?token=${token}` : ''}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        })
+            .then(response => {
+                if (response.status === 401) {
+                    window.location.href = '/admin/login?error=session_expired';
+                    throw new Error('Session expired');
                 }
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
             })
-                .then(response => {
-                    if (response.status === 401) {
-                        window.location.href = '/admin/login?error=session_expired';
-                        throw new Error('Session expired');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    vehicles = data;
-                    populateVehicleDropdown(data);
-                })
-                .catch(error => {
-                    console.error('Error loading vehicles:', error);
-                    resetVehicleDropdown('Error loading vehicles. Please try again.');
+            .then(data => {
+                vehicles = data || [];
+
+                // Reset the dropdown
+                vehicleDropdown.innerHTML = '<option value="">Select Vehicle</option>';
+
+                if (vehicles.length === 0) {
+                    vehicleDropdown.innerHTML += '<option value="" disabled>No vehicles found for this customer</option>';
+                    vehicleDropdown.disabled = true;
+                    return;
+                }
+
+                // Add each vehicle to the dropdown
+                vehicles.forEach(vehicle => {
+                    const option = document.createElement('option');
+                    option.value = vehicle.vehicleId;
+                    option.textContent = `${vehicle.brand} ${vehicle.model} (${vehicle.registrationNumber})`;
+                    vehicleDropdown.appendChild(option);
                 });
-        }
-    }
 
-    function renderServiceRequests() {
-        const tableBody = document.getElementById('serviceRequestsTableBody');
-        if (!tableBody) return;
-
-        // Clear table body except for special rows
-        const rows = tableBody.querySelectorAll('tr:not(#loading-row):not(#empty-row)');
-        rows.forEach(row => row.remove());
-
-        if (serviceRequests.length === 0) {
-            const emptyRow = document.getElementById('empty-row');
-            if (emptyRow) {
-                emptyRow.style.display = 'table-row';
-            }
-            return;
-        }
-
-        const emptyRow = document.getElementById('empty-row');
-        if (emptyRow) {
-            emptyRow.style.display = 'none';
-        }
-
-        // Get requests for current page
-        const startIndex = (currentPage - 1) * itemsPerPage;
-        const endIndex = Math.min(startIndex + itemsPerPage, serviceRequests.length);
-        const displayedRequests = serviceRequests.slice(startIndex, endIndex);
-
-        // Create rows for displayed requests
-        displayedRequests.forEach(request => {
-            // Determine membership status if not already set
-            const membershipStatus = request.membershipStatus || 'Standard';
-
-            const row = document.createElement('tr');
-            row.className = 'active-page';
-            row.innerHTML = `
-        <td>REQ-${request.requestId}</td>
-        <td>
-            <div class="vehicle-info">
-                <div class="vehicle-icon">
-                    <i class="fas fa-${request.vehicleCategory === 'Bike' ? 'motorcycle' : 'car-side'}"></i>
-                </div>
-                <div class="vehicle-details">
-                    <h5>${request.vehicleName || request.vehicleBrand + ' ' + request.vehicleModel}</h5>
-                    <p>${request.registrationNumber}</p>
-                </div>
-            </div>
-        </td>
-        <td>
-            <div class="person-info">
-                <div class="person-details">
-                    <h5>${request.customerName}</h5>
-                    <p>${request.customerEmail || ''}</p>
-                </div>
-            </div>
-        </td>
-        <td>
-            <span class="membership-badge membership-${membershipStatus.toLowerCase()}">
-                <i class="fas fa-${membershipStatus === 'Premium' ? 'crown' : 'user'}"></i>
-                ${membershipStatus}
-            </span>
-        </td>
-        <td>${request.serviceType}</td>
-        <td>
-            <span class="status-badge status-${request.status.toLowerCase()}">
-                <i class="fas fa-${
-                request.status === 'Received' ? 'clock' :
-                    request.status === 'Diagnosis' ? 'stethoscope' :
-                        request.status === 'Repair' ? 'wrench' :
-                            'check-circle'
-            }"></i>
-                ${request.status}
-            </span>
-        </td>
-        <td>${formatDate(request.deliveryDate)}</td>
-        <td>${request.serviceAdvisorName || 'Not Assigned'}</td>
-        <td class="table-actions-cell">
-            <button class="btn-table-action view-btn" title="View Details" onclick="showServiceRequestDetails(${request.requestId})">
-                <i class="fas fa-eye"></i>
-            </button>
-            ${!request.serviceAdvisorId ?
-                `<button class="btn-assign" title="Assign Advisor" onclick="showAssignAdvisorModal(${request.requestId})">
-                    <i class="fas fa-user-plus"></i> Assign
-                </button>` :
-                `<button class="btn-table-action edit-btn" title="Edit Request">
-                    <i class="fas fa-edit"></i>
-                </button>`
-            }
-        </td>
-    `;
-
-            tableBody.appendChild(row);
-        });
-    }
-
-    function filterByMembership(membershipType) {
-        const filteredRequests = membershipType === 'All'
-            ? serviceRequests
-            : serviceRequests.filter(request =>
-                (request.membershipStatus || 'Standard') === membershipType);
-
-        currentPage = 1;
-        renderServiceRequests(filteredRequests);
-        setupPagination();
-    }
-
-    function addMembershipFilters() {
-        const tableActions = document.querySelector('.table-actions');
-
-        if (tableActions) {
-            // Check if filters already exist
-            if (!tableActions.querySelector('.membership-filters')) {
-                const filterDiv = document.createElement('div');
-                filterDiv.className = 'membership-filters ms-2';
-                filterDiv.innerHTML = `
-            <div class="btn-group" role="group" aria-label="Membership filters">
-                <button type="button" class="btn btn-sm btn-outline-secondary active" data-filter="All">All</button>
-                <button type="button" class="btn btn-sm btn-outline-secondary" data-filter="Standard">Standard</button>
-                <button type="button" class="btn btn-sm btn-outline-secondary" data-filter="Premium">Premium</button>
-            </div>
-        `;
-
-                tableActions.appendChild(filterDiv);
-
-                // Add event listeners to filter buttons
-                const filterButtons = filterDiv.querySelectorAll('button');
-                filterButtons.forEach(button => {
-                    button.addEventListener('click', function() {
-                        // Remove active class from all buttons
-                        filterButtons.forEach(btn => btn.classList.remove('active'));
-                        // Add active class to clicked button
-                        this.classList.add('active');
-                        // Filter service requests
-                        filterByMembership(this.getAttribute('data-filter'));
-                    });
-                });
-            }
-        }
-    }
-
-    function addMembershipFilterStyles() {
-        // Check if styles already exist
-        if (!document.getElementById('membership-filter-styles')) {
-            const style = document.createElement('style');
-            style.id = 'membership-filter-styles';
-            style.textContent = `
-        .membership-filters {
-            display: flex;
-            align-items: center;
-        }
-
-        .membership-filters .btn-group {
-            box-shadow: var(--shadow-sm);
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-        }
-
-        .membership-filters .btn {
-            padding: 0.4rem 0.75rem;
-            font-size: 0.85rem;
-            font-weight: 500;
-            border-radius: 0;
-        }
-
-        .membership-filters .btn.active {
-            background-color: var(--wine);
-            color: white;
-            border-color: var(--wine);
-        }
-    `;
-            document.head.appendChild(style);
-        }
-    }
-
-    function filterServiceRequests(searchTerm) {
-        if (!searchTerm) {
-            renderServiceRequests();
-            return;
-        }
-
-        searchTerm = searchTerm.toLowerCase();
-
-        const filteredRequests = serviceRequests.filter(request => {
-            return (
-                `req-${request.requestId}`.toLowerCase().includes(searchTerm) ||
-                (request.customerName && request.customerName.toLowerCase().includes(searchTerm)) ||
-                (request.registrationNumber && request.registrationNumber.toLowerCase().includes(searchTerm)) ||
-                (request.vehicleName && request.vehicleName.toLowerCase().includes(searchTerm)) ||
-                (request.vehicleBrand && request.vehicleBrand.toLowerCase().includes(searchTerm)) ||
-                (request.vehicleModel && request.vehicleModel.toLowerCase().includes(searchTerm)) ||
-                (request.serviceType && request.serviceType.toLowerCase().includes(searchTerm)) ||
-                (request.status && request.status.toLowerCase().includes(searchTerm))
-            );
-        });
-
-        currentPage = 1;
-        renderServiceRequests(filteredRequests);
-        setupPagination();
-    }
-
-    function filterTableRows(searchTerm) {
-        if (!searchTerm) {
-            // Reset all rows
-            document.querySelectorAll('#serviceRequestsTable tbody tr').forEach(row => {
-                row.style.display = '';
+                vehicleDropdown.disabled = false;
+            })
+            .catch(error => {
+                console.error('Error loading vehicles:', error);
+                resetVehicleDropdown('Error loading vehicles. Please try again.');
             });
-            return;
-        }
-
-        searchTerm = searchTerm.toLowerCase();
-
-        document.querySelectorAll('#serviceRequestsTable tbody tr').forEach(row => {
-            const text = row.textContent.toLowerCase();
-            if (text.includes(searchTerm)) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
     }
 
-    function changePage(page) {
-        currentPage = page;
-        renderServiceRequests();
-        updatePaginationUI();
-    }
-
-    function setupPagination() {
-        const totalPages = Math.ceil(serviceRequests.length / itemsPerPage);
-        const pagination = document.getElementById('pagination');
-        if (!pagination) return;
-
-        // Clear existing page links except for prev/next buttons
-        const pageLinks = pagination.querySelectorAll('.page-link:not(#prevBtn):not(#nextBtn)');
-        pageLinks.forEach(link => link.parentElement.remove());
-
-        // Add page links
-        const prevBtn = document.getElementById('prevBtn');
-        const prevBtnParent = prevBtn ? prevBtn.parentElement : null;
-        const nextBtn = document.getElementById('nextBtn');
-        const nextBtnParent = nextBtn ? nextBtn.parentElement : null;
-
-        if (prevBtnParent && nextBtnParent) {
-            for (let i = 1; i <= totalPages; i++) {
-                const li = document.createElement('li');
-                li.className = `page-item ${i === currentPage ? 'active' : ''}`;
-                li.innerHTML = `<a class="page-link" href="#" data-page="${i}">${i}</a>`;
-
-                // Add event listener
-                li.querySelector('.page-link').addEventListener('click', function(e) {
-                    e.preventDefault();
-                    changePage(i);
-                });
-
-                pagination.insertBefore(li, nextBtnParent);
-            }
-
-            // Update prev/next buttons
-            prevBtnParent.classList.toggle('disabled', currentPage === 1);
-            nextBtnParent.classList.toggle('disabled', currentPage === totalPages || totalPages === 0);
-        }
-    }
-
-    function updatePaginationUI() {
-        const totalPages = Math.ceil(serviceRequests.length / itemsPerPage);
-        const pagination = document.getElementById('pagination');
-        if (!pagination) return;
-
-        // Update active page
-        const pageItems = pagination.querySelectorAll('.page-item');
-        pageItems.forEach(item => {
-            const pageLink = item.querySelector('.page-link');
-            if (pageLink && pageLink.id !== 'prevBtn' && pageLink.id !== 'nextBtn') {
-                const page = parseInt(pageLink.getAttribute('data-page'));
-                item.classList.toggle('active', page === currentPage);
-            }
-        });
-
-        // Update prev/next buttons
-        const prevBtn = document.getElementById('prevBtn');
-        const nextBtn = document.getElementById('nextBtn');
-
-        if (prevBtn) {
-            prevBtn.parentElement.classList.toggle('disabled', currentPage === 1);
-        }
-
-        if (nextBtn) {
-            nextBtn.parentElement.classList.toggle('disabled', currentPage === totalPages || totalPages === 0);
-        }
-    }
-
-    function populateCustomerDropdown() {
-        const dropdown = document.getElementById('customerId');
-        if (!dropdown) return;
-
-        dropdown.innerHTML = '<option value="">Select Customer</option>';
-
-        customers.forEach(customer => {
-            const option = document.createElement('option');
-            option.value = customer.customerId || customer.id;
-            option.textContent = `${customer.firstName || ''} ${customer.lastName || ''} (${customer.membershipStatus || 'Standard'})`;
-            dropdown.appendChild(option);
-        });
-    }
-
-    function populateVehicleDropdown(vehicles) {
-        const dropdown = document.getElementById('vehicleId');
-        if (!dropdown) return;
-
-        dropdown.innerHTML = '<option value="">Select Vehicle</option>';
-
-        if (vehicles && vehicles.length > 0) {
-            vehicles.forEach(vehicle => {
-                const option = document.createElement('option');
-                option.value = vehicle.vehicleId || vehicle.id;
-                option.textContent = `${vehicle.brand || vehicle.make} ${vehicle.model} (${vehicle.registrationNumber})`;
-                dropdown.appendChild(option);
-            });
-            dropdown.disabled = false;
-        } else {
-            dropdown.innerHTML = '<option value="">No vehicles found</option>';
-            dropdown.disabled = true;
-        }
-    }
-
+    /**
+     * Reset the vehicle dropdown to initial state
+     */
     function resetVehicleDropdown(message = 'Select Customer First') {
         const dropdown = document.getElementById('vehicleId');
         if (dropdown) {
@@ -2762,17 +2575,255 @@
         }
     }
 
-    // Updated saveServiceRequest function
+    /**
+     * Load service advisors
+     */
+    function loadServiceAdvisors() {
+        console.log("Loading service advisors...");
+
+        // Get token
+        const token = getToken();
+        if (!token) {
+            console.error("No auth token found");
+            return;
+        }
+
+        return fetch('/admin/api/service-advisors', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+            }
+        })
+            .then(response => {
+                if (response.status === 401) {
+                    window.location.href = '/admin/login?error=session_expired';
+                    throw new Error('Session expired');
+                }
+                if (!response.ok) {
+                    // Try alternative endpoint
+                    return fetch('/admin/service-advisors/api', {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer ' + token
+                        }
+                    });
+                }
+                return response;
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("Service advisors loaded:", data);
+                serviceAdvisors = data || [];
+                return serviceAdvisors;
+            })
+            .catch(error => {
+                console.error('Error loading service advisors:', error);
+                showToast("Failed to load service advisors: " + error.message, "error");
+                return [];
+            });
+    }
+
+    /**
+     * Save a new vehicle
+     */
+    function saveNewVehicle(callback) {
+        const customerId = document.getElementById('customerId').value;
+
+        if (!customerId) {
+            showToast('Please select a customer first', 'error');
+            return;
+        }
+
+        // Get form values
+        const brand = document.getElementById('vehicleBrand').value;
+        const model = document.getElementById('vehicleModel').value;
+        const regNumber = document.getElementById('vehicleRegNumber').value;
+        const category = document.getElementById('vehicleCategory').value;
+        const year = document.getElementById('vehicleYear').value;
+
+        if (!brand || !model || !regNumber || !category || !year) {
+            showToast('Please fill all required vehicle fields', 'error');
+            return;
+        }
+
+        const vehicleData = {
+            brand: brand,
+            model: model,
+            registrationNumber: regNumber,
+            category: category,
+            year: parseInt(year)
+        };
+
+        showSpinner();
+
+        // Get the token
+        const token = getToken();
+        if (!token) {
+            hideSpinner();
+            showToast('Authentication error - please login again', 'error');
+            return;
+        }
+
+        // Use the correct endpoint URL
+        fetch(`/admin/api/customers/${customerId}/vehicles${token ? `?token=${token}` : ''}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(vehicleData)
+        })
+            .then(response => {
+                if (response.status === 401) {
+                    window.location.href = '/admin/login?error=session_expired';
+                    throw new Error('Session expired');
+                }
+                if (!response.ok) {
+                    return response.json().then(errorData => {
+                        throw new Error(errorData.error || 'Failed to create vehicle');
+                    });
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Hide the form
+                document.getElementById('newVehicleForm').style.display = 'none';
+
+                // Add new vehicle to the vehicles array
+                vehicles.push(data);
+
+                // Update dropdown
+                const dropdown = document.getElementById('vehicleId');
+                if (dropdown) {
+                    const option = document.createElement('option');
+                    option.value = data.vehicleId;
+                    option.textContent = `${data.brand} ${data.model} (${data.registrationNumber})`;
+                    dropdown.appendChild(option);
+                    dropdown.value = data.vehicleId;
+                    dropdown.disabled = false;
+                }
+
+                // Execute callback with the new vehicle ID
+                if (callback && typeof callback === 'function') {
+                    callback(data.vehicleId);
+                } else {
+                    hideSpinner();
+                    showToast('Vehicle added successfully', 'success');
+                }
+            })
+            .catch(error => {
+                hideSpinner();
+                console.error('Error saving vehicle:', error);
+                showToast('Failed to create vehicle: ' + error.message, 'error');
+            });
+    }
+
+    /**
+     * Create a service request with a specific vehicle
+     */
+    function createServiceRequestWithVehicle(vehicleId) {
+        const serviceRequest = {
+            vehicleId: vehicleId,
+            serviceType: document.getElementById('serviceType').value,
+            deliveryDate: document.getElementById('deliveryDate').value,
+            additionalDescription: document.getElementById('description').value || "",
+            status: "Received" // Initialize with Received status
+        };
+
+        showSpinner();
+
+        // Get the token
+        const token = getToken();
+        if (!token) {
+            hideSpinner();
+            showToast('Authentication error - please login again', 'error');
+            return;
+        }
+
+        // Post to the correct API endpoint
+        fetch(`/admin/service-requests/api${token ? `?token=${token}` : ''}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(serviceRequest)
+        })
+            .then(response => {
+                if (response.status === 401) {
+                    window.location.href = '/admin/login?error=session_expired';
+                    throw new Error('Session expired');
+                }
+
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        try {
+                            const errorData = JSON.parse(text);
+                            throw new Error(errorData.error || 'Failed to create service request');
+                        } catch (e) {
+                            throw new Error('Failed to create service request: ' + text);
+                        }
+                    });
+                }
+
+                return response.json();
+            })
+            .then(data => {
+                hideSpinner();
+
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('addServiceRequestModal'));
+                if (modal) {
+                    modal.hide();
+                }
+
+                // Reset form
+                document.getElementById('addServiceRequestForm').reset();
+                document.getElementById('newVehicleForm').style.display = 'none';
+                resetVehicleDropdown();
+
+                // Show success message
+                showSuccessModal('Service Request Created', 'The service request has been created successfully.');
+
+                // Add new request to the list and refresh
+                if (data) {
+                    serviceRequests.unshift(data);
+                    renderServiceRequests();
+                    setupPagination();
+                } else {
+                    // Reload service requests if data is not returned
+                    loadServiceRequests();
+                }
+            })
+            .catch(error => {
+                hideSpinner();
+                console.error('Error creating service request:', error);
+                showToast('Failed to create service request: ' + error.message, 'error');
+            });
+    }
+
+    /**
+     * Save a service request - handles validation & form logic
+     */
     function saveServiceRequest() {
         const form = document.getElementById('addServiceRequestForm');
         if (!form) return;
 
         // Check if we're adding a new vehicle
         const newVehicleForm = document.getElementById('newVehicleForm');
-        const isAddingNewVehicle = newVehicleForm.style.display !== 'none';
+        const isAddingNewVehicle = newVehicleForm && newVehicleForm.style.display !== 'none';
+
+        // We need to handle validation differently based on what the user is doing
+        let formValid = true;
 
         // Validate main form fields
-        let formValid = true;
         const customerId = document.getElementById('customerId').value;
         const serviceType = document.getElementById('serviceType').value;
         const deliveryDate = document.getElementById('deliveryDate').value;
@@ -2834,199 +2885,326 @@
         }
     }
 
-    // Helper function to create service request with a specific vehicle ID
-    function createServiceRequestWithVehicle(vehicleId) {
-        const serviceRequest = {
-            vehicleId: vehicleId,
-            serviceType: document.getElementById('serviceType').value,
-            deliveryDate: document.getElementById('deliveryDate').value,
-            additionalDescription: document.getElementById('description').value
-        };
+    /**
+     * Render the service requests in the table
+     */
+    function renderServiceRequests() {
+        const tableBody = document.getElementById('serviceRequestsTableBody');
+        if (!tableBody) return;
 
-        showSpinner();
+        // Clear table body except for special rows
+        const rows = tableBody.querySelectorAll('tr:not(#loading-row):not(#empty-row)');
+        rows.forEach(row => row.remove());
 
-        // Get token for authentication
-        const token = getToken();
-
-        fetch('/admin/service-requests/api' + (token ? `?token=${token}` : ''), {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(serviceRequest)
-        })
-            .then(response => {
-                if (response.status === 401) {
-                    window.location.href = '/admin/login?error=session_expired';
-                    throw new Error('Session expired');
-                }
-
-                if (!response.ok) {
-                    return response.text().then(text => {
-                        try {
-                            const error = JSON.parse(text);
-                            throw new Error(error.error || error.message || 'Failed to create service request');
-                        } catch (e) {
-                            throw new Error('Failed to create service request: ' + text);
-                        }
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                hideSpinner();
-
-                // Close modal
-                const modal = bootstrap.Modal.getInstance(document.getElementById('addServiceRequestModal'));
-                if (modal) {
-                    modal.hide();
-                }
-
-                // Reset form
-                document.getElementById('addServiceRequestForm').reset();
-                document.getElementById('newVehicleForm').style.display = 'none';
-
-                // Show success message
-                showSuccessModal('Service Request Created', 'The service request has been created successfully.');
-
-                // Add new request to the list and refresh
-                serviceRequests.unshift(data);
-                renderServiceRequests();
-                setupPagination();
-            })
-            .catch(error => {
-                hideSpinner();
-                console.error('Error creating service request:', error);
-                showToast('Failed to create service request: ' + error.message, 'error');
-            });
-    }
-
-    // Modified saveNewVehicle function with callback
-    function saveNewVehicle(callback) {
-        const customerId = document.getElementById('customerId').value;
-
-        if (!customerId) {
-            showToast('Please select a customer first', 'error');
+        if (!serviceRequests || serviceRequests.length === 0) {
+            const emptyRow = document.getElementById('empty-row');
+            if (emptyRow) {
+                emptyRow.style.display = 'table-row';
+            }
             return;
         }
 
-        // Get form values
-        const brand = document.getElementById('vehicleBrand').value;
-        const model = document.getElementById('vehicleModel').value;
-        const regNumber = document.getElementById('vehicleRegNumber').value;
-        const category = document.getElementById('vehicleCategory').value;
-        const year = document.getElementById('vehicleYear').value;
-
-        if (!brand || !model || !regNumber || !category || !year) {
-            showToast('Please fill all required vehicle fields', 'error');
-            return;
+        const emptyRow = document.getElementById('empty-row');
+        if (emptyRow) {
+            emptyRow.style.display = 'none';
         }
 
-        const vehicleData = {
-            brand: brand,
-            model: model,
-            registrationNumber: regNumber,
-            category: category,
-            year: parseInt(year)
-        };
+        // Get requests for current page
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = Math.min(startIndex + itemsPerPage, serviceRequests.length);
+        const displayedRequests = serviceRequests.slice(startIndex, endIndex);
 
-        showSpinner();
+        // Create rows for displayed requests
+        displayedRequests.forEach(request => {
+            // Determine membership status if not already set
+            const membershipStatus = request.membershipStatus || 'Standard';
 
-        // Get the token
-        const token = getToken();
+            const row = document.createElement('tr');
+            row.className = 'active-page';
+            row.innerHTML = `
+            <td>REQ-${request.requestId}</td>
+            <td>
+                <div class="vehicle-info">
+                    <div class="vehicle-icon">
+                        <i class="fas fa-${request.vehicleCategory === 'Bike' ? 'motorcycle' : 'car-side'}"></i>
+                    </div>
+                    <div class="vehicle-details">
+                        <h5>${request.vehicleName || request.vehicleBrand + ' ' + request.vehicleModel}</h5>
+                        <p>${request.registrationNumber}</p>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <div class="person-info">
+                    <div class="person-details">
+                        <h5>${request.customerName || 'N/A'}</h5>
+                        <p>${request.customerEmail || ''}</p>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <span class="membership-badge membership-${membershipStatus.toLowerCase()}">
+                    <i class="fas fa-${membershipStatus === 'Premium' ? 'crown' : 'user'}"></i>
+                    ${membershipStatus}
+                </span>
+            </td>
+            <td>${request.serviceType || 'N/A'}</td>
+            <td>
+                <span class="status-badge status-${request.status ? request.status.toLowerCase() : 'received'}">
+                    <i class="fas fa-${
+                !request.status || request.status === 'Received' ? 'clock' :
+                    request.status === 'Diagnosis' ? 'stethoscope' :
+                        request.status === 'Repair' ? 'wrench' :
+                            'check-circle'
+            }"></i>
+                    ${request.status || 'Received'}
+                </span>
+            </td>
+            <td>${formatDate(request.deliveryDate)}</td>
+            <td>${request.serviceAdvisorName || 'Not Assigned'}</td>
+            <td class="table-actions-cell">
+                <button class="btn-table-action view-btn" title="View Details" onclick="showServiceRequestDetails(${request.requestId})">
+                    <i class="fas fa-eye"></i>
+                </button>
+                ${!request.serviceAdvisorId ?
+                `<button class="btn-assign" title="Assign Advisor" onclick="showAssignAdvisorModal(${request.requestId})">
+                        <i class="fas fa-user-plus"></i> Assign
+                    </button>` :
+                `<button class="btn-table-action edit-btn" title="Edit Request">
+                        <i class="fas fa-edit"></i>
+                    </button>`
+            }
+            </td>
+        `;
 
-        // Use the correct endpoint URL
-        fetch(`/admin/api/customers/${customerId}/vehicles${token ? `?token=${token}` : ''}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(vehicleData)
-        })
-            .then(response => {
-                if (response.status === 401) {
-                    window.location.href = '/admin/login?error=session_expired';
-                    throw new Error('Session expired');
-                }
-                if (!response.ok) {
-                    return response.json().then(errorData => {
-                        throw new Error(errorData.error || 'Failed to create vehicle');
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                // Hide the form
-                document.getElementById('newVehicleForm').style.display = 'none';
-
-                // Add new vehicle to the vehicles array
-                vehicles.push(data);
-
-                // Update dropdown
-                const dropdown = document.getElementById('vehicleId');
-                const option = document.createElement('option');
-                option.value = data.vehicleId;
-                option.textContent = `${data.brand} ${data.model} (${data.registrationNumber})`;
-                dropdown.appendChild(option);
-                dropdown.value = data.vehicleId;
-
-                // Execute callback with the new vehicle ID
-                if (callback && typeof callback === 'function') {
-                    callback(data.vehicleId);
-                } else {
-                    hideSpinner();
-                    showToast('Vehicle added successfully', 'success');
-                }
-            })
-            .catch(error => {
-                hideSpinner();
-                console.error('Error saving vehicle:', error);
-                showToast('Failed to create vehicle: ' + error.message, 'error');
-            });
+            tableBody.appendChild(row);
+        });
     }
 
-    function showAssignAdvisorModal(requestId) {
+    /**
+     * Show service request details
+     */
+    function showServiceRequestDetails(requestId) {
+        console.log("Showing details for request ID:", requestId);
+
+        // Find the request in our cached data
         const request = serviceRequests.find(req => req.requestId === requestId);
 
         if (!request) {
             console.error('Request not found:', requestId);
+
+            // Try to fetch the request from the API
+            fetchServiceRequest(requestId);
+            return;
+        }
+
+        displayServiceRequestDetails(request);
+    }
+
+    /**
+     * Fetch a service request from API
+     */
+    function fetchServiceRequest(requestId) {
+        // Get token
+        const token = getToken();
+        if (!token) {
+            showToast('Authentication error - please login again', 'error');
+            return;
+        }
+
+        showSpinner();
+
+        fetch(`/admin/service-requests/api/${requestId}${token ? `?token=${token}` : ''}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        })
+            .then(response => {
+                if (response.status === 401) {
+                    window.location.href = '/admin/login?error=session_expired';
+                    throw new Error('Session expired');
+                }
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                hideSpinner();
+                displayServiceRequestDetails(data);
+            })
+            .catch(error => {
+                hideSpinner();
+                console.error('Error fetching service request:', error);
+                showToast('Failed to load service request details: ' + error.message, 'error');
+            });
+    }
+
+    /**
+     * Display service request details in modal
+     */
+    function displayServiceRequestDetails(request) {
+        // Set request details in the modal
+        document.getElementById('viewRequestId').textContent = `REQ-${request.requestId}`;
+
+        // Set status with appropriate badge
+        const statusElement = document.getElementById('viewStatus');
+        statusElement.innerHTML = `
+        <span class="status-badge status-${request.status ? request.status.toLowerCase() : 'received'}">
+            <i class="fas fa-${
+            !request.status || request.status === 'Received' ? 'clock' :
+                request.status === 'Diagnosis' ? 'stethoscope' :
+                    request.status === 'Repair' ? 'wrench' :
+                        'check-circle'
+        }"></i>
+            ${request.status || 'Received'}
+        </span>
+    `;
+
+        document.getElementById('viewCreatedDate').textContent = formatDate(request.createdAt || new Date().toISOString());
+        document.getElementById('viewVehicleName').textContent = request.vehicleName || `${request.vehicleBrand} ${request.vehicleModel}`;
+        document.getElementById('viewRegistrationNumber').textContent = request.registrationNumber || 'N/A';
+        document.getElementById('viewVehicleCategory').textContent = request.vehicleCategory || 'Car';
+        document.getElementById('viewCustomerName').textContent = request.customerName || 'N/A';
+        document.getElementById('viewCustomerContact').textContent = request.customerPhone || 'N/A';
+
+        // Set membership with appropriate badge
+        const membershipElement = document.getElementById('viewMembership');
+        const membershipStatus = request.membershipStatus || 'Standard';
+        membershipElement.innerHTML = `
+        <span class="membership-badge membership-${membershipStatus.toLowerCase()}">
+            <i class="fas fa-${membershipStatus === 'Premium' ? 'crown' : 'user'}"></i>
+            ${membershipStatus}
+        </span>
+    `;
+
+        document.getElementById('viewServiceType').textContent = request.serviceType || 'N/A';
+        document.getElementById('viewDeliveryDate').textContent = formatDate(request.deliveryDate);
+        document.getElementById('viewServiceAdvisor').textContent = request.serviceAdvisorName || 'Not Assigned';
+        document.getElementById('viewDescription').textContent = request.additionalDescription || 'No additional description provided.';
+
+        // Show materials section if available
+        const materialsSection = document.getElementById('materialsSection');
+        if (materialsSection) {
+            if (request.materials && request.materials.length > 0) {
+                materialsSection.style.display = 'block';
+                populateMaterialsTable(request.materials);
+            } else {
+                materialsSection.style.display = 'none';
+            }
+        }
+
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('viewServiceRequestModal'));
+        modal.show();
+    }
+
+    /**
+     * Populate materials table
+     */
+    function populateMaterialsTable(materials) {
+        const tableBody = document.getElementById('materialsTableBody');
+        if (!tableBody) return;
+
+        tableBody.innerHTML = '';
+
+        let totalCost = 0;
+
+        materials.forEach(material => {
+            const row = document.createElement('tr');
+            const itemTotal = material.quantity * material.unitPrice;
+            totalCost += itemTotal;
+
+            row.innerHTML = `
+            <td>${material.name}</td>
+            <td>${material.quantity}</td>
+            <td>₹${material.unitPrice.toFixed(2)}</td>
+            <td>₹${itemTotal.toFixed(2)}</td>
+        `;
+
+            tableBody.appendChild(row);
+        });
+
+        // Add total row
+        const totalRow = document.createElement('tr');
+        totalRow.className = 'fw-bold';
+        totalRow.innerHTML = `
+        <td colspan="3" class="text-end">Total</td>
+        <td>₹${totalCost.toFixed(2)}</td>
+    `;
+
+        tableBody.appendChild(totalRow);
+    }
+
+    /**
+     * Show the assign advisor modal
+     */
+    function showAssignAdvisorModal(requestId) {
+        console.log("Showing assign advisor modal for request ID:", requestId);
+
+        const request = serviceRequests.find(req => req.requestId === requestId);
+
+        if (!request) {
+            console.error('Request not found:', requestId);
+            showToast("Service request not found", "error");
             return;
         }
 
         // Set request details in the modal
         document.getElementById('assignVehicleName').textContent = request.vehicleName || `${request.vehicleBrand} ${request.vehicleModel}`;
-        document.getElementById('assignVehicleReg').textContent = request.registrationNumber;
-        document.getElementById('assignCustomerName').textContent = request.customerName;
+        document.getElementById('assignVehicleReg').textContent = request.registrationNumber || 'N/A';
+        document.getElementById('assignCustomerName').textContent = request.customerName || 'Customer';
         document.getElementById('assignRequestId').textContent = `REQ-${request.requestId}`;
         document.getElementById('selectedRequestId').value = request.requestId;
 
-        // Populate service advisors
-        populateServiceAdvisorsList();
+        // Show loading state in advisors list
+        const advisorsList = document.getElementById('advisorsList');
+        if (advisorsList) {
+            advisorsList.innerHTML = `
+            <div class="text-center py-4">
+                <div class="spinner-border text-wine" role="status"></div>
+                <p class="mt-2">Loading service advisors...</p>
+            </div>
+        `;
+        }
 
-        // Show modal
-        const modal = new bootstrap.Modal(document.getElementById('assignAdvisorModal'));
-        modal.show();
+        // Load service advisors
+        loadServiceAdvisors()
+            .then(advisors => {
+                populateServiceAdvisorsList(advisors);
+
+                // Show modal
+                const modal = new bootstrap.Modal(document.getElementById('assignAdvisorModal'));
+                modal.show();
+            })
+            .catch(error => {
+                console.error("Error preparing advisor modal:", error);
+                showToast("Failed to load service advisors", "error");
+            });
     }
 
-    function populateServiceAdvisorsList() {
+    /**
+     * Populate the service advisors list
+     */
+    function populateServiceAdvisorsList(advisors) {
         const advisorsList = document.getElementById('advisorsList');
         if (!advisorsList) return;
 
-        if (!serviceAdvisors || serviceAdvisors.length === 0) {
+        if (!advisors || advisors.length === 0) {
             advisorsList.innerHTML = `
-        <div class="alert alert-info">
-            <i class="fas fa-info-circle me-2"></i>
-            No service advisors available. Please add service advisors first.
-        </div>
-    `;
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                No service advisors available. Please add service advisors first.
+            </div>
+        `;
             return;
         }
 
         let html = '';
 
-        serviceAdvisors.forEach(advisor => {
+        advisors.forEach(advisor => {
             // Calculate workload percentage (example)
             const workloadPercentage = advisor.workloadPercentage ||
                 (advisor.activeServices ? Math.min(Math.round((advisor.activeServices / 10) * 100), 100) : 0);
@@ -3093,6 +3271,9 @@
         });
     }
 
+    /**
+     * Assign a service advisor to a request
+     */
     function assignServiceAdvisor() {
         const requestId = document.getElementById('selectedRequestId').value;
         const selectedAdvisor = document.querySelector('.advisor-card.selected');
@@ -3103,24 +3284,44 @@
         }
 
         const advisorId = selectedAdvisor.getAttribute('data-advisor-id');
+        if (!advisorId) {
+            showToast('Invalid advisor selection', 'error');
+            return;
+        }
 
         showSpinner();
 
-        fetch(`/admin/service-requests/api/${requestId}/assign?advisorId=${advisorId}`, {
+        // Get token
+        const token = getToken();
+        if (!token) {
+            hideSpinner();
+            showToast('Authentication error - please login again', 'error');
+            return;
+        }
+
+        // Use the correct endpoint
+        fetch(`/admin/service-requests/api/${requestId}/assign${token ? `?token=${token}` : ''}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + getToken()
-            }
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ advisorId: parseInt(advisorId) })
         })
             .then(response => {
                 if (response.status === 401) {
                     window.location.href = '/admin/login?error=session_expired';
                     throw new Error('Session expired');
                 }
-
                 if (!response.ok) {
-                    throw new Error('Failed to assign service advisor');
+                    return response.text().then(text => {
+                        try {
+                            const errorData = JSON.parse(text);
+                            throw new Error(errorData.error || 'Failed to assign service advisor');
+                        } catch (e) {
+                            throw new Error('Failed to assign service advisor: ' + text);
+                        }
+                    });
                 }
                 return response.json();
             })
@@ -3141,126 +3342,168 @@
                 if (index !== -1) {
                     serviceRequests[index] = data;
                     renderServiceRequests();
+                } else {
+                    // Reload service requests if the updated request isn't found
+                    loadServiceRequests();
                 }
             })
             .catch(error => {
                 hideSpinner();
                 console.error('Error assigning service advisor:', error);
-                showToast('Failed to assign service advisor. Please try again.', 'error');
+                showToast('Failed to assign service advisor: ' + error.message, 'error');
             });
     }
 
-    // Function to show service request details - needs to be globally accessible for onclick handlers
-    window.showServiceRequestDetails = function(requestId) {
-        const request = serviceRequests.find(req => req.requestId === requestId);
-
-        if (!request) {
-            console.error('Request not found:', requestId);
+    /**
+     * Filter service requests by search term
+     */
+    function filterServiceRequests(searchTerm) {
+        if (!searchTerm) {
+            renderServiceRequests();
             return;
         }
 
-        // Set request details in the modal
-        document.getElementById('viewRequestId').textContent = `REQ-${request.requestId}`;
+        searchTerm = searchTerm.toLowerCase();
 
-        // Set status with appropriate badge
-        const statusElement = document.getElementById('viewStatus');
-        statusElement.innerHTML = `
-    <span class="status-badge status-${request.status.toLowerCase()}">
-        <i class="fas fa-${
-            request.status === 'Received' ? 'clock' :
-                request.status === 'Diagnosis' ? 'stethoscope' :
-                    request.status === 'Repair' ? 'wrench' :
-                        'check-circle'
-        }"></i>
-        ${request.status}
-    </span>
-`;
-
-        document.getElementById('viewCreatedDate').textContent = formatDate(request.createdAt || new Date().toISOString());
-        document.getElementById('viewVehicleName').textContent = request.vehicleName || `${request.vehicleBrand} ${request.vehicleModel}`;
-        document.getElementById('viewRegistrationNumber').textContent = request.registrationNumber;
-        document.getElementById('viewVehicleCategory').textContent = request.vehicleCategory || 'Car';
-        document.getElementById('viewCustomerName').textContent = request.customerName;
-        document.getElementById('viewCustomerContact').textContent = request.customerPhone || 'N/A';
-
-        // Set membership with appropriate badge
-        const membershipElement = document.getElementById('viewMembership');
-        const membershipStatus = request.membershipStatus || 'Standard';
-        membershipElement.innerHTML = `
-    <span class="membership-badge membership-${membershipStatus.toLowerCase()}">
-        <i class="fas fa-${membershipStatus === 'Premium' ? 'crown' : 'user'}"></i>
-        ${membershipStatus}
-    </span>
-`;
-
-        document.getElementById('viewServiceType').textContent = request.serviceType;
-        document.getElementById('viewDeliveryDate').textContent = formatDate(request.deliveryDate);
-        document.getElementById('viewServiceAdvisor').textContent = request.serviceAdvisorName || 'Not Assigned';
-        document.getElementById('viewDescription').textContent = request.additionalDescription || 'No additional description provided.';
-
-        // Show materials section if available
-        const materialsSection = document.getElementById('materialsSection');
-        if (materialsSection) {
-            if (request.materials && request.materials.length > 0) {
-                materialsSection.style.display = 'block';
-                populateMaterialsTable(request.materials);
-            } else {
-                materialsSection.style.display = 'none';
-            }
-        }
-
-        // Show modal
-        const modal = new bootstrap.Modal(document.getElementById('viewServiceRequestModal'));
-        modal.show();
-    };
-
-    // Function to show assign advisor modal - needs to be globally accessible for onclick handlers
-    window.showAssignAdvisorModal = function(requestId) {
-        showAssignAdvisorModal(requestId);
-    };
-
-    function populateMaterialsTable(materials) {
-        const tableBody = document.getElementById('materialsTableBody');
-        if (!tableBody) return;
-
-        tableBody.innerHTML = '';
-
-        let totalCost = 0;
-
-        materials.forEach(material => {
-            const row = document.createElement('tr');
-            const itemTotal = material.quantity * material.unitPrice;
-            totalCost += itemTotal;
-
-            row.innerHTML = `
-        <td>${material.name}</td>
-        <td>${material.quantity}</td>
-        <td>₹${material.unitPrice.toFixed(2)}</td>
-        <td>₹${itemTotal.toFixed(2)}</td>
-    `;
-
-            tableBody.appendChild(row);
+        const filteredRequests = serviceRequests.filter(request => {
+            return (
+                `req-${request.requestId}`.toLowerCase().includes(searchTerm) ||
+                (request.customerName && request.customerName.toLowerCase().includes(searchTerm)) ||
+                (request.registrationNumber && request.registrationNumber.toLowerCase().includes(searchTerm)) ||
+                (request.vehicleName && request.vehicleName.toLowerCase().includes(searchTerm)) ||
+                (request.vehicleBrand && request.vehicleBrand.toLowerCase().includes(searchTerm)) ||
+                (request.vehicleModel && request.vehicleModel.toLowerCase().includes(searchTerm)) ||
+                (request.serviceType && request.serviceType.toLowerCase().includes(searchTerm)) ||
+                (request.status && request.status.toLowerCase().includes(searchTerm))
+            );
         });
 
-        // Add total row
-        const totalRow = document.createElement('tr');
-        totalRow.className = 'fw-bold';
-        totalRow.innerHTML = `
-    <td colspan="3" class="text-end">Total</td>
-    <td>₹${totalCost.toFixed(2)}</td>
-`;
-
-        tableBody.appendChild(totalRow);
+        currentPage = 1;
+        renderServiceRequests(filteredRequests);
+        setupPagination();
     }
 
-    function showSuccessModal(title, message) {
-        document.getElementById('successTitle').textContent = title;
-        document.getElementById('successMessage').textContent = message;
+    /**
+     * Filter table rows by search term
+     */
+    function filterTableRows(searchTerm) {
+        if (!searchTerm) {
+            // Reset all rows
+            document.querySelectorAll('#serviceRequestsTable tbody tr').forEach(row => {
+                row.style.display = '';
+            });
+            return;
+        }
 
-        const modal = new bootstrap.Modal(document.getElementById('successModal'));
-        modal.show();
+        searchTerm = searchTerm.toLowerCase();
+
+        document.querySelectorAll('#serviceRequestsTable tbody tr').forEach(row => {
+            const text = row.textContent.toLowerCase();
+            if (text.includes(searchTerm)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
     }
 
+    /**
+     * Set up pagination for service requests
+     */
+    function setupPagination() {
+        const totalPages = Math.ceil(serviceRequests.length / itemsPerPage);
+        const pagination = document.getElementById('pagination');
+        if (!pagination) return;
+
+        // Clear existing page links except for prev/next buttons
+        const pageLinks = pagination.querySelectorAll('.page-link:not(#prevBtn):not(#nextBtn)');
+        pageLinks.forEach(link => link.parentElement.remove());
+
+        // Add page links
+        const prevBtn = document.getElementById('prevBtn');
+        const prevBtnParent = prevBtn ? prevBtn.parentElement : null;
+        const nextBtn = document.getElementById('nextBtn');
+        const nextBtnParent = nextBtn ? nextBtn.parentElement : null;
+
+        if (prevBtnParent && nextBtnParent) {
+            for (let i = 1; i <= totalPages; i++) {
+                const li = document.createElement('li');
+                li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+                li.innerHTML = `<a class="page-link" href="#" data-page="${i}">${i}</a>`;
+
+                // Add event listener
+                li.querySelector('.page-link').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    changePage(i);
+                });
+
+                pagination.insertBefore(li, nextBtnParent);
+            }
+
+            // Update prev/next buttons
+            prevBtnParent.classList.toggle('disabled', currentPage === 1);
+            nextBtnParent.classList.toggle('disabled', currentPage === totalPages || totalPages === 0);
+        }
+    }
+
+    /**
+     * Change the current page
+     */
+    function changePage(page) {
+        currentPage = page;
+        renderServiceRequests();
+        updatePaginationUI();
+    }
+
+    /**
+     * Update the pagination UI based on current page
+     */
+    function updatePaginationUI() {
+        const totalPages = Math.ceil(serviceRequests.length / itemsPerPage);
+        const pagination = document.getElementById('pagination');
+        if (!pagination) return;
+
+        // Update active page
+        const pageItems = pagination.querySelectorAll('.page-item');
+        pageItems.forEach(item => {
+            const pageLink = item.querySelector('.page-link');
+            if (pageLink && pageLink.id !== 'prevBtn' && pageLink.id !== 'nextBtn') {
+                const page = parseInt(pageLink.getAttribute('data-page'));
+                item.classList.toggle('active', page === currentPage);
+            }
+        });
+
+        // Update prev/next buttons
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+
+        if (prevBtn) {
+            prevBtn.parentElement.classList.toggle('disabled', currentPage === 1);
+        }
+
+        if (nextBtn) {
+            nextBtn.parentElement.classList.toggle('disabled', currentPage === totalPages || totalPages === 0);
+        }
+    }
+
+    /**
+     * Format a date string nicely
+     */
+    function formatDate(dateString) {
+        if (!dateString) return 'N/A';
+
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        try {
+            return new Date(dateString).toLocaleDateString('en-US', options);
+        } catch (e) {
+            console.error("Error formatting date:", dateString, e);
+            return dateString || 'N/A';
+        }
+    }
+
+    /**
+     * Show toast message
+     */
     function showToast(message, type = 'success') {
         // Create toast container if it doesn't exist
         let toastContainer = document.querySelector('.toast-container');
@@ -3273,16 +3516,16 @@
         // Create toast element
         const toastId = 'toast-' + Date.now();
         const toastHTML = `
-    <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" id="${toastId}">
-        <div class="toast-header">
-            <strong class="me-auto">${type === 'success' ? 'Success' : 'Error'}</strong>
-            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        <div class="toast" role="alert" aria-live="assertive" aria-atomic="true" id="${toastId}">
+            <div class="toast-header">
+                <strong class="me-auto">${type === 'success' ? 'Success' : 'Error'}</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                ${message}
+            </div>
         </div>
-        <div class="toast-body">
-            ${message}
-        </div>
-    </div>
-`;
+    `;
 
         toastContainer.insertAdjacentHTML('beforeend', toastHTML);
 
@@ -3300,11 +3543,15 @@
         });
     }
 
-    function formatDate(dateString) {
-        if (!dateString) return 'N/A';
+    /**
+     * Show success modal
+     */
+    function showSuccessModal(title, message) {
+        document.getElementById('successTitle').textContent = title;
+        document.getElementById('successMessage').textContent = message;
 
-        const options = { year: 'numeric', month: 'long', day: 'numeric' };
-        return new Date(dateString).toLocaleDateString('en-US', options);
+        const modal = new bootstrap.Modal(document.getElementById('successModal'));
+        modal.show();
     }
 </script>
 

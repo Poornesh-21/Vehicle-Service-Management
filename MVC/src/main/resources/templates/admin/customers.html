@@ -1734,7 +1734,7 @@
           <td>
                                 <span class="last-service">
                                     <i class="fas fa-calendar-day"></i>
-                                    <span th:text="${customer.lastServiceDate != null ? #temporals.format(customer.lastServiceDate, 'MMM dd, yyyy') : 'No service yet'}">Mar 15, 2025</span>
+                                    <span th:text="${customer.formattedLastServiceDate}">Mar 15, 2025</span>
                                 </span>
           </td>
         </tr>

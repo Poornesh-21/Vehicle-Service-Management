@@ -5,11 +5,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -41,10 +43,15 @@ public class CustomerService {
             );
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                return objectMapper.readValue(
+                List<Map<String, Object>> customers = objectMapper.readValue(
                         response.getBody(),
                         new TypeReference<List<Map<String, Object>>>() {}
                 );
+
+                // Process each customer to format dates properly
+                customers.forEach(this::processCustomerDates);
+
+                return customers;
             } else {
                 log.warn("Unexpected response status: {}", response.getStatusCode());
                 return Collections.emptyList();
@@ -71,10 +78,15 @@ public class CustomerService {
             );
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                return objectMapper.readValue(
+                Map<String, Object> customer = objectMapper.readValue(
                         response.getBody(),
                         new TypeReference<Map<String, Object>>() {}
                 );
+
+                // Process dates for this customer
+                processCustomerDates(customer);
+
+                return customer;
             } else {
                 log.warn("Unexpected response status: {}", response.getStatusCode());
                 return Collections.emptyMap();
@@ -103,10 +115,15 @@ public class CustomerService {
             );
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                return objectMapper.readValue(
+                Map<String, Object> customer = objectMapper.readValue(
                         response.getBody(),
                         new TypeReference<Map<String, Object>>() {}
                 );
+
+                // Process dates for the newly created customer
+                processCustomerDates(customer);
+
+                return customer;
             } else {
                 log.warn("Unexpected response status: {}", response.getStatusCode());
                 return Collections.emptyMap();
@@ -135,10 +152,15 @@ public class CustomerService {
             );
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                return objectMapper.readValue(
+                Map<String, Object> customer = objectMapper.readValue(
                         response.getBody(),
                         new TypeReference<Map<String, Object>>() {}
                 );
+
+                // Process dates for the updated customer
+                processCustomerDates(customer);
+
+                return customer;
             } else {
                 log.warn("Unexpected response status: {}", response.getStatusCode());
                 return Collections.emptyMap();
@@ -168,6 +190,43 @@ public class CustomerService {
         } catch (Exception e) {
             log.error("Error deleting customer: {}", e.getMessage(), e);
             return false;
+        }
+    }
+
+    /**
+     * Process customer dates to ensure they're properly formatted for display
+     */
+    private void processCustomerDates(Map<String, Object> customer) {
+        // Handle lastServiceDate
+        if (customer.containsKey("lastServiceDate") && customer.get("lastServiceDate") != null) {
+            String formattedDate;
+            try {
+                // Try to parse as LocalDate
+                Object dateObj = customer.get("lastServiceDate");
+                LocalDate date;
+
+                if (dateObj instanceof String) {
+                    // If it's a string, try to parse it as ISO date (yyyy-MM-dd)
+                    date = LocalDate.parse((String) dateObj);
+                } else if (dateObj instanceof Long) {
+                    // If it's a timestamp (milliseconds since epoch)
+                    date = LocalDate.ofEpochDay((Long) dateObj / (24*60*60*1000));
+                } else {
+                    // Otherwise use toString and try to parse
+                    date = LocalDate.parse(dateObj.toString());
+                }
+
+                // Format the date in a nice readable format
+                formattedDate = date.format(DateTimeFormatter.ofPattern("MMM dd, yyyy"));
+            } catch (DateTimeParseException e) {
+                log.warn("Could not parse date: {}", customer.get("lastServiceDate"));
+                formattedDate = "Invalid date format";
+            }
+
+            // Add the formatted date to the customer data
+            customer.put("formattedLastServiceDate", formattedDate);
+        } else {
+            customer.put("formattedLastServiceDate", "No service yet");
         }
     }
 

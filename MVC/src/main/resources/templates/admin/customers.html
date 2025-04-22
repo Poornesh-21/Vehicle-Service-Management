@@ -2078,7 +2078,6 @@
 
 <!-- Custom JS -->
 <script th:inline="javascript">
-  // Wait for DOM to be loaded
   document.addEventListener('DOMContentLoaded', function() {
     // Toggle mobile menu
     const mobileMenuToggle = document.getElementById('mobileMenuToggle');
@@ -2290,6 +2289,135 @@
       return firstInitial + lastInitial;
     }
 
+    /**
+     * Validates the customer form before submission
+     * @param {string} formId - The ID of the form to validate ('addCustomerForm' or 'editCustomerForm')
+     * @returns {boolean} - True if valid, false otherwise
+     */
+    function validateCustomerForm(formId) {
+      try {
+        // Get form IDs based on whether it's the add or edit form
+        let ids = {};
+
+        if (formId === 'editCustomerForm') {
+          ids = {
+            firstName: 'editFirstName',
+            lastName: 'editLastName',
+            email: 'editEmail',
+            phone: 'editPhone',
+            street: 'editStreet',
+            city: 'editCity',
+            state: 'editState',
+            postalCode: 'editPostalCode',
+            membershipStatus: 'editMembershipStatus'
+          };
+        } else {
+          ids = {
+            firstName: 'firstName',
+            lastName: 'lastName',
+            email: 'email',
+            phone: 'phone',
+            street: 'street',
+            city: 'city',
+            state: 'state',
+            postalCode: 'postalCode',
+            membershipStatus: 'membershipStatus'
+          };
+        }
+
+        // Get values from form using the correct IDs
+        const firstName = document.getElementById(ids.firstName).value.trim();
+        const lastName = document.getElementById(ids.lastName).value.trim();
+        const email = document.getElementById(ids.email).value.trim();
+        const phone = document.getElementById(ids.phone).value.trim();
+        const street = document.getElementById(ids.street).value.trim();
+        const city = document.getElementById(ids.city).value.trim();
+        const state = document.getElementById(ids.state).value.trim();
+        const postalCode = document.getElementById(ids.postalCode).value.trim();
+        const membershipStatus = document.getElementById(ids.membershipStatus).value;
+
+        // Rest of validation code remains the same
+        let errors = [];
+
+        // Add validation rules
+        // First Name validation - required, 2-50 chars, alphabetic only
+        if (!firstName) {
+          errors.push("First name is required");
+        } else if (firstName.length < 1 || firstName.length > 50) {
+          errors.push("First name must be between 2 and 50 characters");
+        } else if (!/^[A-Za-z]+$/.test(firstName)) {
+          errors.push("First name must contain only alphabetic characters");
+        }
+
+        // Last Name validation - required, 2-50 chars, alphabetic only
+        if (!lastName) {
+          errors.push("Last name is required");
+        } else if (lastName.length < 2 || lastName.length > 50) {
+          errors.push("Last name must be between 2 and 50 characters");
+        } else if (!/^[A-Za-z]+$/.test(lastName)) {
+          errors.push("Last name must contain only alphabetic characters");
+        }
+
+        // Email validation - required, valid format, max 100 chars
+        if (!email) {
+          errors.push("Email is required");
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          errors.push("Please enter a valid email address");
+        } else if (email.length > 100) {
+          errors.push("Email must be less than 100 characters");
+        }
+
+        // Phone validation - required, 10-digit Indian mobile format
+        if (!phone) {
+          errors.push("Phone number is required");
+        } else if (!/^[6-9]\d{9}$/.test(phone)) {
+          errors.push("Phone number must be a valid 10-digit Indian mobile number starting with 6-9");
+        }
+
+        // Street validation - max 200 chars
+        if (street.length > 200) {
+          errors.push("Street address must be less than 200 characters");
+        }
+
+        // City validation - max 100 chars, alphabetic + spaces only
+        if (city && city.length > 100) {
+          errors.push("City must be less than 100 characters");
+        } else if (city && !/^[A-Za-z\s]*$/.test(city)) {
+          errors.push("City must contain only alphabetic characters and spaces");
+        }
+
+        // State validation - max 100 chars, alphabetic + spaces only
+        if (state && state.length > 100) {
+          errors.push("State must be less than 100 characters");
+        } else if (state && !/^[A-Za-z\s]*$/.test(state)) {
+          errors.push("State must contain only alphabetic characters and spaces");
+        }
+
+        // Postal code validation - 6-digit number
+        if (postalCode && !/^\d{6}$/.test(postalCode)) {
+          errors.push("Postal code must be a 6-digit number");
+        }
+
+        // Membership status validation - required
+        if (!membershipStatus) {
+          errors.push("Membership status is required");
+        }
+
+        // If there are validation errors, display them
+        if (errors.length > 0) {
+          alert(errors.join("\n"));
+          return false;
+        }
+
+        // Form is valid
+        return true;
+      } catch (error) {
+        console.error("Form validation error:", error);
+        alert("There was an error validating the form. Please check all fields and try again.");
+        return false;
+      }
+    }
+
     // Add Customer button handler
     const addCustomerBtn = document.getElementById('addCustomerBtn');
     if (addCustomerBtn) {
@@ -2309,15 +2437,9 @@
       saveCustomerBtn.addEventListener('click', function() {
         const form = document.getElementById('addCustomerForm');
 
-        // Basic form validation
-        const firstName = document.getElementById('firstName').value;
-        const lastName = document.getElementById('lastName').value;
-        const email = document.getElementById('email').value;
-        const phone = document.getElementById('phone').value;
-
-        if (!firstName || !lastName || !email || !phone) {
-          alert('Please fill in all required fields.');
-          return;
+        // Validate form before submission
+        if (!validateCustomerForm('addCustomerForm')) {
+          return; // Stop if validation fails
         }
 
         // Show spinner during processing
@@ -2325,14 +2447,14 @@
 
         // Prepare form data
         const formData = {
-          firstName: firstName,
-          lastName: lastName,
-          email: email,
-          phoneNumber: phone,
-          street: document.getElementById('street').value,
-          city: document.getElementById('city').value,
-          state: document.getElementById('state').value,
-          postalCode: document.getElementById('postalCode').value,
+          firstName: document.getElementById('firstName').value.trim(),
+          lastName: document.getElementById('lastName').value.trim(),
+          email: document.getElementById('email').value.trim(),
+          phoneNumber: document.getElementById('phone').value.trim(),
+          street: document.getElementById('street').value.trim(),
+          city: document.getElementById('city').value.trim(),
+          state: document.getElementById('state').value.trim(),
+          postalCode: document.getElementById('postalCode').value.trim(),
           membershipStatus: document.getElementById('membershipStatus').value,
           isActive: true
         };
@@ -2439,15 +2561,9 @@
     const updateCustomerBtn = document.getElementById('updateCustomerBtn');
     if (updateCustomerBtn) {
       updateCustomerBtn.addEventListener('click', function() {
-        // Basic form validation
-        const firstName = document.getElementById('editFirstName').value;
-        const lastName = document.getElementById('editLastName').value;
-        const email = document.getElementById('editEmail').value;
-        const phone = document.getElementById('editPhone').value;
-
-        if (!firstName || !lastName || !email || !phone) {
-          alert('Please fill in all required fields.');
-          return;
+        // Validate form before submission
+        if (!validateCustomerForm('editCustomerForm')) {
+          return; // Stop if validation fails
         }
 
         // Get customer ID
@@ -2460,14 +2576,14 @@
         const formData = {
           customerId: customerId,
           userId: document.getElementById('editUserId').value,
-          firstName: firstName,
-          lastName: lastName,
-          email: email,
-          phoneNumber: phone,
-          street: document.getElementById('editStreet').value,
-          city: document.getElementById('editCity').value,
-          state: document.getElementById('editState').value,
-          postalCode: document.getElementById('editPostalCode').value,
+          firstName: document.getElementById('editFirstName').value.trim(),
+          lastName: document.getElementById('editLastName').value.trim(),
+          email: document.getElementById('editEmail').value.trim(),
+          phoneNumber: document.getElementById('editPhone').value.trim(),
+          street: document.getElementById('editStreet').value.trim(),
+          city: document.getElementById('editCity').value.trim(),
+          state: document.getElementById('editState').value.trim(),
+          postalCode: document.getElementById('editPostalCode').value.trim(),
           membershipStatus: document.getElementById('editMembershipStatus').value,
           isActive: true
         };
@@ -2586,38 +2702,38 @@
         const membershipIcon = customer.membershipStatus === 'Premium' ? 'fas fa-crown' : 'fas fa-user';
 
         row.innerHTML = `
-        <td>
-          <div class="customer-cell">
-            <div class="customer-avatar">${initials}</div>
-            <div class="customer-info">
-              <div class="customer-name">${customer.firstName} ${customer.lastName}</div>
-            </div>
+      <td>
+        <div class="customer-cell">
+          <div class="customer-avatar">${initials}</div>
+          <div class="customer-info">
+            <div class="customer-name">${customer.firstName} ${customer.lastName}</div>
           </div>
-        </td>
-        <td>${customer.email}</td>
-        <td>
-          <span class="phone-number">
-            <i class="fas fa-phone-alt"></i>
-            <span>${customer.phoneNumber || 'Not provided'}</span>
-          </span>
-        </td>
-        <td>
-          <span class="membership-badge ${membershipClass}">
-            <i class="${membershipIcon}"></i>
-            <span>${customer.membershipStatus || 'Standard'}</span>
-          </span>
-        </td>
-        <td>${customer.totalServices || 0}</td>
-        <td>
-          <span class="last-service">
-            <i class="fas fa-calendar-day"></i>
-            <span>${customer.lastServiceDate
+        </div>
+      </td>
+      <td>${customer.email}</td>
+      <td>
+        <span class="phone-number">
+          <i class="fas fa-phone-alt"></i>
+          <span>${customer.phoneNumber || 'Not provided'}</span>
+        </span>
+      </td>
+      <td>
+        <span class="membership-badge ${membershipClass}">
+          <i class="${membershipIcon}"></i>
+          <span>${customer.membershipStatus || 'Standard'}</span>
+        </span>
+      </td>
+      <td>${customer.totalServices || 0}</td>
+      <td>
+        <span class="last-service">
+          <i class="fas fa-calendar-day"></i>
+          <span>${customer.lastServiceDate
                 ? new Date(customer.lastServiceDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
                 : 'No service yet'
         }</span>
-          </span>
-        </td>
-      `;
+        </span>
+      </td>
+    `;
 
         tableBody.appendChild(row);
 

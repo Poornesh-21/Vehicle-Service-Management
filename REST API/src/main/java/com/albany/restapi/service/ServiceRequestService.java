@@ -50,7 +50,7 @@ public class ServiceRequestService {
     }
 
     /**
-     * Get service requests by advisor ID
+     * Get service requests by service advisor ID
      */
     public List<ServiceRequestDTO> getServiceRequestsByAdvisor(Integer advisorId) {
         log.info("Fetching service requests for advisor: {}", advisorId);
@@ -95,17 +95,7 @@ public class ServiceRequestService {
             log.info("Creating new service request: {}", requestDTO);
 
             // Validate required fields
-            if (requestDTO.getVehicleId() == null) {
-                throw new IllegalArgumentException("Vehicle ID is required");
-            }
-
-            if (requestDTO.getServiceType() == null || requestDTO.getServiceType().trim().isEmpty()) {
-                throw new IllegalArgumentException("Service type is required");
-            }
-
-            if (requestDTO.getDeliveryDate() == null) {
-                throw new IllegalArgumentException("Delivery date is required");
-            }
+            validateServiceRequestDTO(requestDTO);
 
             // Get the vehicle
             Vehicle vehicle = vehicleRepository.findById(requestDTO.getVehicleId())
@@ -114,68 +104,21 @@ public class ServiceRequestService {
                         return new ResourceNotFoundException("Vehicle not found with ID: " + requestDTO.getVehicleId());
                     });
 
-            log.debug("Found vehicle: {} {}, Registration: {}",
-                    vehicle.getBrand(), vehicle.getModel(), vehicle.getRegistrationNumber());
-
             // Create new service request
             ServiceRequest serviceRequest = new ServiceRequest();
-            serviceRequest.setVehicle(vehicle);
-            serviceRequest.setServiceType(requestDTO.getServiceType());
-            serviceRequest.setDeliveryDate(requestDTO.getDeliveryDate());
-            serviceRequest.setAdditionalDescription(requestDTO.getAdditionalDescription());
 
-            // Parse status string to enum if provided, otherwise default to RECEIVED
-            if (requestDTO.getStatus() != null) {
-                try {
-                    serviceRequest.setStatus(ServiceRequest.Status.valueOf(requestDTO.getStatus()));
-                } catch (IllegalArgumentException e) {
-                    log.warn("Invalid status value: {}. Defaulting to RECEIVED", requestDTO.getStatus());
-                    serviceRequest.setStatus(ServiceRequest.Status.Received);
-                }
-            } else {
-                serviceRequest.setStatus(ServiceRequest.Status.Received);
-            }
-
-            serviceRequest.setCreatedAt(LocalDateTime.now());
-
-            // If admin ID is provided, set admin
-            if (requestDTO.getAdminId() != null) {
-                AdminProfile admin = adminProfileRepository.findById(requestDTO.getAdminId())
-                        .orElse(null);
-                serviceRequest.setAdmin(admin);
-            }
-
-            // If service advisor ID is provided, set service advisor
-            if (requestDTO.getServiceAdvisorId() != null) {
-                ServiceAdvisorProfile advisor = serviceAdvisorRepository.findById(requestDTO.getServiceAdvisorId())
-                        .orElse(null);
-                serviceRequest.setServiceAdvisor(advisor);
-            }
+            // Populate service request with DTO data
+            populateServiceRequestFromDTO(serviceRequest, requestDTO, vehicle);
 
             // Save the service request
             log.debug("Saving service request");
             ServiceRequest savedRequest = serviceRequestRepository.save(serviceRequest);
             log.info("Service request created successfully with ID: {}", savedRequest.getRequestId());
 
-            // Update customer's last service date if applicable
-            if (vehicle.getCustomer() != null) {
-                CustomerProfile customer = vehicle.getCustomer();
-                customer.setLastServiceDate(LocalDate.now());
-                // Increment total services count
-                Integer totalServices = customer.getTotalServices();
-                if (totalServices == null) {
-                    totalServices = 0;
-                }
-                customer.setTotalServices(totalServices + 1);
-                customerProfileRepository.save(customer);
-                log.debug("Updated customer service information");
-            }
+            // Update customer's service information
+            updateCustomerServiceInfo(vehicle);
 
             return convertToDTO(savedRequest);
-        } catch (ResourceNotFoundException e) {
-            // Re-throw our custom exceptions directly for better handling
-            log.error("Resource not found: {}", e.getMessage());
-            throw e;
         } catch (Exception e) {
             log.error("Error creating service request: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to create service request: " + e.getMessage(), e);
@@ -218,9 +161,6 @@ public class ServiceRequestService {
             log.info("Service advisor assigned successfully");
 
             return convertToDTO(updatedRequest);
-        } catch (ResourceNotFoundException e) {
-            // Re-throw our custom exceptions directly for better handling
-            throw e;
         } catch (Exception e) {
             log.error("Error assigning service advisor: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to assign service advisor: " + e.getMessage(), e);
@@ -250,12 +190,83 @@ public class ServiceRequestService {
             log.info("Service request status updated successfully");
 
             return convertToDTO(updatedRequest);
-        } catch (ResourceNotFoundException e) {
-            // Re-throw our custom exceptions directly
-            throw e;
         } catch (Exception e) {
             log.error("Error updating service request status: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to update service request status: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Validate service request DTO
+     */
+    private void validateServiceRequestDTO(ServiceRequestDTO requestDTO) {
+        if (requestDTO.getVehicleId() == null) {
+            throw new IllegalArgumentException("Vehicle ID is required");
+        }
+
+        if (requestDTO.getServiceType() == null || requestDTO.getServiceType().trim().isEmpty()) {
+            throw new IllegalArgumentException("Service type is required");
+        }
+
+        if (requestDTO.getDeliveryDate() == null) {
+            throw new IllegalArgumentException("Delivery date is required");
+        }
+    }
+
+    /**
+     * Populate service request from DTO
+     */
+    private void populateServiceRequestFromDTO(ServiceRequest serviceRequest,
+                                               ServiceRequestDTO requestDTO,
+                                               Vehicle vehicle) {
+        serviceRequest.setVehicle(vehicle);
+        serviceRequest.setServiceType(requestDTO.getServiceType());
+        serviceRequest.setDeliveryDate(requestDTO.getDeliveryDate());
+        serviceRequest.setAdditionalDescription(requestDTO.getAdditionalDescription());
+        serviceRequest.setServiceDescription(requestDTO.getServiceDescription());
+
+        // Populate vehicle-specific details
+        serviceRequest.setVehicleModel(vehicle.getModel());
+        serviceRequest.setVehicleRegistration(vehicle.getRegistrationNumber());
+        serviceRequest.setVehicleType(vehicle.getCategory() != null ? vehicle.getCategory().name() : null);
+        serviceRequest.setVehicleYear(vehicle.getYear());
+
+        // Use the flexible status conversion method from DTO
+        ServiceRequest.Status status = requestDTO.getStatusEnum();
+        serviceRequest.setStatus(status);
+
+        // Set admin if provided
+        if (requestDTO.getAdminId() != null) {
+            AdminProfile admin = adminProfileRepository.findById(requestDTO.getAdminId())
+                    .orElse(null);
+            serviceRequest.setAdmin(admin);
+        }
+
+        // Set service advisor if provided
+        if (requestDTO.getServiceAdvisorId() != null) {
+            ServiceAdvisorProfile advisor = serviceAdvisorRepository.findById(requestDTO.getServiceAdvisorId())
+                    .orElse(null);
+            serviceRequest.setServiceAdvisor(advisor);
+        }
+
+        // Set timestamps
+        serviceRequest.setCreatedAt(LocalDateTime.now());
+    }
+
+    /**
+     * Update customer's service information
+     */
+    private void updateCustomerServiceInfo(Vehicle vehicle) {
+        if (vehicle.getCustomer() != null) {
+            CustomerProfile customer = vehicle.getCustomer();
+            customer.setLastServiceDate(LocalDate.now());
+
+            // Increment total services count
+            Integer totalServices = customer.getTotalServices();
+            customer.setTotalServices(totalServices != null ? totalServices + 1 : 1);
+
+            customerProfileRepository.save(customer);
+            log.debug("Updated customer service information");
         }
     }
 
@@ -269,22 +280,19 @@ public class ServiceRequestService {
         dto.setServiceType(serviceRequest.getServiceType());
         dto.setDeliveryDate(serviceRequest.getDeliveryDate());
         dto.setAdditionalDescription(serviceRequest.getAdditionalDescription());
-        dto.setStatus(serviceRequest.getStatus());
+        dto.setServiceDescription(serviceRequest.getServiceDescription());
+        dto.setStatus(serviceRequest.getStatus() != null ? serviceRequest.getStatus().name() : null);
 
-        // Set vehicle info
+        // Set vehicle details from entity's vehicle-specific fields
+        dto.setVehicleModel(serviceRequest.getVehicleModel());
+        dto.setRegistrationNumber(serviceRequest.getVehicleRegistration());
+        dto.setVehicleType(serviceRequest.getVehicleType());
+        dto.setVehicleYear(serviceRequest.getVehicleYear());
+
+        // Set vehicle ID if available
         if (serviceRequest.getVehicle() != null) {
-            Vehicle vehicle = serviceRequest.getVehicle();
-            dto.setVehicleId(vehicle.getVehicleId());
-            dto.setVehicleBrand(vehicle.getBrand());
-            dto.setVehicleModel(vehicle.getModel());
-            dto.setRegistrationNumber(vehicle.getRegistrationNumber());
-
-            // Set customer info
-            if (vehicle.getCustomer() != null && vehicle.getCustomer().getUser() != null) {
-                User user = vehicle.getCustomer().getUser();
-                dto.setCustomerName(user.getFirstName() + " " + user.getLastName());
-                dto.setCustomerId(vehicle.getCustomer().getCustomerId());
-            }
+            dto.setVehicleId(serviceRequest.getVehicle().getVehicleId());
+            dto.setVehicleBrand(serviceRequest.getVehicle().getBrand());
         }
 
         // Set admin info
@@ -301,6 +309,15 @@ public class ServiceRequestService {
                 User user = advisor.getUser();
                 dto.setServiceAdvisorName(user.getFirstName() + " " + user.getLastName());
             }
+        }
+
+        // Set customer info
+        if (serviceRequest.getVehicle() != null &&
+                serviceRequest.getVehicle().getCustomer() != null &&
+                serviceRequest.getVehicle().getCustomer().getUser() != null) {
+            User user = serviceRequest.getVehicle().getCustomer().getUser();
+            dto.setCustomerName(user.getFirstName() + " " + user.getLastName());
+            dto.setCustomerId(serviceRequest.getVehicle().getCustomer().getCustomerId());
         }
 
         return dto;

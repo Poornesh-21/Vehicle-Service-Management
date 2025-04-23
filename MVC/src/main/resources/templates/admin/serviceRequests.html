@@ -2002,6 +2002,12 @@
     let currentPage = 1;
     const itemsPerPage = 5;
 
+    // Declare these functions in the global scope so they can be called from HTML
+    let loadServiceAdvisors;
+    let showAssignAdvisorModal;
+    let populateServiceAdvisorsList;
+    let showServiceRequestDetails;
+
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize app
         initializeApp();
@@ -2020,6 +2026,9 @@
                 loadCustomersDirectly();
             });
         }
+
+        // Initialize global functions
+        initializeGlobalFunctions();
     });
 
     /**
@@ -2040,6 +2049,219 @@
 
         // Set current date if element exists
         setupDateDisplay();
+    }
+
+    /**
+     * Initialize global functions
+     */
+    function initializeGlobalFunctions() {
+        /**
+         * Load service advisors
+         */
+        loadServiceAdvisors = function() {
+            console.log("Loading service advisors...");
+
+            // Get token
+            const token = getToken();
+            if (!token) {
+                console.error("No auth token found");
+                return Promise.resolve([]);
+            }
+
+            return fetch('/admin/service-advisors/api', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                }
+            })
+                .then(response => {
+                    if (response.status === 401) {
+                        window.location.href = '/admin/login?error=session_expired';
+                        throw new Error('Session expired');
+                    }
+                    if (!response.ok) {
+                        // Try alternative endpoint
+                        return fetch('/admin/service-advisors/api/advisors', {
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': 'Bearer ' + token
+                            }
+                        });
+                    }
+                    return response;
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Service advisors loaded:", data);
+                    serviceAdvisors = data || [];
+                    return serviceAdvisors;
+                })
+                .catch(error => {
+                    console.error('Error loading service advisors:', error);
+                    showToast("Failed to load service advisors: " + error.message, "error");
+                    return [];
+                });
+        };
+
+        /**
+         * Show service request details
+         */
+        showServiceRequestDetails = function(requestId) {
+            console.log("Showing details for request ID:", requestId);
+
+            // Find the request in our cached data
+            const request = serviceRequests.find(req => req.requestId === requestId);
+
+            if (!request) {
+                console.error('Request not found:', requestId);
+
+                // Try to fetch the request from the API
+                fetchServiceRequest(requestId);
+                return;
+            }
+
+            displayServiceRequestDetails(request);
+        };
+
+        /**
+         * Show the assign advisor modal
+         */
+        showAssignAdvisorModal = function(requestId) {
+            console.log("Showing assign advisor modal for request ID:", requestId);
+
+            const request = serviceRequests.find(req => req.requestId === requestId);
+
+            if (!request) {
+                console.error('Request not found:', requestId);
+                showToast("Service request not found", "error");
+                return;
+            }
+
+            // Set request details in the modal
+            document.getElementById('assignVehicleName').textContent = request.vehicleName || `${request.vehicleBrand} ${request.vehicleModel}`;
+            document.getElementById('assignVehicleReg').textContent = request.registrationNumber || 'N/A';
+            document.getElementById('assignCustomerName').textContent = request.customerName || 'Customer';
+            document.getElementById('assignRequestId').textContent = `REQ-${request.requestId}`;
+            document.getElementById('selectedRequestId').value = request.requestId;
+
+            // Show loading state in advisors list
+            const advisorsList = document.getElementById('advisorsList');
+            if (advisorsList) {
+                advisorsList.innerHTML = `
+            <div class="text-center py-4">
+                <div class="spinner-border text-wine" role="status"></div>
+                <p class="mt-2">Loading service advisors...</p>
+            </div>
+        `;
+            }
+
+            // Load service advisors
+            loadServiceAdvisors()
+                .then(advisors => {
+                    populateServiceAdvisorsList(advisors);
+
+                    // Show modal
+                    const modal = new bootstrap.Modal(document.getElementById('assignAdvisorModal'));
+                    modal.show();
+                })
+                .catch(error => {
+                    console.error("Error preparing advisor modal:", error);
+                    showToast("Failed to load service advisors", "error");
+                });
+        };
+
+        /**
+         * Populate the service advisors list
+         */
+        populateServiceAdvisorsList = function(advisors) {
+            const advisorsList = document.getElementById('advisorsList');
+            if (!advisorsList) return;
+
+            if (!advisors || advisors.length === 0) {
+                advisorsList.innerHTML = `
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                No service advisors available. Please add service advisors first.
+            </div>
+        `;
+                return;
+            }
+
+            let html = '';
+
+            advisors.forEach(advisor => {
+                // Calculate workload percentage (example)
+                const workloadPercentage = advisor.workloadPercentage ||
+                    (advisor.activeServices ? Math.min(Math.round((advisor.activeServices / 10) * 100), 100) : 0);
+
+                // Determine workload class
+                let workloadClass = 'bg-success';
+                if (workloadPercentage > 75) {
+                    workloadClass = 'bg-danger';
+                } else if (workloadPercentage > 50) {
+                    workloadClass = 'bg-warning';
+                }
+
+                const name = advisor.firstName && advisor.lastName ?
+                    `${advisor.firstName} ${advisor.lastName}` : advisor.name || 'Unnamed Advisor';
+
+                const initials = (advisor.firstName ? advisor.firstName.charAt(0) : '') +
+                    (advisor.lastName ? advisor.lastName.charAt(0) : '');
+
+                html += `
+        <div class="advisor-card" data-advisor-id="${advisor.advisorId || advisor.id}">
+            <div class="advisor-avatar">
+                ${initials || 'SA'}
+            </div>
+            <div class="advisor-info">
+                <div class="advisor-name">${name}</div>
+                <div class="advisor-meta">
+                    <div class="advisor-stat">
+                        <i class="fas fa-clipboard-list"></i>
+                        ${advisor.activeServices || 0} active requests
+                    </div>
+                    <div class="advisor-stat">
+                        <i class="fas fa-id-badge"></i>
+                        ${advisor.formattedId || `SA-${String(advisor.advisorId || 0).padStart(3, '0')}`}
+                    </div>
+                </div>
+                <div class="advisor-services">
+                    <i class="fas fa-tools"></i>
+                    ${advisor.specialization || 'General Service'}
+                </div>
+                <div class="advisor-workload">
+                    <div class="progress">
+                        <div class="progress-bar ${workloadClass}" role="progressbar"
+                            style="width: ${workloadPercentage}%"
+                            aria-valuenow="${workloadPercentage}" aria-valuemin="0" aria-valuemax="100">
+                        </div>
+                    </div>
+                    <div class="workload-text">
+                        Workload: ${workloadPercentage}%
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+            });
+
+            advisorsList.innerHTML = html;
+
+            // Add click event to select advisor
+            document.querySelectorAll('.advisor-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    document.querySelectorAll('.advisor-card').forEach(c => c.classList.remove('selected'));
+                    this.classList.add('selected');
+                });
+            });
+        };
     }
 
     /**
@@ -2138,30 +2360,30 @@
             const style = document.createElement('style');
             style.id = 'membership-filter-styles';
             style.textContent = `
-            .membership-filters {
-                display: flex;
-                align-items: center;
-            }
+        .membership-filters {
+            display: flex;
+            align-items: center;
+        }
 
-            .membership-filters .btn-group {
-                box-shadow: var(--shadow-sm);
-                border-radius: var(--radius-lg);
-                overflow: hidden;
-            }
+        .membership-filters .btn-group {
+            box-shadow: var(--shadow-sm);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
 
-            .membership-filters .btn {
-                padding: 0.4rem 0.75rem;
-                font-size: 0.85rem;
-                font-weight: 500;
-                border-radius: 0;
-            }
+        .membership-filters .btn {
+            padding: 0.4rem 0.75rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border-radius: 0;
+        }
 
-            .membership-filters .btn.active {
-                background-color: var(--wine);
-                color: white;
-                border-color: var(--wine);
-            }
-        `;
+        .membership-filters .btn.active {
+            background-color: var(--wine);
+            color: white;
+            border-color: var(--wine);
+        }
+    `;
             document.head.appendChild(style);
         }
     }
@@ -2331,6 +2553,9 @@
     /**
      * Load service requests from API
      */
+    /**
+     * Load service requests from API and filter for unassigned ones
+     */
     function loadServiceRequests() {
         console.log("Loading service requests...");
 
@@ -2371,16 +2596,26 @@
                 return response.json();
             })
             .then(data => {
-                console.log("Service requests loaded:", data);
+                console.log("All service requests loaded:", data);
 
                 // Hide loading row
                 if (loadingRow) loadingRow.style.display = 'none';
 
                 // Process the response
-                serviceRequests = data || [];
+                // Filter to only include requests without a service advisor
+                const allRequests = data || [];
+                serviceRequests = allRequests.filter(request => !request.serviceAdvisorId);
+
+                console.log("Filtered unassigned requests:", serviceRequests);
 
                 if (serviceRequests.length === 0) {
-                    if (emptyRow) emptyRow.style.display = 'table-row';
+                    if (emptyRow) {
+                        emptyRow.style.display = 'table-row';
+                        const message = emptyRow.querySelector('p');
+                        if (message) {
+                            message.textContent = 'No unassigned service requests found';
+                        }
+                    }
                 } else {
                     renderServiceRequests();
                     setupPagination();
@@ -2573,95 +2808,6 @@
             dropdown.innerHTML = `<option value="">${message}</option>`;
             dropdown.disabled = true;
         }
-    }
-
-    /**
-     * Load service advisors
-     */
-
-// Modify the loadServiceRequests function to filter out requests with assigned advisors
-    function loadServiceRequests() {
-        console.log("Loading service requests...");
-
-        // Show loading state
-        const tableBody = document.getElementById('serviceRequestsTableBody');
-        if (!tableBody) return;
-
-        const loadingRow = document.getElementById('loading-row');
-        const emptyRow = document.getElementById('empty-row');
-
-        if (loadingRow) loadingRow.style.display = 'table-row';
-        if (emptyRow) emptyRow.style.display = 'none';
-
-        // Get the token
-        const token = getToken();
-        if (!token) {
-            console.error("No auth token found");
-            window.location.href = '/admin/login?error=session_expired';
-            return;
-        }
-
-        // Fetch service requests from API
-        fetch(`/admin/service-requests/api${token ? `?token=${token}` : ''}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            }
-        })
-            .then(response => {
-                if (response.status === 401) {
-                    window.location.href = '/admin/login?error=session_expired';
-                    throw new Error('Session expired');
-                }
-                if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log("Service requests loaded:", data);
-
-                // Hide loading row
-                if (loadingRow) loadingRow.style.display = 'none';
-
-                // Process the response - FILTER TO ONLY SHOW UNASSIGNED REQUESTS
-                const allRequests = data || [];
-                serviceRequests = allRequests.filter(request => !request.serviceAdvisorId);
-
-                console.log(`Filtered to ${serviceRequests.length} unassigned requests out of ${allRequests.length} total`);
-
-                if (serviceRequests.length === 0) {
-                    if (emptyRow) {
-                        emptyRow.style.display = 'table-row';
-                        // Update empty message to be more specific
-                        const emptyTitle = emptyRow.querySelector('h5');
-                        const emptyMessage = emptyRow.querySelector('p');
-                        if (emptyTitle) {
-                            emptyTitle.textContent = 'No unassigned service requests found';
-                        }
-                        if (emptyMessage) {
-                            emptyMessage.textContent = 'All service requests have been assigned to service advisors';
-                        }
-                    }
-                } else {
-                    renderServiceRequests();
-                    setupPagination();
-                }
-            })
-            .catch(error => {
-                console.error("Error loading service requests:", error);
-                if (loadingRow) loadingRow.style.display = 'none';
-
-                // Show empty state with error message
-                if (emptyRow) {
-                    emptyRow.style.display = 'table-row';
-                    const errorMessage = emptyRow.querySelector('p');
-                    if (errorMessage) {
-                        errorMessage.textContent = 'Error loading service requests. Please try again.';
-                    }
-                }
-            });
     }
 
     /**
@@ -2920,143 +3066,6 @@
     }
 
     /**
-     * Render the service requests in the table
-     */
-    // Updates to the renderServiceRequests function in MVC/src/main/resources/templates/admin/serviceRequests.html
-
-    /**
-     * Render the service requests in the table
-     */
-    function renderServiceRequests() {
-        const tableBody = document.getElementById('serviceRequestsTableBody');
-        if (!tableBody) return;
-
-        // Clear table body except for special rows
-        const rows = tableBody.querySelectorAll('tr:not(#loading-row):not(#empty-row)');
-        rows.forEach(row => row.remove());
-
-        if (!serviceRequests || serviceRequests.length === 0) {
-            const emptyRow = document.getElementById('empty-row');
-            if (emptyRow) {
-                emptyRow.style.display = 'table-row';
-            }
-            return;
-        }
-
-        const emptyRow = document.getElementById('empty-row');
-        if (emptyRow) {
-            emptyRow.style.display = 'none';
-        }
-
-        // Get requests for current page
-        const startIndex = (currentPage - 1) * itemsPerPage;
-        const endIndex = Math.min(startIndex + itemsPerPage, serviceRequests.length);
-        const displayedRequests = serviceRequests.slice(startIndex, endIndex);
-
-        // Create rows for displayed requests
-        displayedRequests.forEach(request => {
-            // Log the full request object to debug
-            console.log("Request object:", JSON.stringify(request));
-
-            // Ensure we have valid data or defaults
-            const status = request.status || "Unknown";
-            const membershipStatus = request.membershipStatus || 'Standard';
-
-            // Handle vehicle name/brand/model
-            const vehicleName = request.vehicleName ||
-                (request.vehicleBrand && request.vehicleModel ?
-                    `${request.vehicleBrand} ${request.vehicleModel}` :
-                    (request.vehicleModel || 'Unknown Vehicle'));
-
-            // Handle registration number
-            const regNumber = request.registrationNumber ||
-                request.vehicleRegistration ||
-                'No Registration';
-
-            const row = document.createElement('tr');
-            row.className = 'active-page';
-            row.innerHTML = `
-        <td>REQ-${request.requestId}</td>
-        <td>
-            <div class="vehicle-info">
-                <div class="vehicle-icon">
-                    <i class="fas fa-${request.vehicleCategory === 'Bike' ? 'motorcycle' : 'car-side'}"></i>
-                </div>
-                <div class="vehicle-details">
-                    <h5>${vehicleName}</h5>
-                    <p>${regNumber}</p>
-                </div>
-            </div>
-        </td>
-        <td>
-            <div class="person-info">
-                <div class="person-details">
-                    <h5>${request.customerName || 'N/A'}</h5>
-                    <p>${request.customerEmail || ''}</p>
-                </div>
-            </div>
-        </td>
-        <td>
-            <span class="membership-badge membership-${membershipStatus.toLowerCase()}">
-                <i class="fas fa-${membershipStatus.toLowerCase() === 'premium' ? 'crown' : 'user'}"></i>
-                ${membershipStatus}
-            </span>
-        </td>
-        <td>${request.serviceType || 'N/A'}</td>
-        <td>
-            <span class="status-badge status-${status.toLowerCase()}">
-                <i class="fas fa-${
-                status === 'Received' ? 'clock' :
-                    status === 'Diagnosis' ? 'stethoscope' :
-                        status === 'Repair' ? 'wrench' :
-                            status === 'Completed' ? 'check-circle' :
-                                'question-circle'
-            }"></i>
-                ${status}
-            </span>
-        </td>
-        <td>${formatDate(request.deliveryDate)}</td>
-        <td>${request.serviceAdvisorName || 'Not Assigned'}</td>
-        <td class="table-actions-cell">
-            <button class="btn-table-action view-btn" title="View Details" onclick="showServiceRequestDetails(${request.requestId})">
-                <i class="fas fa-eye"></i>
-            </button>
-            ${!request.serviceAdvisorId ?
-                `<button class="btn-assign" title="Assign Advisor" onclick="showAssignAdvisorModal(${request.requestId})">
-                    <i class="fas fa-user-plus"></i> Assign
-                </button>` :
-                `<button class="btn-table-action edit-btn" title="Edit Request">
-                    <i class="fas fa-edit"></i>
-                </button>`
-            }
-        </td>
-    `;
-
-            tableBody.appendChild(row);
-        });
-    }
-
-    /**
-     * Show service request details
-     */
-    function showServiceRequestDetails(requestId) {
-        console.log("Showing details for request ID:", requestId);
-
-        // Find the request in our cached data
-        const request = serviceRequests.find(req => req.requestId === requestId);
-
-        if (!request) {
-            console.error('Request not found:', requestId);
-
-            // Try to fetch the request from the API
-            fetchServiceRequest(requestId);
-            return;
-        }
-
-        displayServiceRequestDetails(request);
-    }
-
-    /**
      * Fetch a service request from API
      */
     function fetchServiceRequest(requestId) {
@@ -3214,139 +3223,6 @@
     }
 
     /**
-     * Show the assign advisor modal
-     */
-    function showAssignAdvisorModal(requestId) {
-        console.log("Showing assign advisor modal for request ID:", requestId);
-
-        const request = serviceRequests.find(req => req.requestId === requestId);
-
-        if (!request) {
-            console.error('Request not found:', requestId);
-            showToast("Service request not found", "error");
-            return;
-        }
-
-        // Set request details in the modal
-        document.getElementById('assignVehicleName').textContent = request.vehicleName || `${request.vehicleBrand} ${request.vehicleModel}`;
-        document.getElementById('assignVehicleReg').textContent = request.registrationNumber || 'N/A';
-        document.getElementById('assignCustomerName').textContent = request.customerName || 'Customer';
-        document.getElementById('assignRequestId').textContent = `REQ-${request.requestId}`;
-        document.getElementById('selectedRequestId').value = request.requestId;
-
-        // Show loading state in advisors list
-        const advisorsList = document.getElementById('advisorsList');
-        if (advisorsList) {
-            advisorsList.innerHTML = `
-            <div class="text-center py-4">
-                <div class="spinner-border text-wine" role="status"></div>
-                <p class="mt-2">Loading service advisors...</p>
-            </div>
-        `;
-        }
-
-        // Load service advisors
-        loadServiceAdvisors()
-            .then(advisors => {
-                populateServiceAdvisorsList(advisors);
-
-                // Show modal
-                const modal = new bootstrap.Modal(document.getElementById('assignAdvisorModal'));
-                modal.show();
-            })
-            .catch(error => {
-                console.error("Error preparing advisor modal:", error);
-                showToast("Failed to load service advisors", "error");
-            });
-    }
-
-    /**
-     * Populate the service advisors list
-     */
-    function populateServiceAdvisorsList(advisors) {
-        const advisorsList = document.getElementById('advisorsList');
-        if (!advisorsList) return;
-
-        if (!advisors || advisors.length === 0) {
-            advisorsList.innerHTML = `
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle me-2"></i>
-                No service advisors available. Please add service advisors first.
-            </div>
-        `;
-            return;
-        }
-
-        let html = '';
-
-        advisors.forEach(advisor => {
-            // Calculate workload percentage (example)
-            const workloadPercentage = advisor.workloadPercentage ||
-                (advisor.activeServices ? Math.min(Math.round((advisor.activeServices / 10) * 100), 100) : 0);
-
-            // Determine workload class
-            let workloadClass = 'bg-success';
-            if (workloadPercentage > 75) {
-                workloadClass = 'bg-danger';
-            } else if (workloadPercentage > 50) {
-                workloadClass = 'bg-warning';
-            }
-
-            const name = advisor.firstName && advisor.lastName ?
-                `${advisor.firstName} ${advisor.lastName}` : advisor.name || 'Unnamed Advisor';
-
-            const initials = (advisor.firstName ? advisor.firstName.charAt(0) : '') +
-                (advisor.lastName ? advisor.lastName.charAt(0) : '');
-
-            html += `
-        <div class="advisor-card" data-advisor-id="${advisor.advisorId || advisor.id}">
-            <div class="advisor-avatar">
-                ${initials || 'SA'}
-            </div>
-            <div class="advisor-info">
-                <div class="advisor-name">${name}</div>
-                <div class="advisor-meta">
-                    <div class="advisor-stat">
-                        <i class="fas fa-clipboard-list"></i>
-                        ${advisor.activeServices || 0} active requests
-                    </div>
-                    <div class="advisor-stat">
-                        <i class="fas fa-id-badge"></i>
-                        ${advisor.formattedId || `SA-${String(advisor.advisorId || 0).padStart(3, '0')}`}
-                    </div>
-                </div>
-                <div class="advisor-services">
-                    <i class="fas fa-tools"></i>
-                    ${advisor.specialization || 'General Service'}
-                </div>
-                <div class="advisor-workload">
-                    <div class="progress">
-                        <div class="progress-bar ${workloadClass}" role="progressbar"
-                            style="width: ${workloadPercentage}%"
-                            aria-valuenow="${workloadPercentage}" aria-valuemin="0" aria-valuemax="100">
-                        </div>
-                    </div>
-                    <div class="workload-text">
-                        Workload: ${workloadPercentage}%
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-        });
-
-        advisorsList.innerHTML = html;
-
-        // Add click event to select advisor
-        document.querySelectorAll('.advisor-card').forEach(card => {
-            card.addEventListener('click', function() {
-                document.querySelectorAll('.advisor-card').forEach(c => c.classList.remove('selected'));
-                this.classList.add('selected');
-            });
-        });
-    }
-
-    /**
      * Assign a service advisor to a request
      */
     function assignServiceAdvisor() {
@@ -3433,6 +3309,118 @@
                 console.error('Error assigning service advisor:', error);
                 showToast('Failed to assign service advisor: ' + error.message, 'error');
             });
+    }
+
+    /**
+     * Render the service requests in the table
+     */
+    function renderServiceRequests() {
+        const tableBody = document.getElementById('serviceRequestsTableBody');
+        if (!tableBody) return;
+
+        // Clear table body except for special rows
+        const rows = tableBody.querySelectorAll('tr:not(#loading-row):not(#empty-row)');
+        rows.forEach(row => row.remove());
+
+        if (!serviceRequests || serviceRequests.length === 0) {
+            const emptyRow = document.getElementById('empty-row');
+            if (emptyRow) {
+                emptyRow.style.display = 'table-row';
+            }
+            return;
+        }
+
+        const emptyRow = document.getElementById('empty-row');
+        if (emptyRow) {
+            emptyRow.style.display = 'none';
+        }
+
+        // Get requests for current page
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = Math.min(startIndex + itemsPerPage, serviceRequests.length);
+        const displayedRequests = serviceRequests.slice(startIndex, endIndex);
+
+        // Create rows for displayed requests
+        displayedRequests.forEach(request => {
+            // Log the full request object to debug
+            console.log("Request object:", JSON.stringify(request));
+
+            // Ensure we have valid data or defaults
+            const status = request.status || "Unknown";
+            const membershipStatus = request.membershipStatus || 'Standard';
+
+            // Handle vehicle name/brand/model
+            const vehicleName = request.vehicleName ||
+                (request.vehicleBrand && request.vehicleModel ?
+                    `${request.vehicleBrand} ${request.vehicleModel}` :
+                    (request.vehicleModel || 'Unknown Vehicle'));
+
+            // Handle registration number
+            const regNumber = request.registrationNumber ||
+                request.vehicleRegistration ||
+                'No Registration';
+
+            const row = document.createElement('tr');
+            row.className = 'active-page';
+            row.innerHTML = `
+        <td>REQ-${request.requestId}</td>
+        <td>
+            <div class="vehicle-info">
+                <div class="vehicle-icon">
+                    <i class="fas fa-${request.vehicleCategory === 'Bike' ? 'motorcycle' : 'car-side'}"></i>
+                </div>
+                <div class="vehicle-details">
+                    <h5>${vehicleName}</h5>
+                    <p>${regNumber}</p>
+                </div>
+            </div>
+        </td>
+        <td>
+            <div class="person-info">
+                <div class="person-details">
+                    <h5>${request.customerName || 'N/A'}</h5>
+                    <p>${request.customerEmail || ''}</p>
+                </div>
+            </div>
+        </td>
+        <td>
+            <span class="membership-badge membership-${membershipStatus.toLowerCase()}">
+                <i class="fas fa-${membershipStatus.toLowerCase() === 'premium' ? 'crown' : 'user'}"></i>
+                ${membershipStatus}
+            </span>
+        </td>
+        <td>${request.serviceType || 'N/A'}</td>
+        <td>
+            <span class="status-badge status-${status.toLowerCase()}">
+                <i class="fas fa-${
+                status === 'Received' ? 'clock' :
+                    status === 'Diagnosis' ? 'stethoscope' :
+                        status === 'Repair' ? 'wrench' :
+                            status === 'Completed' ? 'check-circle' :
+                                'question-circle'
+            }"></i>
+                ${status}
+            </span>
+        </td>
+        <td>${formatDate(request.deliveryDate)}</td>
+        <td>${request.serviceAdvisorName || 'Not Assigned'}</td>
+        <td class="table-actions-cell">
+            <button class="btn-table-action view-btn" title="View Details" onclick="showServiceRequestDetails(${request.requestId})">
+                <i class="fas fa-eye"></i>
+            </button>
+            ${!request.serviceAdvisorId ?
+                `<button class="btn-assign" title="Assign Advisor" onclick="showAssignAdvisorModal(${request.requestId})">
+                    <i class="fas fa-user-plus"></i> Assign
+                </button>` :
+                `<button class="btn-table-action edit-btn" title="Edit Request">
+                    <i class="fas fa-edit"></i>
+                </button>`
+            }
+        </td>
+    `;
+
+            tableBody.appendChild(row);
+        });
     }
 
     /**

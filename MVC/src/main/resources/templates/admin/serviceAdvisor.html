@@ -1480,18 +1480,18 @@
             </a>
           </li>
 
-<!--          <li class="sidebar-menu-item">-->
-<!--            <a href="#" class="sidebar-menu-link">-->
-<!--              <i class="fas fa-file-invoice-dollar"></i>-->
-<!--              <span>Invoices</span>-->
-<!--            </a>-->
-<!--          </li>-->
-<!--          <li class="sidebar-menu-item">-->
-<!--            <a href="#" class="sidebar-menu-link">-->
-<!--              <i class="fas fa-rupee-sign"></i>-->
-<!--              <span>Payments</span>-->
-<!--            </a>-->
-<!--          </li>-->
+          <!--          <li class="sidebar-menu-item">-->
+          <!--            <a href="#" class="sidebar-menu-link">-->
+          <!--              <i class="fas fa-file-invoice-dollar"></i>-->
+          <!--              <span>Invoices</span>-->
+          <!--            </a>-->
+          <!--          </li>-->
+          <!--          <li class="sidebar-menu-item">-->
+          <!--            <a href="#" class="sidebar-menu-link">-->
+          <!--              <i class="fas fa-rupee-sign"></i>-->
+          <!--              <span>Payments</span>-->
+          <!--            </a>-->
+          <!--          </li>-->
         </ul>
       </div>
     </div>
@@ -2129,91 +2129,44 @@ function showConfirmation(title, message) {
   successModal.show();
 }
 
-/**
- * Load service advisors with improved error handling and endpoint fallbacks
- */
-// Modify the loadServiceRequests function to filter out requests with assigned advisors
-function loadServiceRequests() {
-  console.log("Loading service requests...");
+function loadServiceAdvisors() {
+  showSpinner();
 
-  // Show loading state
-  const tableBody = document.getElementById('serviceRequestsTableBody');
-  if (!tableBody) return;
-
-  const loadingRow = document.getElementById('loading-row');
-  const emptyRow = document.getElementById('empty-row');
-
-  if (loadingRow) loadingRow.style.display = 'table-row';
-  if (emptyRow) emptyRow.style.display = 'none';
-
-  // Get the token
-  const token = getToken();
-  if (!token) {
-    console.error("No auth token found");
-    window.location.href = '/admin/login?error=session_expired';
-    return;
-  }
-
-  // Fetch service requests from API
-  fetch(`/admin/service-requests/api${token ? `?token=${token}` : ''}`, {
+  // Call API to get service advisors
+  fetch('/admin/service-advisors/api/advisors', {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
+      'Authorization': 'Bearer ' + getToken()
     }
   })
           .then(response => {
-            if (response.status === 401) {
-              window.location.href = '/admin/login?error=session_expired';
-              throw new Error('Session expired');
-            }
             if (!response.ok) {
-              throw new Error(`HTTP error! Status: ${response.status}`);
+              if (response.status === 401) {
+                // Redirect to login on auth failure
+                window.location.href = '/admin/login?error=session_expired';
+                throw new Error('Session expired');
+              }
+              throw new Error(`Server responded with status: ${response.status}`);
             }
             return response.json();
           })
           .then(data => {
-            console.log("Service requests loaded:", data);
+            hideSpinner();
 
-            // Hide loading row
-            if (loadingRow) loadingRow.style.display = 'none';
+            // Store service advisors globally
+            serviceAdvisors = data;
 
-            // Process the response - FILTER TO ONLY SHOW UNASSIGNED REQUESTS
-            const allRequests = data || [];
-            serviceRequests = allRequests.filter(request => !request.serviceAdvisorId);
+            // Render service advisors
+            renderServiceAdvisors();
 
-            console.log(`Filtered to ${serviceRequests.length} unassigned requests out of ${allRequests.length} total`);
-
-            if (serviceRequests.length === 0) {
-              if (emptyRow) {
-                emptyRow.style.display = 'table-row';
-                // Update empty message to be more specific
-                const emptyTitle = emptyRow.querySelector('h5');
-                const emptyMessage = emptyRow.querySelector('p');
-                if (emptyTitle) {
-                  emptyTitle.textContent = 'No unassigned service requests found';
-                }
-                if (emptyMessage) {
-                  emptyMessage.textContent = 'All service requests have been assigned to service advisors';
-                }
-              }
-            } else {
-              renderServiceRequests();
-              setupPagination();
-            }
+            // Setup pagination
+            setupPagination();
           })
           .catch(error => {
-            console.error("Error loading service requests:", error);
-            if (loadingRow) loadingRow.style.display = 'none';
-
-            // Show empty state with error message
-            if (emptyRow) {
-              emptyRow.style.display = 'table-row';
-              const errorMessage = emptyRow.querySelector('p');
-              if (errorMessage) {
-                errorMessage.textContent = 'Error loading service requests. Please try again.';
-              }
-            }
+            hideSpinner();
+            console.error('Error fetching advisor details:', error);
+            alert('Failed to load advisor details. Please try again.');
           });
 }
 
@@ -2457,280 +2410,277 @@ function getActiveServicesClass(count) {
   }
 }
 
-function showAssignAdvisorModal(requestId) {
-  console.log("Showing assign advisor modal for request ID:", requestId);
+function showAdvisorDetails(advisor) {
+  // Set advisor ID on edit button for future reference
+  document.getElementById('editAdvisorFromDetailsBtn').setAttribute('data-advisor-id', advisor.advisorId);
 
-  const request = serviceRequests.find(req => req.requestId === requestId);
+  // Personal Info Tab
+  document.getElementById('viewAdvisorInitials').textContent = getInitials(advisor.firstName, advisor.lastName);
+  document.getElementById('viewAdvisorName').textContent = advisor.firstName + ' ' + advisor.lastName;
+  document.getElementById('viewAdvisorEmail').textContent = advisor.email;
+  document.getElementById('viewAdvisorPhone').textContent = advisor.phoneNumber;
+  document.getElementById('viewAdvisorId').textContent = advisor.formattedId || ('SA-' + advisor.advisorId);
+  document.getElementById('viewAdvisorDepartment').textContent = advisor.department || 'Not assigned';
+  document.getElementById('viewAdvisorHireDate').textContent = advisor.hireDate ? new Date(advisor.hireDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Not available';
 
-  if (!request) {
-    console.error('Request not found:', requestId);
-    showToast("Service request not found", "error");
+  // Workload Tab
+  document.getElementById('viewAdvisorWorkloadValue').textContent = advisor.workloadPercentage + '%';
+
+  const workloadBar = document.getElementById('viewAdvisorWorkloadBar');
+  workloadBar.style.width = advisor.workloadPercentage + '%';
+  workloadBar.className = 'workload-progress ' + getWorkloadClass(advisor.workloadPercentage);
+
+  document.getElementById('viewAdvisorWorkloadText').textContent = getWorkloadText(advisor.workloadPercentage);
+
+  // Show modal
+  const detailsModal = new bootstrap.Modal(document.getElementById('advisorDetailsModal'));
+  detailsModal.show();
+}
+
+function generateRandomPassword() {
+  // Generate a password in the format: SA2025-XXXNNN (where X is a letter and N is a number)
+  const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // Excluded I and O to avoid confusion
+  const numbers = '123456789'; // Excluded 0 to avoid confusion
+
+  let password = 'SA2025-';
+
+  // Add 3 random letters
+  for (let i = 0; i < 3; i++) {
+    password += letters.charAt(Math.floor(Math.random() * letters.length));
+  }
+
+  // Add 3 random numbers
+  for (let i = 0; i < 3; i++) {
+    password += numbers.charAt(Math.floor(Math.random() * numbers.length));
+  }
+
+  return password;
+}
+
+function saveServiceAdvisor() {
+  // Get form
+  const form = document.getElementById('addAdvisorForm');
+
+  // Basic form validation
+  if (!form.checkValidity()) {
+    form.reportValidity();
     return;
   }
 
-  // Set request details in the modal
-  document.getElementById('assignVehicleName').textContent = request.vehicleName || `${request.vehicleBrand} ${request.vehicleModel}`;
-  document.getElementById('assignVehicleReg').textContent = request.registrationNumber || 'N/A';
-  document.getElementById('assignCustomerName').textContent = request.customerName || 'Customer';
-  document.getElementById('assignRequestId').textContent = `REQ-${request.requestId}`;
-  document.getElementById('selectedRequestId').value = request.requestId;
+  // Generate a random password for the new advisor
+  const generatedPassword = generateRandomPassword();
 
-  // Show loading state in advisors list
-  const advisorsList = document.getElementById('advisorsList');
-  if (advisorsList) {
-    advisorsList.innerHTML = `
-            <div class="text-center py-4">
-                <div class="spinner-border text-wine" role="status"></div>
-                <p class="mt-2">Loading service advisors...</p>
-            </div>
-        `;
+  // Get form data
+  const formData = {
+    firstName: document.getElementById('firstName').value,
+    lastName: document.getElementById('lastName').value,
+    email: document.getElementById('email').value,
+    phoneNumber: document.getElementById('phone').value,
+    department: document.getElementById('department').value,
+    password: generatedPassword // Add the generated password to the request
+  };
+
+  showSpinner();
+
+  // Call API to create new service advisor
+  fetch('/admin/service-advisors', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + getToken()
+    },
+    body: JSON.stringify(formData)
+  })
+          .then(response => {
+            if (!response.ok) {
+              // Log the status for debugging
+              console.error(`Server responded with status: ${response.status}`);
+
+              // Try to get more detailed error message
+              return response.text().then(text => {
+                throw new Error(`Server responded with status: ${response.status}` +
+                        (text ? `, message: ${text}` : ''));
+              });
+            }
+            return response.json();
+          })
+          .then(data => {
+            hideSpinner();
+
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('addAdvisorModal'));
+            modal.hide();
+
+            // Show success message about email
+            showConfirmation(
+                    "Service Advisor Added Successfully",
+                    "The service advisor has been created and login credentials have been sent to their email address."
+            );
+
+            // Reset form
+            form.reset();
+
+            // Reload service advisors
+            loadServiceAdvisors();
+          })
+          .catch(error => {
+            hideSpinner();
+            console.error('Error creating service advisor:', error);
+
+            // Show user-friendly error message
+            alert('Failed to create service advisor. ' +
+                    (error.message || 'Please check your connection and try again.'));
+          });
+}
+
+function showEditModal(advisorId) {
+  // Close details modal if open
+  const detailsModal = bootstrap.Modal.getInstance(document.getElementById('advisorDetailsModal'));
+  if (detailsModal) {
+    detailsModal.hide();
   }
 
-  function generateRandomPassword() {
-    // Generate a password in the format: SA2025-XXXNNN (where X is a letter and N is a number)
-    const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // Excluded I and O to avoid confusion
-    const numbers = '123456789'; // Excluded 0 to avoid confusion
+  showSpinner();
 
-    let password = 'SA2025-';
-
-    // Add 3 random letters
-    for (let i = 0; i < 3; i++) {
-      password += letters.charAt(Math.floor(Math.random() * letters.length));
+  // Call API to get advisor details for editing
+  fetch(`/admin/service-advisors/${advisorId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + getToken()
     }
+  })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`Server responded with status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then(advisor => {
+            hideSpinner();
 
-    // Add 3 random numbers
-    for (let i = 0; i < 3; i++) {
-      password += numbers.charAt(Math.floor(Math.random() * numbers.length));
+            // Populate edit form
+            document.getElementById('editAdvisorId').value = advisor.advisorId;
+            document.getElementById('editUserId').value = advisor.userId;
+            document.getElementById('editFirstName').value = advisor.firstName;
+            document.getElementById('editLastName').value = advisor.lastName;
+            document.getElementById('editEmail').value = advisor.email;
+            document.getElementById('editPhone').value = advisor.phoneNumber;
+            document.getElementById('editDepartment').value = advisor.department;
+            document.getElementById('editPassword').value = '';
+
+            // Show edit modal
+            const editModal = new bootstrap.Modal(document.getElementById('editAdvisorModal'));
+            editModal.show();
+          })
+          .catch(error => {
+            hideSpinner();
+            console.error('Error fetching advisor details for editing:', error);
+            alert('Failed to load advisor details for editing. Please try again.');
+          });
+}
+
+function updateServiceAdvisor() {
+  // Get form
+  const form = document.getElementById('editAdvisorForm');
+
+  // Basic form validation
+  if (!form.checkValidity()) {
+    form.reportValidity();
+    return;
+  }
+
+  // Get advisor ID
+  const advisorId = document.getElementById('editAdvisorId').value;
+
+  // Get form data
+  const formData = {
+    advisorId: advisorId,
+    userId: document.getElementById('editUserId').value,
+    firstName: document.getElementById('editFirstName').value,
+    lastName: document.getElementById('editLastName').value,
+    email: document.getElementById('editEmail').value,
+    phoneNumber: document.getElementById('editPhone').value,
+    department: document.getElementById('editDepartment').value
+  };
+
+  // Add password if provided
+  const password = document.getElementById('editPassword').value;
+  if (password) {
+    formData.password = password;
+  }
+
+  showSpinner();
+
+  // Call API to update service advisor
+  fetch(`/admin/service-advisors/${advisorId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + getToken()
+    },
+    body: JSON.stringify(formData)
+  })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`Server responded with status: ${response.status}`);
+            }
+            return response.json();
+          })
+          .then(data => {
+            hideSpinner();
+
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('editAdvisorModal'));
+            modal.hide();
+
+            // Show success message
+            showConfirmation(
+                    'Service Advisor Updated',
+                    'The service advisor information has been updated successfully.' +
+                    (password ? ' A new password has been sent to their email.' : '')
+            );
+
+            // Reset form
+            form.reset();
+
+            // Reload service advisors
+            loadServiceAdvisors();
+          })
+          .catch(error => {
+            hideSpinner();
+            console.error('Error updating service advisor:', error);
+            alert('Failed to update service advisor. Please try again.');
+          });
+}
+
+function filterServiceAdvisors(searchTerm) {
+  // Reset to first page
+  currentPage = 1;
+
+  // Render with new search term (getFilteredAdvisors will use the search input value)
+  renderServiceAdvisors();
+}
+
+function sortServiceAdvisors(sortBy) {
+  // Sort the service advisors array based on the sortBy parameter
+  serviceAdvisors.sort((a, b) => {
+    switch (sortBy) {
+      case 'name':
+        return (a.firstName + a.lastName).localeCompare(b.firstName + b.lastName);
+      case 'department':
+        return (a.department || '').localeCompare(b.department || '');
+      case 'workload':
+        return b.workloadPercentage - a.workloadPercentage;
+      case 'hire date':
+        return new Date(a.hireDate || 0) - new Date(b.hireDate || 0);
+      default:
+        return 0;
     }
+  });
 
-    return password;
-  }
-
-  function saveServiceAdvisor() {
-    // Get form
-    const form = document.getElementById('addAdvisorForm');
-
-    // Basic form validation
-    if (!form.checkValidity()) {
-      form.reportValidity();
-      return;
-    }
-
-    // Generate a random password for the new advisor
-    const generatedPassword = generateRandomPassword();
-
-    // Get form data
-    const formData = {
-      firstName: document.getElementById('firstName').value,
-      lastName: document.getElementById('lastName').value,
-      email: document.getElementById('email').value,
-      phoneNumber: document.getElementById('phone').value,
-      department: document.getElementById('department').value,
-      password: generatedPassword // Add the generated password to the request
-    };
-
-    showSpinner();
-
-    // Call API to create new service advisor
-    fetch('/admin/service-advisors', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + getToken()
-      },
-      body: JSON.stringify(formData)
-    })
-            .then(response => {
-              if (!response.ok) {
-                // Log the status for debugging
-                console.error(`Server responded with status: ${response.status}`);
-
-                // Try to get more detailed error message
-                return response.text().then(text => {
-                  throw new Error(`Server responded with status: ${response.status}` +
-                          (text ? `, message: ${text}` : ''));
-                });
-              }
-              return response.json();
-            })
-            .then(data => {
-              hideSpinner();
-
-              // Close modal
-              const modal = bootstrap.Modal.getInstance(document.getElementById('addAdvisorModal'));
-              modal.hide();
-
-              // Show success message about email
-              showConfirmation(
-                      "Service Advisor Added Successfully",
-                      "The service advisor has been created and login credentials have been sent to their email address."
-              );
-
-              // Reset form
-              form.reset();
-
-              // Reload service advisors
-              loadServiceAdvisors();
-            })
-            .catch(error => {
-              hideSpinner();
-              console.error('Error creating service advisor:', error);
-
-              // Show user-friendly error message
-              alert('Failed to create service advisor. ' +
-                      (error.message || 'Please check your connection and try again.'));
-            });
-  }
-
-  function showEditModal(advisorId) {
-    // Close details modal if open
-    const detailsModal = bootstrap.Modal.getInstance(document.getElementById('advisorDetailsModal'));
-    if (detailsModal) {
-      detailsModal.hide();
-    }
-
-    showSpinner();
-
-    // Call API to get advisor details for editing
-    fetch(`/admin/service-advisors/${advisorId}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + getToken()
-      }
-    })
-            .then(response => {
-              if (!response.ok) {
-                throw new Error(`Server responded with status: ${response.status}`);
-              }
-              return response.json();
-            })
-            .then(advisor => {
-              hideSpinner();
-
-              // Populate edit form
-              document.getElementById('editAdvisorId').value = advisor.advisorId;
-              document.getElementById('editUserId').value = advisor.userId;
-              document.getElementById('editFirstName').value = advisor.firstName;
-              document.getElementById('editLastName').value = advisor.lastName;
-              document.getElementById('editEmail').value = advisor.email;
-              document.getElementById('editPhone').value = advisor.phoneNumber;
-              document.getElementById('editDepartment').value = advisor.department;
-              document.getElementById('editPassword').value = '';
-
-              // Show edit modal
-              const editModal = new bootstrap.Modal(document.getElementById('editAdvisorModal'));
-              editModal.show();
-            })
-            .catch(error => {
-              hideSpinner();
-              console.error('Error fetching advisor details for editing:', error);
-              alert('Failed to load advisor details for editing. Please try again.');
-            });
-  }
-
-  function updateServiceAdvisor() {
-    // Get form
-    const form = document.getElementById('editAdvisorForm');
-
-    // Basic form validation
-    if (!form.checkValidity()) {
-      form.reportValidity();
-      return;
-    }
-
-    // Get advisor ID
-    const advisorId = document.getElementById('editAdvisorId').value;
-
-    // Get form data
-    const formData = {
-      advisorId: advisorId,
-      userId: document.getElementById('editUserId').value,
-      firstName: document.getElementById('editFirstName').value,
-      lastName: document.getElementById('editLastName').value,
-      email: document.getElementById('editEmail').value,
-      phoneNumber: document.getElementById('editPhone').value,
-      department: document.getElementById('editDepartment').value
-    };
-
-    // Add password if provided
-    const password = document.getElementById('editPassword').value;
-    if (password) {
-      formData.password = password;
-    }
-
-    showSpinner();
-
-    // Call API to update service advisor
-    fetch(`/admin/service-advisors/${advisorId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + getToken()
-      },
-      body: JSON.stringify(formData)
-    })
-            .then(response => {
-              if (!response.ok) {
-                throw new Error(`Server responded with status: ${response.status}`);
-              }
-              return response.json();
-            })
-            .then(data => {
-              hideSpinner();
-
-              // Close modal
-              const modal = bootstrap.Modal.getInstance(document.getElementById('editAdvisorModal'));
-              modal.hide();
-
-              // Show success message
-              showConfirmation(
-                      'Service Advisor Updated',
-                      'The service advisor information has been updated successfully.' +
-                      (password ? ' A new password has been sent to their email.' : '')
-              );
-
-              // Reset form
-              form.reset();
-
-              // Reload service advisors
-              loadServiceAdvisors();
-            })
-            .catch(error => {
-              hideSpinner();
-              console.error('Error updating service advisor:', error);
-              alert('Failed to update service advisor. Please try again.');
-            });
-  }
-
-  function filterServiceAdvisors(searchTerm) {
-    // Reset to first page
-    currentPage = 1;
-
-    // Render with new search term (getFilteredAdvisors will use the search input value)
-    renderServiceAdvisors();
-  }
-
-  function sortServiceAdvisors(sortBy) {
-    // Sort the service advisors array based on the sortBy parameter
-    serviceAdvisors.sort((a, b) => {
-      switch (sortBy) {
-        case 'name':
-          return (a.firstName + a.lastName).localeCompare(b.firstName + b.lastName);
-        case 'department':
-          return (a.department || '').localeCompare(b.department || '');
-        case 'workload':
-          return b.workloadPercentage - a.workloadPercentage;
-        case 'hire date':
-          return new Date(a.hireDate || 0) - new Date(b.hireDate || 0);
-        default:
-          return 0;
-      }
-    });
-
-    // Re-render the service advisors
-    renderServiceAdvisors();
-  }
+  // Re-render the service advisors
+  renderServiceAdvisors();
 }
 </script>
 </body>

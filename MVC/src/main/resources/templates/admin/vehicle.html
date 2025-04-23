@@ -1540,49 +1540,6 @@
     </div>
 </div>
 
-<!-- Update Status Modal -->
-<div class="modal fade modal-premium" id="updateStatusModal" tabindex="-1" aria-labelledby="updateStatusModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="updateStatusModalLabel">
-                    <i class="fas fa-edit"></i>
-                    Update Service Status
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="alert alert-info mb-4">
-                    <i class="fas fa-info-circle me-2"></i>
-                    You are updating the status for service <strong id="updateStatusServiceId">REQ-1001</strong>
-                </div>
-
-                <div class="form-group mb-4">
-                    <label for="statusSelect" class="form-label">Select New Status</label>
-                    <select class="form-select" id="statusSelect" required>
-                        <option value="Received">Received</option>
-                        <option value="Diagnosis">Diagnosis</option>
-                        <option value="Repair">Repair</option>
-                        <option value="Completed">Completed</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="statusNotes" class="form-label">Status Update Notes</label>
-                    <textarea class="form-control" id="statusNotes" rows="3" placeholder="Enter notes about this status update"></textarea>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn-premium secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn-premium primary" id="confirmUpdateStatusBtn">
-                    <i class="fas fa-check-circle"></i>
-                    Update Status
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Mobile Menu Toggle Button -->
 <button class="mobile-menu-toggle" id="mobileMenuToggle">
     <i class="fas fa-bars"></i>
@@ -2367,6 +2324,47 @@
     </div>
 </div>
 
+<div class="modal fade modal-premium" id="updateStatusConfirmModal" tabindex="-1" aria-labelledby="updateStatusConfirmModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="updateStatusConfirmModalLabel">
+                    <i class="fas fa-sync-alt"></i>
+                    Update Service Status
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info mb-4">
+                    <i class="fas fa-info-circle me-2"></i>
+                    You are about to update the status of service <strong id="updateServiceId">REQ-1001</strong>.
+                </div>
+
+                <div class="mb-3">
+                    <label for="serviceStatusSelect" class="form-label">Select New Status</label>
+                    <select class="form-select" id="serviceStatusSelect">
+                        <option value="Diagnosis">Diagnosis</option>
+                        <option value="Repair">Repair</option>
+                        <option value="Completed">Completed</option>
+                    </select>
+                </div>
+
+                <p id="statusUpdateDescription" class="mt-3">
+                    This will move the service from <span class="fw-bold text-wine" id="currentStatusText">Received</span>
+                    to <span class="fw-bold text-success" id="newStatusText">Diagnosis</span>.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-premium secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn-premium primary" id="confirmUpdateStatusBtn">
+                    <i class="fas fa-check-circle"></i>
+                    Update Status
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- jQuery and Bootstrap JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
@@ -2731,6 +2729,7 @@
     }
 
     // Load vehicles under service from API
+    // Update the loadVehiclesUnderServiceFromAPI function to display a better empty state message
     function loadVehiclesUnderServiceFromAPI() {
         // Show loading spinner
         document.getElementById('loading-row-service').style.display = '';
@@ -2768,8 +2767,24 @@
                     // Show first page
                     showVehiclesUnderServicePage(currentServicePage);
                 } else {
-                    // Show empty state
+                    // Show enhanced empty state with better visuals
                     document.getElementById('empty-row-service').style.display = '';
+                    document.getElementById('empty-row-service').innerHTML = `
+                <td colspan="9" class="text-center py-5">
+                    <div class="my-5">
+                        <i class="fas fa-car-alt fa-4x text-muted mb-4" style="opacity: 0.3;"></i>
+                        <h4 class="text-wine">No Vehicles Currently Under Service</h4>
+                        <p class="text-muted mt-3">
+                            There are no vehicles currently undergoing service.
+                            <br>Vehicles will appear here when they are received for servicing.
+                        </p>
+                        <button class="btn-premium primary mt-3" onclick="refreshVehicleData()">
+                            <i class="fas fa-sync-alt"></i>
+                            Refresh Data
+                        </button>
+                    </div>
+                </td>
+                `;
                 }
             })
             .catch(error => {
@@ -2778,11 +2793,18 @@
                 document.getElementById('loading-row-service').style.display = 'none';
                 document.getElementById('empty-row-service').style.display = '';
                 document.getElementById('empty-row-service').innerHTML = `
-                <td colspan="9" class="text-center py-4">
+                <td colspan="9" class="text-center py-5">
                     <div class="my-5">
-                        <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
-                        <h5>Error Loading Vehicles</h5>
-                        <p class="text-muted">Failed to load vehicles: ${error.message}</p>
+                        <i class="fas fa-exclamation-triangle fa-4x text-danger mb-4"></i>
+                        <h4 class="text-danger">Error Loading Vehicles</h4>
+                        <p class="text-muted mt-3">
+                            We encountered a problem while loading vehicles under service.
+                            <br>Error: ${error.message}
+                        </p>
+                        <button class="btn-premium primary mt-3" onclick="refreshVehicleData()">
+                            <i class="fas fa-sync-alt"></i>
+                            Try Again
+                        </button>
                     </div>
                 </td>
             `;
@@ -2842,6 +2864,102 @@
                         <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
                         <h5>Error Loading Completed Services</h5>
                         <p class="text-muted">Failed to load data: ${error.message}</p>
+                    </div>
+                </td>
+            `;
+            });
+    }
+
+    // Add a refresh function to reload the data
+    function refreshVehicleData() {
+        // Show loading state
+        document.getElementById('loading-row-service').style.display = '';
+        document.getElementById('empty-row-service').style.display = 'none';
+
+        // Refresh both data tables
+        loadVehiclesUnderServiceFromAPI();
+        loadCompletedServicesFromAPI();
+
+        // Show toast notification
+        showToastNotification('Refreshing Data', 'Fetching the latest vehicle service information...');
+    }
+
+    // Apply the same improved empty state to the completed services tab
+    function loadCompletedServicesFromAPI() {
+        // Show loading spinner
+        document.getElementById('loading-row-completed').style.display = '';
+        document.getElementById('empty-row-completed').style.display = 'none';
+
+        // Get token
+        const token = getJwtToken();
+        if (!token) {
+            console.error('No token found');
+            return;
+        }
+
+        // API call to fetch completed services
+        fetch('/admin/api/vehicle-tracking/completed-services?token=' + encodeURIComponent(token))
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('API call failed: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                completedServices = data;
+
+                // Update count
+                document.getElementById('completedCount').textContent = completedServices.length;
+
+                // Hide loading spinner
+                document.getElementById('loading-row-completed').style.display = 'none';
+
+                // Check if there are services to display
+                if (completedServices.length > 0) {
+                    // Update pagination
+                    updateCompletedPagination();
+
+                    // Show first page
+                    showCompletedServicesPage(currentCompletedPage);
+                } else {
+                    // Show enhanced empty state
+                    document.getElementById('empty-row-completed').style.display = '';
+                    document.getElementById('empty-row-completed').innerHTML = `
+                <td colspan="9" class="text-center py-5">
+                    <div class="my-5">
+                        <i class="fas fa-check-circle fa-4x text-muted mb-4" style="opacity: 0.3;"></i>
+                        <h4 class="text-wine">No Completed Services</h4>
+                        <p class="text-muted mt-3">
+                            There are no completed services to display.
+                            <br>Completed vehicle services will appear here once they're finished.
+                        </p>
+                        <button class="btn-premium primary mt-3" onclick="refreshVehicleData()">
+                            <i class="fas fa-sync-alt"></i>
+                            Refresh Data
+                        </button>
+                    </div>
+                </td>
+                `;
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching completed services:', error);
+                // Hide loading spinner and show empty state with error
+                document.getElementById('loading-row-completed').style.display = 'none';
+                document.getElementById('empty-row-completed').style.display = '';
+                document.getElementById('empty-row-completed').innerHTML = `
+                <td colspan="9" class="text-center py-5">
+                    <div class="my-5">
+                        <i class="fas fa-exclamation-triangle fa-4x text-danger mb-4"></i>
+                        <h4 class="text-danger">Error Loading Completed Services</h4>
+                        <p class="text-muted mt-3">
+                            We encountered a problem while loading completed services.
+                            <br>Error: ${error.message}
+                        </p>
+                        <button class="btn-premium primary mt-3" onclick="refreshVehicleData()">
+                            <i class="fas fa-sync-alt"></i>
+                            Try Again
+                        </button>
                     </div>
                 </td>
             `;
@@ -3251,6 +3369,7 @@
     }
 
     // View service details for vehicles under service
+    // View service details for vehicles under service
     function viewServiceUnderServiceDetails(serviceId) {
         // Show spinner
         document.getElementById('spinnerOverlay').classList.add('show');
@@ -3262,6 +3381,9 @@
             return;
         }
 
+        // Find the vehicle in local data first for initial population
+        const vehicle = vehiclesUnderService.find(v => v.requestId === parseInt(serviceId));
+
         // Fetch service details from API
         fetch(`/admin/api/vehicle-tracking/service-request/${serviceId}?token=${encodeURIComponent(token)}`)
             .then(response => {
@@ -3271,17 +3393,20 @@
                 return response.json();
             })
             .then(service => {
+                // Merge local data with API response for more complete information
+                const mergedService = { ...vehicle, ...service };
+
                 // Hide spinner
                 document.getElementById('spinnerOverlay').classList.remove('show');
 
-                // Format dates
-                const startDate = new Date(service.startDate || service.createdAt).toLocaleDateString('en-US', {
+                // Format dates with fallbacks
+                const startDate = new Date(mergedService.startDate || mergedService.createdAt || Date.now()).toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric'
                 });
 
-                const estimatedCompletion = new Date(service.estimatedCompletionDate || service.deliveryDate).toLocaleDateString('en-US', {
+                const estimatedCompletion = new Date(mergedService.estimatedCompletionDate || mergedService.deliveryDate || Date.now()).toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric'
@@ -3297,9 +3422,10 @@
                 // Update modal content
                 document.getElementById('viewServiceId').textContent = 'REQ-' + serviceId;
 
-                // Status badge
+                // Status badge with fallback
+                const status = (mergedService.status || 'Received').toLowerCase();
                 let statusBadge = '';
-                switch ((service.status || '').toLowerCase()) {
+                switch (status) {
                     case 'received':
                         statusBadge = `<span class="status-badge status-received"><i class="fas fa-clock"></i> Received</span>`;
                         break;
@@ -3313,42 +3439,48 @@
                         statusBadge = `<span class="status-badge status-completed"><i class="fas fa-check-circle"></i> Completed</span>`;
                         break;
                     default:
-                        statusBadge = `<span class="status-badge">${service.status || 'Unknown'}</span>`;
+                        statusBadge = `<span class="status-badge status-received"><i class="fas fa-clock"></i> Received</span>`;
                 }
 
                 document.getElementById('viewStatus').innerHTML = statusBadge;
                 document.getElementById('viewStartDate').textContent = startDate;
-                document.getElementById('viewVehicleName').textContent = service.vehicleName || 'Unknown';
-                document.getElementById('viewRegistrationNumber').textContent = service.registrationNumber || 'Unknown';
-                document.getElementById('viewVehicleCategory').textContent = service.category || 'Unknown';
-                document.getElementById('viewCustomerName').textContent = service.customerName || 'Unknown';
-                document.getElementById('viewCustomerContact').textContent = service.customerPhone || service.customerEmail || 'Unknown';
+                document.getElementById('viewVehicleName').textContent = mergedService.vehicleName || mergedService.vehicleModel || 'Vehicle';
+                document.getElementById('viewRegistrationNumber').textContent = mergedService.registrationNumber || 'Not specified';
+                document.getElementById('viewVehicleCategory').textContent = mergedService.category || mergedService.vehicleType || 'Car';
+                document.getElementById('viewCustomerName').textContent = mergedService.customerName || 'Customer';
+                document.getElementById('viewCustomerContact').textContent = mergedService.customerPhone || mergedService.customerEmail || 'Not available';
 
                 // Membership badge
                 let membershipBadge = '';
-                if (service.membershipStatus === 'Premium') {
+                if ((mergedService.membershipStatus || '').toLowerCase() === 'premium') {
                     membershipBadge = '<span class="membership-badge membership-premium"><i class="fas fa-crown"></i> Premium</span>';
                 } else {
                     membershipBadge = '<span class="membership-badge membership-standard"><i class="fas fa-user"></i> Standard</span>';
                 }
 
                 document.getElementById('viewMembership').innerHTML = membershipBadge;
-                document.getElementById('viewServiceType').textContent = service.serviceType || 'Unknown';
+                document.getElementById('viewServiceType').textContent = mergedService.serviceType || 'Regular Service';
                 document.getElementById('viewEstimatedCompletion').textContent = estimatedCompletion;
-                document.getElementById('viewServiceAdvisor').textContent = service.serviceAdvisorName || 'Not Assigned';
-                document.getElementById('viewServiceDescription').textContent = service.additionalDescription || 'No description provided.';
+                document.getElementById('viewServiceAdvisor').textContent = mergedService.serviceAdvisorName || 'Not Assigned';
+                document.getElementById('viewServiceDescription').textContent = mergedService.additionalDescription || 'No description provided.';
 
                 // Progress bar
                 const progressBar = document.querySelector('.progress-bar');
-                const progressPercentage = calculateProgressPercentage(service.status);
+                const progressPercentage = calculateProgressPercentage(mergedService.status);
                 progressBar.style.width = progressPercentage + '%';
                 progressBar.textContent = progressPercentage + '%';
                 progressBar.setAttribute('aria-valuenow', progressPercentage);
 
-                document.getElementById('viewProgressNotes').textContent = getProgressNotes(service) || 'No progress notes available.';
+                document.getElementById('viewProgressNotes').textContent = getProgressNotes(mergedService) || 'No progress notes available.';
 
-                // Show the modal
-                $('#viewServiceDetailsModal').modal('show');
+                // Show the modal with higher z-index
+                const modal = document.getElementById('viewServiceDetailsModal');
+                $(modal).modal('show');
+                // Force higher z-index after modal is shown
+                setTimeout(() => {
+                    modal.style.zIndex = "1060";
+                    document.querySelector('.modal-backdrop').style.zIndex = "1050";
+                }, 100);
             })
             .catch(error => {
                 // Hide spinner
@@ -3997,10 +4129,19 @@
                 $('#updateStatusModal').modal('hide');
                 $('#viewServiceDetailsModal').modal('hide');
 
-                // Show success modal
+                // Set success modal content
                 document.getElementById('successTitle').textContent = 'Status Updated!';
                 document.getElementById('successMessage').textContent = `The status for service REQ-${serviceId} has been successfully updated to ${status}.`;
-                $('#successModal').modal('show');
+
+                // Remove modal backdrop and reset body classes
+                setTimeout(function() {
+                    $('.modal-backdrop').remove();
+                    $('body').removeClass('modal-open');
+                    $('body').css('padding-right', '');
+
+                    // Show success modal
+                    $('#successModal').modal('show');
+                }, 100);
             })
             .catch(error => {
                 // Hide spinner
@@ -4010,51 +4151,242 @@
                 // Hide the update status modal
                 $('#updateStatusModal').modal('hide');
 
-                alert('Failed to update status: ' + error.message);
+                // Remove modal backdrop and reset body classes
+                setTimeout(function() {
+                    $('.modal-backdrop').remove();
+                    $('body').removeClass('modal-open');
+                    $('body').css('padding-right', '');
+
+                    // Show error alert
+                    alert('Failed to update status: ' + error.message);
+                }, 100);
             });
     });
 
     // Update service status
     // Update service status
+    // Update service status with modal z-index fix
     function updateServiceStatus(serviceId) {
-        // Get current status
-        const currentStatus = document.getElementById('viewStatus').textContent.trim();
-        let nextStatus = '';
+        // Get current status text
+        const currentStatusElement = document.getElementById('viewStatus');
+        const currentStatusText = currentStatusElement.textContent.trim();
+        let currentStatus = '';
 
-        // Determine next status
-        if (currentStatus.includes('Received')) {
-            nextStatus = 'Diagnosis';
-        } else if (currentStatus.includes('Diagnosis')) {
-            nextStatus = 'Repair';
-        } else if (currentStatus.includes('Repair')) {
-            nextStatus = 'Completed';
+        // Get current status value
+        if (currentStatusText.includes('Received')) {
+            currentStatus = 'Received';
+        } else if (currentStatusText.includes('Diagnosis')) {
+            currentStatus = 'Diagnosis';
+        } else if (currentStatusText.includes('Repair')) {
+            currentStatus = 'Repair';
+        } else if (currentStatusText.includes('Completed')) {
+            currentStatus = 'Completed';
         } else {
-            nextStatus = 'Diagnosis'; // Default
+            currentStatus = 'Received'; // Default
         }
 
-        // Set the service ID in the modal
-        document.getElementById('updateStatusServiceId').textContent = 'REQ-' + serviceId;
+        // Determine recommended next status
+        let recommendedStatus = '';
+        if (currentStatus === 'Received') {
+            recommendedStatus = 'Diagnosis';
+        } else if (currentStatus === 'Diagnosis') {
+            recommendedStatus = 'Repair';
+        } else if (currentStatus === 'Repair') {
+            recommendedStatus = 'Completed';
+        } else {
+            recommendedStatus = 'Diagnosis'; // Default
+        }
 
-        // Select the appropriate option in the dropdown
-        const statusSelect = document.getElementById('statusSelect');
+        // Update the confirmation modal
+        document.getElementById('updateServiceId').textContent = 'REQ-' + serviceId;
+        document.getElementById('currentStatusText').textContent = currentStatus;
+        document.getElementById('newStatusText').textContent = recommendedStatus;
 
-        // Find the option that matches the next status and select it
-        for(let i = 0; i < statusSelect.options.length; i++) {
-            if(statusSelect.options[i].value === nextStatus) {
-                statusSelect.selectedIndex = i;
-                break;
+        // Update the status dropdown
+        const statusSelect = document.getElementById('serviceStatusSelect');
+        statusSelect.value = recommendedStatus;
+
+        // Enable/disable options based on current status
+        // Cannot go backward in status
+        for (let i = 0; i < statusSelect.options.length; i++) {
+            const option = statusSelect.options[i];
+
+            // Disable completed if service is not at least in repair
+            if (option.value === 'Completed' && currentStatus !== 'Repair') {
+                option.disabled = true;
+            }
+            // Disable repair if service is not at least in diagnosis
+            else if (option.value === 'Repair' && currentStatus === 'Received') {
+                option.disabled = true;
+            } else {
+                option.disabled = false;
             }
         }
 
-        // Clear any previous notes
-        document.getElementById('statusNotes').value = '';
+        // Update status select change handler
+        statusSelect.onchange = function() {
+            document.getElementById('newStatusText').textContent = this.value;
+        };
 
-        // Hide the view modal first to ensure the update modal appears on top
+        // Setup confirm button handler
+        document.getElementById('confirmUpdateStatusBtn').onclick = function() {
+            submitStatusUpdate(serviceId, statusSelect.value);
+        };
+
+        // Show the confirmation modal
+        const updateModal = new bootstrap.Modal(document.getElementById('updateStatusConfirmModal'), {
+            backdrop: 'static',
+            keyboard: false
+        });
+
+        // Hide the view modal and show the confirmation modal
         $('#viewServiceDetailsModal').modal('hide');
 
-        // Show the update status modal
-        $('#updateStatusModal').modal('show');
+        // Remove modal backdrop and reset body classes before showing new modal
+        setTimeout(function() {
+            $('.modal-backdrop').remove();
+            $('body').removeClass('modal-open');
+            $('body').css('padding-right', '');
+            updateModal.show();
+        }, 100);
     }
+
+    // Submit the status update to the server with view modal reopening
+    // Submit the status update to the server without reopening any modal
+    function submitStatusUpdate(serviceId, newStatus) {
+        // Show spinner
+        document.getElementById('spinnerOverlay').classList.add('show');
+
+        // Get token
+        const token = getJwtToken();
+        if (!token) {
+            console.error('No token found');
+            return;
+        }
+
+        // Hide confirmation modal
+        $('#updateStatusConfirmModal').modal('hide');
+
+        // Remove modal backdrop and reset body classes
+        setTimeout(function() {
+            $('.modal-backdrop').remove();
+            $('body').removeClass('modal-open');
+            $('body').css('padding-right', '');
+        }, 100);
+
+        // API call to update status
+        fetch(`/admin/api/vehicle-tracking/service-request/${serviceId}/status?token=${encodeURIComponent(token)}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                status: newStatus
+            })
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('API call failed: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Hide spinner
+                document.getElementById('spinnerOverlay').classList.remove('show');
+
+                // If status is now Completed, move to completed services
+                if (newStatus === 'Completed') {
+                    // Refresh data from API
+                    loadVehiclesUnderServiceFromAPI();
+                    loadCompletedServicesFromAPI();
+                } else {
+                    // Update the status in the vehiclesUnderService array
+                    const serviceIndex = vehiclesUnderService.findIndex(v => v.requestId === parseInt(serviceId));
+                    if (serviceIndex !== -1) {
+                        vehiclesUnderService[serviceIndex].status = newStatus;
+                        showVehiclesUnderServicePage(currentServicePage);
+                    }
+                }
+
+                // Show a brief success toast notification instead of a modal
+                showToastNotification('Status Updated!', `Service REQ-${serviceId} status updated to ${newStatus}.`);
+            })
+            .catch(error => {
+                // Hide spinner
+                document.getElementById('spinnerOverlay').classList.remove('show');
+                console.error('Error updating service status:', error);
+                alert('Failed to update status: ' + error.message);
+            });
+    }
+
+    // Add a toast notification function
+    function showToastNotification(title, message) {
+        // Create toast container if it doesn't exist
+        let toastContainer = document.getElementById('toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-container';
+            toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+            document.body.appendChild(toastContainer);
+        }
+
+        // Create toast element
+        const toastId = 'toast-' + Date.now();
+        const toastHtml = `
+    <div id="${toastId}" class="toast align-items-center text-white bg-wine border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                <strong>${title}</strong> ${message}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+    `;
+
+        toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+
+        // Initialize and show the toast
+        const toastElement = document.getElementById(toastId);
+        const toast = new bootstrap.Toast(toastElement, {
+            animation: true,
+            autohide: true,
+            delay: 3000
+        });
+
+        toast.show();
+
+        // Remove toast after it's hidden
+        toastElement.addEventListener('hidden.bs.toast', function () {
+            toastElement.remove();
+        });
+    }
+
+    // Add some CSS for the toast notification
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add toast CSS styles
+        const style = document.createElement('style');
+        style.textContent = `
+    .toast-container {
+        z-index: 1070;
+    }
+    .bg-wine {
+        background-color: #722F37;
+    }
+    .toast {
+        opacity: 0.95;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.2);
+    }
+    `;
+        document.head.appendChild(style);
+    });
+
+    // Make sure the Update Status button uses the new function
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('updateStatusBtn').addEventListener('click', function() {
+            const serviceId = document.getElementById('viewServiceId').textContent.replace('REQ-', '');
+            updateServiceStatus(serviceId);
+        });
+    });
 
 </script>
 </body>

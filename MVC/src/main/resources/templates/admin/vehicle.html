@@ -2119,6 +2119,10 @@
                     <i class="fas fa-file-invoice-dollar"></i>
                     Generate Invoice
                 </button>
+                <button type="button" class="btn-premium primary" id="downloadInvoiceBtn" style="display: none;">
+                    <i class="fas fa-download"></i>
+                    Download Invoice
+                </button>
             </div>
         </div>
     </div>
@@ -2616,6 +2620,25 @@
             }
         });
 
+        // Download Invoice button click
+        document.getElementById('downloadInvoiceBtn').addEventListener('click', function() {
+            // Get service ID from the current service details modal
+            const serviceId = document.getElementById('viewServiceId').textContent.replace('REQ-', '');
+
+            // Find the service in the completed services array
+            const service = completedServices.find(s => s.serviceId === parseInt(serviceId) || s.requestId === parseInt(serviceId));
+
+            // If service exists, simulate downloading the invoice
+            if (service) {
+                // In a real application, this would trigger an API call to download the invoice
+                // For now, we'll just show a success message
+                showToast('Invoice download started', 'The invoice is being downloaded to your device.', 'success');
+
+                // Close the modal
+                $('#viewServiceDetailsModal').modal('hide');
+            }
+        });
+
         // Confirm Generate Invoice button click
         document.getElementById('confirmGenerateInvoiceBtn').addEventListener('click', function() {
             generateInvoice();
@@ -2651,6 +2674,16 @@
                         document.getElementById('dispatchRegistrationNumber').textContent = service.registrationNumber;
                         $('#dispatchVehicleModal').modal('show');
                     }
+                }
+            }
+        });
+
+        // Invoice Icon button click
+        document.addEventListener('click', function(e) {
+            if (e.target && (e.target.id === 'invoiceIconBtn' || e.target.closest('#invoiceIconBtn'))) {
+                const serviceId = e.target.closest('tr').getAttribute('data-id');
+                if (serviceId) {
+                    viewCompletedServiceDetails(serviceId);
                 }
             }
         });
@@ -2865,79 +2898,6 @@
                     // Show first page
                     showCompletedServicesPage(currentCompletedPage);
                 } else {
-                    // Show empty state
-                    document.getElementById('empty-row-completed').style.display = '';
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching completed services:', error);
-                // Hide loading spinner and show empty state with error
-                document.getElementById('loading-row-completed').style.display = 'none';
-                document.getElementById('empty-row-completed').style.display = '';
-                document.getElementById('empty-row-completed').innerHTML = `
-                <td colspan="9" class="text-center py-4">
-                    <div class="my-5">
-                        <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
-                        <h5>Error Loading Completed Services</h5>
-                        <p class="text-muted">Failed to load data: ${error.message}</p>
-                    </div>
-                </td>
-            `;
-            });
-    }
-
-    // Add a refresh function to reload the data
-    function refreshVehicleData() {
-        // Show loading state
-        document.getElementById('loading-row-service').style.display = '';
-        document.getElementById('empty-row-service').style.display = 'none';
-
-        // Refresh both data tables
-        loadVehiclesUnderServiceFromAPI();
-        loadCompletedServicesFromAPI();
-
-        // Show toast notification
-        showToastNotification('Refreshing Data', 'Fetching the latest vehicle service information...');
-    }
-
-    // Apply the same improved empty state to the completed services tab
-    function loadCompletedServicesFromAPI() {
-        // Show loading spinner
-        document.getElementById('loading-row-completed').style.display = '';
-        document.getElementById('empty-row-completed').style.display = 'none';
-
-        // Get token
-        const token = getJwtToken();
-        if (!token) {
-            console.error('No token found');
-            return;
-        }
-
-        // API call to fetch completed services
-        fetch('/admin/api/vehicle-tracking/completed-services?token=' + encodeURIComponent(token))
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('API call failed: ' + response.status);
-                }
-                return response.json();
-            })
-            .then(data => {
-                completedServices = data;
-
-                // Update count
-                document.getElementById('completedCount').textContent = completedServices.length;
-
-                // Hide loading spinner
-                document.getElementById('loading-row-completed').style.display = 'none';
-
-                // Check if there are services to display
-                if (completedServices.length > 0) {
-                    // Update pagination
-                    updateCompletedPagination();
-
-                    // Show first page
-                    showCompletedServicesPage(currentCompletedPage);
-                } else {
                     // Show enhanced empty state
                     document.getElementById('empty-row-completed').style.display = '';
                     document.getElementById('empty-row-completed').innerHTML = `
@@ -2981,6 +2941,23 @@
             `;
             });
     }
+
+    // Add a refresh function to reload the data
+    function refreshVehicleData() {
+        // Show loading state
+        document.getElementById('loading-row-service').style.display = '';
+        document.getElementById('empty-row-service').style.display = 'none';
+
+        // Refresh both data tables
+        loadVehiclesUnderServiceFromAPI();
+        loadCompletedServicesFromAPI();
+
+        // Show toast notification
+        showToastNotification('Refreshing Data', 'Fetching the latest vehicle service information...');
+    }
+
+    // Apply the same improved empty state to the completed services tab
+
 
     // Filter vehicles under service
     function filterVehiclesUnderService(searchText) {
@@ -3284,7 +3261,7 @@
             if (!service.hasInvoice) {
                 // If invoice is not generated, show generate invoice icon
                 actionButtons += `
-                <button class="btn-table-action warning" id="generateInvoiceBtn" title="Generate Invoice">
+                <button class="btn-table-action warning" id="invoiceIconBtn" title="Generate Invoice">
                     <i class="fas fa-file-invoice"></i>
                 </button>
                 `;
@@ -3485,7 +3462,7 @@
 
                 // Membership badge
                 let membershipBadge = '';
-                if ((mergedService.membershipStatus || '').toLowerCase() === 'premium') {
+                if ((mergedService.membershipStatus || '') === 'Premium') {
                     membershipBadge = '<span class="membership-badge membership-premium"><i class="fas fa-crown"></i> Premium</span>';
                 } else {
                     membershipBadge = '<span class="membership-badge membership-standard"><i class="fas fa-user"></i> Standard</span>';
@@ -3630,14 +3607,21 @@
                 // Populate materials table (sample data - in production, this would come from API)
                 populateSampleMaterialsAndCosts();
 
-                // Show or hide Generate Invoice button based on invoice status
+                // Show or hide buttons based on invoice status
                 const generateInvoiceBtn = document.getElementById('generateInvoiceBtn');
+                const viewInvoiceBtn = document.getElementById('viewInvoiceBtn');
+                const downloadInvoiceBtn = document.getElementById('downloadInvoiceBtn');
+
                 if (service.hasInvoice || completedService?.hasInvoice) {
-                    // If invoice is already generated, hide the generate button
+                    // If invoice is already generated, hide the generate and view buttons, show download button
                     generateInvoiceBtn.style.display = 'none';
+                    viewInvoiceBtn.style.display = 'none';
+                    downloadInvoiceBtn.style.display = '';
                 } else {
-                    // If invoice is not generated yet, show the generate button
+                    // If invoice is not generated yet, show the generate and view buttons, hide download button
                     generateInvoiceBtn.style.display = '';
+                    viewInvoiceBtn.style.display = '';
+                    downloadInvoiceBtn.style.display = 'none';
                 }
 
                 // Show the modal

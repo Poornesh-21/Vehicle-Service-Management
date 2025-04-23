@@ -28,7 +28,7 @@ public class ServiceRequestService {
     private String apiBaseUrl;
 
     /**
-     * Get all service requests with improved error handling and logging
+     * Get all service requests with improved data validation
      */
     public List<ServiceRequestDto> getAllServiceRequests(String token) {
         try {
@@ -52,10 +52,14 @@ public class ServiceRequestService {
                         new TypeReference<List<ServiceRequestDto>>() {}
                 );
 
-                // Log each request status for debugging
+                // Log and verify each request's data
                 if (requests != null) {
                     for (ServiceRequestDto req : requests) {
-                        log.debug("Parsed request ID: {}, Status: {}, Membership: {}",
+                        // Apply default values if needed
+                        validateAndEnhanceRequest(req);
+
+                        // Log for debugging
+                        log.debug("Processed request ID: {}, Status: {}, Membership: {}",
                                 req.getRequestId(), req.getStatus(), req.getMembershipStatus());
                     }
                 }
@@ -72,21 +76,59 @@ public class ServiceRequestService {
     }
 
     /**
-     * Get service request by ID
+     * Validate and enhance a request with default values if needed
+     */
+    private void validateAndEnhanceRequest(ServiceRequestDto req) {
+        // Ensure status has a valid value
+        if (req.getStatus() == null || req.getStatus().trim().isEmpty()) {
+            log.warn("Request {} has null/empty status, setting to 'Unknown'", req.getRequestId());
+            req.setStatus("Unknown");
+        }
+
+        // Ensure membership status has a valid value
+        if (req.getMembershipStatus() == null || req.getMembershipStatus().trim().isEmpty()) {
+            log.warn("Request {} has null/empty membership status, setting to 'Standard'",
+                    req.getRequestId());
+            req.setMembershipStatus("Standard");
+        }
+
+        // Ensure vehicle name is set
+        if ((req.getVehicleName() == null || req.getVehicleName().trim().isEmpty()) &&
+                req.getVehicleBrand() != null && req.getVehicleModel() != null) {
+            req.setVehicleName(req.getVehicleBrand() + " " + req.getVehicleModel());
+        }
+    }
+
+    /**
+     * Get service request by ID with improved error handling
      */
     public ServiceRequestDto getServiceRequestById(Integer requestId, String token) {
         try {
             HttpHeaders headers = createAuthHeaders(token);
             HttpEntity<Void> entity = new HttpEntity<>(headers);
 
-            ResponseEntity<ServiceRequestDto> response = restTemplate.exchange(
+            log.info("Fetching service request with ID: {}", requestId);
+            ResponseEntity<String> response = restTemplate.exchange(
                     apiBaseUrl + "/service-requests/" + requestId,
                     HttpMethod.GET,
                     entity,
-                    ServiceRequestDto.class
+                    String.class
             );
 
-            return response.getBody();
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                ServiceRequestDto request = objectMapper.readValue(
+                        response.getBody(),
+                        ServiceRequestDto.class
+                );
+
+                // Validate and enhance the request
+                validateAndEnhanceRequest(request);
+
+                return request;
+            } else {
+                log.warn("Unexpected response status: {}", response.getStatusCode());
+                throw new RuntimeException("Failed to fetch service request with ID: " + requestId);
+            }
         } catch (HttpClientErrorException.NotFound e) {
             log.error("Service request not found: {}", requestId);
             throw new RuntimeException("Service request not found with ID: " + requestId);
@@ -97,19 +139,17 @@ public class ServiceRequestService {
     }
 
     /**
-     * Create a new service request
+     * Create a new service request with improved validation
      */
     public ServiceRequestDto createServiceRequest(ServiceRequestDto requestDto, String token) {
         log.debug("Creating service request: {}", requestDto);
 
         try {
+            // Validate and enhance the request before sending
+            validateAndEnhanceRequest(requestDto);
+
             HttpHeaders headers = createAuthHeaders(token);
             headers.setContentType(MediaType.APPLICATION_JSON);
-
-            // Check if status is null and set default if needed
-            if (requestDto.getStatus() == null || requestDto.getStatus().isEmpty()) {
-                requestDto.setStatus("Received");
-            }
 
             HttpEntity<ServiceRequestDto> entity = new HttpEntity<>(requestDto, headers);
 
@@ -121,7 +161,15 @@ public class ServiceRequestService {
             );
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                return objectMapper.readValue(response.getBody(), ServiceRequestDto.class);
+                ServiceRequestDto createdRequest = objectMapper.readValue(
+                        response.getBody(),
+                        ServiceRequestDto.class
+                );
+
+                // Validate and enhance the newly created request
+                validateAndEnhanceRequest(createdRequest);
+
+                return createdRequest;
             } else {
                 log.error("Unexpected response: {}", response.getStatusCode());
                 throw new RuntimeException("Unexpected response from server: " + response.getStatusCode());
@@ -144,23 +192,6 @@ public class ServiceRequestService {
             } catch (Exception ex) {
                 throw new RuntimeException("API error: " + e.getMessage());
             }
-        } catch (HttpServerErrorException e) {
-            log.error("API server error: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
-
-            try {
-                Map<String, Object> errorResponse = objectMapper.readValue(
-                        e.getResponseBodyAsString(),
-                        new TypeReference<Map<String, Object>>() {}
-                );
-
-                String errorMessage = errorResponse.containsKey("message")
-                        ? errorResponse.get("message").toString()
-                        : e.getMessage();
-
-                throw new RuntimeException("Server error: " + errorMessage);
-            } catch (Exception ex) {
-                throw new RuntimeException("Server error: " + e.getMessage());
-            }
         } catch (Exception e) {
             log.error("Error creating service request: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to create service request: " + e.getMessage());
@@ -168,7 +199,7 @@ public class ServiceRequestService {
     }
 
     /**
-     * Assign a service advisor to a request
+     * Assign a service advisor with improved validation
      */
     public ServiceRequestDto assignServiceAdvisor(Integer requestId, Integer advisorId, String token) {
         try {
@@ -178,14 +209,28 @@ public class ServiceRequestService {
             Map<String, Integer> requestBody = Collections.singletonMap("advisorId", advisorId);
             HttpEntity<Map<String, Integer>> entity = new HttpEntity<>(requestBody, headers);
 
-            ResponseEntity<ServiceRequestDto> response = restTemplate.exchange(
+            log.info("Assigning advisor {} to request {}", advisorId, requestId);
+            ResponseEntity<String> response = restTemplate.exchange(
                     apiBaseUrl + "/service-requests/" + requestId + "/assign",
                     HttpMethod.PUT,
                     entity,
-                    ServiceRequestDto.class
+                    String.class
             );
 
-            return response.getBody();
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                ServiceRequestDto updatedRequest = objectMapper.readValue(
+                        response.getBody(),
+                        ServiceRequestDto.class
+                );
+
+                // Validate and enhance the updated request
+                validateAndEnhanceRequest(updatedRequest);
+
+                return updatedRequest;
+            } else {
+                log.warn("Unexpected response status: {}", response.getStatusCode());
+                throw new RuntimeException("Failed to assign service advisor");
+            }
         } catch (Exception e) {
             log.error("Error assigning service advisor: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to assign service advisor: " + e.getMessage());
@@ -193,7 +238,7 @@ public class ServiceRequestService {
     }
 
     /**
-     * Update a service request status
+     * Update service request status with improved validation
      */
     public ServiceRequestDto updateServiceRequestStatus(Integer requestId, String status, String token) {
         try {
@@ -203,14 +248,28 @@ public class ServiceRequestService {
             Map<String, String> requestBody = Collections.singletonMap("status", status);
             HttpEntity<Map<String, String>> entity = new HttpEntity<>(requestBody, headers);
 
-            ResponseEntity<ServiceRequestDto> response = restTemplate.exchange(
+            log.info("Updating status of request {} to {}", requestId, status);
+            ResponseEntity<String> response = restTemplate.exchange(
                     apiBaseUrl + "/service-requests/" + requestId + "/status",
                     HttpMethod.PUT,
                     entity,
-                    ServiceRequestDto.class
+                    String.class
             );
 
-            return response.getBody();
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                ServiceRequestDto updatedRequest = objectMapper.readValue(
+                        response.getBody(),
+                        ServiceRequestDto.class
+                );
+
+                // Validate and enhance the updated request
+                validateAndEnhanceRequest(updatedRequest);
+
+                return updatedRequest;
+            } else {
+                log.warn("Unexpected response status: {}", response.getStatusCode());
+                throw new RuntimeException("Failed to update service request status");
+            }
         } catch (Exception e) {
             log.error("Error updating service request status: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to update service request status: " + e.getMessage());

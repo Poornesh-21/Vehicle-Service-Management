@@ -68,6 +68,61 @@ public class CustomerApiController {
         }
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Map<String, Object>> updateCustomer(
+            @PathVariable Integer id,
+            @RequestBody Map<String, Object> customerData,
+            @RequestParam(required = false) String token,
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            HttpServletRequest request) {
+
+        // Get valid token
+        String validToken = getValidToken(token, authHeader, request);
+        if (validToken == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        try {
+            Map<String, Object> updatedCustomer = customerService.updateCustomer(id, customerData, validToken);
+            if (updatedCustomer.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(updatedCustomer);
+        } catch (Exception e) {
+            log.error("Error updating customer: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("error", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Map<String, Object>> deleteCustomer(
+            @PathVariable Integer id,
+            @RequestParam(required = false) String token,
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            HttpServletRequest request) {
+
+        // Get valid token
+        String validToken = getValidToken(token, authHeader, request);
+        if (validToken == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        try {
+            boolean deleted = customerService.deleteCustomer(id, validToken);
+            if (deleted) {
+                return ResponseEntity.noContent().build();
+            } else {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(Collections.singletonMap("error", "Failed to delete customer"));
+            }
+        } catch (Exception e) {
+            log.error("Error deleting customer: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("error", e.getMessage()));
+        }
+    }
+
     // Helper method to get a valid token from various sources
     private String getValidToken(String tokenParam, String authHeader, HttpServletRequest request) {
         // Check parameter first

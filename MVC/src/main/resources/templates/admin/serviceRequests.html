@@ -2578,21 +2578,35 @@
     /**
      * Load service advisors
      */
-    function loadServiceAdvisors() {
-        console.log("Loading service advisors...");
 
-        // Get token
+// Modify the loadServiceRequests function to filter out requests with assigned advisors
+    function loadServiceRequests() {
+        console.log("Loading service requests...");
+
+        // Show loading state
+        const tableBody = document.getElementById('serviceRequestsTableBody');
+        if (!tableBody) return;
+
+        const loadingRow = document.getElementById('loading-row');
+        const emptyRow = document.getElementById('empty-row');
+
+        if (loadingRow) loadingRow.style.display = 'table-row';
+        if (emptyRow) emptyRow.style.display = 'none';
+
+        // Get the token
         const token = getToken();
         if (!token) {
             console.error("No auth token found");
+            window.location.href = '/admin/login?error=session_expired';
             return;
         }
 
-        return fetch('/admin/api/service-advisors', {
+        // Fetch service requests from API
+        fetch(`/admin/service-requests/api${token ? `?token=${token}` : ''}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token
+                'Authorization': `Bearer ${token}`
             }
         })
             .then(response => {
@@ -2601,32 +2615,52 @@
                     throw new Error('Session expired');
                 }
                 if (!response.ok) {
-                    // Try alternative endpoint
-                    return fetch('/admin/service-advisors/api', {
-                        method: 'GET',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': 'Bearer ' + token
-                        }
-                    });
-                }
-                return response;
-            })
-            .then(response => {
-                if (!response.ok) {
                     throw new Error(`HTTP error! Status: ${response.status}`);
                 }
                 return response.json();
             })
             .then(data => {
-                console.log("Service advisors loaded:", data);
-                serviceAdvisors = data || [];
-                return serviceAdvisors;
+                console.log("Service requests loaded:", data);
+
+                // Hide loading row
+                if (loadingRow) loadingRow.style.display = 'none';
+
+                // Process the response - FILTER TO ONLY SHOW UNASSIGNED REQUESTS
+                const allRequests = data || [];
+                serviceRequests = allRequests.filter(request => !request.serviceAdvisorId);
+
+                console.log(`Filtered to ${serviceRequests.length} unassigned requests out of ${allRequests.length} total`);
+
+                if (serviceRequests.length === 0) {
+                    if (emptyRow) {
+                        emptyRow.style.display = 'table-row';
+                        // Update empty message to be more specific
+                        const emptyTitle = emptyRow.querySelector('h5');
+                        const emptyMessage = emptyRow.querySelector('p');
+                        if (emptyTitle) {
+                            emptyTitle.textContent = 'No unassigned service requests found';
+                        }
+                        if (emptyMessage) {
+                            emptyMessage.textContent = 'All service requests have been assigned to service advisors';
+                        }
+                    }
+                } else {
+                    renderServiceRequests();
+                    setupPagination();
+                }
             })
             .catch(error => {
-                console.error('Error loading service advisors:', error);
-                showToast("Failed to load service advisors: " + error.message, "error");
-                return [];
+                console.error("Error loading service requests:", error);
+                if (loadingRow) loadingRow.style.display = 'none';
+
+                // Show empty state with error message
+                if (emptyRow) {
+                    emptyRow.style.display = 'table-row';
+                    const errorMessage = emptyRow.querySelector('p');
+                    if (errorMessage) {
+                        errorMessage.textContent = 'Error loading service requests. Please try again.';
+                    }
+                }
             });
     }
 

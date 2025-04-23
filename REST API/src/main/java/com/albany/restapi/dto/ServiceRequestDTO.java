@@ -45,6 +45,7 @@ public class ServiceRequestDTO {
     // Customer details
     private String customerName;
     private Integer customerId;
+    private String membershipStatus;
 
     /**
      * Get status as ServiceRequest.Status enum
@@ -113,5 +114,13 @@ public class ServiceRequestDTO {
                     this.status = ServiceRequest.Status.Received.name();
             }
         }
+    }
+
+    /**
+     * Get membership status with a default if null
+     */
+    public String getMembershipStatus() {
+        return membershipStatus != null && !membershipStatus.isEmpty() ?
+                membershipStatus : "Standard";
     }
 }

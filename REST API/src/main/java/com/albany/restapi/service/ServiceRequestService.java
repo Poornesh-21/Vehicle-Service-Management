@@ -281,7 +281,15 @@ public class ServiceRequestService {
         dto.setDeliveryDate(serviceRequest.getDeliveryDate());
         dto.setAdditionalDescription(serviceRequest.getAdditionalDescription());
         dto.setServiceDescription(serviceRequest.getServiceDescription());
-        dto.setStatus(serviceRequest.getStatus() != null ? serviceRequest.getStatus().name() : null);
+
+        // Ensure status is always set properly, even if null in entity
+        if (serviceRequest.getStatus() != null) {
+            dto.setStatus(serviceRequest.getStatus().name());
+            log.debug("Setting status for request {}: {}", serviceRequest.getRequestId(), serviceRequest.getStatus().name());
+        } else {
+            dto.setStatus("Received"); // Default to Received if null
+            log.debug("Status was null for request {}, defaulting to Received", serviceRequest.getRequestId());
+        }
 
         // Set vehicle details from entity's vehicle-specific fields
         dto.setVehicleModel(serviceRequest.getVehicleModel());
@@ -313,11 +321,24 @@ public class ServiceRequestService {
 
         // Set customer info
         if (serviceRequest.getVehicle() != null &&
-                serviceRequest.getVehicle().getCustomer() != null &&
-                serviceRequest.getVehicle().getCustomer().getUser() != null) {
-            User user = serviceRequest.getVehicle().getCustomer().getUser();
-            dto.setCustomerName(user.getFirstName() + " " + user.getLastName());
-            dto.setCustomerId(serviceRequest.getVehicle().getCustomer().getCustomerId());
+                serviceRequest.getVehicle().getCustomer() != null) {
+            CustomerProfile customer = serviceRequest.getVehicle().getCustomer();
+
+            // Ensure membership status is always set properly
+            String membershipStatus = customer.getMembershipStatus();
+            if (membershipStatus == null || membershipStatus.trim().isEmpty()) {
+                membershipStatus = "Standard";
+            }
+            dto.setMembershipStatus(membershipStatus);
+
+            if (customer.getUser() != null) {
+                User user = customer.getUser();
+                dto.setCustomerName(user.getFirstName() + " " + user.getLastName());
+                dto.setCustomerId(customer.getCustomerId());
+            }
+        } else {
+            // Default membership status if no customer is associated
+            dto.setMembershipStatus("Standard");
         }
 
         return dto;

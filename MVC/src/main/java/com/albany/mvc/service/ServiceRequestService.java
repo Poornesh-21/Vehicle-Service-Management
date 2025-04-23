@@ -28,13 +28,14 @@ public class ServiceRequestService {
     private String apiBaseUrl;
 
     /**
-     * Get all service requests
+     * Get all service requests with improved error handling and logging
      */
     public List<ServiceRequestDto> getAllServiceRequests(String token) {
         try {
             HttpHeaders headers = createAuthHeaders(token);
             HttpEntity<Void> entity = new HttpEntity<>(headers);
 
+            log.info("Fetching service requests from API: {}", apiBaseUrl + "/service-requests");
             ResponseEntity<String> response = restTemplate.exchange(
                     apiBaseUrl + "/service-requests",
                     HttpMethod.GET,
@@ -43,12 +44,27 @@ public class ServiceRequestService {
             );
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-                return objectMapper.readValue(
+                log.debug("Raw API response: {}", response.getBody());
+
+                // Parse the response
+                List<ServiceRequestDto> requests = objectMapper.readValue(
                         response.getBody(),
                         new TypeReference<List<ServiceRequestDto>>() {}
                 );
+
+                // Log each request status for debugging
+                if (requests != null) {
+                    for (ServiceRequestDto req : requests) {
+                        log.debug("Parsed request ID: {}, Status: {}, Membership: {}",
+                                req.getRequestId(), req.getStatus(), req.getMembershipStatus());
+                    }
+                }
+
+                return requests;
+            } else {
+                log.warn("Unexpected response status: {}", response.getStatusCode());
+                return Collections.emptyList();
             }
-            return Collections.emptyList();
         } catch (Exception e) {
             log.error("Error fetching service requests: {}", e.getMessage(), e);
             throw new RuntimeException("Failed to fetch service requests: " + e.getMessage(), e);

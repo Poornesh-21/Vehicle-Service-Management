@@ -1225,12 +1225,31 @@ body::before {
         flex-direction: column;
         align-items: flex-start;
     }
+
+    .premium-modal .modal-dialog {
+        max-width: 95%;
+        margin: 1rem auto;
+    }
+
+    .profile-tabs {
+        padding: 0 1rem;
+    }
+
+    .profile-tab {
+        padding: 1rem 0.75rem;
+        font-size: 0.9rem;
+    }
+
+    .modal-body-inner {
+        padding: 1.5rem;
+    }
 }
 
 @media (max-width: 767.98px) {
     .sidebar {
         width: 0;
         transform: translateX(-100%);
+        z-index: 1060;
     }
 
     .sidebar.active {
@@ -1294,10 +1313,44 @@ body::before {
 
     .customers-table-container {
         overflow-x: auto;
+        margin: 0 -1rem;
+        padding: 0 1rem;
+        width: calc(100% + 2rem);
     }
 
     .customers-table {
-        min-width: 1000px;
+        min-width: 768px;
+    }
+
+    .pagination {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .form-group {
+        margin-bottom: 1rem;
+    }
+
+    .premium-modal .modal-title {
+        font-size: 1.1rem;
+    }
+
+    .section-title {
+        font-size: 1rem;
+    }
+
+    .modal-footer {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .modal-footer .premium-btn {
+        width: 100%;
     }
 }
 
@@ -1311,7 +1364,12 @@ body::before {
     }
 
     .header-left h1 {
-        font-size: 1.75rem;
+        font-size: 1.6rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .header-subtitle {
+        font-size: 0.9rem;
     }
 
     .action-buttons {
@@ -1323,18 +1381,143 @@ body::before {
     .btn-premium {
         width: 100%;
         justify-content: center;
+        padding: 0.65rem 1rem;
+        font-size: 0.9rem;
     }
 
     .search-box {
         max-width: 100%;
+        margin-bottom: 1.5rem;
+    }
+
+    .search-input {
+        padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+        font-size: 0.9rem;
+    }
+
+    .search-icon {
+        left: 0.75rem;
     }
 
     .customer-profile {
         gap: 1rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.5rem;
     }
 
     .profile-section {
         flex: 100%;
         min-width: 100%;
     }
+
+    .filter-pills {
+        width: 100%;
+        overflow-x: auto;
+        display: flex;
+        padding-bottom: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .filter-pill {
+        white-space: nowrap;
+        flex-shrink: 0;
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+    }
+
+    .sort-dropdown {
+        width: 100%;
+    }
+
+    .sort-dropdown .dropdown-toggle {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .profile-avatar {
+        width: 5rem;
+        height: 5rem;
+        font-size: 2rem;
+    }
+
+    .profile-tabs {
+        padding: 0;
+        overflow-x: auto;
+        white-space: nowrap;
+        display: flex;
+    }
+
+    .premium-modal .modal-header {
+        padding: 1rem;
+    }
+
+    .premium-modal .modal-body-inner {
+        padding: 1rem;
+    }
+
+    .service-history-table {
+        min-width: 450px;
+    }
+
+    .tab-content {
+        overflow-x: auto;
+    }
+
+    .spinner-container {
+        width: 100px;
+        height: 100px;
+    }
+
+    .spinner-letter {
+        font-size: 60px;
+    }
+
+    .confirmation-icon {
+        width: 70px;
+        height: 70px;
+        font-size: 2rem;
+    }
+
+    .confirmation-title {
+        font-size: 1.5rem;
+    }
+
+    .confirmation-message {
+        font-size: 1rem;
+    }
+
+    .confirmation-btn {
+        width: 100%;
+    }
 }
+
+@media (max-width: 360px) {
+    .header-left h1 {
+        font-size: 1.4rem;
+    }
+
+    .profile-tab {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    .profile-label {
+        font-size: 0.8rem;
+    }
+
+    .profile-value {
+        font-size: 0.9rem;
+    }
+
+    .premium-btn {
+        padding: 0.75rem 1.25rem;
+        font-size: 0.85rem;
+    }
+
+    .service-history-table th,
+    .service-history-table td {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.8rem;
+    }
+}
+

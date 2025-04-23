@@ -930,15 +930,17 @@
         /* Service Details */
         .service-detail-row {
             display: flex;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
             margin-bottom: 1.5rem;
             padding-bottom: 1.5rem;
             border-bottom: 1px solid var(--light-gray);
+            width: 100%;
+            overflow-x: auto;
         }
 
         .service-detail-col {
-            flex: 1;
-            min-width: 200px;
+            flex: 1 0 auto;
+            min-width: 180px;
             padding-right: 1.5rem;
         }
 
@@ -1685,24 +1687,25 @@
                                 <th>Service ID</th>
                                 <th>Vehicle</th>
                                 <th>Customer</th>
+                                <th>Membership</th>
                                 <th>Service Type</th>
                                 <th>Status</th>
                                 <th>Service Advisor</th>
-                                <th>Started On</th>
-                                <th>Expected Completion</th>
+                                <th>Start Date</th>
+                                <th>Est. Completion</th>
                                 <th>Actions</th>
                             </tr>
                             </thead>
                             <tbody id="vehiclesUnderServiceTableBody">
                             <!-- Will be populated dynamically via JavaScript -->
                             <tr id="loading-row-service">
-                                <td colspan="9" class="text-center py-4">
+                                <td colspan="10" class="text-center py-4">
                                     <div class="spinner-border text-wine" role="status"></div>
                                     <p class="mt-2">Loading vehicles under service...</p>
                                 </td>
                             </tr>
                             <tr id="empty-row-service" style="display: none;">
-                                <td colspan="9" class="text-center py-4">
+                                <td colspan="10" class="text-center py-4">
                                     <div class="my-5">
                                         <i class="fas fa-tools fa-3x text-muted mb-3"></i>
                                         <h5>No vehicles currently under service</h5>
@@ -1759,6 +1762,7 @@
                                 <th>Service ID</th>
                                 <th>Vehicle</th>
                                 <th>Customer</th>
+                                <th>Membership</th>
                                 <th>Service Type</th>
                                 <th>Completion Date</th>
                                 <th>Total Amount</th>
@@ -1770,13 +1774,13 @@
                             <tbody id="completedServicesTableBody">
                             <!-- Will be populated dynamically via JavaScript -->
                             <tr id="loading-row-completed">
-                                <td colspan="9" class="text-center py-4">
+                                <td colspan="10" class="text-center py-4">
                                     <div class="spinner-border text-wine" role="status"></div>
                                     <p class="mt-2">Loading completed services...</p>
                                 </td>
                             </tr>
                             <tr id="empty-row-completed" style="display: none;">
-                                <td colspan="9" class="text-center py-4">
+                                <td colspan="10" class="text-center py-4">
                                     <div class="my-5">
                                         <i class="fas fa-check-circle fa-3x text-muted mb-3"></i>
                                         <h5>No completed services found</h5>
@@ -1904,7 +1908,7 @@
 
 <!-- View Service Details Modal -->
 <div class="modal fade modal-premium" id="viewServiceDetailsModal" tabindex="-1" aria-labelledby="viewServiceDetailsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="viewServiceDetailsModalLabel">
@@ -2711,9 +2715,21 @@
                         // Determine which table this is from
                         const isCompleted = row.closest('#completedServicesTable') !== null;
 
+                        // Skip if clicking on action buttons or their icons in completed services table
+                        if (isCompleted && (e.target.closest('.table-actions-cell') || 
+                            e.target.closest('button') || 
+                            (e.target.closest('i') && e.target.closest('button')))) {
+                            return;
+                        }
+
+                        // For completed services, only open view modal when clicking on invoice
                         if (isCompleted) {
-                            viewCompletedServiceDetails(serviceId);
+                            const clickedCell = e.target.closest('td');
+                            if (clickedCell && clickedCell.innerHTML.includes('fa-file-invoice')) {
+                                viewCompletedServiceDetails(serviceId);
+                            }
                         } else {
+                            // For vehicles under service, open view modal when clicking anywhere on the row
                             viewServiceUnderServiceDetails(serviceId);
                         }
                     }
@@ -3159,10 +3175,12 @@
         <td>
             <div class="person-info">
                 <h5>${vehicle.customerName}</h5>
-                <p>${vehicle.membershipStatus === 'Premium' ?
-                '<span class="membership-badge membership-premium"><i class="fas fa-crown"></i> Premium</span>' :
-                '<span class="membership-badge membership-standard"><i class="fas fa-user"></i> Standard</span>'}</p>
             </div>
+        </td>
+        <td>
+            ${vehicle.membershipStatus === 'Premium' ?
+            '<span class="membership-badge membership-premium"><i class="fas fa-crown"></i> Premium</span>' :
+            '<span class="membership-badge membership-standard"><i class="fas fa-user"></i> Standard</span>'}
         </td>
         <td>${vehicle.serviceType}</td>
         <td>${statusBadge}</td>
@@ -3248,29 +3266,45 @@
                 invoiceBadge = `<span class="status-badge status-pending"><i class="fas fa-file-invoice"></i> Not Generated</span>`;
             }
 
-            // Create action buttons based on status
+            // Create membership badge - now separate from customer info
+            let membershipBadge = '';
+            if ((service.membershipStatus || 'Standard') === 'Premium') {
+                membershipBadge = `<span class="membership-badge membership-premium"><i class="fas fa-crown"></i> Premium</span>`;
+            } else {
+                membershipBadge = `<span class="membership-badge membership-standard"><i class="fas fa-user"></i> Standard</span>`;
+            }
+
+            // Create action buttons based on status and invoice generation
             let actionButtons = '';
-            if (paymentStatus.toLowerCase() === 'pending') {
-                actionButtons = `
-                <button class="btn-table-action success" id="markAsPaidBtn" title="Mark as Paid">
+
+            // View button removed as per requirements
+            actionButtons = ``;
+
+            // Add appropriate action button based on invoice and payment status
+            if (!service.hasInvoice) {
+                // If invoice is not generated, show generate invoice icon
+                actionButtons += `
+                <button class="btn-table-action warning" id="generateInvoiceBtn" title="Generate Invoice">
+                    <i class="fas fa-file-invoice"></i>
+                </button>
+                `;
+            } else if (service.hasInvoice && paymentStatus.toLowerCase() === 'pending') {
+                // If invoice is generated but not paid, show pay icon
+                actionButtons += `
+                <button class="btn-table-action success" id="markAsPaidBtn" title="Pay">
                     <i class="fas fa-money-bill-wave"></i>
                 </button>
-            `;
+                `;
             } else if (paymentStatus.toLowerCase() === 'paid') {
-                actionButtons = `
+                // If payment is successful, show dispatch icon
+                actionButtons += `
                 <button class="btn-table-action info" id="dispatchVehicleBtn" title="Dispatch Vehicle">
                     <i class="fas fa-truck"></i>
                 </button>
-            `;
+                `;
             }
 
-            actionButtons += `
-            <button class="btn-table-action" id="viewServiceBtn" title="View Details">
-                <i class="fas fa-eye"></i>
-            </button>
-        `;
-
-            // Build the row HTML
+            // Build the row HTML with the new membership column
             row.innerHTML = `
             <td>REQ-${service.serviceId || service.requestId}</td>
             <td>
@@ -3287,11 +3321,10 @@
             <td>
                 <div class="person-info">
                     <h5>${service.customerName}</h5>
-                    <p>${(service.membershipStatus || 'Standard') === 'Premium' ?
-                '<span class="membership-badge membership-premium"><i class="fas fa-crown"></i> Premium</span>' :
-                '<span class="membership-badge membership-standard"><i class="fas fa-user"></i> Standard</span>'}</p>
+                    <p>${service.customerEmail || ''}</p>
                 </div>
             </td>
+            <td>${membershipBadge}</td> <!-- New dedicated column for membership -->
             <td>${service.serviceType || 'Regular Service'}</td>
             <td>${completionDate}</td>
             <td>${formattedAmount}</td>

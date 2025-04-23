@@ -273,6 +273,9 @@ public class ServiceRequestService {
     /**
      * Convert service request entity to DTO
      */
+    // Add this method to the ServiceRequestService class in the REST API
+// This ensures the membership status is correctly set in the ServiceRequestDTO
+
     private ServiceRequestDTO convertToDTO(ServiceRequest serviceRequest) {
         ServiceRequestDTO dto = new ServiceRequestDTO();
 
@@ -324,17 +327,25 @@ public class ServiceRequestService {
                 serviceRequest.getVehicle().getCustomer() != null) {
             CustomerProfile customer = serviceRequest.getVehicle().getCustomer();
 
-            // Ensure membership status is always set properly
+            // Explicit handling of membership status to ensure it's set correctly
             String membershipStatus = customer.getMembershipStatus();
-            if (membershipStatus == null || membershipStatus.trim().isEmpty()) {
+            // Log the raw value from the database
+            log.debug("Raw membership status from database for request {}: '{}'",
+                    serviceRequest.getRequestId(), membershipStatus);
+
+            // Use the exact value from database, only default if completely null
+            if (membershipStatus == null) {
                 membershipStatus = "Standard";
+                log.debug("Membership status was null, defaulting to Standard");
             }
+
             dto.setMembershipStatus(membershipStatus);
 
             if (customer.getUser() != null) {
                 User user = customer.getUser();
                 dto.setCustomerName(user.getFirstName() + " " + user.getLastName());
                 dto.setCustomerId(customer.getCustomerId());
+                dto.setCustomerEmail(user.getEmail());
             }
         } else {
             // Default membership status if no customer is associated

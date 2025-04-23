@@ -123,4 +123,7 @@ public class ServiceRequestDTO {
         return membershipStatus != null && !membershipStatus.isEmpty() ?
                 membershipStatus : "Standard";
     }
+
+    public void setCustomerEmail(String email) {
+    }
 }

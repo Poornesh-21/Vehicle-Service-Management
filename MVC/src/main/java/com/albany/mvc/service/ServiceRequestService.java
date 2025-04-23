@@ -79,17 +79,29 @@ public class ServiceRequestService {
      * Validate and enhance a request with default values if needed
      */
     private void validateAndEnhanceRequest(ServiceRequestDto req) {
+        // Ensure request ID is present
+        if (req.getRequestId() == null) {
+            log.warn("Request has null ID");
+        }
+
         // Ensure status has a valid value
         if (req.getStatus() == null || req.getStatus().trim().isEmpty()) {
             log.warn("Request {} has null/empty status, setting to 'Unknown'", req.getRequestId());
             req.setStatus("Unknown");
         }
 
-        // Ensure membership status has a valid value
-        if (req.getMembershipStatus() == null || req.getMembershipStatus().trim().isEmpty()) {
-            log.warn("Request {} has null/empty membership status, setting to 'Standard'",
+        // Ensure membership status has a valid value and preserve exact value from API
+        if (req.getMembershipStatus() == null) {
+            log.warn("Request {} has null membership status, setting to 'Standard'",
                     req.getRequestId());
             req.setMembershipStatus("Standard");
+        } else {
+            // Log the membership status we received from the API
+            log.debug("Request {} has membership status '{}' from API",
+                    req.getRequestId(), req.getMembershipStatus());
+
+            // Do not modify or normalize the membership status value
+            // This ensures we preserve exactly what the API sent us
         }
 
         // Ensure vehicle name is set
@@ -97,6 +109,10 @@ public class ServiceRequestService {
                 req.getVehicleBrand() != null && req.getVehicleModel() != null) {
             req.setVehicleName(req.getVehicleBrand() + " " + req.getVehicleModel());
         }
+
+        // Log complete request data for debugging
+        log.debug("Enhanced request: ID={}, Status={}, Membership={}, Vehicle={}",
+                req.getRequestId(), req.getStatus(), req.getMembershipStatus(), req.getVehicleName());
     }
 
     /**

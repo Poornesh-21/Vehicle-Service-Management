@@ -2625,18 +2625,45 @@
             // Get service ID from the current service details modal
             const serviceId = document.getElementById('viewServiceId').textContent.replace('REQ-', '');
 
-            // Find the service in the completed services array
-            const service = completedServices.find(s => s.serviceId === parseInt(serviceId) || s.requestId === parseInt(serviceId));
+            // Get token
+            const token = getJwtToken();
+            if (!token) {
+                console.error('No token found');
+                return;
+            }
 
-            // If service exists, simulate downloading the invoice
-            if (service) {
-                // In a real application, this would trigger an API call to download the invoice
-                // For now, we'll just show a success message
-                showToast('Invoice download started', 'The invoice is being downloaded to your device.', 'success');
+            // Show spinner
+            document.getElementById('spinnerOverlay').classList.add('show');
+
+            // Create download URL with the token
+            const downloadUrl = `/admin/api/vehicle-tracking/invoice/download/${serviceId}?token=${encodeURIComponent(token)}`;
+
+            // Create a temporary anchor element
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = downloadUrl;
+            a.target = '_blank';
+
+            // Add to document, click it, and remove it
+            document.body.appendChild(a);
+            a.click();
+
+            // Hide spinner after a short delay (to give time for download to start)
+            setTimeout(() => {
+                document.getElementById('spinnerOverlay').classList.remove('show');
+
+                // Show success toast
+                showToastNotification(
+                    'Invoice Download Started',
+                    'The invoice is being downloaded to your device.'
+                );
 
                 // Close the modal
                 $('#viewServiceDetailsModal').modal('hide');
-            }
+
+                // Remove the temporary element
+                document.body.removeChild(a);
+            }, 1000);
         });
 
         // Confirm Generate Invoice button click
@@ -3586,9 +3613,11 @@
                 document.getElementById('viewCustomerName').textContent = service.customerName || completedService?.customerName || 'Unknown';
                 document.getElementById('viewCustomerContact').textContent = service.customerPhone || service.customerEmail || completedService?.customerEmail || 'Unknown';
 
-                // Membership badge
+                // Membership badge with accurate status display
                 let membershipBadge = '';
-                if ((service.membershipStatus || completedService?.membershipStatus) === 'Premium') {
+                const membershipStatus = service.membershipStatus || completedService?.membershipStatus || 'Standard';
+
+                if (membershipStatus.toLowerCase() === 'premium') {
                     membershipBadge = '<span class="membership-badge membership-premium"><i class="fas fa-crown"></i> Premium</span>';
                 } else {
                     membershipBadge = '<span class="membership-badge membership-standard"><i class="fas fa-user"></i> Standard</span>';
@@ -3612,13 +3641,15 @@
                 const viewInvoiceBtn = document.getElementById('viewInvoiceBtn');
                 const downloadInvoiceBtn = document.getElementById('downloadInvoiceBtn');
 
-                if (service.hasInvoice || completedService?.hasInvoice) {
-                    // If invoice is already generated, hide the generate and view buttons, show download button
+                const hasInvoice = service.hasInvoice || completedService?.hasInvoice || false;
+
+                if (hasInvoice) {
+                    // If invoice is already generated, hide the generate button and show download button
                     generateInvoiceBtn.style.display = 'none';
                     viewInvoiceBtn.style.display = 'none';
                     downloadInvoiceBtn.style.display = '';
                 } else {
-                    // If invoice is not generated yet, show the generate and view buttons, hide download button
+                    // If invoice is not generated yet, show the generate button and hide download button
                     generateInvoiceBtn.style.display = '';
                     viewInvoiceBtn.style.display = '';
                     downloadInvoiceBtn.style.display = 'none';

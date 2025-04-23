@@ -380,71 +380,103 @@ public class InvoiceService {
         
         document.add(laborTable);
     }
-    
+
     private void addInvoiceSummary(Document document, Invoice invoice, ServiceRequest serviceRequest) throws DocumentException {
         Paragraph summaryTitle = new Paragraph("INVOICE SUMMARY", HEADER_FONT);
         summaryTitle.setSpacingBefore(10);
         summaryTitle.setSpacingAfter(10);
         document.add(summaryTitle);
-        
+
         PdfPTable summaryTable = new PdfPTable(2);
         summaryTable.setWidthPercentage(50);
         summaryTable.setHorizontalAlignment(Element.ALIGN_RIGHT);
         summaryTable.setSpacingAfter(20);
-        
-        // Materials total (if available, otherwise get from invoice)
+
+        // Materials total
         BigDecimal materialsTotalCost = getTotalMaterialCost(serviceRequest);
         addCell(summaryTable, "Materials Total:", BOLD_FONT, Element.ALIGN_LEFT);
         addCell(summaryTable, formatCurrency(materialsTotalCost), NORMAL_FONT, Element.ALIGN_RIGHT);
-        
-        // Labor total (if available, otherwise get from invoice)
+
+        // Check if customer is premium
+        boolean isPremiumCustomer = false;
+        if (serviceRequest.getVehicle() != null &&
+                serviceRequest.getVehicle().getCustomer() != null &&
+                "Premium".equalsIgnoreCase(serviceRequest.getVehicle().getCustomer().getMembershipStatus())) {
+            isPremiumCustomer = true;
+        }
+
+        // Original labor total
         BigDecimal laborTotalCost = getTotalLaborCost(serviceRequest);
-        addCell(summaryTable, "Labor Total:", BOLD_FONT, Element.ALIGN_LEFT);
-        addCell(summaryTable, formatCurrency(laborTotalCost), NORMAL_FONT, Element.ALIGN_RIGHT);
-        
-        // Subtotal
-        BigDecimal subtotal = materialsTotalCost.add(laborTotalCost);
+
+        // For premium customers, apply 20% discount on labor
+        BigDecimal laborDiscount = BigDecimal.ZERO;
+        BigDecimal discountedLaborCost = laborTotalCost;
+
+        if (isPremiumCustomer) {
+            // Calculate 20% discount on labor
+            laborDiscount = laborTotalCost.multiply(new BigDecimal("0.20")).setScale(2, RoundingMode.HALF_UP);
+            discountedLaborCost = laborTotalCost.subtract(laborDiscount);
+
+            // Show original labor cost
+            addCell(summaryTable, "Labor Total (Original):", BOLD_FONT, Element.ALIGN_LEFT);
+            addCell(summaryTable, formatCurrency(laborTotalCost), NORMAL_FONT, Element.ALIGN_RIGHT);
+
+            // Show premium discount
+            addCell(summaryTable, "Premium Discount (20% on Labor):", BOLD_FONT, Element.ALIGN_LEFT);
+            addCell(summaryTable, "-" + formatCurrency(laborDiscount), NORMAL_FONT, Element.ALIGN_RIGHT);
+
+            // Show discounted labor cost
+            addCell(summaryTable, "Labor Total (After Discount):", BOLD_FONT, Element.ALIGN_LEFT);
+            addCell(summaryTable, formatCurrency(discountedLaborCost), NORMAL_FONT, Element.ALIGN_RIGHT);
+        } else {
+            // Regular labor cost for non-premium customers
+            addCell(summaryTable, "Labor Total:", BOLD_FONT, Element.ALIGN_LEFT);
+            addCell(summaryTable, formatCurrency(laborTotalCost), NORMAL_FONT, Element.ALIGN_RIGHT);
+        }
+
+        // Subtotal (materials + discounted labor)
+        BigDecimal subtotal = materialsTotalCost.add(discountedLaborCost);
         addCell(summaryTable, "Subtotal:", BOLD_FONT, Element.ALIGN_LEFT);
         addCell(summaryTable, formatCurrency(subtotal), NORMAL_FONT, Element.ALIGN_RIGHT);
-        
+
         // Taxes (from invoice or calculated)
-        BigDecimal taxes = invoice.getTaxes() != null ? invoice.getTaxes() : 
-                          subtotal.multiply(new BigDecimal("0.18")).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal taxes = invoice.getTaxes() != null ? invoice.getTaxes() :
+                subtotal.multiply(new BigDecimal("0.18")).setScale(2, RoundingMode.HALF_UP);
         addCell(summaryTable, "GST (18%):", BOLD_FONT, Element.ALIGN_LEFT);
         addCell(summaryTable, formatCurrency(taxes), NORMAL_FONT, Element.ALIGN_RIGHT);
-        
-        // Apply discount for premium members
-        BigDecimal discount = BigDecimal.ZERO;
-        if (serviceRequest.getVehicle() != null && 
-            serviceRequest.getVehicle().getCustomer() != null &&
-            "Premium".equalsIgnoreCase(serviceRequest.getVehicle().getCustomer().getMembershipStatus())) {
-            
-            discount = subtotal.multiply(new BigDecimal("0.10")).setScale(2, RoundingMode.HALF_UP);
-            addCell(summaryTable, "Premium Discount (10%):", BOLD_FONT, Element.ALIGN_LEFT);
-            addCell(summaryTable, "-" + formatCurrency(discount), NORMAL_FONT, Element.ALIGN_RIGHT);
-        }
-        
+
         // Grand total
-        BigDecimal grandTotal = subtotal.add(taxes).subtract(discount);
-        
+        BigDecimal grandTotal = subtotal.add(taxes);
+
         // Add separator line
         PdfPCell separatorCell = new PdfPCell(new Phrase(""));
         separatorCell.setColspan(2);
         separatorCell.setBorder(Rectangle.TOP);
         separatorCell.setPaddingTop(2);
         summaryTable.addCell(separatorCell);
-        
+
         // Grand Total row
         addCell(summaryTable, "Grand Total:", TOTAL_FONT, Element.ALIGN_LEFT);
         addCell(summaryTable, formatCurrency(grandTotal), TOTAL_FONT, Element.ALIGN_RIGHT);
-        
+
         document.add(summaryTable);
-        
+
         // Add payment note
         Paragraph paymentNote = new Paragraph("This invoice has been paid in full. Thank you for your business!", NORMAL_FONT);
         paymentNote.setAlignment(Element.ALIGN_CENTER);
         paymentNote.setSpacingBefore(20);
         document.add(paymentNote);
+
+        // If customer is premium, add special thank you note
+        if (isPremiumCustomer) {
+            Paragraph premiumNote = new Paragraph(
+                    "Thank you for being a Premium member! You've received a 20% discount on labor charges.",
+                    new Font(Font.FontFamily.HELVETICA, 10, Font.ITALIC, new BaseColor(114, 47, 55))
+            );
+            premiumNote.setAlignment(Element.ALIGN_CENTER);
+            premiumNote.setSpacingBefore(10);
+            document.add(premiumNote);
+        }
     }
     
     private void addFooter(Document document) throws DocumentException {

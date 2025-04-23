@@ -2129,44 +2129,68 @@ function showConfirmation(title, message) {
   successModal.show();
 }
 
+/**
+ * Load service advisors with improved error handling and endpoint fallbacks
+ */
 function loadServiceAdvisors() {
-  showSpinner();
+  console.log("Loading service advisors...");
 
-  // Call API to get service advisors
-  fetch('/admin/service-advisors/api/advisors', {
+  // Get token
+  const token = getToken();
+  if (!token) {
+    console.error("No auth token found");
+    return Promise.reject(new Error("Authentication token not found"));
+  }
+
+  // Try all possible endpoints in sequence until one works
+  return fetch('/admin/service-advisors/api/advisors', {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + getToken()
+      'Authorization': 'Bearer ' + token
     }
   })
           .then(response => {
-            if (!response.ok) {
-              if (response.status === 401) {
-                // Redirect to login on auth failure
-                window.location.href = '/admin/login?error=session_expired';
-                throw new Error('Session expired');
+            if (response.ok) return response;
+            console.log("First endpoint failed, trying second endpoint...");
+
+            return fetch('/admin/service-advisors/api', {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
               }
-              throw new Error(`Server responded with status: ${response.status}`);
+            });
+          })
+          .then(response => {
+            if (response.ok) return response;
+            console.log("Second endpoint failed, trying third endpoint...");
+
+            // Add query parameter to make it clear we want all advisors
+            return fetch('/admin/service-advisors/api/all', {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+              }
+            });
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error(`HTTP error! Status: ${response.status}`);
             }
             return response.json();
           })
           .then(data => {
-            hideSpinner();
-
-            // Store service advisors globally
-            serviceAdvisors = data;
-
-            // Render service advisors
-            renderServiceAdvisors();
-
-            // Setup pagination
-            setupPagination();
+            console.log("Service advisors loaded:", data);
+            serviceAdvisors = data || [];
+            return serviceAdvisors;
           })
           .catch(error => {
-            hideSpinner();
-            console.error('Error fetching advisor details:', error);
-            alert('Failed to load advisor details. Please try again.');
+            console.error('Error loading service advisors:', error);
+            // Create a simple alert for the error
+            alert("Failed to load service advisors. Please try again or contact support.");
+            return [];
           });
 }
 
@@ -2410,32 +2434,34 @@ function getActiveServicesClass(count) {
   }
 }
 
-function showAdvisorDetails(advisor) {
-  // Set advisor ID on edit button for future reference
-  document.getElementById('editAdvisorFromDetailsBtn').setAttribute('data-advisor-id', advisor.advisorId);
+function showAssignAdvisorModal(requestId) {
+  console.log("Showing assign advisor modal for request ID:", requestId);
 
-  // Personal Info Tab
-  document.getElementById('viewAdvisorInitials').textContent = getInitials(advisor.firstName, advisor.lastName);
-  document.getElementById('viewAdvisorName').textContent = advisor.firstName + ' ' + advisor.lastName;
-  document.getElementById('viewAdvisorEmail').textContent = advisor.email;
-  document.getElementById('viewAdvisorPhone').textContent = advisor.phoneNumber;
-  document.getElementById('viewAdvisorId').textContent = advisor.formattedId || ('SA-' + advisor.advisorId);
-  document.getElementById('viewAdvisorDepartment').textContent = advisor.department || 'Not assigned';
-  document.getElementById('viewAdvisorHireDate').textContent = advisor.hireDate ? new Date(advisor.hireDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : 'Not available';
+  const request = serviceRequests.find(req => req.requestId === requestId);
 
-  // Workload Tab
-  document.getElementById('viewAdvisorWorkloadValue').textContent = advisor.workloadPercentage + '%';
+  if (!request) {
+    console.error('Request not found:', requestId);
+    showToast("Service request not found", "error");
+    return;
+  }
 
-  const workloadBar = document.getElementById('viewAdvisorWorkloadBar');
-  workloadBar.style.width = advisor.workloadPercentage + '%';
-  workloadBar.className = 'workload-progress ' + getWorkloadClass(advisor.workloadPercentage);
+  // Set request details in the modal
+  document.getElementById('assignVehicleName').textContent = request.vehicleName || `${request.vehicleBrand} ${request.vehicleModel}`;
+  document.getElementById('assignVehicleReg').textContent = request.registrationNumber || 'N/A';
+  document.getElementById('assignCustomerName').textContent = request.customerName || 'Customer';
+  document.getElementById('assignRequestId').textContent = `REQ-${request.requestId}`;
+  document.getElementById('selectedRequestId').value = request.requestId;
 
-  document.getElementById('viewAdvisorWorkloadText').textContent = getWorkloadText(advisor.workloadPercentage);
-
-  // Show modal
-  const detailsModal = new bootstrap.Modal(document.getElementById('advisorDetailsModal'));
-  detailsModal.show();
-}
+  // Show loading state in advisors list
+  const advisorsList = document.getElementById('advisorsList');
+  if (advisorsList) {
+    advisorsList.innerHTML = `
+            <div class="text-center py-4">
+                <div class="spinner-border text-wine" role="status"></div>
+                <p class="mt-2">Loading service advisors...</p>
+            </div>
+        `;
+  }
 
 function generateRandomPassword() {
   // Generate a password in the format: SA2025-XXXNNN (where X is a letter and N is a number)

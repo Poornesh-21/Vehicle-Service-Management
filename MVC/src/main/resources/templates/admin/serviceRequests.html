@@ -2890,6 +2890,9 @@
      */
     // Updates to the renderServiceRequests function in MVC/src/main/resources/templates/admin/serviceRequests.html
 
+    /**
+     * Render the service requests in the table
+     */
     function renderServiceRequests() {
         const tableBody = document.getElementById('serviceRequestsTableBody');
         if (!tableBody) return;
@@ -2939,61 +2942,61 @@
             const row = document.createElement('tr');
             row.className = 'active-page';
             row.innerHTML = `
-            <td>REQ-${request.requestId}</td>
-            <td>
-                <div class="vehicle-info">
-                    <div class="vehicle-icon">
-                        <i class="fas fa-${request.vehicleCategory === 'Bike' ? 'motorcycle' : 'car-side'}"></i>
-                    </div>
-                    <div class="vehicle-details">
-                        <h5>${vehicleName}</h5>
-                        <p>${regNumber}</p>
-                    </div>
+        <td>REQ-${request.requestId}</td>
+        <td>
+            <div class="vehicle-info">
+                <div class="vehicle-icon">
+                    <i class="fas fa-${request.vehicleCategory === 'Bike' ? 'motorcycle' : 'car-side'}"></i>
                 </div>
-            </td>
-            <td>
-                <div class="person-info">
-                    <div class="person-details">
-                        <h5>${request.customerName || 'N/A'}</h5>
-                        <p>${request.customerEmail || ''}</p>
-                    </div>
+                <div class="vehicle-details">
+                    <h5>${vehicleName}</h5>
+                    <p>${regNumber}</p>
                 </div>
-            </td>
-            <td>
-                <span class="membership-badge membership-${membershipStatus.toLowerCase()}">
-                    <i class="fas fa-${membershipStatus.toLowerCase() === 'premium' ? 'crown' : 'user'}"></i>
-                    ${membershipStatus}
-                </span>
-            </td>
-            <td>${request.serviceType || 'N/A'}</td>
-            <td>
-                <span class="status-badge status-${status.toLowerCase()}">
-                    <i class="fas fa-${
+            </div>
+        </td>
+        <td>
+            <div class="person-info">
+                <div class="person-details">
+                    <h5>${request.customerName || 'N/A'}</h5>
+                    <p>${request.customerEmail || ''}</p>
+                </div>
+            </div>
+        </td>
+        <td>
+            <span class="membership-badge membership-${membershipStatus.toLowerCase()}">
+                <i class="fas fa-${membershipStatus.toLowerCase() === 'premium' ? 'crown' : 'user'}"></i>
+                ${membershipStatus}
+            </span>
+        </td>
+        <td>${request.serviceType || 'N/A'}</td>
+        <td>
+            <span class="status-badge status-${status.toLowerCase()}">
+                <i class="fas fa-${
                 status === 'Received' ? 'clock' :
                     status === 'Diagnosis' ? 'stethoscope' :
                         status === 'Repair' ? 'wrench' :
                             status === 'Completed' ? 'check-circle' :
                                 'question-circle'
             }"></i>
-                    ${status}
-                </span>
-            </td>
-            <td>${formatDate(request.deliveryDate)}</td>
-            <td>${request.serviceAdvisorName || 'Not Assigned'}</td>
-            <td class="table-actions-cell">
-                <button class="btn-table-action view-btn" title="View Details" onclick="showServiceRequestDetails(${request.requestId})">
-                    <i class="fas fa-eye"></i>
-                </button>
-                ${!request.serviceAdvisorId ?
+                ${status}
+            </span>
+        </td>
+        <td>${formatDate(request.deliveryDate)}</td>
+        <td>${request.serviceAdvisorName || 'Not Assigned'}</td>
+        <td class="table-actions-cell">
+            <button class="btn-table-action view-btn" title="View Details" onclick="showServiceRequestDetails(${request.requestId})">
+                <i class="fas fa-eye"></i>
+            </button>
+            ${!request.serviceAdvisorId ?
                 `<button class="btn-assign" title="Assign Advisor" onclick="showAssignAdvisorModal(${request.requestId})">
-                        <i class="fas fa-user-plus"></i> Assign
-                    </button>` :
+                    <i class="fas fa-user-plus"></i> Assign
+                </button>` :
                 `<button class="btn-table-action edit-btn" title="Edit Request">
-                        <i class="fas fa-edit"></i>
-                    </button>`
+                    <i class="fas fa-edit"></i>
+                </button>`
             }
-            </td>
-        `;
+        </td>
+    `;
 
             tableBody.appendChild(row);
         });

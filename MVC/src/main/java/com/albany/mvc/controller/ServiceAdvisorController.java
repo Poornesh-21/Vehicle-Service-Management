@@ -77,6 +77,43 @@ public class ServiceAdvisorController {
         }
     }
 
+    // Additional endpoint for all advisors (alternative endpoint)
+    @GetMapping("/api")
+    @ResponseBody
+    public ResponseEntity<List<ServiceAdvisorDto>> getAllServiceAdvisors(
+            @RequestParam(required = false) String token,
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            HttpServletRequest request) {
+
+        log.info("Getting all service advisors via alternative endpoint");
+        String validToken = getValidToken(token, authHeader, request);
+
+        if (validToken == null) {
+            return ResponseEntity.status(401).body(Collections.emptyList());
+        }
+
+        try {
+            List<ServiceAdvisorDto> serviceAdvisors = serviceAdvisorService.getAllServiceAdvisors(validToken);
+            log.info("Service advisors loaded: {}", serviceAdvisors.size());
+            return ResponseEntity.ok(serviceAdvisors);
+        } catch (Exception e) {
+            log.error("Error fetching service advisors: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).body(Collections.emptyList());
+        }
+    }
+
+    // Another alternative endpoint with "all" parameter
+    @GetMapping("/api/all")
+    @ResponseBody
+    public ResponseEntity<List<ServiceAdvisorDto>> getAllServiceAdvisorsAlternate(
+            @RequestParam(required = false) String token,
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            HttpServletRequest request) {
+
+        log.info("Getting all service advisors via 'all' endpoint");
+        return getServiceAdvisorsJson(token, authHeader, request);
+    }
+
     @GetMapping("/{id}")
     @ResponseBody
     public ResponseEntity<ServiceAdvisorDto> getServiceAdvisor(
@@ -252,7 +289,7 @@ public class ServiceAdvisorController {
      */
     private String generateRandomPassword() {
         final String letters = "ABCDEFGHJKLMNPQRSTUVWXYZ"; // Excluded I and O to avoid confusion
-        final String numbers = "123456789"; // Excluded 0 to avoid confusion
+        final String numbers = "123456789"; // Excluded 0 to avoid confusion with O
 
         StringBuilder password = new StringBuilder("SA2025-");
 

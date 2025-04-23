@@ -13,7 +13,7 @@ public class CustomerRequest {
     private String firstName;
 
     @NotBlank(message = "Last name is required")
-    @Size(min = 2, max = 50, message = "Last name must be between 2 and 50 characters")
+    @Size(min = 1, max = 50, message = "Last name must be between 1 and 50 characters")
     @Pattern(regexp = "^[A-Za-z]+$", message = "Last name must contain only alphabetic characters")
     private String lastName;
 

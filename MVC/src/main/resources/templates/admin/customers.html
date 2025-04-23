@@ -2228,8 +2228,8 @@
         // Show spinner before loading customer details
         showSpinner();
 
-        // Fetch customer details from the server
-        fetch(`/admin/api/customers/${customerId}`, {
+        // FIXED URL: Changed from /admin/api/customers/ to /admin/customers/api/
+        fetch(`/admin/customers/api/${customerId}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -2336,7 +2336,6 @@
         const postalCode = document.getElementById(ids.postalCode).value.trim();
         const membershipStatus = document.getElementById(ids.membershipStatus).value;
 
-        // Rest of validation code remains the same
         let errors = [];
 
         // Add validation rules
@@ -2352,7 +2351,7 @@
         // Last Name validation - required, 2-50 chars, alphabetic only
         if (!lastName) {
           errors.push("Last name is required");
-        } else if (lastName.length < 2 || lastName.length > 50) {
+        } else if (lastName.length < 1 || lastName.length > 50) {
           errors.push("Last name must be between 2 and 50 characters");
         } else if (!/^[A-Za-z]+$/.test(lastName)) {
           errors.push("Last name must contain only alphabetic characters");
@@ -2459,7 +2458,7 @@
           isActive: true
         };
 
-        // Submit form data to the server with correct endpoint and token
+        // FIXED URL: Now using /admin/api/customers for POST (this is the CustomerController's URL)
         fetch('/admin/api/customers', {
           method: 'POST',
           headers: {
@@ -2510,8 +2509,8 @@
         // Show spinner
         showSpinner();
 
-        // Fetch customer data for editing with updated endpoint
-        fetch(`/admin/api/customers/${customerId}`, {
+        // FIXED URL: Changed from /admin/api/customers/ to /admin/customers/api/
+        fetch(`/admin/customers/api/${customerId}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -2588,8 +2587,8 @@
           isActive: true
         };
 
-        // Submit form data to the server with corrected endpoint
-        fetch(`/admin/api/customers/${customerId}`, {
+        // FIXED URL: Changed from /admin/api/customers/ to /admin/customers/api/
+        fetch(`/admin/customers/api/${customerId}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -2643,7 +2642,8 @@
     function loadCustomers() {
       showSpinner();
 
-      fetch('/admin/customers/api', {  // IMPORTANT: Changed from '/admin/api/customers'
+      // FIXED URL: Using the correct URL for customer list
+      fetch('/admin/customers/api', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -2744,8 +2744,8 @@
           // Show spinner
           showSpinner();
 
-          // Fetch customer details
-          fetch(`/admin/api/customers/${customerId}`, {
+          // FIXED URL: Changed from /admin/api/customers/ to /admin/customers/api/
+          fetch(`/admin/customers/api/${customerId}`, {
             headers: {
               'Authorization': 'Bearer ' + getToken(),
               'Content-Type': 'application/json'

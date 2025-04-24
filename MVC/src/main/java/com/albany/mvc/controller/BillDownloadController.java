@@ -25,10 +25,7 @@ public class BillDownloadController {
     @Value("${api.base-url}")
     private String apiBaseUrl;
 
-    /**
-     * Download bill API endpoint
-     * This controller acts as a proxy between the frontend and the REST API
-     */
+
     @GetMapping("/download/{serviceId}")
     public void downloadBill(
             @PathVariable Integer serviceId,

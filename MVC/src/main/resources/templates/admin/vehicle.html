@@ -1800,7 +1800,6 @@
                                 <th>Customer</th>
                                 <th>Membership</th>
                                 <th>Service Type</th>
-                                <th>Status</th>
                                 <th>Service Advisor</th>
                                 <th>Start Date</th>
                                 <th>Est. Completion</th>
@@ -1877,7 +1876,6 @@
                                 <th>Service Type</th>
                                 <th>Completion Date</th>
                                 <th>Total Amount</th>
-                                <th>Status</th>
                                 <th>Bill/Invoice</th>
                                 <th>Actions</th>
                             </tr>
@@ -2477,7 +2475,7 @@
 
                 <div class="form-group mt-4">
                     <label for="invoiceNotes" class="form-label">Additional Notes</label>
-                    <textarea class="form-control" id="invoiceNotes" rows="3" placeholder="Add any additional notes for the invoice"></textarea>
+                    <textarea class="form-control" id="invoiceNotes" rows="3" placeholder="Invoice details cannot be modified" readonly></textarea>
                 </div>
 
                 <div class="form-check mt-3">
@@ -2652,131 +2650,7 @@
     </div>
 </div>
 
-<!-- Bill Preview Modal -->
-<div class="modal fade modal-premium" id="billPreviewModal" tabindex="-1" aria-labelledby="billPreviewModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="billPreviewModalLabel">
-                    <i class="fas fa-file-invoice-dollar"></i>
-                    Bill Preview
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="text-center mb-4">
-                    <h4 class="fw-bold">Albany Motors Service Center</h4>
-                    <p class="mb-0">123 Auto Plaza, Sector 12, Albany</p>
-                    <p>Tel: +91 12345 67890 | Email: service@albany.com</p>
-                </div>
-
-                <div class="row mb-4">
-                    <div class="col-md-6">
-                        <h5 class="fw-bold">Bill To:</h5>
-                        <p id="previewCustomerName" class="mb-1">Rajesh Kumar</p>
-                        <p id="previewCustomerAddress" class="mb-1">123 Main Street, Anytown</p>
-                        <p id="previewCustomerEmail" class="mb-0">rajesh@example.com</p>
-                    </div>
-                    <div class="col-md-6 text-md-end">
-                        <h5 class="fw-bold">Bill Details:</h5>
-                        <p class="mb-1">Bill #: <span id="previewBillNumber">B-10001</span></p>
-                        <p class="mb-1">Date: <span id="previewBillDate">April 24, 2025</span></p>
-                        <p class="mb-0">Service ID: <span id="previewServiceId">REQ-1001</span></p>
-                    </div>
-                </div>
-
-                <div class="row mb-3">
-                    <div class="col-md-6">
-                        <p class="mb-1">Vehicle: <span id="previewVehicleName">Honda City</span></p>
-                        <p class="mb-0">Reg No: <span id="previewRegistrationNumber">MH02AB1234</span></p>
-                    </div>
-                    <div class="col-md-6 text-md-end">
-                        <p class="mb-0">Service Type: <span id="previewServiceType">Engine Repair</span></p>
-                    </div>
-                </div>
-
-                <div class="table-responsive mb-4">
-                    <table class="table table-bordered">
-                        <thead class="table-light">
-                        <tr>
-                            <th>Description</th>
-                            <th>Quantity</th>
-                            <th>Unit Price</th>
-                            <th>Amount</th>
-                        </tr>
-                        </thead>
-                        <tbody id="previewMaterialsBody">
-                        <!-- Materials rows will be added dynamically -->
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="table-responsive mb-4">
-                    <table class="table table-bordered">
-                        <thead class="table-light">
-                        <tr>
-                            <th>Labor Description</th>
-                            <th>Hours</th>
-                            <th>Rate/Hour</th>
-                            <th>Amount</th>
-                        </tr>
-                        </thead>
-                        <tbody id="previewLaborBody">
-                        <!-- Labor rows will be added dynamically -->
-                        </tbody>
-                    </table>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6 offset-md-6">
-                        <table class="table table-sm">
-                            <tr>
-                                <td>Materials Total:</td>
-                                <td class="text-end" id="previewMaterialsTotal">₹7,250.00</td>
-                            </tr>
-                            <tr>
-                                <td>Labor Total:</td>
-                                <td class="text-end" id="previewLaborTotal">₹3,600.00</td>
-                            </tr>
-                            <tr>
-                                <td>Subtotal:</td>
-                                <td class="text-end" id="previewSubtotal">₹10,850.00</td>
-                            </tr>
-                            <tr>
-                                <td>GST (18%):</td>
-                                <td class="text-end" id="previewGST">₹1,953.00</td>
-                            </tr>
-                            <tr class="fw-bold">
-                                <td>Grand Total:</td>
-                                <td class="text-end" id="previewGrandTotal">₹12,803.00</td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="mt-4">
-                    <h6 class="fw-bold">Notes:</h6>
-                    <p id="previewNotes" class="mb-0">Vehicle has been serviced as per requirements. All parts replaced come with a 6-month warranty.</p>
-                </div>
-
-                <div class="mt-4 pt-4 border-top">
-                    <p class="mb-1 text-center">Thank you for choosing Albany Motors!</p>
-                    <p class="mb-0 text-center"><small>This is a computer-generated bill, no signature required.</small></p>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn-premium secondary" data-bs-dismiss="modal" id="backToBillBtn">
-                    <i class="fas fa-arrow-left"></i>
-                    Back to Edit
-                </button>
-                <button type="button" class="btn-premium primary" id="confirmFinalBillBtn">
-                    <i class="fas fa-check-circle"></i>
-                    Confirm & Generate Bill
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- Bill Preview Modal removed as it's no longer needed -->
 
 <!-- Success Modal -->
 <div class="modal fade success-modal" id="successModal" tabindex="-1" aria-hidden="true">
@@ -3238,26 +3112,23 @@
             }
         });
 
-        // Bill generation
+        // Bill generation - now directly generates bill without preview
         document.getElementById('confirmGenerateBillBtn').addEventListener('click', function() {
-            // Populate preview modal with bill details
-            populateBillPreview();
-
-            // Show bill preview modal
-            $('#generateBillModal').modal('hide');
-            $('#billPreviewModal').modal('show');
-        });
-
-        // Back to bill edit button
-        document.getElementById('backToBillBtn').addEventListener('click', function() {
-            $('#billPreviewModal').modal('hide');
-            $('#generateBillModal').modal('show');
-        });
-
-        // Confirm final bill button
-        document.getElementById('confirmFinalBillBtn').addEventListener('click', function() {
-            // Generate bill logic
+            // Generate bill directly
             generateBill();
+        });
+
+        // Payment method change handler
+        document.getElementById('paymentMethod').addEventListener('change', function() {
+            const paymentMethod = this.value;
+            const transactionIdGroup = document.getElementById('transactionId').closest('.form-group');
+
+            // Show transaction ID field only for online payment methods
+            if (paymentMethod === 'Cash') {
+                transactionIdGroup.style.display = 'none';
+            } else {
+                transactionIdGroup.style.display = '';
+            }
         });
 
         // Payment confirmation
@@ -3648,24 +3519,7 @@
                 day: 'numeric'
             });
 
-            // Create status badge based on status
-            let statusBadge = '';
-            switch (vehicle.status.toLowerCase()) {
-                case 'received':
-                    statusBadge = `<span class="status-badge status-received"><i class="fas fa-clock"></i> Received</span>`;
-                    break;
-                case 'diagnosis':
-                    statusBadge = `<span class="status-badge status-diagnosis"><i class="fas fa-search"></i> Diagnosis</span>`;
-                    break;
-                case 'repair':
-                    statusBadge = `<span class="status-badge status-repair"><i class="fas fa-wrench"></i> Repair</span>`;
-                    break;
-                case 'completed':
-                    statusBadge = `<span class="status-badge status-completed"><i class="fas fa-check-circle"></i> Completed</span>`;
-                    break;
-                default:
-                    statusBadge = `<span class="status-badge">${vehicle.status}</span>`;
-            }
+            // Status badge removed as per requirements
 
             // Build the row HTML
             row.innerHTML = `
@@ -3692,7 +3546,6 @@
                 '<span class="membership-badge membership-standard"><i class="fas fa-user"></i> Standard</span>'}
         </td>
         <td>${vehicle.serviceType}</td>
-        <td>${statusBadge}</td>
         <td>${vehicle.serviceAdvisorName}</td>
         <td>${startDate}</td>
         <td>${estimatedCompletion}</td>
@@ -3756,19 +3609,7 @@
             const hasGeneratedInvoice = service.hasInvoice || false;
             const hasDelivered = service.deliveryStatus === 'Delivered' || service.paymentStatus === 'Dispatched';
 
-            // Create status badge
-            let statusBadge = '';
-            if (hasDelivered) {
-                statusBadge = `<span class="status-badge status-completed"><i class="fas fa-check-circle"></i> Completed</span>`;
-            } else if (hasGeneratedInvoice) {
-                statusBadge = `<span class="status-badge status-paid"><i class="fas fa-file-invoice"></i> Invoice Generated</span>`;
-            } else if (hasCompletedPayment) {
-                statusBadge = `<span class="status-badge status-paid"><i class="fas fa-money-bill-wave"></i> Payment Received</span>`;
-            } else if (hasGeneratedBill) {
-                statusBadge = `<span class="status-badge status-pending"><i class="fas fa-file-invoice-dollar"></i> Bill Generated</span>`;
-            } else {
-                statusBadge = `<span class="status-badge status-completed"><i class="fas fa-check-circle"></i> Service Completed</span>`;
-            }
+            // Status badge removed as per requirements
 
             // Create invoice/bill badge
             let billBadge = '';
@@ -3797,7 +3638,7 @@
                 </button>`;
             } else if (!hasCompletedPayment) {
                 actionButton = `
-                <button class="btn-table-action info" onclick="viewCompletedServiceDetails(${service.serviceId || service.requestId})" title="Process Payment">
+                <button class="btn-table-action info" onclick="viewCompletedServiceDetails(${service.serviceId || service.requestId})" title="Payment">
                     <i class="fas fa-money-bill-wave"></i>
                 </button>`;
             } else if (!hasGeneratedInvoice) {
@@ -3805,15 +3646,10 @@
                 <button class="btn-table-action warning" onclick="viewCompletedServiceDetails(${service.serviceId || service.requestId})" title="Generate Invoice">
                     <i class="fas fa-file-invoice"></i>
                 </button>`;
-            } else if (!hasDelivered) {
-                actionButton = `
-                <button class="btn-table-action success" onclick="viewCompletedServiceDetails(${service.serviceId || service.requestId})" title="Arrange Delivery">
-                    <i class="fas fa-truck"></i>
-                </button>`;
             } else {
                 actionButton = `
-                <button class="btn-table-action" onclick="viewCompletedServiceDetails(${service.serviceId || service.requestId})" title="View Details">
-                    <i class="fas fa-eye"></i>
+                <button class="btn-table-action success" onclick="viewCompletedServiceDetails(${service.serviceId || service.requestId})" title="Dispatch">
+                    <i class="fas fa-truck"></i>
                 </button>`;
             }
 
@@ -3840,7 +3676,6 @@
             <td>${service.serviceType || 'Regular Service'}</td>
             <td>${completionDate}</td>
             <td>${formattedAmount}</td>
-            <td>${statusBadge}</td>
             <td>${billBadge}</td>
             <td>
                 <div class="table-actions-cell">
@@ -4236,11 +4071,11 @@
             generateBillBtn.addEventListener('click', openGenerateBillModal);
             footerDiv.appendChild(generateBillBtn);
         } else if (!hasCompletedPayment) {
-            // Add Process Payment button
+            // Add Payment button
             const processPaymentBtn = document.createElement('button');
             processPaymentBtn.className = 'btn-premium primary';
             processPaymentBtn.id = 'processPaymentBtn';
-            processPaymentBtn.innerHTML = '<i class="fas fa-money-bill-wave"></i> Process Payment';
+            processPaymentBtn.innerHTML = '<i class="fas fa-money-bill-wave"></i> Payment';
             processPaymentBtn.addEventListener('click', openPaymentModal);
             footerDiv.appendChild(processPaymentBtn);
         } else if (!hasGeneratedInvoice) {
@@ -4252,11 +4087,11 @@
             generateInvoiceBtn.addEventListener('click', openGenerateInvoiceModal);
             footerDiv.appendChild(generateInvoiceBtn);
         } else if (!hasDelivered) {
-            // Add Arrange Delivery button
+            // Add Dispatch button
             const arrangeDeliveryBtn = document.createElement('button');
-            arrangeDeliveryBtn.className = 'btn-premium primary';
+            arrangeDeliveryBtn.className = 'btn-premium success';
             arrangeDeliveryBtn.id = 'arrangeDeliveryBtn';
-            arrangeDeliveryBtn.innerHTML = '<i class="fas fa-truck"></i> Arrange Delivery';
+            arrangeDeliveryBtn.innerHTML = '<i class="fas fa-truck"></i> Dispatch';
             arrangeDeliveryBtn.addEventListener('click', openDeliveryModal);
             footerDiv.appendChild(arrangeDeliveryBtn);
         }
@@ -4278,7 +4113,7 @@
         }
     }
 
-    // Open Generate Bill modal
+    // Open Generate Bill modal - now directly generates bill without showing modal
     function openGenerateBillModal() {
         // Close service details modal
         $('#viewServiceDetailsModal').modal('hide');
@@ -4287,39 +4122,73 @@
         const serviceId = currentServiceId;
         const service = completedServices.find(s => s.serviceId === parseInt(serviceId) || s.requestId === parseInt(serviceId));
 
-        // Populate bill modal fields
-        document.getElementById('billServiceId').textContent = 'REQ-' + serviceId;
-        document.getElementById('billCustomerName').textContent = service.customerName;
-        document.getElementById('billVehicleName').textContent = service.vehicleName;
-        document.getElementById('billRegistrationNumber').textContent = service.registrationNumber;
-        document.getElementById('billServiceType').textContent = service.serviceType || 'Regular Service';
+        // Show spinner
+        document.getElementById('spinnerOverlay').classList.add('show');
 
-        // Clear and reset bill form
-        document.querySelectorAll('.bill-material-row:not(:first-child)').forEach(row => row.remove());
-        document.querySelectorAll('.bill-labor-row:not(:first-child)').forEach(row => row.remove());
+        // Get token
+        const token = getJwtToken();
+        if (!token) {
+            console.error('No token found');
+            return;
+        }
 
-        document.querySelectorAll('input').forEach(input => {
-            if (input.type === 'text' || input.type === 'number') {
-                input.value = '';
-            }
+        // Prepare bill data with default values
+        const billData = {
+            notes: "Vehicle has been serviced as per requirements. All parts replaced come with a 6-month warranty.",
+            sendEmail: true,
+            materials: [],
+            laborCharges: [],
+            materialsTotal: service.materialsCost || 0,
+            laborTotal: service.laborCost || 0,
+            subtotal: (service.materialsCost || 0) + (service.laborCost || 0),
+            gst: ((service.materialsCost || 0) + (service.laborCost || 0)) * 0.18,
+            grandTotal: ((service.materialsCost || 0) + (service.laborCost || 0)) * 1.18
+        };
 
-            // Set default values for quantity and hours
-            if (input.classList.contains('material-quantity')) {
-                input.value = '1';
-            }
-            if (input.classList.contains('labor-hours')) {
-                input.value = '1';
-            }
-        });
+        // API call to generate bill
+        fetch(`/admin/api/vehicle-tracking/service-request/${serviceId}/bill?token=${encodeURIComponent(token)}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(billData)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('API call failed: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Hide spinner
+                document.getElementById('spinnerOverlay').classList.remove('show');
 
-        document.getElementById('billNotes').value = '';
-        document.getElementById('sendBillEmail').checked = true;
+                // Update the completedServices array to mark bill as generated
+                const serviceIndex = completedServices.findIndex(s =>
+                    s.serviceId === parseInt(serviceId) || s.requestId === parseInt(serviceId));
 
-        // Update bill totals
-        updateBillTotals();
+                if (serviceIndex !== -1) {
+                    completedServices[serviceIndex].hasBill = true;
+                    completedServices[serviceIndex].totalCost = billData.grandTotal;
+                }
 
-        // Show generate bill modal
-        $('#generateBillModal').modal('show');
+                // Show success modal
+                document.getElementById('successTitle').textContent = 'Bill Generated!';
+                document.getElementById('successMessage').textContent =
+                    `The bill for service REQ-${serviceId} has been successfully generated and sent to the customer via email.`;
+                $('#successModal').modal('show');
+
+                // Refresh the completed services table
+                showCompletedServicesPage(currentCompletedPage);
+            })
+            .catch(error => {
+                // Hide spinner
+                document.getElementById('spinnerOverlay').classList.remove('show');
+                console.error('Error generating bill:', error);
+
+                // Show error toast
+                showToastNotification('Error', 'Failed to generate bill: ' + error.message);
+            });
     }
 
     // Open Payment modal
@@ -4349,11 +4218,15 @@
         document.getElementById('transactionId').value = '';
         document.getElementById('paymentNotes').value = '';
 
+        // Hide transaction ID field initially
+        const transactionIdGroup = document.getElementById('transactionId').closest('.form-group');
+        transactionIdGroup.style.display = 'none';
+
         // Show payment modal
         $('#paymentModal').modal('show');
     }
 
-    // Open Generate Invoice modal
+    // Open Generate Invoice modal - now directly generates invoice without showing modal
     function openGenerateInvoiceModal() {
         // Close service details modal
         $('#viewServiceDetailsModal').modal('hide');
@@ -4362,39 +4235,65 @@
         const serviceId = currentServiceId;
         const service = completedServices.find(s => s.serviceId === parseInt(serviceId) || s.requestId === parseInt(serviceId));
 
-        // Populate invoice modal fields
-        document.getElementById('invoiceServiceId').textContent = 'REQ-' + serviceId;
-        document.getElementById('invoiceCustomerName').textContent = service.customerName;
-        document.getElementById('invoiceVehicleName').textContent = service.vehicleName;
-        document.getElementById('invoiceRegistrationNumber').textContent = service.registrationNumber;
-        document.getElementById('invoiceServiceType').textContent = service.serviceType || 'Regular Service';
+        // Show spinner
+        document.getElementById('spinnerOverlay').classList.add('show');
 
-        // Format totals
-        const formatter = new Intl.NumberFormat('en-IN', {
-            style: 'currency',
-            currency: 'INR',
-            maximumFractionDigits: 2
-        });
+        // Get token
+        const token = getJwtToken();
+        if (!token) {
+            console.error('No token found');
+            return;
+        }
 
-        // Set invoice amounts from service details
-        const materialsTotal = service.materialsCost || 7250.00;
-        const laborTotal = service.laborCost || 3600.00;
-        const subtotal = materialsTotal + laborTotal;
-        const gst = subtotal * 0.18;
-        const grandTotal = subtotal + gst;
+        // Prepare invoice data with default values
+        const invoiceData = {
+            notes: "Thank you for choosing our service. Your vehicle has been serviced as per requirements.",
+            sendEmail: true
+        };
 
-        document.getElementById('invoiceMaterialsTotal').textContent = formatter.format(materialsTotal);
-        document.getElementById('invoiceLaborTotal').textContent = formatter.format(laborTotal);
-        document.getElementById('invoiceSubtotal').textContent = formatter.format(subtotal);
-        document.getElementById('invoiceGST').textContent = formatter.format(gst);
-        document.getElementById('invoiceGrandTotal').textContent = formatter.format(grandTotal);
+        // API call to generate invoice
+        fetch(`/admin/api/vehicle-tracking/service-request/${serviceId}/invoice?token=${encodeURIComponent(token)}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(invoiceData)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('API call failed: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Hide spinner
+                document.getElementById('spinnerOverlay').classList.remove('show');
 
-        // Reset notes and email checkbox
-        document.getElementById('invoiceNotes').value = '';
-        document.getElementById('sendInvoiceEmail').checked = true;
+                // Update the completedServices array to mark invoice as generated
+                const serviceIndex = completedServices.findIndex(s =>
+                    s.serviceId === parseInt(serviceId) || s.requestId === parseInt(serviceId));
 
-        // Show invoice modal
-        $('#generateInvoiceModal').modal('show');
+                if (serviceIndex !== -1) {
+                    completedServices[serviceIndex].hasInvoice = true;
+                }
+
+                // Show success modal
+                document.getElementById('successTitle').textContent = 'Invoice Generated!';
+                document.getElementById('successMessage').textContent =
+                    `The invoice for service REQ-${serviceId} has been successfully generated and sent to the customer via email.`;
+                $('#successModal').modal('show');
+
+                // Refresh the completed services table
+                showCompletedServicesPage(currentCompletedPage);
+            })
+            .catch(error => {
+                // Hide spinner
+                document.getElementById('spinnerOverlay').classList.remove('show');
+                console.error('Error generating invoice:', error);
+
+                // Show error toast
+                showToastNotification('Error', 'Failed to generate invoice: ' + error.message);
+            });
     }
 
     // Open Delivery modal
@@ -4474,109 +4373,8 @@
         }, 1000);
     }
 
-    // Populate bill preview
-    function populateBillPreview() {
-        // Get current date in formatted string
-        const today = new Date();
-        const formattedDate = today.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
-
-        // Get service ID and customer name
-        const serviceId = document.getElementById('billServiceId').textContent;
-        const customerName = document.getElementById('billCustomerName').textContent;
-
-        // Generate a random bill number
-        const billNumber = 'B-' + Math.floor(10000 + Math.random() * 90000);
-
-        // Set basic bill info
-        document.getElementById('previewBillNumber').textContent = billNumber;
-        document.getElementById('previewBillDate').textContent = formattedDate;
-        document.getElementById('previewServiceId').textContent = serviceId;
-        document.getElementById('previewCustomerName').textContent = customerName;
-        document.getElementById('previewCustomerAddress').textContent = 'Customer Address';
-        document.getElementById('previewCustomerEmail').textContent = 'customer@example.com';
-        document.getElementById('previewVehicleName').textContent = document.getElementById('billVehicleName').textContent;
-        document.getElementById('previewRegistrationNumber').textContent = document.getElementById('billRegistrationNumber').textContent;
-        document.getElementById('previewServiceType').textContent = document.getElementById('billServiceType').textContent;
-
-        // Prepare materials preview
-        const materialsBody = document.getElementById('previewMaterialsBody');
-        materialsBody.innerHTML = '';
-
-        // Get all material rows
-        const materialRows = document.querySelectorAll('.bill-material-row');
-        materialRows.forEach(row => {
-            const nameInput = row.querySelector('.material-name');
-            const quantityInput = row.querySelector('.material-quantity');
-            const priceInput = row.querySelector('.material-price');
-            const totalInput = row.querySelector('.material-total');
-
-            // Skip empty rows
-            if (!nameInput.value || !priceInput.value) return;
-
-            const name = nameInput.value;
-            const quantity = quantityInput.value;
-            const price = parseFloat(priceInput.value).toFixed(2);
-            const total = parseFloat(totalInput.value).toFixed(2);
-
-            // Create a new row in the preview
-            const previewRow = document.createElement('tr');
-            previewRow.innerHTML = `
-                <td>${name}</td>
-                <td>${quantity}</td>
-                <td>₹${price}</td>
-                <td>₹${total}</td>
-            `;
-
-            materialsBody.appendChild(previewRow);
-        });
-
-        // Prepare labor preview
-        const laborBody = document.getElementById('previewLaborBody');
-        laborBody.innerHTML = '';
-
-        // Get all labor rows
-        const laborRows = document.querySelectorAll('.bill-labor-row');
-        laborRows.forEach(row => {
-            const descriptionInput = row.querySelector('.labor-description');
-            const hoursInput = row.querySelector('.labor-hours');
-            const rateInput = row.querySelector('.labor-rate');
-            const totalInput = row.querySelector('.labor-total');
-
-            // Skip empty rows
-            if (!descriptionInput.value || !rateInput.value) return;
-
-            const description = descriptionInput.value;
-            const hours = hoursInput.value;
-            const rate = parseFloat(rateInput.value).toFixed(2);
-            const total = parseFloat(totalInput.value).toFixed(2);
-
-            // Create a new row in the preview
-            const previewRow = document.createElement('tr');
-            previewRow.innerHTML = `
-                <td>${description}</td>
-                <td>${hours}</td>
-                <td>₹${rate}</td>
-                <td>₹${total}</td>
-            `;
-
-            laborBody.appendChild(previewRow);
-        });
-
-        // Set preview totals
-        document.getElementById('previewMaterialsTotal').textContent = document.getElementById('billMaterialsTotal').textContent;
-        document.getElementById('previewLaborTotal').textContent = document.getElementById('billLaborTotal').textContent;
-        document.getElementById('previewSubtotal').textContent = document.getElementById('billSubtotal').textContent;
-        document.getElementById('previewGST').textContent = document.getElementById('billGST').textContent;
-        document.getElementById('previewGrandTotal').textContent = document.getElementById('billGrandTotal').textContent;
-
-        // Set notes
-        const notes = document.getElementById('billNotes').value;
-        document.getElementById('previewNotes').textContent = notes || 'Vehicle has been serviced as per requirements. All parts replaced come with a 6-month warranty.';
-    }
+    // Removed populateBillPreview function as it's no longer needed
+    // Bill generation is now handled directly without preview
 
     // Generate bill
     function generateBill() {
@@ -4669,8 +4467,7 @@
                     completedServices[serviceIndex].totalCost = billData.grandTotal;
                 }
 
-                // Hide the bill preview modal
-                $('#billPreviewModal').modal('hide');
+                // Bill preview modal has been removed
 
                 // Show success modal
                 document.getElementById('successTitle').textContent = 'Bill Generated!';
@@ -4686,8 +4483,7 @@
                 document.getElementById('spinnerOverlay').classList.remove('show');
                 console.error('Error generating bill:', error);
 
-                // Hide the bill preview modal
-                $('#billPreviewModal').modal('hide');
+                // Bill preview modal has been removed
 
                 // Show error toast
                 showToastNotification('Error', 'Failed to generate bill: ' + error.message);
@@ -5421,13 +5217,15 @@
                         return;
                     }
 
-                    if (isCompleted) {
-                        viewCompletedServiceDetails(serviceId);
-                    } else {
+                    // Only open modal for rows in the service table (not completed service table)
+                    if (!isCompleted) {
                         viewServiceUnderServiceDetails(serviceId);
                     }
+                    // For completed service table, modal will only open when clicking action buttons
                 }
             }
         }
     });
 </script>
+</body>
+</html>

@@ -20,5 +20,7 @@ class CompletedServiceDTO {
     private LocalDate completedDate;  // Change from String to LocalDate
     private String serviceAdvisorName;
     private BigDecimal totalCost;
+    private boolean hasBill;
+    private boolean isPaid;
     private boolean hasInvoice;
 }

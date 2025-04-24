@@ -690,16 +690,24 @@
         }
 
         .person-details h5 {
-            font-size: 0.95rem;
+            font-size: 0.85rem; /* Reduced size as requested */
             font-weight: 600;
             margin-bottom: 0.25rem;
             color: var(--wine);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 140px; /* Limit width to prevent table expansion */
         }
 
         .person-details p {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--medium-gray);
             margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 140px; /* Limit width to prevent table expansion */
         }
 
         /* Membership Badge */
@@ -1339,6 +1347,92 @@
             box-shadow: 0 6px 16px rgba(114, 47, 55, 0.3);
         }
 
+        /* Toast Notification */
+        .toast-container {
+            z-index: 1070;
+        }
+        .bg-wine {
+            background-color: #722F37;
+        }
+        .toast {
+            opacity: 0.95;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.2);
+        }
+
+        /* Steps indicator for completed services workflow */
+        .workflow-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .workflow-steps::before {
+            content: '';
+            position: absolute;
+            top: 24px;
+            left: 30px;
+            right: 30px;
+            height: 2px;
+            background-color: var(--light-gray);
+            z-index: 1;
+        }
+
+        .workflow-step {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+
+        .step-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--light-bg);
+            border: 2px solid var(--light-gray);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 0.75rem;
+            color: var(--medium-gray);
+            font-size: 1.25rem;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .step-text {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--medium-gray);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .workflow-step.active .step-icon {
+            background-color: var(--wine);
+            border-color: var(--wine);
+            color: white;
+            box-shadow: 0 0 0 5px rgba(114, 47, 55, 0.2);
+        }
+
+        .workflow-step.active .step-text {
+            color: var(--wine);
+            font-weight: 600;
+        }
+
+        .workflow-step.completed .step-icon {
+            background-color: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+
+        .workflow-step.completed .step-text {
+            color: var(--success);
+        }
+
         /* Responsive Design */
         @media (max-width: 991.98px) {
             .sidebar {
@@ -1409,6 +1503,15 @@
 
             .search-input-sm {
                 width: 100%;
+            }
+
+            .workflow-steps {
+                overflow-x: auto;
+                padding-bottom: 1rem;
+            }
+
+            .workflow-step {
+                min-width: 100px;
             }
         }
 
@@ -1516,6 +1619,14 @@
                 width: 100%;
                 padding-right: 0;
                 margin-bottom: 1rem;
+            }
+
+            .workflow-steps {
+                margin-bottom: 1.5rem;
+            }
+
+            .workflow-step .step-text {
+                font-size: 0.75rem;
             }
         }
 
@@ -1766,8 +1877,8 @@
                                 <th>Service Type</th>
                                 <th>Completion Date</th>
                                 <th>Total Amount</th>
-                                <th>Payment Status</th>
-                                <th>Invoice</th>
+                                <th>Status</th>
+                                <th>Bill/Invoice</th>
                                 <th>Actions</th>
                             </tr>
                             </thead>
@@ -1989,7 +2100,7 @@
                     </div>
                 </div>
 
-                <div class="mt-4">
+                <div class="mt-4" id="progressSection">
                     <h5>Work Progress</h5>
                     <div class="progress mt-2" style="height: 20px;">
                         <div class="progress-bar bg-wine" role="progressbar" style="width: 65%;" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100">65%</div>
@@ -1997,7 +2108,7 @@
                     <p class="text-muted mt-2" id="viewProgressNotes">Current work: Replacing engine timing components and testing.</p>
                 </div>
 
-                <div id="materialsSection">
+                <div id="materialsSection" style="display: none;">
                     <h5 class="mt-4 mb-3">Materials Used</h5>
                     <table class="materials-table" id="materialsTable">
                         <thead>
@@ -2010,34 +2121,6 @@
                         </thead>
                         <tbody id="materialsTableBody">
                         <!-- Will be populated dynamically -->
-                        <tr>
-                            <td>Engine Timing Belt</td>
-                            <td>1</td>
-                            <td>₹2,500.00</td>
-                            <td>₹2,500.00</td>
-                        </tr>
-                        <tr>
-                            <td>Timing Belt Tensioner</td>
-                            <td>1</td>
-                            <td>₹1,200.00</td>
-                            <td>₹1,200.00</td>
-                        </tr>
-                        <tr>
-                            <td>Engine Oil</td>
-                            <td>4</td>
-                            <td>₹800.00</td>
-                            <td>₹3,200.00</td>
-                        </tr>
-                        <tr>
-                            <td>Oil Filter</td>
-                            <td>1</td>
-                            <td>₹350.00</td>
-                            <td>₹350.00</td>
-                        </tr>
-                        <tr>
-                            <td colspan="3" class="text-end">Materials Total</td>
-                            <td>₹7,250.00</td>
-                        </tr>
                         </tbody>
                     </table>
 
@@ -2053,51 +2136,60 @@
                         </thead>
                         <tbody id="laborChargesTableBody">
                         <!-- Will be populated dynamically -->
-                        <tr>
-                            <td>Engine Timing Belt Replacement</td>
-                            <td>3.5</td>
-                            <td>₹800.00</td>
-                            <td>₹2,800.00</td>
-                        </tr>
-                        <tr>
-                            <td>Engine Diagnostics</td>
-                            <td>1.0</td>
-                            <td>₹600.00</td>
-                            <td>₹600.00</td>
-                        </tr>
-                        <tr>
-                            <td>Oil Change</td>
-                            <td>0.5</td>
-                            <td>₹400.00</td>
-                            <td>₹200.00</td>
-                        </tr>
-                        <tr>
-                            <td colspan="3" class="text-end">Labor Total</td>
-                            <td>₹3,600.00</td>
-                        </tr>
                         </tbody>
                     </table>
 
                     <div class="invoice-summary">
                         <div class="invoice-summary-row">
                             <div class="invoice-summary-label">Materials Total</div>
-                            <div class="invoice-summary-value">₹7,250.00</div>
+                            <div class="invoice-summary-value" id="summaryMaterialsTotal">₹7,250.00</div>
                         </div>
                         <div class="invoice-summary-row">
                             <div class="invoice-summary-label">Labor Total</div>
-                            <div class="invoice-summary-value">₹3,600.00</div>
+                            <div class="invoice-summary-value" id="summaryLaborTotal">₹3,600.00</div>
                         </div>
                         <div class="invoice-summary-row">
                             <div class="invoice-summary-label">Subtotal</div>
-                            <div class="invoice-summary-value">₹10,850.00</div>
+                            <div class="invoice-summary-value" id="summarySubtotal">₹10,850.00</div>
                         </div>
                         <div class="invoice-summary-row">
                             <div class="invoice-summary-label">GST (18%)</div>
-                            <div class="invoice-summary-value">₹1,953.00</div>
+                            <div class="invoice-summary-value" id="summaryGST">₹1,953.00</div>
                         </div>
                         <div class="invoice-summary-row">
                             <div class="invoice-summary-label">Grand Total</div>
-                            <div class="invoice-summary-value">₹12,803.00</div>
+                            <div class="invoice-summary-value" id="summaryGrandTotal">₹12,803.00</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Workflow steps for completed services -->
+                <div id="workflowStepsContainer" style="display: none;" class="mt-4">
+                    <h5 class="mb-3">Service Workflow</h5>
+                    <div class="workflow-steps">
+                        <div class="workflow-step" id="stepBill">
+                            <div class="step-icon">
+                                <i class="fas fa-file-invoice-dollar"></i>
+                            </div>
+                            <div class="step-text">Generate Bill</div>
+                        </div>
+                        <div class="workflow-step" id="stepPayment">
+                            <div class="step-icon">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                            <div class="step-text">Payment</div>
+                        </div>
+                        <div class="workflow-step" id="stepInvoice">
+                            <div class="step-icon">
+                                <i class="fas fa-file-invoice"></i>
+                            </div>
+                            <div class="step-text">Invoice</div>
+                        </div>
+                        <div class="workflow-step" id="stepDelivery">
+                            <div class="step-icon">
+                                <i class="fas fa-truck"></i>
+                            </div>
+                            <div class="step-text">Delivery</div>
                         </div>
                     </div>
                 </div>
@@ -2111,17 +2203,217 @@
             </div>
             <div class="modal-footer" id="completedServiceFooter" style="display: none;">
                 <button type="button" class="btn-premium secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn-action info" id="viewInvoiceBtn">
-                    <i class="fas fa-file-invoice"></i>
-                    View Invoice
-                </button>
-                <button type="button" class="btn-premium primary" id="generateInvoiceBtn">
+                <!-- Dynamic buttons will be added based on service status -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Generate Bill Modal -->
+<div class="modal fade modal-premium" id="generateBillModal" tabindex="-1" aria-labelledby="generateBillModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="generateBillModalLabel">
                     <i class="fas fa-file-invoice-dollar"></i>
-                    Generate Invoice
+                    Generate Bill
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info mb-4">
+                    <i class="fas fa-info-circle me-2"></i>
+                    You are about to generate a bill for service <strong id="billServiceId">REQ-1001</strong> for customer <strong id="billCustomerName">Rajesh Kumar</strong>.
+                </div>
+
+                <div class="service-detail-row">
+                    <div class="service-detail-col">
+                        <div class="detail-label">Vehicle</div>
+                        <div class="detail-value" id="billVehicleName">Honda City</div>
+                    </div>
+                    <div class="service-detail-col">
+                        <div class="detail-label">Registration Number</div>
+                        <div class="detail-value" id="billRegistrationNumber">MH02AB1234</div>
+                    </div>
+                    <div class="service-detail-col">
+                        <div class="detail-label">Service Type</div>
+                        <div class="detail-value" id="billServiceType">Engine Repair</div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <h5 class="mb-3">Add Materials Used</h5>
+                    <div id="billMaterialsContainer">
+                        <div class="row mb-3 bill-material-row">
+                            <div class="col-md-4">
+                                <input type="text" class="form-control material-name" placeholder="Item Name">
+                            </div>
+                            <div class="col-md-2">
+                                <input type="number" class="form-control material-quantity" placeholder="Quantity" min="1" value="1">
+                            </div>
+                            <div class="col-md-3">
+                                <div class="input-group">
+                                    <span class="input-group-text">₹</span>
+                                    <input type="number" class="form-control material-price" placeholder="Price" min="0" step="0.01">
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="input-group">
+                                    <span class="input-group-text">₹</span>
+                                    <input type="text" class="form-control material-total" placeholder="Total" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-1 d-flex align-items-center">
+                                <button type="button" class="btn btn-sm btn-danger remove-material"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-success" id="addMaterialBtn">
+                        <i class="fas fa-plus"></i> Add Material
+                    </button>
+                </div>
+
+                <div class="mb-4">
+                    <h5 class="mb-3">Add Labor Charges</h5>
+                    <div id="billLaborContainer">
+                        <div class="row mb-3 bill-labor-row">
+                            <div class="col-md-5">
+                                <input type="text" class="form-control labor-description" placeholder="Labor Description">
+                            </div>
+                            <div class="col-md-2">
+                                <input type="number" class="form-control labor-hours" placeholder="Hours" min="0.5" step="0.5" value="1">
+                            </div>
+                            <div class="col-md-2">
+                                <div class="input-group">
+                                    <span class="input-group-text">₹</span>
+                                    <input type="number" class="form-control labor-rate" placeholder="Rate/Hr" min="0">
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="input-group">
+                                    <span class="input-group-text">₹</span>
+                                    <input type="text" class="form-control labor-total" placeholder="Total" readonly>
+                                </div>
+                            </div>
+                            <div class="col-md-1 d-flex align-items-center">
+                                <button type="button" class="btn btn-sm btn-danger remove-labor"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-success" id="addLaborBtn">
+                        <i class="fas fa-plus"></i> Add Labor
+                    </button>
+                </div>
+
+                <div class="invoice-summary">
+                    <div class="invoice-summary-row">
+                        <div class="invoice-summary-label">Materials Total</div>
+                        <div class="invoice-summary-value" id="billMaterialsTotal">₹0.00</div>
+                    </div>
+                    <div class="invoice-summary-row">
+                        <div class="invoice-summary-label">Labor Total</div>
+                        <div class="invoice-summary-value" id="billLaborTotal">₹0.00</div>
+                    </div>
+                    <div class="invoice-summary-row">
+                        <div class="invoice-summary-label">Subtotal</div>
+                        <div class="invoice-summary-value" id="billSubtotal">₹0.00</div>
+                    </div>
+                    <div class="invoice-summary-row">
+                        <div class="invoice-summary-label">GST (18%)</div>
+                        <div class="invoice-summary-value" id="billGST">₹0.00</div>
+                    </div>
+                    <div class="invoice-summary-row">
+                        <div class="invoice-summary-label">Grand Total</div>
+                        <div class="invoice-summary-value" id="billGrandTotal">₹0.00</div>
+                    </div>
+                </div>
+
+                <div class="form-group mt-4">
+                    <label for="billNotes" class="form-label">Additional Notes</label>
+                    <textarea class="form-control" id="billNotes" rows="3" placeholder="Add any additional notes for the bill"></textarea>
+                </div>
+
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" value="" id="sendBillEmail" checked>
+                    <label class="form-check-label" for="sendBillEmail">
+                        Send bill to customer via email
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-premium secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn-premium primary" id="confirmGenerateBillBtn">
+                    <i class="fas fa-paper-plane"></i>
+                    Generate & Send Bill
                 </button>
-                <button type="button" class="btn-premium primary" id="downloadInvoiceBtn" style="display: none;">
-                    <i class="fas fa-download"></i>
-                    Download Invoice
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Payment Modal -->
+<div class="modal fade modal-premium" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="paymentModalLabel">
+                    <i class="fas fa-money-bill-wave"></i>
+                    Process Payment
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info mb-4">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Processing payment for service <strong id="paymentServiceId">REQ-1001</strong> for <strong id="paymentCustomerName">Rajesh Kumar</strong>.
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="detail-label">Vehicle</div>
+                        <div class="detail-value" id="paymentVehicleName">Honda City</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-label">Total Amount</div>
+                        <div class="detail-value fw-bold text-wine" id="paymentAmount">₹12,803.00</div>
+                    </div>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="paymentMethod" class="form-label">Payment Method</label>
+                    <select class="form-select" id="paymentMethod" required>
+                        <option value="">Select Payment Method</option>
+                        <option value="UPI">UPI</option>
+                        <option value="Card">Credit/Debit Card</option>
+                        <option value="Net Banking">Net Banking</option>
+                        <option value="Cash">Cash</option>
+                    </select>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="transactionId" class="form-label">Transaction ID</label>
+                    <input type="text" class="form-control" id="transactionId" placeholder="Enter transaction ID">
+                    <small class="form-text text-muted">Enter transaction ID or reference number (if applicable)</small>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="paidAmount" class="form-label">Amount Received</label>
+                    <div class="input-group">
+                        <span class="input-group-text">₹</span>
+                        <input type="number" class="form-control" id="paidAmount" placeholder="Enter amount" required>
+                    </div>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label for="paymentNotes" class="form-label">Payment Notes</label>
+                    <textarea class="form-control" id="paymentNotes" rows="2" placeholder="Optional notes about this payment"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-premium secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn-premium primary" id="confirmPaymentBtn">
+                    <i class="fas fa-check-circle"></i>
+                    Confirm Payment
                 </button>
             </div>
         </div>
@@ -2134,15 +2426,15 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="generateInvoiceModalLabel">
-                    <i class="fas fa-file-invoice-dollar"></i>
+                    <i class="fas fa-file-invoice"></i>
                     Generate Invoice
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div class="alert alert-info mb-4">
-                    <i class="fas fa-info-circle me-2"></i>
-                    You are about to generate an invoice for service <strong id="invoiceServiceId">REQ-1001</strong> for customer <strong id="invoiceCustomerName">Rajesh Kumar</strong>. The invoice will be sent to the customer's email address.
+                <div class="alert alert-success mb-4">
+                    <i class="fas fa-check-circle me-2"></i>
+                    Payment has been received for service <strong id="invoiceServiceId">REQ-1001</strong>. Please generate an official invoice for <strong id="invoiceCustomerName">Rajesh Kumar</strong>.
                 </div>
 
                 <div class="service-detail-row">
@@ -2185,12 +2477,12 @@
 
                 <div class="form-group mt-4">
                     <label for="invoiceNotes" class="form-label">Additional Notes</label>
-                    <textarea class="form-control" id="invoiceNotes" rows="3" placeholder="Add any additional notes to be included in the invoice"></textarea>
+                    <textarea class="form-control" id="invoiceNotes" rows="3" placeholder="Add any additional notes for the invoice"></textarea>
                 </div>
 
                 <div class="form-check mt-3">
-                    <input class="form-check-input" type="checkbox" value="" id="sendEmailCheck" checked>
-                    <label class="form-check-label" for="sendEmailCheck">
+                    <input class="form-check-input" type="checkbox" value="" id="sendInvoiceEmail" checked>
+                    <label class="form-check-label" for="sendInvoiceEmail">
                         Send invoice to customer via email
                     </label>
                 </div>
@@ -2198,7 +2490,7 @@
             <div class="modal-footer">
                 <button type="button" class="btn-premium secondary" data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn-premium primary" id="confirmGenerateInvoiceBtn">
-                    <i class="fas fa-paper-plane"></i>
+                    <i class="fas fa-file-invoice"></i>
                     Generate & Send Invoice
                 </button>
             </div>
@@ -2206,137 +2498,124 @@
     </div>
 </div>
 
-<!-- Mark as Paid Modal -->
-<div class="modal fade modal-premium" id="markAsPaidModal" tabindex="-1" aria-labelledby="markAsPaidModalLabel" aria-hidden="true">
+<!-- Vehicle Delivery/Dispatch Modal -->
+<div class="modal fade modal-premium" id="deliveryModal" tabindex="-1" aria-labelledby="deliveryModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="markAsPaidModalLabel">
-                    <i class="fas fa-money-bill-wave"></i>
-                    Mark Payment as Received
+                <h5 class="modal-title" id="deliveryModalLabel">
+                    <i class="fas fa-truck"></i>
+                    Vehicle Delivery
                 </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="alert alert-info mb-4">
                     <i class="fas fa-info-circle me-2"></i>
-                    You are about to mark the payment for service <strong id="paidServiceId">REQ-1001</strong> as received.
+                    <span id="deliveryModalInfo">Arrange delivery for completed service <strong id="deliveryServiceId">REQ-1001</strong></span>
                 </div>
 
-                <div class="form-group mb-3">
-                    <label for="paymentMethod" class="form-label">Payment Method</label>
-                    <select class="form-select" id="paymentMethod" required>
-                        <option value="">Select Payment Method</option>
-                        <option value="UPI">UPI</option>
-                        <option value="Card">Credit/Debit Card</option>
-                        <option value="Net Banking">Net Banking</option>
-                        <option value="Cash">Cash</option>
-                    </select>
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="detail-label">Vehicle</div>
+                        <div class="detail-value" id="deliveryVehicleName">Honda City</div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="detail-label">Registration Number</div>
+                        <div class="detail-value" id="deliveryRegistrationNumber">MH02AB1234</div>
+                    </div>
                 </div>
 
-                <div class="form-group mb-3">
-                    <label for="transactionId" class="form-label">Transaction ID</label>
-                    <input type="text" class="form-control" id="transactionId" placeholder="Enter transaction ID">
-                    <small class="form-text text-muted">Enter transaction ID or reference number (if available)</small>
+                <div class="mb-4">
+                    <label class="form-label">Delivery Method</label>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="radio" name="deliveryMethod" id="customerPickup" value="pickup" checked>
+                        <label class="form-check-label" for="customerPickup">
+                            <i class="fas fa-user me-2"></i> Customer Pickup
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="deliveryMethod" id="homeDelivery" value="delivery">
+                        <label class="form-check-label" for="homeDelivery">
+                            <i class="fas fa-home me-2"></i> Home Delivery
+                        </label>
+                    </div>
                 </div>
 
-                <div class="form-group mb-3">
-                    <label for="paidAmount" class="form-label">Amount Paid</label>
-                    <div class="input-group">
-                        <span class="input-group-text">₹</span>
-                        <input type="number" class="form-control" id="paidAmount" placeholder="Enter amount" value="12803" required>
+                <div id="pickupFields">
+                    <div class="form-group mb-3">
+                        <label for="pickupPerson" class="form-label">Person Collecting Vehicle</label>
+                        <input type="text" class="form-control" id="pickupPerson" placeholder="Enter name of person collecting the vehicle">
+                        <small class="form-text text-muted">This person must present valid ID</small>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="pickupTime" class="form-label">Expected Pickup Time</label>
+                        <input type="datetime-local" class="form-control" id="pickupTime">
+                    </div>
+                </div>
+
+                <div id="deliveryFields" style="display: none;">
+                    <div class="form-group mb-3">
+                        <label for="deliveryAddress" class="form-label">Delivery Address</label>
+                        <textarea class="form-control" id="deliveryAddress" rows="3" placeholder="Enter delivery address"></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="deliveryDate" class="form-label">Delivery Date</label>
+                                <input type="date" class="form-control" id="deliveryDate">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label for="deliveryTimeSlot" class="form-label">Time Slot</label>
+                                <select class="form-select" id="deliveryTimeSlot">
+                                    <option value="">Select time slot</option>
+                                    <option value="9AM-12PM">9:00 AM - 12:00 PM</option>
+                                    <option value="12PM-3PM">12:00 PM - 3:00 PM</option>
+                                    <option value="3PM-6PM">3:00 PM - 6:00 PM</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="deliveryContact" class="form-label">Contact Number</label>
+                        <input type="tel" class="form-control" id="deliveryContact" placeholder="Enter contact number for delivery">
                     </div>
                 </div>
 
                 <div class="form-group mb-3">
-                    <label for="paymentNotes" class="form-label">Payment Notes</label>
-                    <textarea class="form-control" id="paymentNotes" rows="2" placeholder="Optional notes about this payment"></textarea>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn-premium secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn-premium primary" id="confirmMarkAsPaidBtn">
-                    <i class="fas fa-check-circle"></i>
-                    Confirm Payment
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Dispatch Vehicle Modal -->
-<div class="modal fade modal-premium" id="dispatchVehicleModal" tabindex="-1" aria-labelledby="dispatchVehicleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="dispatchVehicleModalLabel">
-                    <i class="fas fa-truck"></i>
-                    Dispatch Vehicle
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="alert alert-info mb-4">
-                    <i class="fas fa-info-circle me-2"></i>
-                    You are about to dispatch the vehicle <strong id="dispatchVehicleName">Honda City</strong> with registration number <strong id="dispatchRegistrationNumber">MH02AB1234</strong>.
-                </div>
-
-                <div class="form-group mb-3">
-                    <label for="handoverPerson" class="form-label">Handed Over To</label>
-                    <input type="text" class="form-control" id="handoverPerson" placeholder="Enter name of person receiving the vehicle" required>
-                </div>
-
-                <div class="form-group mb-3">
-                    <label for="dispatchNotes" class="form-label">Dispatch Notes</label>
-                    <textarea class="form-control" id="dispatchNotes" rows="3" placeholder="Enter any notes or instructions for the customer"></textarea>
+                    <label for="deliveryNotes" class="form-label">Delivery Notes</label>
+                    <textarea class="form-control" id="deliveryNotes" rows="2" placeholder="Any special instructions for delivery or pickup"></textarea>
                 </div>
 
                 <div class="form-check mb-3">
-                    <input class="form-check-input" type="checkbox" id="confirmDispatchCheck" required>
-                    <label class="form-check-label" for="confirmDispatchCheck">
-                        I confirm that all service work has been completed and payment has been received
+                    <input class="form-check-input" type="checkbox" id="confirmDeliveryCheck" required>
+                    <label class="form-check-label" for="confirmDeliveryCheck">
+                        I confirm that all service work has been completed, invoice generated, and payment has been received
                     </label>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-premium secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn-premium primary" id="confirmDispatchBtn">
+                <button type="button" class="btn-premium primary" id="confirmDeliveryBtn">
                     <i class="fas fa-check-circle"></i>
-                    Confirm Dispatch
+                    <span id="confirmDeliveryBtnText">Confirm Pickup</span>
                 </button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Success Modal -->
-<div class="modal fade success-modal" id="successModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-body">
-                <div class="success-icon-container">
-                    <div class="success-icon-wrapper">
-                        <div class="success-icon">
-                            <i class="fas fa-check"></i>
-                        </div>
-                    </div>
-                </div>
-                <h3 class="success-title" id="successTitle">Success!</h3>
-                <p class="success-message" id="successMessage">Operation completed successfully.</p>
-                <button type="button" class="continue-btn" data-bs-dismiss="modal">
-                    <i class="fas fa-check-circle"></i>
-                    Continue
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade modal-premium" id="updateStatusConfirmModal" tabindex="-1" aria-labelledby="updateStatusConfirmModalLabel" aria-hidden="true" data-bs-backdrop="static">
+<!-- Update Status Modal -->
+<div class="modal fade modal-premium" id="updateStatusModal" tabindex="-1" aria-labelledby="updateStatusModalLabel" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="updateStatusConfirmModalLabel">
+                <h5 class="modal-title" id="updateStatusModalLabel">
                     <i class="fas fa-sync-alt"></i>
                     Update Service Status
                 </h5>
@@ -2373,6 +2652,158 @@
     </div>
 </div>
 
+<!-- Bill Preview Modal -->
+<div class="modal fade modal-premium" id="billPreviewModal" tabindex="-1" aria-labelledby="billPreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="billPreviewModalLabel">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    Bill Preview
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <h4 class="fw-bold">Albany Motors Service Center</h4>
+                    <p class="mb-0">123 Auto Plaza, Sector 12, Albany</p>
+                    <p>Tel: +91 12345 67890 | Email: service@albany.com</p>
+                </div>
+
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5 class="fw-bold">Bill To:</h5>
+                        <p id="previewCustomerName" class="mb-1">Rajesh Kumar</p>
+                        <p id="previewCustomerAddress" class="mb-1">123 Main Street, Anytown</p>
+                        <p id="previewCustomerEmail" class="mb-0">rajesh@example.com</p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <h5 class="fw-bold">Bill Details:</h5>
+                        <p class="mb-1">Bill #: <span id="previewBillNumber">B-10001</span></p>
+                        <p class="mb-1">Date: <span id="previewBillDate">April 24, 2025</span></p>
+                        <p class="mb-0">Service ID: <span id="previewServiceId">REQ-1001</span></p>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <p class="mb-1">Vehicle: <span id="previewVehicleName">Honda City</span></p>
+                        <p class="mb-0">Reg No: <span id="previewRegistrationNumber">MH02AB1234</span></p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <p class="mb-0">Service Type: <span id="previewServiceType">Engine Repair</span></p>
+                    </div>
+                </div>
+
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Description</th>
+                            <th>Quantity</th>
+                            <th>Unit Price</th>
+                            <th>Amount</th>
+                        </tr>
+                        </thead>
+                        <tbody id="previewMaterialsBody">
+                        <!-- Materials rows will be added dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                        <tr>
+                            <th>Labor Description</th>
+                            <th>Hours</th>
+                            <th>Rate/Hour</th>
+                            <th>Amount</th>
+                        </tr>
+                        </thead>
+                        <tbody id="previewLaborBody">
+                        <!-- Labor rows will be added dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 offset-md-6">
+                        <table class="table table-sm">
+                            <tr>
+                                <td>Materials Total:</td>
+                                <td class="text-end" id="previewMaterialsTotal">₹7,250.00</td>
+                            </tr>
+                            <tr>
+                                <td>Labor Total:</td>
+                                <td class="text-end" id="previewLaborTotal">₹3,600.00</td>
+                            </tr>
+                            <tr>
+                                <td>Subtotal:</td>
+                                <td class="text-end" id="previewSubtotal">₹10,850.00</td>
+                            </tr>
+                            <tr>
+                                <td>GST (18%):</td>
+                                <td class="text-end" id="previewGST">₹1,953.00</td>
+                            </tr>
+                            <tr class="fw-bold">
+                                <td>Grand Total:</td>
+                                <td class="text-end" id="previewGrandTotal">₹12,803.00</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <h6 class="fw-bold">Notes:</h6>
+                    <p id="previewNotes" class="mb-0">Vehicle has been serviced as per requirements. All parts replaced come with a 6-month warranty.</p>
+                </div>
+
+                <div class="mt-4 pt-4 border-top">
+                    <p class="mb-1 text-center">Thank you for choosing Albany Motors!</p>
+                    <p class="mb-0 text-center"><small>This is a computer-generated bill, no signature required.</small></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-premium secondary" data-bs-dismiss="modal" id="backToBillBtn">
+                    <i class="fas fa-arrow-left"></i>
+                    Back to Edit
+                </button>
+                <button type="button" class="btn-premium primary" id="confirmFinalBillBtn">
+                    <i class="fas fa-check-circle"></i>
+                    Confirm & Generate Bill
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade success-modal" id="successModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="success-icon-container">
+                    <div class="success-icon-wrapper">
+                        <div class="success-icon">
+                            <i class="fas fa-check"></i>
+                        </div>
+                    </div>
+                </div>
+                <h3 class="success-title" id="successTitle">Success!</h3>
+                <p class="success-message" id="successMessage">Operation completed successfully.</p>
+                <button type="button" class="continue-btn" data-bs-dismiss="modal">
+                    <i class="fas fa-check-circle"></i>
+                    Continue
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container for Notifications -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
 <!-- jQuery and Bootstrap JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
@@ -2399,6 +2830,7 @@
     let currentServicePage = 1;
     let currentCompletedPage = 1;
     const itemsPerPage = 5;
+    let currentServiceId = null;
 
     // Get JWT token from storage or URL
     function getJwtToken() {
@@ -2427,6 +2859,12 @@
 
         // Set current date if element exists
         setupDateDisplay();
+
+        // Initialize bill calculation handlers
+        initializeBillCalculation();
+
+        // Initialize delivery method toggle
+        initializeDeliveryMethodToggle();
     }
 
     function setupMobileMenu() {
@@ -2465,6 +2903,202 @@
             const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
             const today = new Date();
             dateElement.textContent = today.toLocaleDateString('en-US', options);
+        }
+    }
+
+    // Initialize bill calculation for modal
+    function initializeBillCalculation() {
+        // Add Material button click
+        document.getElementById('addMaterialBtn').addEventListener('click', function() {
+            const container = document.getElementById('billMaterialsContainer');
+            const newRow = document.querySelector('.bill-material-row').cloneNode(true);
+
+            // Clear inputs in the new row
+            newRow.querySelectorAll('input').forEach(input => {
+                input.value = '';
+                if (input.classList.contains('material-quantity')) {
+                    input.value = '1';
+                }
+            });
+
+            // Add event listeners to the new row inputs
+            addMaterialRowEventListeners(newRow);
+
+            // Add remove button functionality
+            newRow.querySelector('.remove-material').addEventListener('click', function() {
+                newRow.remove();
+                updateBillTotals();
+            });
+
+            container.appendChild(newRow);
+        });
+
+        // Add Labor button click
+        document.getElementById('addLaborBtn').addEventListener('click', function() {
+            const container = document.getElementById('billLaborContainer');
+            const newRow = document.querySelector('.bill-labor-row').cloneNode(true);
+
+            // Clear inputs in the new row
+            newRow.querySelectorAll('input').forEach(input => {
+                input.value = '';
+                if (input.classList.contains('labor-hours')) {
+                    input.value = '1';
+                }
+            });
+
+            // Add event listeners to the new row inputs
+            addLaborRowEventListeners(newRow);
+
+            // Add remove button functionality
+            newRow.querySelector('.remove-labor').addEventListener('click', function() {
+                newRow.remove();
+                updateBillTotals();
+            });
+
+            container.appendChild(newRow);
+        });
+
+        // Add event listeners to initial rows
+        document.querySelectorAll('.bill-material-row').forEach(row => {
+            addMaterialRowEventListeners(row);
+        });
+
+        document.querySelectorAll('.bill-labor-row').forEach(row => {
+            addLaborRowEventListeners(row);
+        });
+
+        // Add event listeners to initial remove buttons
+        document.querySelectorAll('.remove-material').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (document.querySelectorAll('.bill-material-row').length > 1) {
+                    btn.closest('.bill-material-row').remove();
+                    updateBillTotals();
+                } else {
+                    // Don't remove the last row, just clear it
+                    const row = btn.closest('.bill-material-row');
+                    row.querySelectorAll('input').forEach(input => {
+                        if (!input.classList.contains('material-quantity')) {
+                            input.value = '';
+                        } else {
+                            input.value = '1';
+                        }
+                    });
+                    updateBillTotals();
+                }
+            });
+        });
+
+        document.querySelectorAll('.remove-labor').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (document.querySelectorAll('.bill-labor-row').length > 1) {
+                    btn.closest('.bill-labor-row').remove();
+                    updateBillTotals();
+                } else {
+                    // Don't remove the last row, just clear it
+                    const row = btn.closest('.bill-labor-row');
+                    row.querySelectorAll('input').forEach(input => {
+                        if (!input.classList.contains('labor-hours')) {
+                            input.value = '';
+                        } else {
+                            input.value = '1';
+                        }
+                    });
+                    updateBillTotals();
+                }
+            });
+        });
+    }
+
+    // Add event listeners to material row inputs
+    function addMaterialRowEventListeners(row) {
+        const quantityInput = row.querySelector('.material-quantity');
+        const priceInput = row.querySelector('.material-price');
+        const totalInput = row.querySelector('.material-total');
+
+        // Calculate total when quantity or price changes
+        function calculateTotal() {
+            const quantity = parseFloat(quantityInput.value) || 0;
+            const price = parseFloat(priceInput.value) || 0;
+            const total = quantity * price;
+            totalInput.value = total.toFixed(2);
+            updateBillTotals();
+        }
+
+        quantityInput.addEventListener('input', calculateTotal);
+        priceInput.addEventListener('input', calculateTotal);
+    }
+
+    // Add event listeners to labor row inputs
+    function addLaborRowEventListeners(row) {
+        const hoursInput = row.querySelector('.labor-hours');
+        const rateInput = row.querySelector('.labor-rate');
+        const totalInput = row.querySelector('.labor-total');
+
+        // Calculate total when hours or rate changes
+        function calculateTotal() {
+            const hours = parseFloat(hoursInput.value) || 0;
+            const rate = parseFloat(rateInput.value) || 0;
+            const total = hours * rate;
+            totalInput.value = total.toFixed(2);
+            updateBillTotals();
+        }
+
+        hoursInput.addEventListener('input', calculateTotal);
+        rateInput.addEventListener('input', calculateTotal);
+    }
+
+    // Update bill totals
+    function updateBillTotals() {
+        let materialsTotal = 0;
+        let laborTotal = 0;
+
+        // Calculate materials total
+        document.querySelectorAll('.material-total').forEach(input => {
+            materialsTotal += parseFloat(input.value) || 0;
+        });
+
+        // Calculate labor total
+        document.querySelectorAll('.labor-total').forEach(input => {
+            laborTotal += parseFloat(input.value) || 0;
+        });
+
+        // Calculate totals
+        const subtotal = materialsTotal + laborTotal;
+        const gst = subtotal * 0.18;
+        const grandTotal = subtotal + gst;
+
+        // Update display
+        document.getElementById('billMaterialsTotal').textContent = '₹' + materialsTotal.toFixed(2);
+        document.getElementById('billLaborTotal').textContent = '₹' + laborTotal.toFixed(2);
+        document.getElementById('billSubtotal').textContent = '₹' + subtotal.toFixed(2);
+        document.getElementById('billGST').textContent = '₹' + gst.toFixed(2);
+        document.getElementById('billGrandTotal').textContent = '₹' + grandTotal.toFixed(2);
+    }
+
+    // Initialize delivery method toggle
+    function initializeDeliveryMethodToggle() {
+        const pickupRadio = document.getElementById('customerPickup');
+        const deliveryRadio = document.getElementById('homeDelivery');
+        const pickupFields = document.getElementById('pickupFields');
+        const deliveryFields = document.getElementById('deliveryFields');
+        const confirmDeliveryBtnText = document.getElementById('confirmDeliveryBtnText');
+
+        if (pickupRadio && deliveryRadio) {
+            pickupRadio.addEventListener('change', function() {
+                if (this.checked) {
+                    pickupFields.style.display = '';
+                    deliveryFields.style.display = 'none';
+                    confirmDeliveryBtnText.textContent = 'Confirm Pickup';
+                }
+            });
+
+            deliveryRadio.addEventListener('change', function() {
+                if (this.checked) {
+                    pickupFields.style.display = 'none';
+                    deliveryFields.style.display = '';
+                    confirmDeliveryBtnText.textContent = 'Confirm Delivery';
+                }
+            });
         }
     }
 
@@ -2604,123 +3238,44 @@
             }
         });
 
-        // Generate Invoice button click
-        document.getElementById('generateInvoiceBtn').addEventListener('click', function() {
-            // Get service ID from the current service details modal
-            const serviceId = document.getElementById('viewServiceId').textContent.replace('REQ-', '');
+        // Bill generation
+        document.getElementById('confirmGenerateBillBtn').addEventListener('click', function() {
+            // Populate preview modal with bill details
+            populateBillPreview();
 
-            // Find the service in the completed services array
-            const service = completedServices.find(s => s.serviceId === parseInt(serviceId) || s.requestId === parseInt(serviceId));
-
-            // If service exists, populate the generate invoice modal
-            if (service) {
-                populateGenerateInvoiceModal(service);
-                $('#viewServiceDetailsModal').modal('hide');
-                $('#generateInvoiceModal').modal('show');
-            }
+            // Show bill preview modal
+            $('#generateBillModal').modal('hide');
+            $('#billPreviewModal').modal('show');
         });
 
-        // Download Invoice button click
-        document.getElementById('downloadInvoiceBtn').addEventListener('click', function() {
-            // Get service ID from the current service details modal
-            const serviceId = document.getElementById('viewServiceId').textContent.replace('REQ-', '');
-
-            // Get token
-            const token = getJwtToken();
-            if (!token) {
-                console.error('No token found');
-                return;
-            }
-
-            // Show spinner
-            document.getElementById('spinnerOverlay').classList.add('show');
-
-            // Create download URL with the token
-            const downloadUrl = `/admin/api/vehicle-tracking/invoice/download/${serviceId}?token=${encodeURIComponent(token)}`;
-
-            // Create a temporary anchor element
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = downloadUrl;
-            a.target = '_blank';
-
-            // Add to document, click it, and remove it
-            document.body.appendChild(a);
-            a.click();
-
-            // Hide spinner after a short delay (to give time for download to start)
-            setTimeout(() => {
-                document.getElementById('spinnerOverlay').classList.remove('show');
-
-                // Show success toast
-                showToastNotification(
-                    'Invoice Download Started',
-                    'The invoice is being downloaded to your device.'
-                );
-
-                // Close the modal
-                $('#viewServiceDetailsModal').modal('hide');
-
-                // Remove the temporary element
-                document.body.removeChild(a);
-            }, 1000);
+        // Back to bill edit button
+        document.getElementById('backToBillBtn').addEventListener('click', function() {
+            $('#billPreviewModal').modal('hide');
+            $('#generateBillModal').modal('show');
         });
 
-        // Confirm Generate Invoice button click
+        // Confirm final bill button
+        document.getElementById('confirmFinalBillBtn').addEventListener('click', function() {
+            // Generate bill logic
+            generateBill();
+        });
+
+        // Payment confirmation
+        document.getElementById('confirmPaymentBtn').addEventListener('click', function() {
+            processPayment();
+        });
+
+        // Invoice generation
         document.getElementById('confirmGenerateInvoiceBtn').addEventListener('click', function() {
             generateInvoice();
         });
 
-        // Mark as Paid button click
-        document.addEventListener('click', function(e) {
-            if (e.target && e.target.id === 'markAsPaidBtn' || e.target.closest('#markAsPaidBtn')) {
-                const serviceId = e.target.closest('tr').getAttribute('data-id');
-                if (serviceId) {
-                    const service = completedServices.find(s => s.serviceId === parseInt(serviceId) || s.requestId === parseInt(serviceId));
-                    if (service) {
-                        document.getElementById('paidServiceId').textContent = 'REQ-' + serviceId;
-                        $('#markAsPaidModal').modal('show');
-                    }
-                }
-            }
+        // Delivery confirmation
+        document.getElementById('confirmDeliveryBtn').addEventListener('click', function() {
+            confirmDelivery();
         });
 
-        // Confirm Payment button click
-        document.getElementById('confirmMarkAsPaidBtn').addEventListener('click', function() {
-            markAsPaid();
-        });
-
-        // Dispatch Vehicle button click
-        document.addEventListener('click', function(e) {
-            if (e.target && e.target.id === 'dispatchVehicleBtn' || e.target.closest('#dispatchVehicleBtn')) {
-                const serviceId = e.target.closest('tr').getAttribute('data-id');
-                if (serviceId) {
-                    const service = completedServices.find(s => s.serviceId === parseInt(serviceId) || s.requestId === parseInt(serviceId));
-                    if (service) {
-                        document.getElementById('dispatchVehicleName').textContent = service.vehicleName;
-                        document.getElementById('dispatchRegistrationNumber').textContent = service.registrationNumber;
-                        $('#dispatchVehicleModal').modal('show');
-                    }
-                }
-            }
-        });
-
-        // Invoice Icon button click
-        document.addEventListener('click', function(e) {
-            if (e.target && (e.target.id === 'invoiceIconBtn' || e.target.closest('#invoiceIconBtn'))) {
-                const serviceId = e.target.closest('tr').getAttribute('data-id');
-                if (serviceId) {
-                    viewCompletedServiceDetails(serviceId);
-                }
-            }
-        });
-
-        // Confirm Dispatch button click
-        document.getElementById('confirmDispatchBtn').addEventListener('click', function() {
-            dispatchVehicle();
-        });
-
-        // Apply Filter button click
+        // Apply Filter button
         document.getElementById('applyFilterBtn').addEventListener('click', function() {
             applyFilters();
         });
@@ -2745,67 +3300,19 @@
             });
         }
 
-        // View Service Details
-        document.addEventListener('click', function(e) {
-            // For view vehicle details button in the under service table
-            if (e.target && (e.target.id === 'viewServiceBtn' || e.target.closest('#viewServiceBtn'))) {
-                const row = e.target.closest('tr');
-                if (row) {
-                    const serviceId = row.getAttribute('data-id');
-                    if (serviceId) {
-                        // Determine which table this is from
-                        const isCompleted = row.closest('#completedServicesTable') !== null;
-
-                        if (isCompleted) {
-                            viewCompletedServiceDetails(serviceId);
-                        } else {
-                            viewServiceUnderServiceDetails(serviceId);
-                        }
-                    }
-                }
-            }
-
-            // For clicking on a row in the under service table
-            if (e.target && e.target.tagName !== 'BUTTON' && e.target.closest('tr') && !e.target.closest('thead')) {
-                const row = e.target.closest('tr');
-                if (row.id !== 'loading-row-service' && row.id !== 'empty-row-service' &&
-                    row.id !== 'loading-row-completed' && row.id !== 'empty-row-completed') {
-                    const serviceId = row.getAttribute('data-id');
-                    if (serviceId) {
-                        // Determine which table this is from
-                        const isCompleted = row.closest('#completedServicesTable') !== null;
-
-                        // Skip if clicking on action buttons or their icons in completed services table
-                        if (isCompleted && (e.target.closest('.table-actions-cell') || 
-                            e.target.closest('button') || 
-                            (e.target.closest('i') && e.target.closest('button')))) {
-                            return;
-                        }
-
-                        // For completed services, only open view modal when clicking on invoice
-                        if (isCompleted) {
-                            const clickedCell = e.target.closest('td');
-                            if (clickedCell && clickedCell.innerHTML.includes('fa-file-invoice')) {
-                                viewCompletedServiceDetails(serviceId);
-                            }
-                        } else {
-                            // For vehicles under service, open view modal when clicking anywhere on the row
-                            viewServiceUnderServiceDetails(serviceId);
-                        }
-                    }
-                }
-            }
-        });
-
         // Update Status button click
         document.getElementById('updateStatusBtn').addEventListener('click', function() {
             const serviceId = document.getElementById('viewServiceId').textContent.replace('REQ-', '');
             updateServiceStatus(serviceId);
         });
+
+        // Confirm Update Status button click
+        document.getElementById('confirmUpdateStatusBtn').addEventListener('click', function() {
+            submitStatusUpdate();
+        });
     }
 
     // Load vehicles under service from API
-    // Update the loadVehiclesUnderServiceFromAPI function to display a better empty state message
     function loadVehiclesUnderServiceFromAPI() {
         // Show loading spinner
         document.getElementById('loading-row-service').style.display = '';
@@ -2846,7 +3353,7 @@
                     // Show enhanced empty state with better visuals
                     document.getElementById('empty-row-service').style.display = '';
                     document.getElementById('empty-row-service').innerHTML = `
-                <td colspan="9" class="text-center py-5">
+                <td colspan="10" class="text-center py-5">
                     <div class="my-5">
                         <i class="fas fa-car-alt fa-4x text-muted mb-4" style="opacity: 0.3;"></i>
                         <h4 class="text-wine">No Vehicles Currently Under Service</h4>
@@ -2869,7 +3376,7 @@
                 document.getElementById('loading-row-service').style.display = 'none';
                 document.getElementById('empty-row-service').style.display = '';
                 document.getElementById('empty-row-service').innerHTML = `
-                <td colspan="9" class="text-center py-5">
+                <td colspan="10" class="text-center py-5">
                     <div class="my-5">
                         <i class="fas fa-exclamation-triangle fa-4x text-danger mb-4"></i>
                         <h4 class="text-danger">Error Loading Vehicles</h4>
@@ -2928,7 +3435,7 @@
                     // Show enhanced empty state
                     document.getElementById('empty-row-completed').style.display = '';
                     document.getElementById('empty-row-completed').innerHTML = `
-                <td colspan="9" class="text-center py-5">
+                <td colspan="10" class="text-center py-5">
                     <div class="my-5">
                         <i class="fas fa-check-circle fa-4x text-muted mb-4" style="opacity: 0.3;"></i>
                         <h4 class="text-wine">No Completed Services</h4>
@@ -2951,7 +3458,7 @@
                 document.getElementById('loading-row-completed').style.display = 'none';
                 document.getElementById('empty-row-completed').style.display = '';
                 document.getElementById('empty-row-completed').innerHTML = `
-                <td colspan="9" class="text-center py-5">
+                <td colspan="10" class="text-center py-5">
                     <div class="my-5">
                         <i class="fas fa-exclamation-triangle fa-4x text-danger mb-4"></i>
                         <h4 class="text-danger">Error Loading Completed Services</h4>
@@ -2974,6 +3481,8 @@
         // Show loading state
         document.getElementById('loading-row-service').style.display = '';
         document.getElementById('empty-row-service').style.display = 'none';
+        document.getElementById('loading-row-completed').style.display = '';
+        document.getElementById('empty-row-completed').style.display = 'none';
 
         // Refresh both data tables
         loadVehiclesUnderServiceFromAPI();
@@ -2982,9 +3491,6 @@
         // Show toast notification
         showToastNotification('Refreshing Data', 'Fetching the latest vehicle service information...');
     }
-
-    // Apply the same improved empty state to the completed services tab
-
 
     // Filter vehicles under service
     function filterVehiclesUnderService(searchText) {
@@ -3088,7 +3594,6 @@
     }
 
     // Display vehicles under service
-    // Display vehicles under service
     function displayVehiclesUnderService(vehicles) {
         const tableBody = document.getElementById('vehiclesUnderServiceTableBody');
 
@@ -3111,7 +3616,7 @@
             emptyRow.style.display = '';
             // Update empty state message for clarity
             emptyRow.innerHTML = `
-            <td colspan="9" class="text-center py-4">
+            <td colspan="10" class="text-center py-4">
                 <div class="my-5">
                     <i class="fas fa-user-tie fa-3x text-muted mb-3"></i>
                     <h5>No vehicles with assigned service advisors</h5>
@@ -3183,8 +3688,8 @@
         </td>
         <td>
             ${vehicle.membershipStatus === 'Premium' ?
-            '<span class="membership-badge membership-premium"><i class="fas fa-crown"></i> Premium</span>' :
-            '<span class="membership-badge membership-standard"><i class="fas fa-user"></i> Standard</span>'}
+                '<span class="membership-badge membership-premium"><i class="fas fa-crown"></i> Premium</span>' :
+                '<span class="membership-badge membership-standard"><i class="fas fa-user"></i> Standard</span>'}
         </td>
         <td>${vehicle.serviceType}</td>
         <td>${statusBadge}</td>
@@ -3245,32 +3750,37 @@
                 maximumFractionDigits: 0
             }).format(service.totalCost || 0);
 
-            // Create payment status badge
-            let paymentStatus = service.paymentStatus || 'Pending';
-            let paymentStatusBadge = '';
-            switch (paymentStatus.toLowerCase()) {
-                case 'paid':
-                    paymentStatusBadge = `<span class="status-badge status-paid"><i class="fas fa-check-circle"></i> Paid</span>`;
-                    break;
-                case 'pending':
-                    paymentStatusBadge = `<span class="status-badge status-pending"><i class="fas fa-clock"></i> Pending</span>`;
-                    break;
-                case 'dispatched':
-                    paymentStatusBadge = `<span class="status-badge status-dispatched"><i class="fas fa-truck"></i> Dispatched</span>`;
-                    break;
-                default:
-                    paymentStatusBadge = `<span class="status-badge">${paymentStatus}</span>`;
-            }
+            // Determine service workflow status
+            const hasGeneratedBill = service.hasBill || false;
+            const hasCompletedPayment = service.paymentStatus === 'Paid';
+            const hasGeneratedInvoice = service.hasInvoice || false;
+            const hasDelivered = service.deliveryStatus === 'Delivered' || service.paymentStatus === 'Dispatched';
 
-            // Create invoice badge
-            let invoiceBadge = '';
-            if (service.hasInvoice) {
-                invoiceBadge = `<span class="status-badge status-completed"><i class="fas fa-file-invoice"></i> Generated</span>`;
+            // Create status badge
+            let statusBadge = '';
+            if (hasDelivered) {
+                statusBadge = `<span class="status-badge status-completed"><i class="fas fa-check-circle"></i> Completed</span>`;
+            } else if (hasGeneratedInvoice) {
+                statusBadge = `<span class="status-badge status-paid"><i class="fas fa-file-invoice"></i> Invoice Generated</span>`;
+            } else if (hasCompletedPayment) {
+                statusBadge = `<span class="status-badge status-paid"><i class="fas fa-money-bill-wave"></i> Payment Received</span>`;
+            } else if (hasGeneratedBill) {
+                statusBadge = `<span class="status-badge status-pending"><i class="fas fa-file-invoice-dollar"></i> Bill Generated</span>`;
             } else {
-                invoiceBadge = `<span class="status-badge status-pending"><i class="fas fa-file-invoice"></i> Not Generated</span>`;
+                statusBadge = `<span class="status-badge status-completed"><i class="fas fa-check-circle"></i> Service Completed</span>`;
             }
 
-            // Create membership badge - now separate from customer info
+            // Create invoice/bill badge
+            let billBadge = '';
+            if (hasGeneratedInvoice) {
+                billBadge = `<span class="status-badge status-completed"><i class="fas fa-file-invoice"></i> Invoice Ready</span>`;
+            } else if (hasGeneratedBill) {
+                billBadge = `<span class="status-badge status-completed"><i class="fas fa-file-invoice-dollar"></i> Bill Generated</span>`;
+            } else {
+                billBadge = `<span class="status-badge status-pending"><i class="fas fa-file-invoice-dollar"></i> Pending</span>`;
+            }
+
+            // Create membership badge
             let membershipBadge = '';
             if ((service.membershipStatus || 'Standard') === 'Premium') {
                 membershipBadge = `<span class="membership-badge membership-premium"><i class="fas fa-crown"></i> Premium</span>`;
@@ -3278,37 +3788,36 @@
                 membershipBadge = `<span class="membership-badge membership-standard"><i class="fas fa-user"></i> Standard</span>`;
             }
 
-            // Create action buttons based on status and invoice generation
-            let actionButtons = '';
-
-            // View button removed as per requirements
-            actionButtons = ``;
-
-            // Add appropriate action button based on invoice and payment status
-            if (!service.hasInvoice) {
-                // If invoice is not generated, show generate invoice icon
-                actionButtons += `
-                <button class="btn-table-action warning" id="invoiceIconBtn" title="Generate Invoice">
-                    <i class="fas fa-file-invoice"></i>
-                </button>
-                `;
-            } else if (service.hasInvoice && paymentStatus.toLowerCase() === 'pending') {
-                // If invoice is generated but not paid, show pay icon
-                actionButtons += `
-                <button class="btn-table-action success" id="markAsPaidBtn" title="Pay">
+            // Create appropriate action button based on workflow status
+            let actionButton = '';
+            if (!hasGeneratedBill) {
+                actionButton = `
+                <button class="btn-table-action warning" onclick="viewCompletedServiceDetails(${service.serviceId || service.requestId})" title="Generate Bill">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                </button>`;
+            } else if (!hasCompletedPayment) {
+                actionButton = `
+                <button class="btn-table-action info" onclick="viewCompletedServiceDetails(${service.serviceId || service.requestId})" title="Process Payment">
                     <i class="fas fa-money-bill-wave"></i>
-                </button>
-                `;
-            } else if (paymentStatus.toLowerCase() === 'paid') {
-                // If payment is successful, show dispatch icon
-                actionButtons += `
-                <button class="btn-table-action info" id="dispatchVehicleBtn" title="Dispatch Vehicle">
+                </button>`;
+            } else if (!hasGeneratedInvoice) {
+                actionButton = `
+                <button class="btn-table-action warning" onclick="viewCompletedServiceDetails(${service.serviceId || service.requestId})" title="Generate Invoice">
+                    <i class="fas fa-file-invoice"></i>
+                </button>`;
+            } else if (!hasDelivered) {
+                actionButton = `
+                <button class="btn-table-action success" onclick="viewCompletedServiceDetails(${service.serviceId || service.requestId})" title="Arrange Delivery">
                     <i class="fas fa-truck"></i>
-                </button>
-                `;
+                </button>`;
+            } else {
+                actionButton = `
+                <button class="btn-table-action" onclick="viewCompletedServiceDetails(${service.serviceId || service.requestId})" title="View Details">
+                    <i class="fas fa-eye"></i>
+                </button>`;
             }
 
-            // Build the row HTML with the new membership column
+            // Build the row HTML
             row.innerHTML = `
             <td>REQ-${service.serviceId || service.requestId}</td>
             <td>
@@ -3325,18 +3834,17 @@
             <td>
                 <div class="person-info">
                     <h5>${service.customerName}</h5>
-                    <p>${service.customerEmail || ''}</p>
                 </div>
             </td>
-            <td>${membershipBadge}</td> <!-- New dedicated column for membership -->
+            <td>${membershipBadge}</td>
             <td>${service.serviceType || 'Regular Service'}</td>
             <td>${completionDate}</td>
             <td>${formattedAmount}</td>
-            <td>${paymentStatusBadge}</td>
-            <td>${invoiceBadge}</td>
+            <td>${statusBadge}</td>
+            <td>${billBadge}</td>
             <td>
                 <div class="table-actions-cell">
-                    ${actionButtons}
+                    ${actionButton}
                 </div>
             </td>
         `;
@@ -3406,10 +3914,12 @@
     }
 
     // View service details for vehicles under service
-    // View service details for vehicles under service
     function viewServiceUnderServiceDetails(serviceId) {
         // Show spinner
         document.getElementById('spinnerOverlay').classList.add('show');
+
+        // Store current service ID
+        currentServiceId = serviceId;
 
         // Get token
         const token = getJwtToken();
@@ -3452,9 +3962,11 @@
                 // Hide completed service footer and show under service footer
                 document.getElementById('completedServiceFooter').style.display = 'none';
                 document.getElementById('underServiceFooter').style.display = '';
+                document.getElementById('workflowStepsContainer').style.display = 'none';
 
                 // Hide materials section since it's still in progress
                 document.getElementById('materialsSection').style.display = 'none';
+                document.getElementById('progressSection').style.display = '';
 
                 // Update modal content
                 document.getElementById('viewServiceId').textContent = 'REQ-' + serviceId;
@@ -3564,6 +4076,9 @@
         // Show spinner
         document.getElementById('spinnerOverlay').classList.add('show');
 
+        // Store current service ID
+        currentServiceId = serviceId;
+
         // Get token
         const token = getJwtToken();
         if (!token) {
@@ -3584,9 +4099,10 @@
                 document.getElementById('spinnerOverlay').classList.remove('show');
 
                 const completedService = completedServices.find(s => s.serviceId === parseInt(serviceId) || s.requestId === parseInt(serviceId));
+                const mergedService = { ...completedService, ...service };
 
                 // Format dates
-                const completionDate = new Date(completedService?.completedDate || service.completedDate || Date.now()).toLocaleDateString('en-US', {
+                const completionDate = new Date(mergedService.completedDate || Date.now()).toLocaleDateString('en-US', {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric'
@@ -3595,6 +4111,10 @@
                 // Hide under service footer and show completed service footer
                 document.getElementById('underServiceFooter').style.display = 'none';
                 document.getElementById('completedServiceFooter').style.display = '';
+
+                // Show workflow steps for completed services
+                document.getElementById('workflowStepsContainer').style.display = '';
+                document.getElementById('progressSection').style.display = 'none';
 
                 // Show materials section
                 document.getElementById('materialsSection').style.display = '';
@@ -3607,15 +4127,15 @@
                 document.getElementById('viewStatus').innerHTML = statusBadge;
 
                 document.getElementById('viewStartDate').textContent = completionDate;
-                document.getElementById('viewVehicleName').textContent = service.vehicleName || completedService?.vehicleName || 'Unknown';
-                document.getElementById('viewRegistrationNumber').textContent = service.registrationNumber || completedService?.registrationNumber || 'Unknown';
-                document.getElementById('viewVehicleCategory').textContent = service.category || completedService?.category || 'Unknown';
-                document.getElementById('viewCustomerName').textContent = service.customerName || completedService?.customerName || 'Unknown';
-                document.getElementById('viewCustomerContact').textContent = service.customerPhone || service.customerEmail || completedService?.customerEmail || 'Unknown';
+                document.getElementById('viewVehicleName').textContent = mergedService.vehicleName || 'Unknown';
+                document.getElementById('viewRegistrationNumber').textContent = mergedService.registrationNumber || 'Unknown';
+                document.getElementById('viewVehicleCategory').textContent = mergedService.category || 'Unknown';
+                document.getElementById('viewCustomerName').textContent = mergedService.customerName || 'Unknown';
+                document.getElementById('viewCustomerContact').textContent = mergedService.customerPhone || mergedService.customerEmail || 'Unknown';
 
                 // Membership badge with accurate status display
                 let membershipBadge = '';
-                const membershipStatus = service.membershipStatus || completedService?.membershipStatus || 'Standard';
+                const membershipStatus = mergedService.membershipStatus || 'Standard';
 
                 if (membershipStatus.toLowerCase() === 'premium') {
                     membershipBadge = '<span class="membership-badge membership-premium"><i class="fas fa-crown"></i> Premium</span>';
@@ -3624,36 +4144,19 @@
                 }
 
                 document.getElementById('viewMembership').innerHTML = membershipBadge;
-                document.getElementById('viewServiceType').textContent = service.serviceType || completedService?.serviceType || 'Regular Service';
+                document.getElementById('viewServiceType').textContent = mergedService.serviceType || 'Regular Service';
                 document.getElementById('viewEstimatedCompletion').textContent = completionDate;
-                document.getElementById('viewServiceAdvisor').textContent = service.serviceAdvisorName || completedService?.serviceAdvisorName || 'Not Assigned';
-                document.getElementById('viewServiceDescription').textContent = service.additionalDescription || 'No description provided.';
+                document.getElementById('viewServiceAdvisor').textContent = mergedService.serviceAdvisorName || 'Not Assigned';
+                document.getElementById('viewServiceDescription').textContent = mergedService.additionalDescription || 'No description provided.';
 
-                // Hide progress section for completed services
-                document.querySelector('.progress').style.display = 'none';
-                document.getElementById('viewProgressNotes').style.display = 'none';
-
-                // Populate materials table (sample data - in production, this would come from API)
+                // Populate materials table
                 populateSampleMaterialsAndCosts();
 
-                // Show or hide buttons based on invoice status
-                const generateInvoiceBtn = document.getElementById('generateInvoiceBtn');
-                const viewInvoiceBtn = document.getElementById('viewInvoiceBtn');
-                const downloadInvoiceBtn = document.getElementById('downloadInvoiceBtn');
+                // Update workflow steps display
+                updateWorkflowSteps(mergedService);
 
-                const hasInvoice = service.hasInvoice || completedService?.hasInvoice || false;
-
-                if (hasInvoice) {
-                    // If invoice is already generated, hide the generate button and show download button
-                    generateInvoiceBtn.style.display = 'none';
-                    viewInvoiceBtn.style.display = 'none';
-                    downloadInvoiceBtn.style.display = '';
-                } else {
-                    // If invoice is not generated yet, show the generate button and hide download button
-                    generateInvoiceBtn.style.display = '';
-                    viewInvoiceBtn.style.display = '';
-                    downloadInvoiceBtn.style.display = 'none';
-                }
+                // Update action buttons for completed service footer
+                updateCompletedServiceActions(mergedService);
 
                 // Show the modal
                 $('#viewServiceDetailsModal').modal('show');
@@ -3663,6 +4166,828 @@
                 document.getElementById('spinnerOverlay').classList.remove('show');
                 console.error('Error fetching completed service details:', error);
                 alert('Failed to load service details: ' + error.message);
+            });
+    }
+
+    // Update workflow steps display
+    function updateWorkflowSteps(service) {
+        // Determine service workflow status
+        const hasGeneratedBill = service.hasBill || false;
+        const hasCompletedPayment = service.paymentStatus === 'Paid';
+        const hasGeneratedInvoice = service.hasInvoice || false;
+        const hasDelivered = service.deliveryStatus === 'Delivered' || service.paymentStatus === 'Dispatched';
+
+        // Reset all steps
+        document.querySelectorAll('.workflow-step').forEach(step => {
+            step.classList.remove('active', 'completed');
+        });
+
+        // Update steps based on service status
+        if (hasDelivered) {
+            // All steps completed
+            document.getElementById('stepBill').classList.add('completed');
+            document.getElementById('stepPayment').classList.add('completed');
+            document.getElementById('stepInvoice').classList.add('completed');
+            document.getElementById('stepDelivery').classList.add('completed');
+        } else if (hasGeneratedInvoice) {
+            // Bill, payment, and invoice completed; delivery active
+            document.getElementById('stepBill').classList.add('completed');
+            document.getElementById('stepPayment').classList.add('completed');
+            document.getElementById('stepInvoice').classList.add('completed');
+            document.getElementById('stepDelivery').classList.add('active');
+        } else if (hasCompletedPayment) {
+            // Bill and payment completed; invoice active
+            document.getElementById('stepBill').classList.add('completed');
+            document.getElementById('stepPayment').classList.add('completed');
+            document.getElementById('stepInvoice').classList.add('active');
+        } else if (hasGeneratedBill) {
+            // Bill completed; payment active
+            document.getElementById('stepBill').classList.add('completed');
+            document.getElementById('stepPayment').classList.add('active');
+        } else {
+            // No steps completed; bill active
+            document.getElementById('stepBill').classList.add('active');
+        }
+    }
+
+    // Update action buttons for completed service footer
+    function updateCompletedServiceActions(service) {
+        // Clear existing buttons
+        const footerDiv = document.getElementById('completedServiceFooter');
+        const closeButton = footerDiv.querySelector('button:first-child');
+
+        // Remove all buttons except close
+        const buttons = footerDiv.querySelectorAll('button:not(:first-child)');
+        buttons.forEach(button => button.remove());
+
+        // Determine service workflow status
+        const hasGeneratedBill = service.hasBill || false;
+        const hasCompletedPayment = service.paymentStatus === 'Paid';
+        const hasGeneratedInvoice = service.hasInvoice || false;
+        const hasDelivered = service.deliveryStatus === 'Delivered' || service.paymentStatus === 'Dispatched';
+
+        // Add appropriate buttons based on service status
+        if (!hasGeneratedBill) {
+            // Add Generate Bill button
+            const generateBillBtn = document.createElement('button');
+            generateBillBtn.className = 'btn-premium primary';
+            generateBillBtn.id = 'generateBillBtn';
+            generateBillBtn.innerHTML = '<i class="fas fa-file-invoice-dollar"></i> Generate Bill';
+            generateBillBtn.addEventListener('click', openGenerateBillModal);
+            footerDiv.appendChild(generateBillBtn);
+        } else if (!hasCompletedPayment) {
+            // Add Process Payment button
+            const processPaymentBtn = document.createElement('button');
+            processPaymentBtn.className = 'btn-premium primary';
+            processPaymentBtn.id = 'processPaymentBtn';
+            processPaymentBtn.innerHTML = '<i class="fas fa-money-bill-wave"></i> Process Payment';
+            processPaymentBtn.addEventListener('click', openPaymentModal);
+            footerDiv.appendChild(processPaymentBtn);
+        } else if (!hasGeneratedInvoice) {
+            // Add Generate Invoice button
+            const generateInvoiceBtn = document.createElement('button');
+            generateInvoiceBtn.className = 'btn-premium primary';
+            generateInvoiceBtn.id = 'generateInvoiceBtn';
+            generateInvoiceBtn.innerHTML = '<i class="fas fa-file-invoice"></i> Generate Invoice';
+            generateInvoiceBtn.addEventListener('click', openGenerateInvoiceModal);
+            footerDiv.appendChild(generateInvoiceBtn);
+        } else if (!hasDelivered) {
+            // Add Arrange Delivery button
+            const arrangeDeliveryBtn = document.createElement('button');
+            arrangeDeliveryBtn.className = 'btn-premium primary';
+            arrangeDeliveryBtn.id = 'arrangeDeliveryBtn';
+            arrangeDeliveryBtn.innerHTML = '<i class="fas fa-truck"></i> Arrange Delivery';
+            arrangeDeliveryBtn.addEventListener('click', openDeliveryModal);
+            footerDiv.appendChild(arrangeDeliveryBtn);
+        }
+
+        // If bill or invoice is generated, add download button
+        if (hasGeneratedBill || hasGeneratedInvoice) {
+            const downloadBtn = document.createElement('button');
+            downloadBtn.className = 'btn-action info';
+            downloadBtn.id = 'downloadDocumentBtn';
+
+            if (hasGeneratedInvoice) {
+                downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download Invoice';
+            } else {
+                downloadBtn.innerHTML = '<i class="fas fa-download"></i> Download Bill';
+            }
+
+            downloadBtn.addEventListener('click', downloadDocument);
+            footerDiv.insertBefore(downloadBtn, closeButton.nextSibling);
+        }
+    }
+
+    // Open Generate Bill modal
+    function openGenerateBillModal() {
+        // Close service details modal
+        $('#viewServiceDetailsModal').modal('hide');
+
+        // Get service details
+        const serviceId = currentServiceId;
+        const service = completedServices.find(s => s.serviceId === parseInt(serviceId) || s.requestId === parseInt(serviceId));
+
+        // Populate bill modal fields
+        document.getElementById('billServiceId').textContent = 'REQ-' + serviceId;
+        document.getElementById('billCustomerName').textContent = service.customerName;
+        document.getElementById('billVehicleName').textContent = service.vehicleName;
+        document.getElementById('billRegistrationNumber').textContent = service.registrationNumber;
+        document.getElementById('billServiceType').textContent = service.serviceType || 'Regular Service';
+
+        // Clear and reset bill form
+        document.querySelectorAll('.bill-material-row:not(:first-child)').forEach(row => row.remove());
+        document.querySelectorAll('.bill-labor-row:not(:first-child)').forEach(row => row.remove());
+
+        document.querySelectorAll('input').forEach(input => {
+            if (input.type === 'text' || input.type === 'number') {
+                input.value = '';
+            }
+
+            // Set default values for quantity and hours
+            if (input.classList.contains('material-quantity')) {
+                input.value = '1';
+            }
+            if (input.classList.contains('labor-hours')) {
+                input.value = '1';
+            }
+        });
+
+        document.getElementById('billNotes').value = '';
+        document.getElementById('sendBillEmail').checked = true;
+
+        // Update bill totals
+        updateBillTotals();
+
+        // Show generate bill modal
+        $('#generateBillModal').modal('show');
+    }
+
+    // Open Payment modal
+    function openPaymentModal() {
+        // Close service details modal
+        $('#viewServiceDetailsModal').modal('hide');
+
+        // Get service details
+        const serviceId = currentServiceId;
+        const service = completedServices.find(s => s.serviceId === parseInt(serviceId) || s.requestId === parseInt(serviceId));
+
+        // Populate payment modal fields
+        document.getElementById('paymentServiceId').textContent = 'REQ-' + serviceId;
+        document.getElementById('paymentCustomerName').textContent = service.customerName;
+        document.getElementById('paymentVehicleName').textContent = service.vehicleName;
+        document.getElementById('paymentAmount').textContent = new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            maximumFractionDigits: 0
+        }).format(service.totalCost || 0);
+
+        // Set the default payment amount
+        document.getElementById('paidAmount').value = service.totalCost || 0;
+
+        // Reset other fields
+        document.getElementById('paymentMethod').value = '';
+        document.getElementById('transactionId').value = '';
+        document.getElementById('paymentNotes').value = '';
+
+        // Show payment modal
+        $('#paymentModal').modal('show');
+    }
+
+    // Open Generate Invoice modal
+    function openGenerateInvoiceModal() {
+        // Close service details modal
+        $('#viewServiceDetailsModal').modal('hide');
+
+        // Get service details
+        const serviceId = currentServiceId;
+        const service = completedServices.find(s => s.serviceId === parseInt(serviceId) || s.requestId === parseInt(serviceId));
+
+        // Populate invoice modal fields
+        document.getElementById('invoiceServiceId').textContent = 'REQ-' + serviceId;
+        document.getElementById('invoiceCustomerName').textContent = service.customerName;
+        document.getElementById('invoiceVehicleName').textContent = service.vehicleName;
+        document.getElementById('invoiceRegistrationNumber').textContent = service.registrationNumber;
+        document.getElementById('invoiceServiceType').textContent = service.serviceType || 'Regular Service';
+
+        // Format totals
+        const formatter = new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            maximumFractionDigits: 2
+        });
+
+        // Set invoice amounts from service details
+        const materialsTotal = service.materialsCost || 7250.00;
+        const laborTotal = service.laborCost || 3600.00;
+        const subtotal = materialsTotal + laborTotal;
+        const gst = subtotal * 0.18;
+        const grandTotal = subtotal + gst;
+
+        document.getElementById('invoiceMaterialsTotal').textContent = formatter.format(materialsTotal);
+        document.getElementById('invoiceLaborTotal').textContent = formatter.format(laborTotal);
+        document.getElementById('invoiceSubtotal').textContent = formatter.format(subtotal);
+        document.getElementById('invoiceGST').textContent = formatter.format(gst);
+        document.getElementById('invoiceGrandTotal').textContent = formatter.format(grandTotal);
+
+        // Reset notes and email checkbox
+        document.getElementById('invoiceNotes').value = '';
+        document.getElementById('sendInvoiceEmail').checked = true;
+
+        // Show invoice modal
+        $('#generateInvoiceModal').modal('show');
+    }
+
+    // Open Delivery modal
+    function openDeliveryModal() {
+        // Close service details modal
+        $('#viewServiceDetailsModal').modal('hide');
+
+        // Get service details
+        const serviceId = currentServiceId;
+        const service = completedServices.find(s => s.serviceId === parseInt(serviceId) || s.requestId === parseInt(serviceId));
+
+        // Populate delivery modal fields
+        document.getElementById('deliveryServiceId').textContent = 'REQ-' + serviceId;
+        document.getElementById('deliveryVehicleName').textContent = service.vehicleName;
+        document.getElementById('deliveryRegistrationNumber').textContent = service.registrationNumber;
+
+        // Reset delivery form
+        document.getElementById('customerPickup').checked = true;
+        document.getElementById('homeDelivery').checked = false;
+        document.getElementById('pickupFields').style.display = '';
+        document.getElementById('deliveryFields').style.display = 'none';
+        document.getElementById('confirmDeliveryBtnText').textContent = 'Confirm Pickup';
+
+        document.getElementById('pickupPerson').value = '';
+        document.getElementById('pickupTime').value = '';
+        document.getElementById('deliveryAddress').value = '';
+        document.getElementById('deliveryDate').value = '';
+        document.getElementById('deliveryTimeSlot').value = '';
+        document.getElementById('deliveryContact').value = '';
+        document.getElementById('deliveryNotes').value = '';
+        document.getElementById('confirmDeliveryCheck').checked = false;
+
+        // Show delivery modal
+        $('#deliveryModal').modal('show');
+    }
+
+    // Download document (bill or invoice)
+    function downloadDocument() {
+        // Get service ID
+        const serviceId = currentServiceId;
+
+        // Get token
+        const token = getJwtToken();
+        if (!token) {
+            console.error('No token found');
+            return;
+        }
+
+        // Show spinner
+        document.getElementById('spinnerOverlay').classList.add('show');
+
+        // Create and set download URL
+        const downloadUrl = `/admin/api/vehicle-tracking/invoice/download/${serviceId}?token=${encodeURIComponent(token)}`;
+
+        // Create a temporary anchor element
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = downloadUrl;
+        a.target = '_blank';
+
+        // Add to document, click it, and remove it
+        document.body.appendChild(a);
+        a.click();
+
+        // Hide spinner after a delay to allow download to start
+        setTimeout(() => {
+            document.getElementById('spinnerOverlay').classList.remove('show');
+
+            // Show success toast
+            showToastNotification(
+                'Download Started',
+                'The document is being downloaded to your device.'
+            );
+
+            // Remove temporary element
+            document.body.removeChild(a);
+        }, 1000);
+    }
+
+    // Populate bill preview
+    function populateBillPreview() {
+        // Get current date in formatted string
+        const today = new Date();
+        const formattedDate = today.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+
+        // Get service ID and customer name
+        const serviceId = document.getElementById('billServiceId').textContent;
+        const customerName = document.getElementById('billCustomerName').textContent;
+
+        // Generate a random bill number
+        const billNumber = 'B-' + Math.floor(10000 + Math.random() * 90000);
+
+        // Set basic bill info
+        document.getElementById('previewBillNumber').textContent = billNumber;
+        document.getElementById('previewBillDate').textContent = formattedDate;
+        document.getElementById('previewServiceId').textContent = serviceId;
+        document.getElementById('previewCustomerName').textContent = customerName;
+        document.getElementById('previewCustomerAddress').textContent = 'Customer Address';
+        document.getElementById('previewCustomerEmail').textContent = 'customer@example.com';
+        document.getElementById('previewVehicleName').textContent = document.getElementById('billVehicleName').textContent;
+        document.getElementById('previewRegistrationNumber').textContent = document.getElementById('billRegistrationNumber').textContent;
+        document.getElementById('previewServiceType').textContent = document.getElementById('billServiceType').textContent;
+
+        // Prepare materials preview
+        const materialsBody = document.getElementById('previewMaterialsBody');
+        materialsBody.innerHTML = '';
+
+        // Get all material rows
+        const materialRows = document.querySelectorAll('.bill-material-row');
+        materialRows.forEach(row => {
+            const nameInput = row.querySelector('.material-name');
+            const quantityInput = row.querySelector('.material-quantity');
+            const priceInput = row.querySelector('.material-price');
+            const totalInput = row.querySelector('.material-total');
+
+            // Skip empty rows
+            if (!nameInput.value || !priceInput.value) return;
+
+            const name = nameInput.value;
+            const quantity = quantityInput.value;
+            const price = parseFloat(priceInput.value).toFixed(2);
+            const total = parseFloat(totalInput.value).toFixed(2);
+
+            // Create a new row in the preview
+            const previewRow = document.createElement('tr');
+            previewRow.innerHTML = `
+                <td>${name}</td>
+                <td>${quantity}</td>
+                <td>₹${price}</td>
+                <td>₹${total}</td>
+            `;
+
+            materialsBody.appendChild(previewRow);
+        });
+
+        // Prepare labor preview
+        const laborBody = document.getElementById('previewLaborBody');
+        laborBody.innerHTML = '';
+
+        // Get all labor rows
+        const laborRows = document.querySelectorAll('.bill-labor-row');
+        laborRows.forEach(row => {
+            const descriptionInput = row.querySelector('.labor-description');
+            const hoursInput = row.querySelector('.labor-hours');
+            const rateInput = row.querySelector('.labor-rate');
+            const totalInput = row.querySelector('.labor-total');
+
+            // Skip empty rows
+            if (!descriptionInput.value || !rateInput.value) return;
+
+            const description = descriptionInput.value;
+            const hours = hoursInput.value;
+            const rate = parseFloat(rateInput.value).toFixed(2);
+            const total = parseFloat(totalInput.value).toFixed(2);
+
+            // Create a new row in the preview
+            const previewRow = document.createElement('tr');
+            previewRow.innerHTML = `
+                <td>${description}</td>
+                <td>${hours}</td>
+                <td>₹${rate}</td>
+                <td>₹${total}</td>
+            `;
+
+            laborBody.appendChild(previewRow);
+        });
+
+        // Set preview totals
+        document.getElementById('previewMaterialsTotal').textContent = document.getElementById('billMaterialsTotal').textContent;
+        document.getElementById('previewLaborTotal').textContent = document.getElementById('billLaborTotal').textContent;
+        document.getElementById('previewSubtotal').textContent = document.getElementById('billSubtotal').textContent;
+        document.getElementById('previewGST').textContent = document.getElementById('billGST').textContent;
+        document.getElementById('previewGrandTotal').textContent = document.getElementById('billGrandTotal').textContent;
+
+        // Set notes
+        const notes = document.getElementById('billNotes').value;
+        document.getElementById('previewNotes').textContent = notes || 'Vehicle has been serviced as per requirements. All parts replaced come with a 6-month warranty.';
+    }
+
+    // Generate bill
+    function generateBill() {
+        // Show spinner
+        document.getElementById('spinnerOverlay').classList.add('show');
+
+        // Get token
+        const token = getJwtToken();
+        if (!token) {
+            console.error('No token found');
+            return;
+        }
+
+        // Get service ID
+        const serviceId = currentServiceId;
+
+        // Prepare bill data
+        const billData = {
+            notes: document.getElementById('billNotes').value,
+            sendEmail: document.getElementById('sendBillEmail').checked,
+            materials: [],
+            laborCharges: [],
+            materialsTotal: parseFloat(document.getElementById('billMaterialsTotal').textContent.replace('₹', '')),
+            laborTotal: parseFloat(document.getElementById('billLaborTotal').textContent.replace('₹', '')),
+            subtotal: parseFloat(document.getElementById('billSubtotal').textContent.replace('₹', '')),
+            gst: parseFloat(document.getElementById('billGST').textContent.replace('₹', '')),
+            grandTotal: parseFloat(document.getElementById('billGrandTotal').textContent.replace('₹', ''))
+        };
+
+        // Collect materials data
+        document.querySelectorAll('.bill-material-row').forEach(row => {
+            const nameInput = row.querySelector('.material-name');
+            const quantityInput = row.querySelector('.material-quantity');
+            const priceInput = row.querySelector('.material-price');
+            const totalInput = row.querySelector('.material-total');
+
+            // Skip empty rows
+            if (!nameInput.value || !priceInput.value) return;
+
+            billData.materials.push({
+                name: nameInput.value,
+                quantity: parseFloat(quantityInput.value),
+                unitPrice: parseFloat(priceInput.value),
+                total: parseFloat(totalInput.value)
+            });
+        });
+
+        // Collect labor charges data
+        document.querySelectorAll('.bill-labor-row').forEach(row => {
+            const descriptionInput = row.querySelector('.labor-description');
+            const hoursInput = row.querySelector('.labor-hours');
+            const rateInput = row.querySelector('.labor-rate');
+            const totalInput = row.querySelector('.labor-total');
+
+            // Skip empty rows
+            if (!descriptionInput.value || !rateInput.value) return;
+
+            billData.laborCharges.push({
+                description: descriptionInput.value,
+                hours: parseFloat(hoursInput.value),
+                ratePerHour: parseFloat(rateInput.value),
+                total: parseFloat(totalInput.value)
+            });
+        });
+
+        // API call to generate bill
+        fetch(`/admin/api/vehicle-tracking/service-request/${serviceId}/bill?token=${encodeURIComponent(token)}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(billData)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('API call failed: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Hide spinner
+                document.getElementById('spinnerOverlay').classList.remove('show');
+
+                // Update the completedServices array to mark bill as generated
+                const serviceIndex = completedServices.findIndex(s =>
+                    s.serviceId === parseInt(serviceId) || s.requestId === parseInt(serviceId));
+
+                if (serviceIndex !== -1) {
+                    completedServices[serviceIndex].hasBill = true;
+                    completedServices[serviceIndex].totalCost = billData.grandTotal;
+                }
+
+                // Hide the bill preview modal
+                $('#billPreviewModal').modal('hide');
+
+                // Show success modal
+                document.getElementById('successTitle').textContent = 'Bill Generated!';
+                document.getElementById('successMessage').textContent =
+                    `The bill for service REQ-${serviceId} has been successfully generated${billData.sendEmail ? ' and sent to the customer via email' : ''}.`;
+                $('#successModal').modal('show');
+
+                // Refresh the completed services table
+                showCompletedServicesPage(currentCompletedPage);
+            })
+            .catch(error => {
+                // Hide spinner
+                document.getElementById('spinnerOverlay').classList.remove('show');
+                console.error('Error generating bill:', error);
+
+                // Hide the bill preview modal
+                $('#billPreviewModal').modal('hide');
+
+                // Show error toast
+                showToastNotification('Error', 'Failed to generate bill: ' + error.message);
+            });
+    }
+
+    // Process payment
+    function processPayment() {
+        // Show spinner
+        document.getElementById('spinnerOverlay').classList.add('show');
+
+        // Get token
+        const token = getJwtToken();
+        if (!token) {
+            console.error('No token found');
+            return;
+        }
+
+        // Get service ID
+        const serviceId = currentServiceId;
+
+        // Validate payment method
+        const paymentMethod = document.getElementById('paymentMethod').value;
+        if (!paymentMethod) {
+            // Hide spinner
+            document.getElementById('spinnerOverlay').classList.remove('show');
+            showToastNotification('Error', 'Please select a payment method');
+            return;
+        }
+
+        // Validate amount
+        const paidAmount = document.getElementById('paidAmount').value;
+        if (!paidAmount || isNaN(parseFloat(paidAmount)) || parseFloat(paidAmount) <= 0) {
+            // Hide spinner
+            document.getElementById('spinnerOverlay').classList.remove('show');
+            showToastNotification('Error', 'Please enter a valid payment amount');
+            return;
+        }
+
+        // Prepare payment data
+        const paymentData = {
+            paymentMethod: paymentMethod,
+            transactionId: document.getElementById('transactionId').value,
+            amount: parseFloat(paidAmount),
+            notes: document.getElementById('paymentNotes').value
+        };
+
+        // API call to process payment
+        fetch(`/admin/api/vehicle-tracking/service-request/${serviceId}/payment?token=${encodeURIComponent(token)}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(paymentData)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('API call failed: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Hide spinner
+                document.getElementById('spinnerOverlay').classList.remove('show');
+
+                // Update the completedServices array to mark payment as completed
+                const serviceIndex = completedServices.findIndex(s =>
+                    s.serviceId === parseInt(serviceId) || s.requestId === parseInt(serviceId));
+
+                if (serviceIndex !== -1) {
+                    completedServices[serviceIndex].paymentStatus = 'Paid';
+                }
+
+                // Hide the payment modal
+                $('#paymentModal').modal('hide');
+
+                // Show success modal
+                document.getElementById('successTitle').textContent = 'Payment Processed!';
+                document.getElementById('successMessage').textContent =
+                    `Payment of ₹${paymentData.amount.toFixed(2)} for service REQ-${serviceId} has been successfully processed.`;
+                $('#successModal').modal('show');
+
+                // Refresh the completed services table
+                showCompletedServicesPage(currentCompletedPage);
+            })
+            .catch(error => {
+                // Hide spinner
+                document.getElementById('spinnerOverlay').classList.remove('show');
+                console.error('Error processing payment:', error);
+
+                // Hide the payment modal
+                $('#paymentModal').modal('hide');
+
+                // Show error toast
+                showToastNotification('Error', 'Failed to process payment: ' + error.message);
+            });
+    }
+
+    // Generate invoice
+    function generateInvoice() {
+        // Show spinner
+        document.getElementById('spinnerOverlay').classList.add('show');
+
+        // Get token
+        const token = getJwtToken();
+        if (!token) {
+            console.error('No token found');
+            return;
+        }
+
+        // Get service ID
+        const serviceId = currentServiceId;
+
+        // Prepare invoice data
+        const invoiceData = {
+            notes: document.getElementById('invoiceNotes').value,
+            sendEmail: document.getElementById('sendInvoiceEmail').checked
+        };
+
+        // API call to generate invoice
+        fetch(`/admin/api/vehicle-tracking/service-request/${serviceId}/invoice?token=${encodeURIComponent(token)}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(invoiceData)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('API call failed: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Hide spinner
+                document.getElementById('spinnerOverlay').classList.remove('show');
+
+                // Update the completedServices array to mark invoice as generated
+                const serviceIndex = completedServices.findIndex(s =>
+                    s.serviceId === parseInt(serviceId) || s.requestId === parseInt(serviceId));
+
+                if (serviceIndex !== -1) {
+                    completedServices[serviceIndex].hasInvoice = true;
+                }
+
+                // Hide the invoice modal
+                $('#generateInvoiceModal').modal('hide');
+
+                // Show success modal
+                document.getElementById('successTitle').textContent = 'Invoice Generated!';
+                document.getElementById('successMessage').textContent =
+                    `The invoice for service REQ-${serviceId} has been successfully generated${invoiceData.sendEmail ? ' and sent to the customer via email' : ''}.`;
+                $('#successModal').modal('show');
+
+                // Refresh the completed services table
+                showCompletedServicesPage(currentCompletedPage);
+            })
+            .catch(error => {
+                // Hide spinner
+                document.getElementById('spinnerOverlay').classList.remove('show');
+                console.error('Error generating invoice:', error);
+
+                // Hide the invoice modal
+                $('#generateInvoiceModal').modal('hide');
+
+                // Show error toast
+                showToastNotification('Error', 'Failed to generate invoice: ' + error.message);
+            });
+    }
+
+    // Confirm delivery
+    function confirmDelivery() {
+        // Show spinner
+        document.getElementById('spinnerOverlay').classList.add('show');
+
+        // Get token
+        const token = getJwtToken();
+        if (!token) {
+            console.error('No token found');
+            return;
+        }
+
+        // Get service ID
+        const serviceId = currentServiceId;
+
+        // Check confirmation checkbox
+        if (!document.getElementById('confirmDeliveryCheck').checked) {
+            // Hide spinner
+            document.getElementById('spinnerOverlay').classList.remove('show');
+            showToastNotification('Error', 'Please confirm that all service work has been completed, invoice generated, and payment has been received');
+            return;
+        }
+
+        // Determine delivery method
+        const isPickup = document.getElementById('customerPickup').checked;
+
+        // Validate required fields
+        if (isPickup) {
+            if (!document.getElementById('pickupPerson').value) {
+                // Hide spinner
+                document.getElementById('spinnerOverlay').classList.remove('show');
+                showToastNotification('Error', 'Please enter the name of the person collecting the vehicle');
+                return;
+            }
+        } else {
+            if (!document.getElementById('deliveryAddress').value) {
+                // Hide spinner
+                document.getElementById('spinnerOverlay').classList.remove('show');
+                showToastNotification('Error', 'Please enter the delivery address');
+                return;
+            }
+
+            if (!document.getElementById('deliveryDate').value) {
+                // Hide spinner
+                document.getElementById('spinnerOverlay').classList.remove('show');
+                showToastNotification('Error', 'Please select a delivery date');
+                return;
+            }
+
+            if (!document.getElementById('deliveryTimeSlot').value) {
+                // Hide spinner
+                document.getElementById('spinnerOverlay').classList.remove('show');
+                showToastNotification('Error', 'Please select a delivery time slot');
+                return;
+            }
+
+            if (!document.getElementById('deliveryContact').value) {
+                // Hide spinner
+                document.getElementById('spinnerOverlay').classList.remove('show');
+                showToastNotification('Error', 'Please enter a contact number for delivery');
+                return;
+            }
+        }
+
+        // Prepare delivery data
+        const deliveryData = {
+            isPickup: isPickup,
+            notes: document.getElementById('deliveryNotes').value
+        };
+
+        if (isPickup) {
+            deliveryData.pickupPerson = document.getElementById('pickupPerson').value;
+            deliveryData.pickupTime = document.getElementById('pickupTime').value;
+        } else {
+            deliveryData.deliveryAddress = document.getElementById('deliveryAddress').value;
+            deliveryData.deliveryDate = document.getElementById('deliveryDate').value;
+            deliveryData.deliveryTimeSlot = document.getElementById('deliveryTimeSlot').value;
+            deliveryData.deliveryContact = document.getElementById('deliveryContact').value;
+        }
+
+        // API call to confirm delivery
+        fetch(`/admin/api/vehicle-tracking/service-request/${serviceId}/delivery?token=${encodeURIComponent(token)}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(deliveryData)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('API call failed: ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Hide spinner
+                document.getElementById('spinnerOverlay').classList.remove('show');
+
+                // Update the completedServices array to mark delivery as completed
+                const serviceIndex = completedServices.findIndex(s =>
+                    s.serviceId === parseInt(serviceId) || s.requestId === parseInt(serviceId));
+
+                if (serviceIndex !== -1) {
+                    completedServices[serviceIndex].deliveryStatus = 'Delivered';
+                    completedServices[serviceIndex].paymentStatus = 'Dispatched';
+                }
+
+                // Hide the delivery modal
+                $('#deliveryModal').modal('hide');
+
+                // Show success modal
+                document.getElementById('successTitle').textContent = isPickup ? 'Pickup Confirmed!' : 'Delivery Arranged!';
+                document.getElementById('successMessage').textContent = isPickup ?
+                    `Vehicle pickup for service REQ-${serviceId} has been successfully confirmed.` :
+                    `Vehicle delivery for service REQ-${serviceId} has been successfully arranged.`;
+                $('#successModal').modal('show');
+
+                // Refresh the completed services table
+                showCompletedServicesPage(currentCompletedPage);
+            })
+            .catch(error => {
+                // Hide spinner
+                document.getElementById('spinnerOverlay').classList.remove('show');
+                console.error('Error confirming delivery:', error);
+
+                // Hide the delivery modal
+                $('#deliveryModal').modal('hide');
+
+                // Show error toast
+                showToastNotification('Error', 'Failed to confirm delivery: ' + error.message);
             });
     }
 
@@ -3739,50 +5064,98 @@
         const grandTotal = subtotal + gst;
 
         // Update invoice summary sections
-        const invoiceSummary = document.querySelectorAll('.invoice-summary-row');
-        invoiceSummary[0].querySelector('.invoice-summary-value').textContent = `₹${materialsTotal.toFixed(2)}`;
-        invoiceSummary[1].querySelector('.invoice-summary-value').textContent = `₹${laborTotal.toFixed(2)}`;
-        invoiceSummary[2].querySelector('.invoice-summary-value').textContent = `₹${subtotal.toFixed(2)}`;
-        invoiceSummary[3].querySelector('.invoice-summary-value').textContent = `₹${gst.toFixed(2)}`;
-        invoiceSummary[4].querySelector('.invoice-summary-value').textContent = `₹${grandTotal.toFixed(2)}`;
+        document.getElementById('summaryMaterialsTotal').textContent = `₹${materialsTotal.toFixed(2)}`;
+        document.getElementById('summaryLaborTotal').textContent = `₹${laborTotal.toFixed(2)}`;
+        document.getElementById('summarySubtotal').textContent = `₹${subtotal.toFixed(2)}`;
+        document.getElementById('summaryGST').textContent = `₹${gst.toFixed(2)}`;
+        document.getElementById('summaryGrandTotal').textContent = `₹${grandTotal.toFixed(2)}`;
     }
 
-    // Populate Generate Invoice modal
-    function populateGenerateInvoiceModal(service) {
-        document.getElementById('invoiceServiceId').textContent = 'REQ-' + (service.serviceId || service.requestId);
-        document.getElementById('invoiceCustomerName').textContent = service.customerName;
-        document.getElementById('invoiceVehicleName').textContent = service.vehicleName;
-        document.getElementById('invoiceRegistrationNumber').textContent = service.registrationNumber;
-        document.getElementById('invoiceServiceType').textContent = service.serviceType || 'Regular Service';
+    // Update service status
+    function updateServiceStatus(serviceId) {
+        // Get current status text
+        const currentStatusElement = document.getElementById('viewStatus');
+        const currentStatusText = currentStatusElement.textContent.trim();
+        let currentStatus = '';
 
-        // Get invoice values from the service details modal
-        const materialsTotal = document.querySelector('.invoice-summary-row:nth-child(1) .invoice-summary-value').textContent;
-        const laborTotal = document.querySelector('.invoice-summary-row:nth-child(2) .invoice-summary-value').textContent;
-        const subtotal = document.querySelector('.invoice-summary-row:nth-child(3) .invoice-summary-value').textContent;
-        const gst = document.querySelector('.invoice-summary-row:nth-child(4) .invoice-summary-value').textContent;
-        const grandTotal = document.querySelector('.invoice-summary-row:nth-child(5) .invoice-summary-value').textContent;
+        // Get current status value
+        if (currentStatusText.includes('Received')) {
+            currentStatus = 'Received';
+        } else if (currentStatusText.includes('Diagnosis')) {
+            currentStatus = 'Diagnosis';
+        } else if (currentStatusText.includes('Repair')) {
+            currentStatus = 'Repair';
+        } else if (currentStatusText.includes('Completed')) {
+            currentStatus = 'Completed';
+        } else {
+            currentStatus = 'Received'; // Default
+        }
 
-        // Set invoice values
-        document.getElementById('invoiceMaterialsTotal').textContent = materialsTotal;
-        document.getElementById('invoiceLaborTotal').textContent = laborTotal;
-        document.getElementById('invoiceSubtotal').textContent = subtotal;
-        document.getElementById('invoiceGST').textContent = gst;
-        document.getElementById('invoiceGrandTotal').textContent = grandTotal;
+        // Store current service ID
+        currentServiceId = serviceId;
 
-        // Clear notes
-        document.getElementById('invoiceNotes').value = '';
+        // Determine recommended next status
+        let recommendedStatus = '';
+        if (currentStatus === 'Received') {
+            recommendedStatus = 'Diagnosis';
+        } else if (currentStatus === 'Diagnosis') {
+            recommendedStatus = 'Repair';
+        } else if (currentStatus === 'Repair') {
+            recommendedStatus = 'Completed';
+        } else {
+            recommendedStatus = 'Diagnosis'; // Default
+        }
 
-        // Keep checkbox checked by default
-        document.getElementById('sendEmailCheck').checked = true;
+        // Update the confirmation modal
+        document.getElementById('updateServiceId').textContent = 'REQ-' + serviceId;
+        document.getElementById('currentStatusText').textContent = currentStatus;
+        document.getElementById('newStatusText').textContent = recommendedStatus;
+
+        // Update the status dropdown
+        const statusSelect = document.getElementById('serviceStatusSelect');
+        statusSelect.value = recommendedStatus;
+
+        // Enable/disable options based on current status
+        // Cannot go backward in status
+        for (let i = 0; i < statusSelect.options.length; i++) {
+            const option = statusSelect.options[i];
+
+            // Disable completed if service is not at least in repair
+            if (option.value === 'Completed' && currentStatus !== 'Repair') {
+                option.disabled = true;
+            }
+            // Disable repair if service is not at least in diagnosis
+            else if (option.value === 'Repair' && currentStatus === 'Received') {
+                option.disabled = true;
+            } else {
+                option.disabled = false;
+            }
+        }
+
+        // Update status select change handler
+        statusSelect.onchange = function() {
+            document.getElementById('newStatusText').textContent = this.value;
+        };
+
+        // Hide the view modal and show the update status modal
+        $('#viewServiceDetailsModal').modal('hide');
+
+        // Remove modal backdrop and reset body classes before showing new modal
+        setTimeout(function() {
+            $('.modal-backdrop').remove();
+            $('body').removeClass('modal-open');
+            $('body').css('padding-right', '');
+            $('#updateStatusModal').modal('show');
+        }, 100);
     }
 
-    // Generate invoice
-    function generateInvoice() {
+    // Submit the status update to the server without reopening any modal
+    function submitStatusUpdate() {
         // Show spinner
         document.getElementById('spinnerOverlay').classList.add('show');
 
         // Get service ID
-        const serviceId = document.getElementById('invoiceServiceId').textContent.replace('REQ-', '');
+        const serviceId = currentServiceId;
 
         // Get token
         const token = getJwtToken();
@@ -3791,19 +5164,28 @@
             return;
         }
 
-        // Prepare invoice details
-        const invoiceDetails = {
-            notes: document.getElementById('invoiceNotes').value,
-            sendEmail: document.getElementById('sendEmailCheck').checked
-        };
+        // Get the new status
+        const newStatus = document.getElementById('serviceStatusSelect').value;
 
-        // API call to generate invoice
-        fetch(`/admin/api/vehicle-tracking/service-request/${serviceId}/invoice?token=${encodeURIComponent(token)}`, {
-            method: 'POST',
+        // Hide confirmation modal
+        $('#updateStatusModal').modal('hide');
+
+        // Remove modal backdrop and reset body classes
+        setTimeout(function() {
+            $('.modal-backdrop').remove();
+            $('body').removeClass('modal-open');
+            $('body').css('padding-right', '');
+        }, 100);
+
+        // API call to update status
+        fetch(`/admin/api/vehicle-tracking/service-request/${serviceId}/status?token=${encodeURIComponent(token)}`, {
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(invoiceDetails)
+            body: JSON.stringify({
+                status: newStatus
+            })
         })
             .then(response => {
                 if (!response.ok) {
@@ -3815,182 +5197,30 @@
                 // Hide spinner
                 document.getElementById('spinnerOverlay').classList.remove('show');
 
-                // Update the completedServices array to mark invoice as generated
-                const service = completedServices.find(s => s.serviceId === parseInt(serviceId) || s.requestId === parseInt(serviceId));
-                if (service) {
-                    service.hasInvoice = true;
+                // If status is now Completed, move to completed services
+                if (newStatus === 'Completed') {
+                    // Refresh data from API
+                    loadVehiclesUnderServiceFromAPI();
+                    loadCompletedServicesFromAPI();
+                } else {
+                    // Update the status in the vehiclesUnderService array
+                    const serviceIndex = vehiclesUnderService.findIndex(v => v.requestId === parseInt(serviceId));
+                    if (serviceIndex !== -1) {
+                        vehiclesUnderService[serviceIndex].status = newStatus;
+                        showVehiclesUnderServicePage(currentServicePage);
+                    }
                 }
 
-                // Hide the generate invoice modal
-                $('#generateInvoiceModal').modal('hide');
-
-                // Show success modal
-                document.getElementById('successTitle').textContent = 'Invoice Generated!';
-                document.getElementById('successMessage').textContent = `The invoice for service REQ-${serviceId} has been successfully generated${invoiceDetails.sendEmail ? ' and sent to the customer via email' : ''}.`;
-                $('#successModal').modal('show');
-
-                // Refresh the completed services table
-                showCompletedServicesPage(currentCompletedPage);
+                // Show a brief success toast notification
+                showToastNotification('Status Updated!', `Service REQ-${serviceId} status updated to ${newStatus}.`);
             })
             .catch(error => {
                 // Hide spinner
                 document.getElementById('spinnerOverlay').classList.remove('show');
-                console.error('Error generating invoice:', error);
-                alert('Failed to generate invoice: ' + error.message);
-            });
-    }
+                console.error('Error updating service status:', error);
 
-    // Mark as paid
-    function markAsPaid() {
-        // Show spinner
-        document.getElementById('spinnerOverlay').classList.add('show');
-
-        // Get service ID
-        const serviceId = document.getElementById('paidServiceId').textContent.replace('REQ-', '');
-
-        // Get token
-        const token = getJwtToken();
-        if (!token) {
-            console.error('No token found');
-            return;
-        }
-
-        // Get payment details
-        const paymentDetails = {
-            paymentMethod: document.getElementById('paymentMethod').value,
-            transactionId: document.getElementById('transactionId').value,
-            amount: document.getElementById('paidAmount').value,
-            notes: document.getElementById('paymentNotes').value
-        };
-
-        // Validate payment method
-        if (!paymentDetails.paymentMethod) {
-            // Hide spinner
-            document.getElementById('spinnerOverlay').classList.remove('show');
-            alert('Please select a payment method');
-            return;
-        }
-
-        // API call to record payment
-        fetch(`/admin/api/vehicle-tracking/service-request/${serviceId}/payment?token=${encodeURIComponent(token)}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(paymentDetails)
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('API call failed: ' + response.status);
-                }
-                return response.json();
-            })
-            .then(data => {
-                // Hide spinner
-                document.getElementById('spinnerOverlay').classList.remove('show');
-
-                // Update the completedServices array to mark payment as completed
-                const service = completedServices.find(s => s.serviceId === parseInt(serviceId) || s.requestId === parseInt(serviceId));
-                if (service) {
-                    service.paymentStatus = 'Paid';
-                }
-
-                // Hide the mark as paid modal
-                $('#markAsPaidModal').modal('hide');
-
-                // Show success modal
-                document.getElementById('successTitle').textContent = 'Payment Recorded!';
-                document.getElementById('successMessage').textContent = `The payment for service REQ-${serviceId} has been successfully recorded.`;
-                $('#successModal').modal('show');
-
-                // Refresh the completed services table
-                showCompletedServicesPage(currentCompletedPage);
-            })
-            .catch(error => {
-                // Hide spinner
-                document.getElementById('spinnerOverlay').classList.remove('show');
-                console.error('Error recording payment:', error);
-                alert('Failed to record payment: ' + error.message);
-            });
-    }
-
-    // Dispatch vehicle
-    function dispatchVehicle() {
-        // Show spinner
-        document.getElementById('spinnerOverlay').classList.add('show');
-
-        // Get vehicle details
-        const serviceId = document.querySelector('#dispatchVehicleName').closest('.modal-body').querySelector('.alert strong:first-child').textContent.replace('REQ-', '');
-
-        // Get token
-        const token = getJwtToken();
-        if (!token) {
-            console.error('No token found');
-            return;
-        }
-
-        // Get dispatch details
-        const dispatchDetails = {
-            handoverPerson: document.getElementById('handoverPerson').value,
-            dispatchNotes: document.getElementById('dispatchNotes').value,
-            confirmed: document.getElementById('confirmDispatchCheck').checked
-        };
-
-        // Validate
-        if (!dispatchDetails.handoverPerson) {
-            // Hide spinner
-            document.getElementById('spinnerOverlay').classList.remove('show');
-            alert('Please enter the name of the person receiving the vehicle');
-            return;
-        }
-
-        if (!dispatchDetails.confirmed) {
-            // Hide spinner
-            document.getElementById('spinnerOverlay').classList.remove('show');
-            alert('Please confirm that all service work has been completed and payment has been received');
-            return;
-        }
-
-        // API call to dispatch vehicle
-        fetch(`/admin/api/vehicle-tracking/service-request/${serviceId}/dispatch?token=${encodeURIComponent(token)}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(dispatchDetails)
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('API call failed: ' + response.status);
-                }
-                return response.json();
-            })
-            .then(data => {
-                // Hide spinner
-                document.getElementById('spinnerOverlay').classList.remove('show');
-
-                // Update the completedServices array to mark as dispatched
-                const service = completedServices.find(s => s.serviceId === parseInt(serviceId) || s.requestId === parseInt(serviceId));
-                if (service) {
-                    service.paymentStatus = 'Dispatched';
-                }
-
-                // Hide the dispatch modal
-                $('#dispatchVehicleModal').modal('hide');
-
-                // Show success modal
-                document.getElementById('successTitle').textContent = 'Vehicle Dispatched!';
-                document.getElementById('successMessage').textContent = `The vehicle has been successfully dispatched to ${dispatchDetails.handoverPerson}.`;
-                $('#successModal').modal('show');
-
-                // Refresh the completed services table
-                showCompletedServicesPage(currentCompletedPage);
-            })
-            .catch(error => {
-                // Hide spinner
-                document.getElementById('spinnerOverlay').classList.remove('show');
-                console.error('Error dispatching vehicle:', error);
-                alert('Failed to dispatch vehicle: ' + error.message);
+                // Show error toast
+                showToastNotification('Error', 'Failed to update status: ' + error.message);
             });
     }
 
@@ -4067,7 +5297,7 @@
                     document.getElementById('empty-row-service').style.display = '';
 
                     console.error('Error applying filters to vehicles under service:', error);
-                    alert('Failed to apply filters: ' + error.message);
+                    showToastNotification('Error', 'Failed to apply filters: ' + error.message);
                 });
 
         } else if (activeTab.id === 'completed-tab-pane') {
@@ -4113,283 +5343,28 @@
                     document.getElementById('empty-row-completed').style.display = '';
 
                     console.error('Error applying filters to completed services:', error);
-                    alert('Failed to apply filters: ' + error.message);
+                    showToastNotification('Error', 'Failed to apply filters: ' + error.message);
                 });
         }
     }
-    // Add confirm button handler for update status modal
-    document.getElementById('confirmUpdateStatusBtn').addEventListener('click', function() {
-        // Get the service ID from the modal
-        const serviceId = document.getElementById('updateStatusServiceId').textContent.replace('REQ-', '');
 
-        // Get the selected status
-        const status = document.getElementById('statusSelect').value;
-
-        // Get the notes
-        const notes = document.getElementById('statusNotes').value;
-
-        // Show spinner
-        document.getElementById('spinnerOverlay').classList.add('show');
-
-        // Get token
-        const token = getJwtToken();
-        if (!token) {
-            console.error('No token found');
-            return;
-        }
-
-        // API call to update status
-        fetch(`/admin/api/vehicle-tracking/service-request/${serviceId}/status?token=${encodeURIComponent(token)}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                status: status,
-                notes: notes
-            })
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('API call failed: ' + response.status);
-                }
-                return response.json();
-            })
-            .then(data => {
-                // Hide spinner
-                document.getElementById('spinnerOverlay').classList.remove('show');
-
-                // If status is now Completed, move to completed services
-                if (status === 'Completed') {
-                    // Refresh data from API
-                    loadVehiclesUnderServiceFromAPI();
-                    loadCompletedServicesFromAPI();
-                } else {
-                    // Update the status in the vehiclesUnderService array
-                    const serviceIndex = vehiclesUnderService.findIndex(v => v.requestId === parseInt(serviceId));
-                    if (serviceIndex !== -1) {
-                        vehiclesUnderService[serviceIndex].status = status;
-                        showVehiclesUnderServicePage(currentServicePage);
-                    }
-                }
-
-                // Hide modals
-                $('#updateStatusModal').modal('hide');
-                $('#viewServiceDetailsModal').modal('hide');
-
-                // Set success modal content
-                document.getElementById('successTitle').textContent = 'Status Updated!';
-                document.getElementById('successMessage').textContent = `The status for service REQ-${serviceId} has been successfully updated to ${status}.`;
-
-                // Remove modal backdrop and reset body classes
-                setTimeout(function() {
-                    $('.modal-backdrop').remove();
-                    $('body').removeClass('modal-open');
-                    $('body').css('padding-right', '');
-
-                    // Show success modal
-                    $('#successModal').modal('show');
-                }, 100);
-            })
-            .catch(error => {
-                // Hide spinner
-                document.getElementById('spinnerOverlay').classList.remove('show');
-                console.error('Error updating service status:', error);
-
-                // Hide the update status modal
-                $('#updateStatusModal').modal('hide');
-
-                // Remove modal backdrop and reset body classes
-                setTimeout(function() {
-                    $('.modal-backdrop').remove();
-                    $('body').removeClass('modal-open');
-                    $('body').css('padding-right', '');
-
-                    // Show error alert
-                    alert('Failed to update status: ' + error.message);
-                }, 100);
-            });
-    });
-
-    // Update service status
-    // Update service status
-    // Update service status with modal z-index fix
-    function updateServiceStatus(serviceId) {
-        // Get current status text
-        const currentStatusElement = document.getElementById('viewStatus');
-        const currentStatusText = currentStatusElement.textContent.trim();
-        let currentStatus = '';
-
-        // Get current status value
-        if (currentStatusText.includes('Received')) {
-            currentStatus = 'Received';
-        } else if (currentStatusText.includes('Diagnosis')) {
-            currentStatus = 'Diagnosis';
-        } else if (currentStatusText.includes('Repair')) {
-            currentStatus = 'Repair';
-        } else if (currentStatusText.includes('Completed')) {
-            currentStatus = 'Completed';
-        } else {
-            currentStatus = 'Received'; // Default
-        }
-
-        // Determine recommended next status
-        let recommendedStatus = '';
-        if (currentStatus === 'Received') {
-            recommendedStatus = 'Diagnosis';
-        } else if (currentStatus === 'Diagnosis') {
-            recommendedStatus = 'Repair';
-        } else if (currentStatus === 'Repair') {
-            recommendedStatus = 'Completed';
-        } else {
-            recommendedStatus = 'Diagnosis'; // Default
-        }
-
-        // Update the confirmation modal
-        document.getElementById('updateServiceId').textContent = 'REQ-' + serviceId;
-        document.getElementById('currentStatusText').textContent = currentStatus;
-        document.getElementById('newStatusText').textContent = recommendedStatus;
-
-        // Update the status dropdown
-        const statusSelect = document.getElementById('serviceStatusSelect');
-        statusSelect.value = recommendedStatus;
-
-        // Enable/disable options based on current status
-        // Cannot go backward in status
-        for (let i = 0; i < statusSelect.options.length; i++) {
-            const option = statusSelect.options[i];
-
-            // Disable completed if service is not at least in repair
-            if (option.value === 'Completed' && currentStatus !== 'Repair') {
-                option.disabled = true;
-            }
-            // Disable repair if service is not at least in diagnosis
-            else if (option.value === 'Repair' && currentStatus === 'Received') {
-                option.disabled = true;
-            } else {
-                option.disabled = false;
-            }
-        }
-
-        // Update status select change handler
-        statusSelect.onchange = function() {
-            document.getElementById('newStatusText').textContent = this.value;
-        };
-
-        // Setup confirm button handler
-        document.getElementById('confirmUpdateStatusBtn').onclick = function() {
-            submitStatusUpdate(serviceId, statusSelect.value);
-        };
-
-        // Show the confirmation modal
-        const updateModal = new bootstrap.Modal(document.getElementById('updateStatusConfirmModal'), {
-            backdrop: 'static',
-            keyboard: false
-        });
-
-        // Hide the view modal and show the confirmation modal
-        $('#viewServiceDetailsModal').modal('hide');
-
-        // Remove modal backdrop and reset body classes before showing new modal
-        setTimeout(function() {
-            $('.modal-backdrop').remove();
-            $('body').removeClass('modal-open');
-            $('body').css('padding-right', '');
-            updateModal.show();
-        }, 100);
-    }
-
-    // Submit the status update to the server with view modal reopening
-    // Submit the status update to the server without reopening any modal
-    function submitStatusUpdate(serviceId, newStatus) {
-        // Show spinner
-        document.getElementById('spinnerOverlay').classList.add('show');
-
-        // Get token
-        const token = getJwtToken();
-        if (!token) {
-            console.error('No token found');
-            return;
-        }
-
-        // Hide confirmation modal
-        $('#updateStatusConfirmModal').modal('hide');
-
-        // Remove modal backdrop and reset body classes
-        setTimeout(function() {
-            $('.modal-backdrop').remove();
-            $('body').removeClass('modal-open');
-            $('body').css('padding-right', '');
-        }, 100);
-
-        // API call to update status
-        fetch(`/admin/api/vehicle-tracking/service-request/${serviceId}/status?token=${encodeURIComponent(token)}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                status: newStatus
-            })
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('API call failed: ' + response.status);
-                }
-                return response.json();
-            })
-            .then(data => {
-                // Hide spinner
-                document.getElementById('spinnerOverlay').classList.remove('show');
-
-                // If status is now Completed, move to completed services
-                if (newStatus === 'Completed') {
-                    // Refresh data from API
-                    loadVehiclesUnderServiceFromAPI();
-                    loadCompletedServicesFromAPI();
-                } else {
-                    // Update the status in the vehiclesUnderService array
-                    const serviceIndex = vehiclesUnderService.findIndex(v => v.requestId === parseInt(serviceId));
-                    if (serviceIndex !== -1) {
-                        vehiclesUnderService[serviceIndex].status = newStatus;
-                        showVehiclesUnderServicePage(currentServicePage);
-                    }
-                }
-
-                // Show a brief success toast notification instead of a modal
-                showToastNotification('Status Updated!', `Service REQ-${serviceId} status updated to ${newStatus}.`);
-            })
-            .catch(error => {
-                // Hide spinner
-                document.getElementById('spinnerOverlay').classList.remove('show');
-                console.error('Error updating service status:', error);
-                alert('Failed to update status: ' + error.message);
-            });
-    }
-
-    // Add a toast notification function
+    // Toast notification function
     function showToastNotification(title, message) {
         // Create toast container if it doesn't exist
-        let toastContainer = document.getElementById('toast-container');
-        if (!toastContainer) {
-            toastContainer = document.createElement('div');
-            toastContainer.id = 'toast-container';
-            toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
-            document.body.appendChild(toastContainer);
-        }
+        let toastContainer = document.querySelector('.toast-container');
 
         // Create toast element
         const toastId = 'toast-' + Date.now();
         const toastHtml = `
-    <div id="${toastId}" class="toast align-items-center text-white bg-wine border-0" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="d-flex">
-            <div class="toast-body">
-                <strong>${title}</strong> ${message}
+        <div id="${toastId}" class="toast align-items-center text-white bg-wine border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    <strong>${title}</strong> ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
         </div>
-    </div>
-    `;
+        `;
 
         toastContainer.insertAdjacentHTML('beforeend', toastHtml);
 
@@ -4404,38 +5379,55 @@
         toast.show();
 
         // Remove toast after it's hidden
-        toastElement.addEventListener('hidden.bs.toast', function () {
+        toastElement.addEventListener('hidden.bs.toast', function() {
             toastElement.remove();
         });
     }
 
-    // Add some CSS for the toast notification
-    document.addEventListener('DOMContentLoaded', function() {
-        // Add toast CSS styles
-        const style = document.createElement('style');
-        style.textContent = `
-    .toast-container {
-        z-index: 1070;
-    }
-    .bg-wine {
-        background-color: #722F37;
-    }
-    .toast {
-        opacity: 0.95;
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.2);
-    }
-    `;
-        document.head.appendChild(style);
-    });
+    // Add click event listener to all clickable rows and buttons
+    document.addEventListener('click', function(e) {
+        // For view vehicle details button in the under service table
+        if (e.target && e.target.id === 'viewServiceBtn' || e.target.closest('#viewServiceBtn')) {
+            const row = e.target.closest('tr');
+            if (row) {
+                const serviceId = row.getAttribute('data-id');
+                if (serviceId) {
+                    // Determine which table this is from
+                    const isCompleted = row.closest('#completedServicesTable') !== null;
 
-    // Make sure the Update Status button uses the new function
-    document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('updateStatusBtn').addEventListener('click', function() {
-            const serviceId = document.getElementById('viewServiceId').textContent.replace('REQ-', '');
-            updateServiceStatus(serviceId);
-        });
-    });
+                    if (isCompleted) {
+                        viewCompletedServiceDetails(serviceId);
+                    } else {
+                        viewServiceUnderServiceDetails(serviceId);
+                    }
+                }
+            }
+        }
 
+        // For clicking on a row in either table
+        if (e.target && e.target.tagName !== 'BUTTON' && e.target.closest('tr') && !e.target.closest('thead')) {
+            const row = e.target.closest('tr');
+            if (row.id !== 'loading-row-service' && row.id !== 'empty-row-service' &&
+                row.id !== 'loading-row-completed' && row.id !== 'empty-row-completed') {
+                const serviceId = row.getAttribute('data-id');
+                if (serviceId) {
+                    // Determine which table this is from
+                    const isCompleted = row.closest('#completedServicesTable') !== null;
+
+                    // Skip if clicking on action buttons or their icons
+                    if (e.target.closest('.table-actions-cell') ||
+                        e.target.closest('button') ||
+                        (e.target.closest('i') && e.target.closest('button'))) {
+                        return;
+                    }
+
+                    if (isCompleted) {
+                        viewCompletedServiceDetails(serviceId);
+                    } else {
+                        viewServiceUnderServiceDetails(serviceId);
+                    }
+                }
+            }
+        }
+    });
 </script>
-</body>
-</html>

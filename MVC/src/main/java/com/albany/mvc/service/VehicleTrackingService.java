@@ -171,6 +171,54 @@ public class VehicleTrackingService {
     }
 
     /**
+     * Generate bill for a service
+     * @param requestId the service request ID
+     * @param billData the bill data containing materials, labor charges, etc.
+     * @param token the authentication token
+     * @return the response from the API
+     */
+    public Map<String, Object> generateBill(Integer requestId, Map<String, Object> billData, String token) {
+        try {
+            log.info("Generating bill for service request {}", requestId);
+
+            HttpHeaders headers = createAuthHeaders(token);
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(billData, headers);
+
+            // Make API call to the REST service
+            ResponseEntity<String> response = restTemplate.exchange(
+                    apiBaseUrl + "/bills/service-request/" + requestId + "/generate",
+                    HttpMethod.POST,
+                    entity,
+                    String.class
+            );
+
+            log.info("Bill generation API response status: {}", response.getStatusCode());
+
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                try {
+                    Map<String, Object> responseMap = objectMapper.readValue(
+                            response.getBody(),
+                            new TypeReference<Map<String, Object>>() {}
+                    );
+                    log.debug("Bill generated successfully for service request {}", requestId);
+                    return responseMap;
+                } catch (Exception e) {
+                    log.error("Error parsing bill generation response: {}", e.getMessage(), e);
+                    return Collections.singletonMap("error", "Error parsing response: " + e.getMessage());
+                }
+            } else {
+                log.warn("Unexpected response status: {}", response.getStatusCode());
+                return Collections.singletonMap("error", "Unexpected response status: " + response.getStatusCode());
+            }
+        } catch (Exception e) {
+            log.error("Error generating bill: {}", e.getMessage(), e);
+            return Collections.singletonMap("error", "Failed to generate bill: " + e.getMessage());
+        }
+    }
+
+    /**
      * Generate invoice for a service
      */
     public Map<String, Object> generateInvoice(Integer requestId, Map<String, Object> invoiceDetails, String token) {
@@ -324,6 +372,8 @@ public class VehicleTrackingService {
      */
     private HttpHeaders createAuthHeaders(String token) {
         HttpHeaders headers = new HttpHeaders();
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
         if (token != null && !token.isEmpty()) {
             if (token.startsWith("Bearer ")) {
                 headers.set("Authorization", token);
@@ -331,6 +381,7 @@ public class VehicleTrackingService {
                 headers.setBearerAuth(token);
             }
         }
+
         return headers;
     }
 }

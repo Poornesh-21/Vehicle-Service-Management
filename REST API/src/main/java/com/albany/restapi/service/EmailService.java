@@ -4,6 +4,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,27 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
 
+    /**
+     * Send a simple text email
+     */
+    public void sendSimpleEmail(String toEmail, String subject, String content) {
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setTo(toEmail);
+            message.setSubject(subject);
+            message.setText(content);
+
+            mailSender.send(message);
+            log.info("Simple email sent successfully to: {}", toEmail);
+        } catch (Exception e) {
+            log.error("Failed to send simple email to {}: {}", toEmail, e.getMessage(), e);
+            throw new RuntimeException("Failed to send email", e);
+        }
+    }
+
+    /**
+     * Send an HTML email with a password
+     */
     public void sendPasswordEmail(String toEmail, String name, String password) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
@@ -54,6 +76,29 @@ public class EmailService {
         } catch (MessagingException e) {
             log.error("Failed to send password email to {}: {}", toEmail, e.getMessage(), e);
             throw new RuntimeException("Failed to send password email", e);
+        }
+    }
+
+    /**
+     * Send a bill email with PDF attachment
+     */
+    public void sendBillEmail(String toEmail, String subject, String content, byte[] pdfAttachment) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+            helper.setTo(toEmail);
+            helper.setSubject(subject);
+            helper.setText(content, true); // true indicates HTML content
+
+            // Add PDF attachment
+            helper.addAttachment("service_bill.pdf", new org.springframework.core.io.ByteArrayResource(pdfAttachment));
+
+            mailSender.send(message);
+            log.info("Bill email with attachment sent successfully to: {}", toEmail);
+        } catch (MessagingException e) {
+            log.error("Failed to send bill email to {}: {}", toEmail, e.getMessage(), e);
+            throw new RuntimeException("Failed to send bill email", e);
         }
     }
 }

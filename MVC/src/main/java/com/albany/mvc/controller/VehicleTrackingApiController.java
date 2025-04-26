@@ -145,6 +145,41 @@ public class VehicleTrackingApiController {
     }
 
     /**
+     * API endpoint to generate bill
+     * This is the new endpoint to handle bill generation
+     */
+    @PostMapping("/service-request/{id}/bill")
+    public ResponseEntity<?> generateBill(
+            @PathVariable Integer id,
+            @RequestBody Map<String, Object> billDetails,
+            @RequestParam(required = false) String token,
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            HttpServletRequest request) {
+
+        log.info("Generating bill for service request {}", id);
+        String validToken = getValidToken(token, authHeader, request);
+
+        if (validToken == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        try {
+            Map<String, Object> result = vehicleTrackingService.generateBill(id, billDetails, validToken);
+
+            if (result.containsKey("error")) {
+                return ResponseEntity.internalServerError()
+                        .body(Collections.singletonMap("error", result.get("error")));
+            } else {
+                return ResponseEntity.ok(result);
+            }
+        } catch (Exception e) {
+            log.error("Error generating bill: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError()
+                    .body(Collections.singletonMap("error", "Failed to generate bill: " + e.getMessage()));
+        }
+    }
+
+    /**
      * API endpoint to generate invoice
      */
     @PostMapping("/service-request/{id}/invoice")
@@ -301,4 +336,5 @@ public class VehicleTrackingApiController {
 
         return null;
     }
+
 }

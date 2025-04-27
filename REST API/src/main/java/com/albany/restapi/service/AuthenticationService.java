@@ -28,9 +28,9 @@ public class AuthenticationService {
                             request.getPassword()
                     )
             );
-            
+
             User user = (User) authentication.getPrincipal();
-            
+
             String jwtToken = jwtUtil.generateToken(user);
 
             return AuthenticationResponse.builder()
@@ -41,7 +41,7 @@ public class AuthenticationService {
                     .lastName(user.getLastName())
                     .role(user.getRole().name())
                     .build();
-            
+
         } catch (AuthenticationException e) {
             throw new RuntimeException("Invalid email/password combination");
         }

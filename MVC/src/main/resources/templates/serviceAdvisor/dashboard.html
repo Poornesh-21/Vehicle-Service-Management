@@ -1,0 +1,2364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Advisor Dashboard | Albany Service</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<style>
+    /* Styles for the assign button */
+    .btn-assign {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background-color 0.3s;
+    }
+
+    .btn-assign:hover {
+        background-color: #45a049;
+    }
+
+    /* Modal styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-content {
+        background-color: #fefefe;
+        margin: 10% auto;
+        padding: 0;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        width: 500px;
+        max-width: 90%;
+        animation: modalFadeIn 0.3s;
+    }
+
+    @keyframes modalFadeIn {
+        from {opacity: 0; transform: translateY(-20px);}
+        to {opacity: 1; transform: translateY(0);}
+    }
+
+    .modal-header {
+        padding: 16px 24px;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-header h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        color: #333;
+    }
+
+    .close-modal {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #aaa;
+    }
+
+    .close-modal:hover {
+        color: #333;
+    }
+
+    .modal-body {
+        padding: 24px;
+    }
+
+    .modal-footer {
+        padding: 16px 24px;
+        background-color: #f8f9fa;
+        border-top: 1px solid #e9ecef;
+        border-bottom-left-radius: 8px;
+        border-bottom-right-radius: 8px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #333;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 1rem;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+    .form-control:focus {
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
+    .btn-cancel {
+        background-color: #6c757d;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background-color 0.3s;
+    }
+
+    .btn-cancel:hover {
+        background-color: #5a6268;
+    }
+
+    .btn-submit {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background-color 0.3s;
+    }
+
+    .btn-submit:hover {
+        background-color: #0069d9;
+    }
+
+    /* Status badge for assigned state */
+    .status-badge.assigned {
+        background-color: #17a2b8;
+    }
+
+    /* Base Styles */
+    :root {
+        /* Primary Colors */
+        --primary-color: #722F37;
+        --primary-light: #8A3A43;
+        --primary-dark: #5A2329;
+        --secondary-color: #EFFFBB;
+        --secondary-light: #F1FF92;
+        --secondary-dark: #C6D880;
+
+        /* Neutral Colors */
+        --white: #ffffff;
+        --light-gray: #f8f9fa;
+        --medium-gray: #e9ecef;
+        --gray: #6c757d;
+        --dark-gray: #343a40;
+        --black: #212529;
+
+        /* Status Colors */
+        --success: #38b000;
+        --warning: #ffaa00;
+        --danger: #d90429;
+        --info: #4cc9f0;
+
+        /* Shadows */
+        --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+        /* Border Radius */
+        --radius-sm: 4px;
+        --radius-md: 8px;
+        --radius-lg: 16px;
+        --radius-xl: 24px;
+
+        /* Spacing */
+        --spacing-xs: 4px;
+        --spacing-sm: 8px;
+        --spacing-md: 16px;
+        --spacing-lg: 24px;
+        --spacing-xl: 32px;
+        --spacing-xxl: 48px;
+
+        /* Transitions */
+        --transition-fast: 0.2s ease;
+        --transition-normal: 0.3s ease;
+        --transition-slow: 0.5s ease;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Baloo Bhaijaan 2', sans-serif;
+        font-size: 16px;
+        line-height: 1.5;
+        color: var(--dark-gray);
+        background-color: var(--secondary-color);
+    }
+
+    /* App Container */
+    .app-container {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    /* Sidebar Styles */
+    .sidebar {
+        width: 280px;
+        background:var(--primary-dark);
+        color: var(--white);
+        padding: var(--spacing-lg);
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        height: 100vh;
+        z-index: 100;
+        box-shadow: var(--shadow-lg);
+        transition: all var(--transition-normal);
+    }
+
+    .sidebar-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: var(--spacing-xl);
+        padding-bottom: var(--spacing-md);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .logo {
+        width: 40px;
+        height: 40px;
+        margin-right: var(--spacing-md);
+    }
+
+    .sidebar-header h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .sidebar-user {
+        display: flex;
+        align-items: center;
+        margin-bottom: var(--spacing-xl);
+        padding: var(--spacing-md);
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: var(--radius-md);
+        backdrop-filter: blur(10px);
+    }
+
+    .user-avatar img {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--white);
+        margin-right: var(--spacing-md);
+    }
+
+    .user-info h3 {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .user-info p {
+        font-size: 0.85rem;
+        opacity: 0.8;
+    }
+
+    .sidebar-nav {
+        flex: 1;
+    }
+
+    .sidebar-nav ul {
+        list-style: none;
+    }
+
+    .sidebar-nav li {
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .sidebar-nav a {
+        display: flex;
+        align-items: center;
+        padding: var(--spacing-md);
+        color: var(--white);
+        text-decoration: none;
+        border-radius: var(--radius-md);
+        transition: all var(--transition-fast);
+    }
+
+    .sidebar-nav a:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .sidebar-nav li.active a {
+        background: rgba(255, 255, 255, 0.2);
+        font-weight: 500;
+    }
+
+    .sidebar-nav i {
+        margin-right: var(--spacing-md);
+        font-size: 1.2rem;
+        width: 24px;
+        text-align: center;
+    }
+
+    .sidebar-footer {
+        margin-top: auto;
+        padding-top: var(--spacing-lg);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .logout-btn {
+        display: flex;
+        align-items: center;
+        padding: var(--spacing-md);
+        color: var(--white);
+        text-decoration: none;
+        border-radius: var(--radius-md);
+        transition: all var(--transition-fast);
+    }
+
+    .logout-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .logout-btn i {
+        margin-right: var(--spacing-md);
+    }
+
+    /* Main Content Styles */
+    .main-content {
+        flex: 1;
+        margin-left: 280px;
+        padding: var(--spacing-lg);
+        transition: all var(--transition-normal);
+    }
+
+    .main-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--spacing-xl);
+        padding-bottom: var(--spacing-md);
+        border-bottom: 1px solid var(--medium-gray);
+    }
+
+    .header-search {
+        position: relative;
+        width: 300px;
+    }
+
+    .header-search i {
+        position: absolute;
+        left: var(--spacing-md);
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--gray);
+    }
+
+    .header-search input {
+        width: 100%;
+        padding: var(--spacing-md) var(--spacing-md) var(--spacing-md) calc(var(--spacing-md) * 2 + 16px);
+        border: 1px solid var(--medium-gray);
+        border-radius: var(--radius-md);
+        background-color: var(--white);
+        transition: all var(--transition-fast);
+    }
+
+    .header-search input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+    }
+
+    .header-actions {
+        display: flex;
+        align-items: center;
+    }
+
+    .notification-btn, .message-btn {
+        position: relative;
+        background: none;
+        border: none;
+        color: var(--gray);
+        font-size: 1.2rem;
+        margin-right: var(--spacing-lg);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+    }
+
+    .notification-btn:hover, .message-btn:hover {
+        color: var(--primary-color);
+    }
+
+    .badge {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background-color: var(--danger);
+        color: var(--white);
+        font-size: 0.7rem;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .user-dropdown {
+        position: relative;
+    }
+
+    .dropdown-toggle {
+        display: flex;
+        align-items: center;
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+
+    .dropdown-toggle img {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: var(--spacing-sm);
+    }
+
+    .dropdown-toggle span {
+        margin-right: var(--spacing-sm);
+        font-weight: 500;
+    }
+
+    /* Dashboard Content */
+    .dashboard-content {
+        padding: var(--spacing-md);
+    }
+
+    .page-title {
+        margin-bottom: var(--spacing-xl);
+    }
+
+    .page-title h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: var(--spacing-xs);
+        color: var(--black);
+    }
+
+    .page-title p {
+        color: var(--gray);
+    }
+
+    /* Stats Cards */
+    .stats-container {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: var(--spacing-lg);
+        margin-bottom: var(--spacing-xl);
+    }
+
+    .stat-card ,vehicle-card{
+        background: var(--white);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-lg);
+        display: flex;
+        align-items: center;
+        box-shadow: var(--shadow-md);
+        transition: transform var(--transition-fast);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: var(--spacing-lg);
+        font-size: 1.5rem;
+    }
+
+    .stat-card.pending .stat-icon {
+        background: rgba(255, 170, 0, 0.1);
+        color: var(--warning);
+    }
+
+    .stat-card.in-progress .stat-icon {
+        background: rgba(76, 201, 240, 0.1);
+        color: var(--info);
+    }
+
+    .stat-card.completed .stat-icon {
+        background: rgba(56, 176, 0, 0.1);
+        color: var(--success);
+    }
+
+    .stat-card.total .stat-icon {
+        background: rgba(114, 9, 183, 0.1);
+        color: var(--secondary-color);
+    }
+
+    .stat-details {
+        flex: 1;
+    }
+
+    .stat-details h3 {
+        font-size: 0.9rem;
+        color: var(--gray);
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .stat-number {
+        font-size: 1.8rem;
+        font-weight: 700;
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .stat-trend {
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .stat-trend i {
+        margin-right: var(--spacing-xs);
+    }
+
+    .stat-trend.up {
+        color: var(--success);
+    }
+
+    .stat-trend.down {
+        color: var(--danger);
+    }
+
+    /* Section Container */
+    .section-container {
+        background: var(--white);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-lg);
+        margin-bottom: var(--spacing-xl);
+        box-shadow: var(--shadow-md);
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .section-header h2 {
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+
+    .section-actions {
+        display: flex;
+        align-items: center;
+    }
+
+    .refresh-btn, .dropdown-btn, .view-all-btn {
+        display: flex;
+        align-items: center;
+        padding: var(--spacing-sm) var(--spacing-md);
+        border: 1px solid var(--medium-gray);
+        border-radius: var(--radius-md);
+        background: var(--white);
+        color: var(--gray);
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        margin-left: var(--spacing-sm);
+    }
+
+    .refresh-btn:hover, .dropdown-btn:hover {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+
+    .view-all-btn {
+        background: var(--primary-color);
+        color: var(--white);
+        border: none;
+
+    }
+
+    .view-all-btn:hover {
+        background: var(--primary-dark);
+    }
+
+    .view-all-btn i {
+        margin-left: var(--spacing-sm);
+    }
+
+    /* Table Styles */
+    .table-container {
+        overflow-x: auto;
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .data-table th, .data-table td {
+        padding: var(--spacing-md);
+        text-align: left;
+        border-bottom: 1px solid var(--medium-gray);
+    }
+
+    .data-table th {
+        font-weight: 600;
+        color: var(--gray);
+        background-color: var(--light-gray);
+    }
+
+    .data-table tbody tr {
+        transition: background-color var(--transition-fast);
+    }
+
+    .data-table tbody tr:hover {
+        background-color: rgba(67, 97, 238, 0.05);
+    }
+
+    .customer-info, .vehicle-info {
+        display: flex;
+        align-items: center;
+    }
+
+    .customer-info img {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: var(--spacing-md);
+    }
+
+    .customer-info .name {
+        font-weight: 500;
+        margin-bottom: 2px;
+    }
+
+    .customer-info .email {
+        font-size: 0.85rem;
+        color: var(--gray);
+    }
+
+    .vehicle-model {
+        font-weight: 500;
+        margin-bottom: 2px;
+    }
+
+    .vehicle-details {
+        font-size: 0.85rem;
+        color: var(--gray);
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: var(--radius-sm);
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .status-badge.new {
+        background-color: rgba(76, 201, 240, 0.1);
+        color: var(--info);
+    }
+
+    .status-badge.in-progress {
+        background-color: rgba(255, 170, 0, 0.1);
+        color: var(--warning);
+    }
+
+    .status-badge.completed {
+        background-color: rgba(56, 176, 0, 0.1);
+        color: var(--success);
+    }
+
+    .status-badge.almost-done {
+        background-color: rgba(114, 9, 183, 0.1);
+        color: var(--secondary-color);
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: var(--spacing-sm);
+    }
+
+    .btn-accept, .btn-decline, .btn-update, .btn-view-details {
+        padding: 6px 12px;
+        border-radius: var(--radius-sm);
+        font-size: 0.85rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        border: none;
+    }
+
+    .btn-accept {
+        background-color: var(--success);
+        color: var(--white);
+    }
+
+    .btn-accept:hover {
+        background-color: #2d9000;
+    }
+
+    .btn-decline {
+        background-color: var(--danger);
+        color: var(--white);
+    }
+
+    .btn-decline:hover {
+        background-color: #b50020;
+    }
+
+    .btn-update, .btn-view-details {
+        background-color: var(--primary-color);
+        color: var(--white);
+    }
+
+    .btn-update:hover, .btn-view-details:hover {
+        background-color: var(--primary-dark);
+    }
+
+    .btn-view-details {
+        background-color: var(--primary-light);
+    }
+
+    .btn-view-details:hover {
+        background:var(--primary-dark);
+    }
+
+    /* Pagination */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: var(--spacing-lg);
+    }
+
+    .pagination-btn {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--medium-gray);
+        background: var(--white);
+        color: var(--gray);
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+    }
+
+    .pagination-btn:hover {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+
+    .pagination-numbers {
+        display: flex;
+        align-items: center;
+        margin: 0 var(--spacing-md);
+    }
+
+    .pagination-number {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--medium-gray);
+        background: var(--white);
+        color: var(--gray);
+        border-radius: var(--radius-md);
+        margin: 0 var(--spacing-xs);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+    }
+
+    .pagination-number:hover {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+
+    .pagination-number.active {
+        background: var(--primary-color);
+        color: var(--white);
+        border-color: var(--primary-color);
+    }
+
+    .pagination-ellipsis {
+        margin: 0 var(--spacing-xs);
+        color: var(--gray);
+    }
+
+    /* Service Cards */
+    .cards-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--spacing-lg);
+    }
+
+    .service-card {
+        background: var(--white);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-md);
+        overflow: hidden;
+        transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+        border: 1px solid var(--medium-gray);
+    }
+
+    .service-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .service-card-header {
+        padding: var(--spacing-md);
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        border-bottom: 1px solid var(--medium-gray);
+    }
+
+    .vehicle-info h3 {
+        font-size: 1.1rem;
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .vehicle-info p {
+        font-size: 0.85rem;
+        color: var(--gray);
+    }
+
+    .service-card-body {
+        padding: var(--spacing-md);
+    }
+
+    .service-details {
+        margin-bottom: var(--spacing-md);
+    }
+
+    .detail-item {
+        display: flex;
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .detail-item .label {
+        font-weight: 500;
+        width: 40%;
+        color: var(--gray);
+    }
+
+    .detail-item .value {
+        width: 60%;
+    }
+
+    .progress-container {
+        margin-top: var(--spacing-md);
+    }
+
+    .progress-label {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: var(--spacing-xs);
+        font-size: 0.85rem;
+    }
+
+    .progress-bar {
+        height: 8px;
+        background-color: var(--medium-gray);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .progress {
+        height: 100%;
+        background:var(--primary-dark);
+        border-radius: 8px;
+    }
+
+    .service-card-footer {
+        padding: var(--spacing-md);
+        display: flex;
+        justify-content: space-between;
+        border-top: 1px solid var(--medium-gray);
+    }
+
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal.active {
+        display: flex;
+    }
+
+    .modal-content {
+        background-color: var(--white);
+        border-radius: var(--radius-lg);
+        width: 500px;
+        max-width: 90%;
+        box-shadow: var(--shadow-lg);
+        animation: modalFadeIn 0.3s ease;
+    }
+
+    @keyframes modalFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .modal-header {
+        padding: var(--spacing-lg);
+        border-bottom: 1px solid var(--medium-gray);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-header h2 {
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+
+    .close-modal {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--gray);
+        transition: color var(--transition-fast);
+    }
+
+    .close-modal:hover {
+        color: var(--danger);
+    }
+
+    .modal-body {
+        padding: var(--spacing-lg);
+    }
+
+    .form-group {
+        margin-bottom: var(--spacing-md);
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: var(--spacing-xs);
+        font-weight: 500;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: var(--spacing-md);
+        border: 1px solid var(--medium-gray);
+        border-radius: var(--radius-md);
+        font-family: inherit;
+        font-size: 1rem;
+        transition: border-color var(--transition-fast);
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-color);
+    }
+
+    .modal-footer {
+        padding: var(--spacing-lg);
+        border-top: 1px solid var(--medium-gray);
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--spacing-md);
+    }
+
+    .btn-cancel, .btn-submit {
+        padding: var(--spacing-sm) var(--spacing-lg);
+        border-radius: var(--radius-md);
+        font-weight: 500;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+    }
+
+    .btn-cancel {
+        background-color: var(--medium-gray);
+        color: var(--dark-gray);
+        border: none;
+    }
+
+    .btn-cancel:hover {
+        background-color: var(--gray);
+        color: var(--white);
+    }
+
+    .btn-submit {
+        background-color: var(--primary-color);
+        color: var(--white);
+        border: none;
+    }
+
+    .btn-submit:hover {
+        background-color: var(--primary-dark);
+    }
+
+    /* Responsive Styles */
+    @media (max-width: 1200px) {
+        .stats-container {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .cards-container {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 992px) {
+        .sidebar {
+            width: 80px;
+            padding: var(--spacing-md);
+        }
+
+        .sidebar-header h2,
+        .user-info,
+        .sidebar-nav span {
+            display: none;
+        }
+
+        .logo {
+            margin-right: 0;
+        }
+
+        .sidebar-user {
+            justify-content: center;
+            padding: var(--spacing-sm);
+        }
+
+        .user-avatar img {
+            margin-right: 0;
+        }
+
+        .sidebar-nav a {
+            justify-content: center;
+        }
+
+        .sidebar-nav i {
+            margin-right: 0;
+        }
+
+        .logout-btn span {
+            display: none;
+        }
+
+        .main-content {
+            margin-left: 80px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .stats-container {
+            grid-template-columns: 1fr;
+        }
+
+        .cards-container {
+            grid-template-columns: 1fr;
+        }
+
+        .main-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .header-search {
+            width: 100%;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .header-actions {
+            width: 100%;
+            justify-content: flex-end;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .main-content {
+            padding: var(--spacing-md);
+        }
+
+        .section-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .section-actions {
+            margin-top: var(--spacing-sm);
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+    }
+
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(5px);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        transition: all var(--transition-normal);
+    }
+
+    .modal.active {
+        display: flex;
+        animation: modalBackdropFadeIn 0.3s ease forwards;
+    }
+
+    @keyframes modalBackdropFadeIn {
+        from {
+            background-color: rgba(0, 0, 0, 0);
+            backdrop-filter: blur(0px);
+        }
+        to {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+    }
+
+    .modal-content {
+        background-color: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(10px);
+        border-radius: var(--radius-lg);
+        width: 100%;
+        max-width: 500px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2),
+        0 0 0 1px rgba(255, 255, 255, 0.3) inset;
+        animation: modalFadeIn 0.4s ease;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        overflow: hidden;
+    }
+
+    @keyframes modalFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-30px) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .modal-header {
+        padding: var(--spacing-lg) var(--spacing-xl);
+        border-bottom: 1px solid rgba(233, 236, 239, 0.5);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: linear-gradient(to right, rgba(114, 47, 55, 0.1), rgba(114, 47, 55, 0.05));
+    }
+
+    .modal-header h2 {
+        font-size: 1.4rem;
+        font-weight: 600;
+        margin: 0;
+        color: var(--primary-dark);
+    }
+
+    .close-modal {
+        background: none;
+        border: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: var(--gray);
+        cursor: pointer;
+        transition: all var(--transition-normal);
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .close-modal:hover {
+        color: var(--danger);
+        background-color: rgba(217, 4, 41, 0.1);
+        transform: rotate(90deg);
+    }
+
+    .modal-body {
+        padding: var(--spacing-xl);
+    }
+
+    .modal-footer {
+        padding: var(--spacing-md) var(--spacing-xl);
+        border-top: 1px solid rgba(233, 236, 239, 0.5);
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--spacing-md);
+        background: rgba(248, 249, 250, 0.5);
+    }
+
+    /* Form Styles for Modal */
+    .form-group {
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: var(--spacing-sm);
+        font-weight: 500;
+        color: var(--dark-gray);
+        font-size: 0.95rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid rgba(108, 117, 125, 0.2);
+        border-radius: var(--radius-md);
+        font-family: 'Baloo Bhaijaan 2', sans-serif;
+        font-size: 1rem;
+        transition: all var(--transition-normal);
+        background-color: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(5px);
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
+        background-color: rgba(255, 255, 255, 0.95);
+    }
+
+    select.form-control {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23666' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 15px center;
+        padding-right: 35px;
+    }
+
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        background-color: rgba(255, 255, 255, 0.5);
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: var(--radius-md);
+        transition: all var(--transition-fast);
+    }
+
+    .checkbox-group:hover {
+        background-color: rgba(255, 255, 255, 0.8);
+    }
+
+    .checkbox-group input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--primary-color);
+    }
+
+    .btn-cancel, .btn-submit {
+        padding: 10px 20px;
+        border-radius: var(--radius-md);
+        font-size: 0.95rem;
+        font-weight: 500;
+        transition: all var(--transition-normal);
+    }
+
+    .btn-cancel {
+        background-color: rgba(233, 236, 239, 0.8);
+        color: var(--dark-gray);
+        border: 1px solid rgba(108, 117, 125, 0.2);
+        backdrop-filter: blur(5px);
+    }
+
+    .btn-cancel:hover {
+        background-color: rgba(233, 236, 239, 1);
+        transform: translateY(-2px);
+    }
+
+    .btn-submit {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: var(--white);
+        border: none;
+        box-shadow: 0 4px 10px rgba(114, 47, 55, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-submit::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: all 0.6s ease;
+    }
+
+    .btn-submit:hover {
+        background: linear-gradient(135deg, var(--primary-light), var(--primary-color));
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(114, 47, 55, 0.4);
+    }
+
+    .btn-submit:hover::before {
+        left: 100%;
+    }
+
+</style>
+<body>
+<div class="app-container">
+    <!-- Sidebar -->
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <!-- <img src="assets/logo.png" alt="Albany Service" class="logo"> -->
+            <h2>Albany Service</h2>
+        </div>
+
+        <div class="sidebar-user">
+            <div class="user-avatar">
+                <img src="assets/user-avatar.jpg" alt="User">
+            </div>
+            <div class="user-info">
+                <h3>John Smith</h3>
+                <p>Service Advisor</p>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <ul>
+                <li class="active"><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+                <li ><a href="vehicle-list.html"><i class="fas fa-car-side"></i> <span>Vehicles Under Service</span></a></li>
+                <li><a href="service-history.html"><i class="fas fa-history"></i> <span>Service History</span></a></li>
+                <!-- <li><a href="customer-management.html"><i class="fas fa-users"></i> <span>Customers</span></a></li> -->
+                <li><a href="inventory.html"><i class="fas fa-boxes"></i> <span>Inventory</span></a></li>
+                <!-- <li><a href="reports.html"><i class="fas fa-chart-bar"></i> <span>Reports</span></a></li> -->
+                <li><a href="profile.html"><i class="fas fa-user-cog"></i> <span>My Profile</span></a></li>
+            </ul>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="#" class="logout-btn"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="main-header">
+            <div class="header-search">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search...">
+            </div>
+
+            <div class="header-actions">
+                <!-- <button class="notification-btn">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge">3</span>
+                </button>
+                <button class="message-btn">
+                    <i class="fas fa-envelope"></i>
+                    <span class="badge">5</span>
+                </button> -->
+                <!-- <div class="user-dropdown">
+                    <button class="dropdown-toggle">
+                        <img src="assets/avatar.jpg" alt="User Avatar">
+                        <span>John Doe</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div> -->
+            </div>
+        </header>
+
+        <div class="dashboard-content">
+            <div class="page-title">
+                <h1>Dashboard</h1>
+                <p>Welcome back, John! Here's what's happening today.</p>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-container">
+                <div class="stat-card pending">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-details">
+                        <h3>Pending Services</h3>
+                        <p class="stat-number">12</p>
+                        <p class="stat-trend up">
+                            <i class="fas fa-arrow-up"></i> 8% from yesterday
+                        </p>
+                    </div>
+                </div>
+
+                <div class="stat-card in-progress">
+                    <div class="stat-icon">
+                        <i class="fas fa-tools"></i>
+                    </div>
+                    <div class="stat-details">
+                        <h3>In Progress</h3>
+                        <p class="stat-number">8</p>
+                        <p class="stat-trend down">
+                            <i class="fas fa-arrow-down"></i> 3% from yesterday
+                        </p>
+                    </div>
+                </div>
+
+                <div class="stat-card completed">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-details">
+                        <h3>Completed Today</h3>
+                        <p class="stat-number">5</p>
+                        <p class="stat-trend up">
+                            <i class="fas fa-arrow-up"></i> 12% from yesterday
+                        </p>
+                    </div>
+                </div>
+
+                <div class="stat-card total">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <div class="stat-details">
+                        <h3>Total This Week</h3>
+                        <p class="stat-number">42</p>
+                        <p class="stat-trend up">
+                            <i class="fas fa-arrow-up"></i> 15% from last week
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New Assignments Section -->
+            <div class="section-container">
+                <div class="section-header">
+                    <h2>New Vehicle Assignments</h2>
+                    <div class="section-actions">
+                        <button class="refresh-btn">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                        <div class="dropdown">
+                            <button class="dropdown-btn">
+                                <i class="fas fa-filter"></i> Filter
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                        <tr>
+                            <th>Vehicle ID</th>
+                            <th>Customer</th>
+                            <th>Vehicle Details</th>
+                            <th>Service Type</th>
+                            <th>Assigned Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>VH-2023-001</td>
+                            <td>
+                                <div class="customer-info">
+                                    <!-- <img src="assets/customer1.jpg" alt="Customer"> -->
+                                    <div>
+                                        <p class="name">Michael Johnson</p>
+                                        <p class="email">michael@example.com</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <p class="vehicle-model">Toyota Camry</p>
+                                <p class="vehicle-details">2020 • TN 01 AB 1234</p>
+                            </td>
+                            <td>Regular Maintenance</td>
+                            <td>Oct 15, 2023</td>
+                            <!-- ... existing code ... -->
+                            <td><span class="status-badge new">Pickup</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn-assign" data-id="VH-2023-001">Assign</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>VH-2023-002</td>
+                            <td>
+                                <div class="customer-info">
+                                    <!-- <img src="assets/customer2.jpg" alt="Customer"> -->
+                                    <div>
+                                        <p class="name">Sarah Williams</p>
+                                        <p class="email">sarah@example.com</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <p class="vehicle-model">Honda Civic</p>
+                                <p class="vehicle-details">2021 • TN 02 CD 5678</p>
+                            </td>
+                            <td>Oil Change</td>
+                            <td>Oct 15, 2023</td>
+                            <td><span class="status-badge new">Drop inn</span></td>
+                            <td>
+                                <div class="action-buttons">
+                                    <button class="btn-assign" data-id="VH-2023-002">Assign</button>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination">
+                    <button class="pagination-btn prev">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <div class="pagination-numbers">
+                        <button class="pagination-number active">1</button>
+                        <button class="pagination-number">2</button>
+                        <button class="pagination-number">3</button>
+                        <span class="pagination-ellipsis">...</span>
+                        <button class="pagination-number">10</button>
+                    </div>
+                    <button class="pagination-btn next">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Vehicles Under Service Section -->
+            <div class="section-container">
+                <div class="section-header">
+                    <h2>Vehicles Under Service</h2>
+                    <div class="section-actions">
+                        <button class="view-all-btn"> <a href="vehicle-list.html"></a>
+                            View All <i class="fas fa-arrow-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="cards-container">
+                    <div class="service-card">
+                        <div class="service-card-header">
+                            <div class="vehicle-info">
+                                <h3>Toyota Camry</h3>
+                                <p>TN 05 IJ 7890 • Michael Johnson</p>
+                            </div>
+                            <span class="status-badge in-progress">In Progress</span>
+                        </div>
+                        <div class="service-card-body">
+                            <div class="service-details">
+                                <div class="detail-item">
+                                    <span class="label">Service Type:</span>
+                                    <span class="value">Regular Maintenance</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">Started:</span>
+                                    <span class="value">Oct 14, 2023 • 10:30 AM</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">Estimated Completion:</span>
+                                    <span class="value">Oct 15, 2023 • 2:00 PM</span>
+                                </div>
+                            </div>
+                            <div class="progress-container">
+                                <div class="progress-label">
+                                    <span>Progress</span>
+                                    <span>65%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress" style="width: 65%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="service-card-footer">
+                            <button class="btn-update">
+                                <i class="fas fa-tools"></i> Update Service
+                            </button>
+                            <button class="btn-view-details">
+                                <i class="fas fa-eye"></i> View Details
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="service-card">
+                        <div class="service-card-header">
+                            <div class="vehicle-info">
+                                <h3>Honda Civic</h3>
+                                <p>TN 06 KL 1234 • Sarah Williams</p>
+                            </div>
+                            <span class="status-badge in-progress">In Progress</span>
+                        </div>
+                        <div class="service-card-body">
+                            <div class="service-details">
+                                <div class="detail-item">
+                                    <span class="label">Service Type:</span>
+                                    <span class="value">Oil Change</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">Started:</span>
+                                    <span class="value">Oct 14, 2023 • 11:45 AM</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">Estimated Completion:</span>
+                                    <span class="value">Oct 15, 2023 • 12:30 PM</span>
+                                </div>
+                            </div>
+                            <div class="progress-container">
+                                <div class="progress-label">
+                                    <span>Progress</span>
+                                    <span>40%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress" style="width: 40%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="service-card-footer">
+                            <button class="btn-update">
+                                <i class="fas fa-tools"></i> Update Service
+                            </button>
+                            <button class="btn-view-details">
+                                <i class="fas fa-eye"></i> View Details
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="service-card">
+                        <div class="service-card-header">
+                            <div class="vehicle-info">
+                                <h3>Ford Mustang</h3>
+                                <p>TN 07 MN 5678 • David Brown</p>
+                            </div>
+                            <span class="status-badge almost-done">Almost Done</span>
+                        </div>
+                        <div class="service-card-body">
+                            <div class="service-details">
+                                <div class="detail-item">
+                                    <span class="label">Service Type:</span>
+                                    <span class="value">Brake Inspection</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">Started:</span>
+                                    <span class="value">Oct 14, 2023 • 9:15 AM</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="label">Estimated Completion:</span>
+                                    <span class="value">Oct 15, 2023 • 11:00 AM</span>
+                                </div>
+                            </div>
+                            <div class="progress-container">
+                                <div class="progress-label">
+                                    <span>Progress</span>
+                                    <span>85%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress" style="width: 85%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="service-card-footer">
+                            <button class="btn-update">
+                                <i class="fas fa-tools"></i> Update Service
+                            </button>
+                            <button class="btn-view-details">
+                                <i class="fas fa-eye"></i> View Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Decline Reason Modal -->
+<div class="modal" id="declineModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Decline Service Assignment</h2>
+            <button class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>Please provide a reason for declining this service assignment:</p>
+            <div class="form-group">
+                <label for="declineReason">Reason:</label>
+                <select id="declineReason" class="form-control">
+                    <option value="">Select a reason</option>
+                    <option value="workload">Current workload is too high</option>
+                    <option value="expertise">Requires different expertise</option>
+                    <option value="equipment">Required equipment unavailable</option>
+                    <option value="schedule">Schedule conflict</option>
+                    <option value="other">Other reason</option>
+                </select>
+            </div>
+            <div class="form-group" id="otherReasonGroup" style="display: none;">
+                <label for="otherReason">Please specify:</label>
+                <textarea id="otherReason" class="form-control" rows="3"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel">Cancel</button>
+            <button class="btn-submit">Submit</button>
+        </div>
+    </div>
+</div>
+
+<script src="dashboard.js"></script>
+</body>
+<!-- Decline Reason Modal -->
+<div class="modal" id="declineModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Decline Service Assignment</h2>
+            <button class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>Please provide a reason for declining this service assignment:</p>
+            <div class="form-group">
+                <label for="declineReason">Reason:</label>
+                <select id="declineReason" class="form-control">
+                    <option value="">Select a reason</option>
+                    <option value="workload">Current workload is too high</option>
+                    <option value="expertise">Requires different expertise</option>
+                    <option value="equipment">Required equipment unavailable</option>
+                    <option value="schedule">Schedule conflict</option>
+                    <option value="other">Other reason</option>
+                </select>
+            </div>
+            <div class="form-group" id="otherReasonGroup" style="display: none;">
+                <label for="otherReason">Please specify:</label>
+                <textarea id="otherReason" class="form-control" rows="3"></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel">Cancel</button>
+            <button class="btn-submit">Submit</button>
+        </div>
+    </div>
+</div>
+
+<!-- Assign Technician Modal -->
+<div class="modal" id="assignModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Assign Service to Technician</h2>
+            <button class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>Please assign this service to a technician and set an estimated delivery date:</p>
+
+            <div class="form-group">
+                <label for="assignTechnician">Technician:</label>
+                <select id="assignTechnician" class="form-control">
+                    <option value="">Select a technician</option>
+                    <option value="tech1">James Wilson - Engine Specialist</option>
+                    <option value="tech2">Robert Garcia - Brake Specialist</option>
+                    <option value="tech3">Emily Chen - Electrical Systems</option>
+                    <option value="tech4">Daniel Martinez - General Maintenance</option>
+                    <option value="tech5">Sophia Lee - Transmission Specialist</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="estimatedDeliveryDate">Estimated Delivery Date:</label>
+                <input type="date" id="estimatedDeliveryDate" class="form-control" min="">
+            </div>
+
+            <div class="form-group">
+                <label for="estimatedDeliveryTime">Estimated Delivery Time:</label>
+                <input type="time" id="estimatedDeliveryTime" class="form-control">
+            </div>
+
+
+
+            <div class="form-group">
+                <label for="servicePriority">Priority:</label>
+                <select id="servicePriority" class="form-control">
+                    <option value="normal">Normal</option>
+                    <option value="high">High</option>
+                    <option value="urgent">Urgent</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel">Cancel</button>
+            <button class="btn-submit">Assign Service</button>
+        </div>
+    </div>
+</div>
+
+<script src="dashboard.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize the dashboard
+        initDashboard();
+
+        // Set up event listeners
+        setupEventListeners();
+    });
+
+    function initDashboard() {
+        console.log('Dashboard initialized');
+        // You can add any initialization code here
+        // For example, fetching initial data, setting up charts, etc.
+    }
+
+    function setupEventListeners() {
+        // Accept button click handlers
+        const acceptButtons = document.querySelectorAll('.btn-accept');
+        acceptButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const vehicleId = this.getAttribute('data-id');
+                acceptVehicle(vehicleId);
+            });
+        });
+
+        // Decline button click handlers
+        const declineButtons = document.querySelectorAll('.btn-decline');
+        declineButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const vehicleId = this.getAttribute('data-id');
+                showDeclineModal(vehicleId);
+            });
+        });
+
+        // Close modal handler
+        const closeModalBtn = document.querySelector('.close-modal');
+        if (closeModalBtn) {
+            closeModalBtn.addEventListener('click', closeModal);
+        }
+
+        // Cancel button in modal
+        const cancelBtn = document.querySelector('.btn-cancel');
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', closeModal);
+        }
+
+        // Submit button in modal
+        const submitBtn = document.querySelector('.btn-submit');
+        if (submitBtn) {
+            submitBtn.addEventListener('click', submitDeclineReason);
+        }
+
+        // Reason dropdown change handler
+        const reasonSelect = document.getElementById('declineReason');
+        if (reasonSelect) {
+            reasonSelect.addEventListener('change', function() {
+                const otherReasonGroup = document.getElementById('otherReasonGroup');
+                if (this.value === 'other') {
+                    otherReasonGroup.style.display = 'block';
+                } else {
+                    otherReasonGroup.style.display = 'none';
+                }
+            });
+        }
+
+        // Update service buttons
+        const updateButtons = document.querySelectorAll('.btn-update');
+        updateButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Get the closest service card to find the vehicle ID
+                const serviceCard = this.closest('.service-card');
+                const vehicleInfo = serviceCard.querySelector('.vehicle-info h3').textContent;
+                navigateToServiceUpdate(vehicleInfo);
+            });
+        });
+
+        // View details buttons
+        const viewDetailsButtons = document.querySelectorAll('.btn-view-details');
+        viewDetailsButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Get the closest service card to find the vehicle ID
+                const serviceCard = this.closest('.service-card');
+                const vehicleInfo = serviceCard.querySelector('.vehicle-info h3').textContent;
+                viewVehicleDetails(vehicleInfo);
+            });
+        });
+
+        // Refresh button
+        const refreshBtn = document.querySelector('.refresh-btn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', refreshData);
+        }
+    }
+
+    // Function to handle accepting a vehicle
+    function acceptVehicle(vehicleId) {
+        console.log(`Accepting vehicle with ID: ${vehicleId}`);
+        // Here you would typically make an API call to update the vehicle status
+
+        // For demo purposes, we'll just show a success message
+        alert(`Vehicle ${vehicleId} has been accepted for service.`);
+
+        // You might want to refresh the data or update the UI
+        // For now, let's just remove the row from the table
+        const row = document.querySelector(`button[data-id="${vehicleId}"]`).closest('tr');
+        row.style.backgroundColor = '#e8f5e9';
+        setTimeout(() => {
+            row.remove();
+        }, 1000);
+    }
+
+    // Function to show the decline modal
+    // Function to show the decline modal
+    function showDeclineModal(vehicleId) {
+        console.log(`Showing decline modal for vehicle with ID: ${vehicleId}`);
+
+        // Store the vehicle ID in the modal for later use
+        const modal = document.getElementById('declineModal');
+        modal.setAttribute('data-vehicle-id', vehicleId);
+
+        // Reset the form
+        const reasonSelect = document.getElementById('declineReason');
+        const otherReasonInput = document.getElementById('otherReason');
+
+        if (reasonSelect) reasonSelect.value = '';
+        if (otherReasonInput) otherReasonInput.value = '';
+
+        // Show the modal
+        modal.classList.add('active');
+    }
+
+    // Function to close the modal
+    function closeModal() {
+        const modal = document.getElementById('declineModal');
+        modal.classList.remove('active');
+    }
+
+    // Function to submit the decline reason
+    function submitDeclineReason() {
+        const modal = document.getElementById('declineModal');
+        const vehicleId = modal.getAttribute('data-vehicle-id');
+        const reasonSelect = document.getElementById('declineReason');
+        const otherReasonInput = document.getElementById('otherReason');
+
+        let reason = reasonSelect.value;
+
+        // If "Other" is selected, use the text from the other reason input
+        if (reason === 'other') {
+            reason = otherReasonInput.value;
+        }
+
+        if (!reason) {
+            alert('Please select or enter a reason for declining.');
+            return;
+        }
+
+        console.log(`Declining vehicle ${vehicleId} with reason: ${reason}`);
+
+        // Here you would typically make an API call to update the vehicle status
+
+        // For demo purposes, we'll just show a success message
+        alert(`Vehicle ${vehicleId} has been declined for service.\nReason: ${reason}`);
+
+        // Close the modal
+        closeModal();
+
+        // You might want to refresh the data or update the UI
+        // For now, let's just remove the row from the table
+        const row = document.querySelector(`button[data-id="${vehicleId}"]`).closest('tr');
+        row.style.backgroundColor = '#ffebee';
+        setTimeout(() => {
+            row.remove();
+        }, 1000);
+    }
+
+    // Function to navigate to the service update page
+    function navigateToServiceUpdate(vehicleInfo) {
+        console.log(`Navigating to service update page for vehicle: ${vehicleInfo}`);
+        // In a real application, you would redirect to the service update page
+        // window.location.href = `/service-update?vehicle=${encodeURIComponent(vehicleInfo)}`;
+
+        // For demo purposes, we'll just show an alert
+        alert(`Navigating to service update page for ${vehicleInfo}`);
+    }
+
+    // Function to view vehicle details
+    function viewVehicleDetails(vehicleInfo) {
+        console.log(`Viewing details for vehicle: ${vehicleInfo}`);
+        // In a real application, you would redirect to the vehicle details page
+        // window.location.href = `/vehicle-details?vehicle=${encodeURIComponent(vehicleInfo)}`;
+
+        // For demo purposes, we'll just show an alert
+        alert(`Viewing details for ${vehicleInfo}`);
+    }
+
+    // Function to refresh the data
+    function refreshData() {
+        console.log('Refreshing data...');
+        // Here you would typically make API calls to fetch fresh data
+
+        // For demo purposes, we'll just show a loading indicator and then hide it
+        const refreshBtn = document.querySelector('.refresh-btn');
+        const originalContent = refreshBtn.innerHTML;
+
+        refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        refreshBtn.disabled = true;
+
+        setTimeout(() => {
+            refreshBtn.innerHTML = originalContent;
+            refreshBtn.disabled = false;
+            alert('Data refreshed successfully!');
+        }, 1500);
+    }
+
+    // Function to handle pagination
+    function handlePagination(page) {
+        console.log(`Navigating to page ${page}`);
+        // Here you would typically make an API call to fetch data for the selected page
+
+        // For demo purposes, we'll just update the active page indicator
+        const paginationNumbers = document.querySelectorAll('.pagination-number');
+        paginationNumbers.forEach(num => {
+            num.classList.remove('active');
+            if (parseInt(num.textContent) === page) {
+                num.classList.add('active');
+            }
+        });
+    }
+
+    // Function to initialize pagination
+    function initPagination() {
+        const paginationNumbers = document.querySelectorAll('.pagination-number');
+        paginationNumbers.forEach(num => {
+            num.addEventListener('click', function() {
+                const page = parseInt(this.textContent);
+                handlePagination(page);
+            });
+        });
+
+        const prevBtn = document.querySelector('.pagination-btn.prev');
+        const nextBtn = document.querySelector('.pagination-btn.next');
+
+        if (prevBtn) {
+            prevBtn.addEventListener('click', function() {
+                const activePage = document.querySelector('.pagination-number.active');
+                if (activePage) {
+                    const page = parseInt(activePage.textContent);
+                    if (page > 1) {
+                        handlePagination(page - 1);
+                    }
+                }
+            });
+        }
+
+        if (nextBtn) {
+            nextBtn.addEventListener('click', function() {
+                const activePage = document.querySelector('.pagination-number.active');
+                if (activePage) {
+                    const page = parseInt(activePage.textContent);
+                    const totalPages = document.querySelectorAll('.pagination-number').length;
+                    if (page < totalPages) {
+                        handlePagination(page + 1);
+                    }
+                }
+            });
+        }
+    }
+
+    // Function to initialize the service checklist
+    function initServiceChecklist() {
+        const checklistItems = document.querySelectorAll('.checklist-item');
+
+        checklistItems.forEach(item => {
+            const checkbox = item.querySelector('.checklist-item-checkbox input');
+            const decreaseBtn = item.querySelector('.quantity-btn.decrease');
+            const increaseBtn = item.querySelector('.quantity-btn.increase');
+            const quantityInput = item.querySelector('.quantity-input');
+
+            if (checkbox) {
+                checkbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        item.style.backgroundColor = 'rgba(56, 176, 0, 0.05)';
+                        item.style.borderColor = 'var(--success)';
+                    } else {
+                        item.style.backgroundColor = '';
+                        item.style.borderColor = 'var(--medium-gray)';
+                    }
+
+                    updateServiceProgress();
+                });
+            }
+
+            if (decreaseBtn && quantityInput) {
+                decreaseBtn.addEventListener('click', function() {
+                    let value = parseInt(quantityInput.value);
+                    if (value > 0) {
+                        quantityInput.value = value - 1;
+                    }
+                });
+            }
+
+            if (increaseBtn && quantityInput) {
+                increaseBtn.addEventListener('click', function() {
+                    let value = parseInt(quantityInput.value);
+                    quantityInput.value = value + 1;
+                });
+            }
+        });
+    }
+
+    // Function to update the service progress
+    function updateServiceProgress() {
+        const checklistItems = document.querySelectorAll('.checklist-item-checkbox input');
+        const progressBar = document.querySelector('.progress');
+
+        if (!checklistItems.length || !progressBar) return;
+
+        let checkedCount = 0;
+        checklistItems.forEach(item => {
+            if (item.checked) {
+                checkedCount++;
+            }
+        });
+
+        const progressPercentage = (checkedCount / checklistItems.length) * 100;
+        progressBar.style.width = `${progressPercentage}%`;
+
+        const progressLabel = document.querySelector('.progress-label .percentage');
+        if (progressLabel) {
+            progressLabel.textContent = `${Math.round(progressPercentage)}%`;
+        }
+    }
+
+    // Function to initialize the filter functionality
+    function initFilters() {
+        const applyFilterBtn = document.querySelector('.btn-apply-filter');
+        const resetFilterBtn = document.querySelector('.btn-reset-filter');
+
+        if (applyFilterBtn) {
+            applyFilterBtn.addEventListener('click', applyFilters);
+        }
+
+        if (resetFilterBtn) {
+            resetFilterBtn.addEventListener('click', resetFilters);
+        }
+    }
+
+    // Function to apply filters
+    function applyFilters() {
+        console.log('Applying filters...');
+        // Here you would typically make API calls to fetch filtered data
+
+        // For demo purposes, we'll just show a loading indicator and then hide it
+        const applyFilterBtn = document.querySelector('.btn-apply-filter');
+        const originalContent = applyFilterBtn.textContent;
+
+        applyFilterBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Filtering...';
+        applyFilterBtn.disabled = true;
+
+        setTimeout(() => {
+            applyFilterBtn.textContent = originalContent;
+            applyFilterBtn.disabled = false;
+            alert('Filters applied successfully!');
+        }, 1500);
+    }
+
+    // Function to reset filters
+    function resetFilters() {
+        console.log('Resetting filters...');
+
+        // Reset all filter inputs
+        const filterInputs = document.querySelectorAll('.filter-input, .filter-select');
+        filterInputs.forEach(input => {
+            input.value = '';
+        });
+
+        // Here you would typically make API calls to fetch unfiltered data
+
+        // For demo purposes, we'll just show a success message
+        alert('Filters have been reset.');
+    }
+
+    // Function to initialize the profile page
+    function initProfilePage() {
+        const editProfileBtn = document.querySelector('.btn-edit-profile');
+        const changePasswordBtn = document.querySelector('.btn-change-password');
+
+        if (editProfileBtn) {
+            editProfileBtn.addEventListener('click', function() {
+                console.log('Edit profile clicked');
+                // In a real application, you would show a form to edit the profile
+                alert('Edit profile functionality would be implemented here.');
+            });
+        }
+
+        if (changePasswordBtn) {
+            changePasswordBtn.addEventListener('click', function() {
+                console.log('Change password clicked');
+                // In a real application, you would show a form to change the password
+                alert('Change password functionality would be implemented here.');
+            });
+        }
+    }
+
+    // Function to initialize charts (if using a charting library)
+    function initCharts() {
+        // This is a placeholder for chart initialization
+        // You would typically use a library like Chart.js or ApexCharts
+        console.log('Charts would be initialized here.');
+    }
+
+    // Function to handle notifications
+    function handleNotifications() {
+        const notificationBtn = document.querySelector('.notification-btn');
+
+        if (notificationBtn) {
+            notificationBtn.addEventListener('click', function() {
+                console.log('Notification button clicked');
+                // In a real application, you would show a dropdown with notifications
+                alert('Notifications would be displayed here.');
+            });
+        }
+    }
+
+    // Function to handle messages
+    function handleMessages() {
+        const messageBtn = document.querySelector('.message-btn');
+
+        if (messageBtn) {
+            messageBtn.addEventListener('click', function() {
+                console.log('Message button clicked');
+                // In a real application, you would show a dropdown with messages
+                alert('Messages would be displayed here.');
+            });
+        }
+    }
+
+    // Function to handle user dropdown
+    function handleUserDropdown() {
+        const dropdownToggle = document.querySelector('.dropdown-toggle');
+
+        if (dropdownToggle) {
+            dropdownToggle.addEventListener('click', function() {
+                console.log('User dropdown clicked');
+                // In a real application, you would toggle a dropdown menu
+                alert('User dropdown menu would be displayed here.');
+            });
+        }
+    }
+
+    // Function to initialize the dashboard based on the current page
+    function initCurrentPage() {
+        // Get the current page from the URL or a data attribute
+        const currentPage = document.body.getAttribute('data-page') || 'dashboard';
+
+        console.log(`Initializing page: ${currentPage}`);
+
+        // Initialize common elements
+        initPagination();
+        handleNotifications();
+        handleMessages();
+        handleUserDropdown();
+
+        // Initialize page-specific elements
+        switch (currentPage) {
+            case 'dashboard':
+                // Dashboard specific initializations
+                initCharts();
+                break;
+            case 'service-update':
+                // Service update page specific initializations
+                initServiceChecklist();
+                break;
+            case 'service-history':
+                // Service history page specific initializations
+                initFilters();
+                break;
+            case 'profile':
+                // Profile page specific initializations
+                initProfilePage();
+                break;
+        }
+    }
+
+    // Call the initialization function when the DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM fully loaded');
+        initDashboard();
+        setupEventListeners();
+        initCurrentPage();
+    });
+
+    // Add window resize event listener to handle responsive behavior
+    window.addEventListener('resize', function() {
+        // Handle responsive behavior if needed
+        console.log('Window resized');
+    });
+</script>
+</body>
+</html>

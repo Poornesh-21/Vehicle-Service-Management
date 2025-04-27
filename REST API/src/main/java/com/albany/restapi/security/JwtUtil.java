@@ -77,9 +77,12 @@ public class JwtUtil {
                 extraClaims.put("authorities", authoritiesStr);
             }
 
-            // Add user ID for convenience
+            // Add user details for convenience
             extraClaims.put("userId", user.getUserId());
+            extraClaims.put("firstName", user.getFirstName());
+            extraClaims.put("lastName", user.getLastName());
             extraClaims.put("name", user.getFirstName() + " " + user.getLastName());
+            extraClaims.put("email", user.getEmail());
         }
 
         return generateToken(extraClaims, userDetails);

@@ -26,14 +26,19 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         // Explicitly permit these paths without authentication
-                        .requestMatchers("/admin/login", "/admin/api/login", "/test-auth",
+                        .requestMatchers("/admin/login", "/admin/api/login",
+                                "/serviceAdvisor/login", "/serviceAdvisor/api/login",
+                                "/test-auth",
                                 "/css/**", "/js/**", "/images/**", "/favicon.ico", "/error").permitAll()
-                        // Allow dashboard access with token parameter (will be handled by the AdminController)
+                        // Allow dashboard access with token parameter (will be handled by the controllers)
                         .requestMatchers(request ->
-                                request.getServletPath().equals("/admin/dashboard") &&
+                                (request.getServletPath().equals("/admin/dashboard") ||
+                                        request.getServletPath().equals("/serviceAdvisor/dashboard")) &&
                                         request.getParameter("token") != null).permitAll()
                         // Accept both ROLE_ADMIN and ROLE_admin for admin paths
                         .requestMatchers("/admin/**").hasAnyAuthority("ROLE_ADMIN", "ROLE_admin")
+                        // Accept both ROLE_SERVICEADVISOR and ROLE_serviceAdvisor for service advisor paths
+                        .requestMatchers("/serviceAdvisor/**").hasAnyAuthority("ROLE_SERVICEADVISOR", "ROLE_serviceAdvisor")
                         // Any other request needs authentication
                         .anyRequest().authenticated()
                 )

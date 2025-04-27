@@ -868,214 +868,381 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 <!-- Custom JS -->
 <script>
+    // Service Advisor Login JavaScript
+
     document.addEventListener('DOMContentLoaded', function() {
-        // Password visibility toggle
+        // ===== UI Element Handlers =====
+
+        // Password visibility toggle for login form
         const togglePassword = document.getElementById('togglePassword');
         const password = document.getElementById('password');
         const eyeIcon = document.getElementById('eyeIcon');
 
-        togglePassword.addEventListener('click', function() {
-            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-            password.setAttribute('type', type);
+        if (togglePassword && password && eyeIcon) {
+            togglePassword.addEventListener('click', function() {
+                const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+                password.setAttribute('type', type);
 
-            eyeIcon.classList.toggle('fa-eye');
-            eyeIcon.classList.toggle('fa-eye-slash');
-        });
+                eyeIcon.classList.toggle('fa-eye');
+                eyeIcon.classList.toggle('fa-eye-slash');
+            });
+        }
 
-        // New password toggle
+        // New password toggle for password change modal
         const toggleNewPassword = document.getElementById('toggleNewPassword');
         const newPassword = document.getElementById('newPassword');
         const newEyeIcon = document.getElementById('newEyeIcon');
 
-        toggleNewPassword.addEventListener('click', function() {
-            const type = newPassword.getAttribute('type') === 'password' ? 'text' : 'password';
-            newPassword.setAttribute('type', type);
+        if (toggleNewPassword && newPassword && newEyeIcon) {
+            toggleNewPassword.addEventListener('click', function() {
+                const type = newPassword.getAttribute('type') === 'password' ? 'text' : 'password';
+                newPassword.setAttribute('type', type);
 
-            newEyeIcon.classList.toggle('fa-eye');
-            newEyeIcon.classList.toggle('fa-eye-slash');
-        });
+                newEyeIcon.classList.toggle('fa-eye');
+                newEyeIcon.classList.toggle('fa-eye-slash');
+            });
+        }
 
-        // Confirm password toggle
+        // Confirm password toggle for password change modal
         const toggleConfirmPassword = document.getElementById('toggleConfirmPassword');
         const confirmPassword = document.getElementById('confirmPassword');
         const confirmEyeIcon = document.getElementById('confirmEyeIcon');
 
-        toggleConfirmPassword.addEventListener('click', function() {
-            const type = confirmPassword.getAttribute('type') === 'password' ? 'text' : 'password';
-            confirmPassword.setAttribute('type', type);
+        if (toggleConfirmPassword && confirmPassword && confirmEyeIcon) {
+            toggleConfirmPassword.addEventListener('click', function() {
+                const type = confirmPassword.getAttribute('type') === 'password' ? 'text' : 'password';
+                confirmPassword.setAttribute('type', type);
 
-            confirmEyeIcon.classList.toggle('fa-eye');
-            confirmEyeIcon.classList.toggle('fa-eye-slash');
-        });
+                confirmEyeIcon.classList.toggle('fa-eye');
+                confirmEyeIcon.classList.toggle('fa-eye-slash');
+            });
+        }
 
-        // Check if user has changed temporary password
-        const hasChangedPassword = localStorage.getItem('passwordChanged');
+        // ===== Password Strength Check =====
 
-        // Password strength meter
-        const strengthProgress = document.getElementById('strengthProgress');
-        const strengthText = document.getElementById('strengthText');
-        const lengthCheck = document.getElementById('length');
-        const uppercaseCheck = document.getElementById('uppercase');
-        const lowercaseCheck = document.getElementById('lowercase');
-        const numberCheck = document.getElementById('number');
-        const specialCheck = document.getElementById('special');
+        // Password strength validation
+        if (newPassword) {
+            newPassword.addEventListener('input', function() {
+                const value = newPassword.value;
+                let strength = 0;
 
-        newPassword.addEventListener('input', function() {
-            const value = newPassword.value;
+                // Check length
+                const lengthCheck = document.getElementById('length');
+                if (value.length >= 8) {
+                    lengthCheck.innerHTML = '<i class="fas fa-check-circle"></i> At least 8 characters';
+                    lengthCheck.classList.add('requirement-met');
+                    strength += 20;
+                } else {
+                    lengthCheck.innerHTML = '<i class="fas fa-times-circle"></i> At least 8 characters';
+                    lengthCheck.classList.remove('requirement-met');
+                }
+
+                // Check uppercase
+                const uppercaseCheck = document.getElementById('uppercase');
+                if (/[A-Z]/.test(value)) {
+                    uppercaseCheck.innerHTML = '<i class="fas fa-check-circle"></i> At least 1 uppercase letter';
+                    uppercaseCheck.classList.add('requirement-met');
+                    strength += 20;
+                } else {
+                    uppercaseCheck.innerHTML = '<i class="fas fa-times-circle"></i> At least 1 uppercase letter';
+                    uppercaseCheck.classList.remove('requirement-met');
+                }
+
+                // Check lowercase
+                const lowercaseCheck = document.getElementById('lowercase');
+                if (/[a-z]/.test(value)) {
+                    lowercaseCheck.innerHTML = '<i class="fas fa-check-circle"></i> At least 1 lowercase letter';
+                    lowercaseCheck.classList.add('requirement-met');
+                    strength += 20;
+                } else {
+                    lowercaseCheck.innerHTML = '<i class="fas fa-times-circle"></i> At least 1 lowercase letter';
+                    lowercaseCheck.classList.remove('requirement-met');
+                }
+
+                // Check number
+                const numberCheck = document.getElementById('number');
+                if (/[0-9]/.test(value)) {
+                    numberCheck.innerHTML = '<i class="fas fa-check-circle"></i> At least 1 number';
+                    numberCheck.classList.add('requirement-met');
+                    strength += 20;
+                } else {
+                    numberCheck.innerHTML = '<i class="fas fa-times-circle"></i> At least 1 number';
+                    numberCheck.classList.remove('requirement-met');
+                }
+
+                // Check special character
+                const specialCheck = document.getElementById('special');
+                if (/[^A-Za-z0-9]/.test(value)) {
+                    specialCheck.innerHTML = '<i class="fas fa-check-circle"></i> At least 1 special character';
+                    specialCheck.classList.add('requirement-met');
+                    strength += 20;
+                } else {
+                    specialCheck.innerHTML = '<i class="fas fa-times-circle"></i> At least 1 special character';
+                    specialCheck.classList.remove('requirement-met');
+                }
+
+                // Update strength meter
+                const strengthProgress = document.getElementById('strengthProgress');
+                const strengthText = document.getElementById('strengthText');
+
+                strengthProgress.style.width = strength + '%';
+
+                if (strength <= 20) {
+                    strengthText.textContent = 'Very Weak';
+                    strengthProgress.className = 'strength-progress very-weak';
+                } else if (strength <= 40) {
+                    strengthText.textContent = 'Weak';
+                    strengthProgress.className = 'strength-progress weak';
+                } else if (strength <= 60) {
+                    strengthText.textContent = 'Medium';
+                    strengthProgress.className = 'strength-progress medium';
+                } else if (strength <= 80) {
+                    strengthText.textContent = 'Strong';
+                    strengthProgress.className = 'strength-progress strong';
+                } else {
+                    strengthText.textContent = 'Very Strong';
+                    strengthProgress.className = 'strength-progress very-strong';
+                }
+            });
+        }
+
+        // Password match validation
+        if (confirmPassword) {
+            confirmPassword.addEventListener('input', function() {
+                const passwordMismatch = document.getElementById('passwordMismatch');
+
+                if (newPassword.value !== confirmPassword.value) {
+                    passwordMismatch.classList.remove('d-none');
+                } else {
+                    passwordMismatch.classList.add('d-none');
+                }
+            });
+        }
+
+        // ===== Form Handlers =====
+
+        // Login form submission handler
+        const loginForm = document.getElementById('loginForm');
+
+        if (loginForm) {
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                // Get form data
+                const email = document.getElementById('email').value;
+                const passwordValue = document.getElementById('password').value;
+
+                // Hide any previous error messages
+                hideErrorMessage();
+
+                // Show loading state
+                const loginBtn = document.querySelector('.btn-login');
+                const originalText = loginBtn.innerHTML;
+                loginBtn.disabled = true;
+                loginBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Signing in...';
+
+                // Prepare request payload
+                const requestData = {
+                    email: email,
+                    password: passwordValue
+                };
+
+                // Send authentication request
+                fetch('/serviceAdvisor/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(errorData => {
+                                throw new Error(errorData.message || 'Authentication failed');
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Authentication successful
+                        console.log('Login successful', data);
+
+                        // Check if user is a service advisor
+                        if (data.role && data.role.toLowerCase() !== 'serviceadvisor') {
+                            throw new Error('You do not have permission to access the Service Advisor portal');
+                        }
+
+                        // Store auth data
+                        localStorage.setItem('jwtToken', data.token);
+                        localStorage.setItem('userRole', data.role);
+                        localStorage.setItem('userEmail', data.email);
+                        localStorage.setItem('userName', data.firstName + ' ' + data.lastName);
+
+                        // Check if this is a temporary password that needs to be changed
+                        const isTemporaryPassword = checkIfTemporaryPassword(passwordValue);
+
+                        if (isTemporaryPassword) {
+                            // Show change password modal
+                            const changePasswordModal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
+                            changePasswordModal.show();
+
+                            // Reset button state
+                            loginBtn.disabled = false;
+                            loginBtn.innerHTML = originalText;
+                        } else {
+                            // Redirect to dashboard with token
+                            window.location.href = '/serviceAdvisor/dashboard?token=' + data.token;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Login error:', error);
+
+                        // Show error message
+                        showErrorMessage(error.message || 'Authentication failed. Please check your credentials.');
+
+                        // Reset button state
+                        loginBtn.disabled = false;
+                        loginBtn.innerHTML = originalText;
+                    });
+            });
+        }
+
+        // Password change form submission handler
+        const changePasswordForm = document.getElementById('changePasswordForm');
+
+        if (changePasswordForm) {
+            changePasswordForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const newPasswordValue = newPassword.value;
+                const confirmPasswordValue = confirmPassword.value;
+
+                // Validate password match
+                if (newPasswordValue !== confirmPasswordValue) {
+                    document.getElementById('passwordMismatch').classList.remove('d-none');
+                    return;
+                }
+
+                // Validate password strength
+                if (validatePasswordStrength(newPasswordValue) < 60) {
+                    showErrorMessage('Password is not strong enough. Please follow the requirements.');
+                    return;
+                }
+
+                // Show loading state
+                const submitBtn = changePasswordForm.querySelector('button[type="submit"]');
+                const originalBtnText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Setting password...';
+
+                // In a real application, we would make an API call to change the password
+                // For now, we're simulating success after a brief delay
+                setTimeout(() => {
+                    // Mark password as changed
+                    localStorage.setItem('passwordChanged', 'true');
+
+                    // Get token and redirect
+                    const token = localStorage.getItem('jwtToken');
+                    window.location.href = '/serviceAdvisor/dashboard?token=' + token;
+                }, 1500);
+            });
+        }
+
+        // ===== Utility Functions =====
+
+        // Show error message
+        function showErrorMessage(message) {
+            // Create error alert if it doesn't exist
+            let errorAlert = document.getElementById('loginError');
+
+            if (!errorAlert) {
+                errorAlert = document.createElement('div');
+                errorAlert.className = 'alert alert-danger mt-3';
+                errorAlert.id = 'loginError';
+                errorAlert.role = 'alert';
+
+                const formEl = document.querySelector('.glass-card') || document.body;
+                formEl.prepend(errorAlert);
+            }
+
+            errorAlert.textContent = message;
+            errorAlert.classList.remove('d-none');
+        }
+
+        // Hide error message
+        function hideErrorMessage() {
+            const errorAlert = document.getElementById('loginError');
+            if (errorAlert) {
+                errorAlert.classList.add('d-none');
+            }
+        }
+
+        // Check if password is temporary
+        function checkIfTemporaryPassword(password) {
+            // This is a simplified check - in a real scenario, you'd have specific patterns
+            // for temporary passwords or check with the server
+
+            // Example: Consider passwords starting with SA2025- as temporary
+            return password.startsWith('SA2025-');
+        }
+
+        // Calculate password strength (returns 0-100)
+        function validatePasswordStrength(password) {
             let strength = 0;
 
-            // Check length
-            if (value.length >= 8) {
-                lengthCheck.innerHTML = '<i class="fas fa-check-circle"></i> At least 8 characters';
-                lengthCheck.classList.add('requirement-met');
-                strength += 20;
-            } else {
-                lengthCheck.innerHTML = '<i class="fas fa-times-circle"></i> At least 8 characters';
-                lengthCheck.classList.remove('requirement-met');
-            }
+            // Length check
+            if (password.length >= 8) strength += 20;
 
-            // Check uppercase
-            if (/[A-Z]/.test(value)) {
-                uppercaseCheck.innerHTML = '<i class="fas fa-check-circle"></i> At least 1 uppercase letter';
-                uppercaseCheck.classList.add('requirement-met');
-                strength += 20;
-            } else {
-                uppercaseCheck.innerHTML = '<i class="fas fa-times-circle"></i> At least 1 uppercase letter';
-                uppercaseCheck.classList.remove('requirement-met');
-            }
+            // Uppercase check
+            if (/[A-Z]/.test(password)) strength += 20;
 
-            // Check lowercase
-            if (/[a-z]/.test(value)) {
-                lowercaseCheck.innerHTML = '<i class="fas fa-check-circle"></i> At least 1 lowercase letter';
-                lowercaseCheck.classList.add('requirement-met');
-                strength += 20;
-            } else {
-                lowercaseCheck.innerHTML = '<i class="fas fa-times-circle"></i> At least 1 lowercase letter';
-                lowercaseCheck.classList.remove('requirement-met');
-            }
+            // Lowercase check
+            if (/[a-z]/.test(password)) strength += 20;
 
-            // Check number
-            if (/[0-9]/.test(value)) {
-                numberCheck.innerHTML = '<i class="fas fa-check-circle"></i> At least 1 number';
-                numberCheck.classList.add('requirement-met');
-                strength += 20;
-            } else {
-                numberCheck.innerHTML = '<i class="fas fa-times-circle"></i> At least 1 number';
-                numberCheck.classList.remove('requirement-met');
-            }
+            // Number check
+            if (/[0-9]/.test(password)) strength += 20;
 
-            // Check special character
-            if (/[^A-Za-z0-9]/.test(value)) {
-                specialCheck.innerHTML = '<i class="fas fa-check-circle"></i> At least 1 special character';
-                specialCheck.classList.add('requirement-met');
-                strength += 20;
-            } else {
-                specialCheck.innerHTML = '<i class="fas fa-times-circle"></i> At least 1 special character';
-                specialCheck.classList.remove('requirement-met');
-            }
+            // Special character check
+            if (/[^A-Za-z0-9]/.test(password)) strength += 20;
 
-            // Update strength meter
-            strengthProgress.style.width = strength + '%';
+            return strength;
+        }
 
-            if (strength <= 20) {
-                strengthText.textContent = 'Very Weak';
-                strengthProgress.className = 'strength-progress very-weak';
-            } else if (strength <= 40) {
-                strengthText.textContent = 'Weak';
-                strengthProgress.className = 'strength-progress weak';
-            } else if (strength <= 60) {
-                strengthText.textContent = 'Medium';
-                strengthProgress.className = 'strength-progress medium';
-            } else if (strength <= 80) {
-                strengthText.textContent = 'Strong';
-                strengthProgress.className = 'strength-progress strong';
-            } else {
-                strengthText.textContent = 'Very Strong';
-                strengthProgress.className = 'strength-progress very-strong';
-            }
-        });
+        // ===== Auto-login with token if available =====
 
-        // Check password match
-        confirmPassword.addEventListener('input', function() {
-            const passwordMismatch = document.getElementById('passwordMismatch');
+        // Check if we have a valid token already
+        const existingToken = localStorage.getItem('jwtToken');
+        const role = localStorage.getItem('userRole');
 
-            if (newPassword.value !== confirmPassword.value) {
-                passwordMismatch.classList.remove('d-none');
-            } else {
-                passwordMismatch.classList.add('d-none');
-            }
-        });
-
-        // Change password form submission
-        const changePasswordForm = document.getElementById('changePasswordForm');
-        changePasswordForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const newPasswordValue = newPassword.value;
-            const confirmPasswordValue = confirmPassword.value;
-
-            if (newPasswordValue !== confirmPasswordValue) {
-                document.getElementById('passwordMismatch').classList.remove('d-none');
-                return;
-            }
-
-            // Store the new password (in a real app, this would be sent to the server)
-            localStorage.setItem('userPassword', newPasswordValue);
-            localStorage.setItem('passwordChanged', 'true');
-
-            // Close modal and redirect to dashboard
-            const modal = bootstrap.Modal.getInstance(document.getElementById('changePasswordModal'));
-            modal.hide();
-
-            window.location.href = 'dashboard.html';
-        });
-
-        // Form submission handling with password check
-        const loginForm = document.getElementById('loginForm');
-        loginForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const email = document.getElementById('email').value;
-            const passwordValue = password.value;
-
-            // Show loading state
-            const loginBtn = document.querySelector('.btn-login');
-            const originalText = loginBtn.innerHTML;
-            loginBtn.disabled = true;
-            loginBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Signing in...';
-
-            // Simulate API request delay
-            setTimeout(() => {
-                // Check if this is first login (temporary password)
-                if (passwordValue === '123456' && !hasChangedPassword) {
-                    // Reset button state
-                    loginBtn.disabled = false;
-                    loginBtn.innerHTML = originalText;
-
-                    // Show change password modal
-                    const changePasswordModal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
-                    changePasswordModal.show();
-                } else if (hasChangedPassword && passwordValue === localStorage.getItem('userPassword')) {
-                    // Password matches the changed password
-                    window.location.href = 'dashboard.html';
-                } else if (!hasChangedPassword && passwordValue === '123456') {
-                    // First login with temporary password
-                    const changePasswordModal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
-                    changePasswordModal.show();
-
-                    // Reset button state
-                    loginBtn.disabled = false;
-                    loginBtn.innerHTML = originalText;
-                } else {
-                    // Invalid credentials
-                    alert('Invalid email or password. If this is your first login, use the temporary password: 123456');
-
-                    // Reset button state
-                    loginBtn.disabled = false;
-                    loginBtn.innerHTML = originalText;
+        if (existingToken && role && role.toLowerCase() === 'serviceadvisor') {
+            // Check if token is still valid by making a request to a protected endpoint
+            fetch('/serviceAdvisor/api/validate-token', {
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + existingToken
                 }
-            }, 1500);
-        });
+            })
+                .then(response => {
+                    if (response.ok) {
+                        // Token is valid, redirect to dashboard
+                        window.location.href = '/serviceAdvisor/dashboard?token=' + existingToken;
+                    } else {
+                        // Token is invalid, clear storage
+                        localStorage.removeItem('jwtToken');
+                        localStorage.removeItem('userRole');
+                        localStorage.removeItem('userEmail');
+                        localStorage.removeItem('userName');
+                    }
+                })
+                .catch(error => {
+                    console.error('Token validation error:', error);
+                    // Clear storage on error
+                    localStorage.removeItem('jwtToken');
+                    localStorage.removeItem('userRole');
+                    localStorage.removeItem('userEmail');
+                    localStorage.removeItem('userName');
+                });
+        }
     });
 </script>
 </body>

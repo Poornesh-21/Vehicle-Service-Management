@@ -86,12 +86,24 @@ public class JwtUtil {
 
         GrantedAuthority authority = new SimpleGrantedAuthority(roleWithPrefix);
 
+        // Extract additional user information if available
+        Integer userId = claims.get("userId", Integer.class);
+        String firstName = claims.get("firstName", String.class);
+        String lastName = claims.get("lastName", String.class);
+        String name = claims.get("name", String.class);
+
         UserDetails principal = User.builder()
                 .username(claims.getSubject())
                 .password("")
                 .authorities(Collections.singletonList(authority))
                 .build();
 
-        return new UsernamePasswordAuthenticationToken(principal, token, Collections.singletonList(authority));
+        UsernamePasswordAuthenticationToken authToken =
+                new UsernamePasswordAuthenticationToken(principal, token, Collections.singletonList(authority));
+
+        // Add user details to authentication token
+        if (userId != null) authToken.setDetails(Collections.singletonMap("userId", userId));
+
+        return authToken;
     }
 }

@@ -27,6 +27,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final List<String> publicPaths = Arrays.asList(
             "/admin/login",
             "/admin/api/login",
+            "/serviceAdvisor/login",
+            "/serviceAdvisor/api/login",
             "/css/",
             "/js/",
             "/images/",
@@ -68,6 +70,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 HttpSession session = request.getSession();
                 session.setAttribute("jwt-token", tokenParam);
 
+                // Store user info in session
+                String email = jwtUtil.extractUsername(tokenParam);
+                String firstName = jwtUtil.extractClaim(tokenParam, claims -> claims.get("firstName", String.class));
+                String lastName = jwtUtil.extractClaim(tokenParam, claims -> claims.get("lastName", String.class));
+                if (firstName != null) session.setAttribute("firstName", firstName);
+                if (lastName != null) session.setAttribute("lastName", lastName);
+                if (email != null) session.setAttribute("email", email);
+
                 log.debug("Valid token parameter, set authentication for user: {}", auth.getName());
                 filterChain.doFilter(request, response);
                 return;
@@ -103,6 +113,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 // Store in session for future requests
                 if (session != null) {
                     session.setAttribute("jwt-token", headerToken);
+
+                    // Store user info in session
+                    String email = jwtUtil.extractUsername(headerToken);
+                    String firstName = jwtUtil.extractClaim(headerToken, claims -> claims.get("firstName", String.class));
+                    String lastName = jwtUtil.extractClaim(headerToken, claims -> claims.get("lastName", String.class));
+                    if (firstName != null) session.setAttribute("firstName", firstName);
+                    if (lastName != null) session.setAttribute("lastName", lastName);
+                    if (email != null) session.setAttribute("email", email);
                 }
 
                 log.debug("Valid Authorization header token, set authentication for user: {}", auth.getName());
@@ -115,6 +133,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         log.debug("No valid token found, clearing security context");
         SecurityContextHolder.clearContext();
 
+        // Determine which login page to redirect to based on the URL
+        String loginRedirectPath = requestURI.startsWith("/serviceAdvisor") ?
+                "/serviceAdvisor/login?error=session_expired" :
+                "/admin/login?error=session_expired";
+
         if (isAjaxRequest) {
             log.debug("AJAX request without valid token, returning 401");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -122,7 +145,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             response.getWriter().write("{\"message\":\"Session expired\",\"status\":401}");
         } else {
             log.debug("Redirecting to login page due to missing/invalid token");
-            response.sendRedirect("/admin/login?error=session_expired");
+            response.sendRedirect(loginRedirectPath);
         }
     }
 }

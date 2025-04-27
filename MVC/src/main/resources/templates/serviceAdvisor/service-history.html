@@ -1,0 +1,1713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service History - Albany Service</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<style>
+    /* Service History Page Styles */
+
+    /* Service History Grid */
+    .service-history-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    /* Service History Card */
+    .service-history-card {
+        background-color: var(--card-bg);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-md);
+        overflow: hidden;
+        transition: var(--transition-normal);
+        border: 1px solid var(--border-color);
+    }
+
+    .service-history-card:hover {
+        box-shadow: var(--shadow-lg);
+        transform: translateY(-3px);
+    }
+
+    .service-history-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: var(--spacing-md);
+        background-color: rgba(114, 47, 55, 0.05);
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .service-date {
+        display: flex;
+        align-items: center;
+        color: var(--text-medium);
+        gap: var(--spacing-sm);
+        font-size: 14px;
+    }
+
+    .service-id {
+        font-weight: 600;
+        color: var(--primary-color);
+        font-size: 14px;
+    }
+
+    .service-history-body {
+        padding: var(--spacing-md);
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+
+    .vehicle-info {
+        display: flex;
+        gap: var(--spacing-md);
+    }
+
+    .vehicle-image {
+        width: 120px;
+        height: 90px;
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .vehicle-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .vehicle-details h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0 0 5px;
+        color: var(--text-dark);
+    }
+
+    .vehicle-plate {
+        font-size: 14px;
+        color: var(--primary-color);
+        margin: 0 0 5px;
+    }
+
+    .customer-name {
+        font-size: 14px;
+        color: var(--text-medium);
+        margin: 0;
+    }
+
+    .service-summary {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-md) var(--spacing-xl);
+    }
+
+    .service-type, .service-advisor, .service-technician, .service-cost {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .label {
+        font-size: 13px;
+        color: var(--text-medium);
+    }
+
+    .value {
+        font-size: 15px;
+        font-weight: 500;
+        color: var(--text-dark);
+    }
+
+    .service-cost .value {
+        color: var(--primary-color);
+        font-weight: 600;
+    }
+
+    .service-history-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--spacing-md);
+        padding: var(--spacing-md);
+        border-top: 1px solid var(--border-color);
+        background-color: rgba(114, 47, 55, 0.02);
+    }
+
+    .btn-view-details, .btn-print-invoice {
+        padding: 8px 15px;
+        border-radius: var(--radius-sm);
+        font-size: 14px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: var(--transition-normal);
+    }
+
+    .btn-view-details {
+        background-color: var(--primary-color);
+        color: var(--text-light);
+        border: none;
+    }
+
+    .btn-view-details:hover {
+        background-color: var(--primary-light);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-print-invoice {
+        background-color: var(--background-color);
+        color: var(--text-dark);
+        border: 1px solid var(--border-color);
+    }
+
+    .btn-print-invoice:hover {
+        background-color: var(--border-color);
+    }
+
+    /* Filters Container */
+    .filters-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--spacing-md);
+        background-color: var(--card-bg);
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-md);
+        padding: var(--spacing-lg);
+        margin-bottom: var(--spacing-xl);
+        align-items: flex-end;
+    }
+
+    .filter-group {
+        flex: 1;
+        min-width: 200px;
+    }
+
+    .filter-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: var(--text-dark);
+    }
+
+    .filter-select {
+        width: 100%;
+        padding: 10px 15px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+        font-family: 'Baloo Bhaijaan 2', sans-serif;
+        font-size: 14px;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23666' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 15px center;
+        padding-right: 35px;
+        transition: var(--transition-normal);
+    }
+
+    .filter-select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
+    }
+
+    .btn-apply-filters {
+        background-color: var(--primary-color);
+        color: var(--text-light);
+        border: none;
+        border-radius: var(--radius-sm);
+        padding: 10px 20px;
+        font-size: 14px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: var(--transition-normal);
+        height: 42px;
+    }
+
+    .btn-apply-filters:hover {
+        background-color: var(--primary-light);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    /* Pagination */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: var(--spacing-xl);
+        gap: var(--spacing-sm);
+    }
+
+    .pagination-prev, .pagination-next {
+        padding: 8px 15px;
+        border-radius: var(--radius-sm);
+        background-color: var(--card-bg);
+        color: var(--text-dark);
+        border: 1px solid var(--border-color);
+        font-size: 14px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: var(--transition-normal);
+    }
+
+    .pagination-prev:hover, .pagination-next:hover {
+        background-color: rgba(114, 47, 55, 0.05);
+        color: var(--primary-color);
+    }
+
+    .pagination-prev.disabled, .pagination-next.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    .pagination-numbers {
+        display: flex;
+        gap: var(--spacing-xs);
+    }
+
+    .pagination-number {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-sm);
+        background-color: var(--card-bg);
+        color: var(--text-dark);
+        border: 1px solid var(--border-color);
+        font-weight: 500;
+        transition: var(--transition-normal);
+    }
+
+    .pagination-number:hover {
+        background-color: rgba(114, 47, 55, 0.05);
+        color: var(--primary-color);
+    }
+
+    .pagination-number.active {
+        background-color: var(--primary-color);
+        color: var(--text-light);
+        border-color: var(--primary-color);
+    }
+
+    /* Service Details Modal */
+    .service-details-modal {
+        max-width: 800px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .service-details-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .service-id-date h3 {
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0 0 5px;
+        color: var(--primary-color);
+    }
+
+    .service-id-date p {
+        font-size: 14px;
+        color: var(--text-medium);
+        margin: 0;
+    }
+
+    .service-status {
+        padding: 6px 15px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .service-status.completed {
+        background-color: rgba(40, 167, 69, 0.1);
+        color: var(--success-color);
+    }
+
+    .service-status.in-progress {
+        background-color: rgba(114, 47, 55, 0.1);
+        color: var(--primary-color);
+    }
+
+    .service-status.pending {
+        background-color: rgba(255, 193, 7, 0.1);
+        color: var(--warning-color);
+    }
+
+    .service-details-section {
+        margin-bottom: var(--spacing-xl);
+    }
+
+    .service-details-section h4 {
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0 0 var(--spacing-md);
+        color: var(--text-dark);
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: var(--spacing-md);
+    }
+
+    .details-item {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+    }
+
+    .details-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .details-table th, .details-table td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .details-table th {
+        font-weight: 600;
+        color: var(--text-dark);
+        background-color: rgba(114, 47, 55, 0.05);
+    }
+
+    .details-table tbody tr:hover {
+        background-color: rgba(114, 47, 55, 0.02);
+    }
+
+    .details-table tfoot td {
+        font-weight: 500;
+    }
+
+    .details-table .total-row td {
+        font-weight: 600;
+        color: var(--primary-color);
+        border-top: 2px solid var(--border-color);
+    }
+
+    .tasks-list {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+
+    .task-item {
+        display: flex;
+        gap: var(--spacing-md);
+        padding: var(--spacing-md);
+        background-color: var(--background-color);
+        border-radius: var(--radius-md);
+        transition: var(--transition-normal);
+    }
+
+    .task-item:hover {
+        background-color: rgba(114, 47, 55, 0.05);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .task-status {
+        color: var(--success-color);
+        font-size: 20px;
+    }
+
+    .task-details {
+        flex-grow: 1;
+    }
+
+    .task-details h5 {
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0 0 5px;
+        color: var(--text-dark);
+    }
+
+    .task-details p {
+        font-size: 14px;
+        color: var(--text-medium);
+        margin: 0 0 10px;
+    }
+
+    .task-meta {
+        display: flex;
+        gap: var(--spacing-lg);
+        font-size: 13px;
+        color: var(--text-medium);
+    }
+
+    .notes-container {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-md);
+    }
+
+    .note-item {
+        padding: var(--spacing-md);
+        background-color: var(--background-color);
+        border-radius: var(--radius-md);
+        border-left: 3px solid var(--primary-color);
+    }
+
+    .note-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .note-header h5 {
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0;
+        color: var(--text-dark);
+    }
+
+    .note-author {
+        font-size: 13px;
+        color: var(--text-medium);
+    }
+
+    .note-content p {
+        font-size: 14px;
+        color: var(--text-dark);
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    .feedback-container {
+        padding: var(--spacing-md);
+        background-color: var(--background-color);
+        border-radius: var(--radius-md);
+    }
+
+    .rating {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        margin-bottom: var(--spacing-md);
+    }
+
+    .rating-stars {
+        color: var(--warning-color);
+        font-size: 18px;
+    }
+
+    .rating-value {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+    .feedback-comment p {
+        font-size: 14px;
+        color: var(--text-dark);
+        margin: 0 0 10px;
+        line-height: 1.5;
+        font-style: italic;
+    }
+
+    .feedback-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        color: var(--text-medium);
+    }
+
+    .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--spacing-md);
+        padding: var(--spacing-md) var(--spacing-lg);
+        border-top: 1px solid var(--border-color);
+    }
+
+    .btn-download-report, .btn-close-modal {
+        padding: 10px 15px;
+        border-radius: var(--radius-sm);
+        font-size: 14px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: var(--transition-normal);
+    }
+
+    .btn-download-report {
+        background-color: var(--info-color);
+        color: var(--text-light);
+        border: none;
+    }
+
+    .btn-download-report:hover {
+        background-color: #138496;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .btn-close-modal {
+        background-color: var(--background-color);
+        color: var(--text-dark);
+        border: 1px solid var(--border-color);
+    }
+
+    .btn-close-modal:hover {
+        background-color: var(--border-color);
+    }
+
+    /* Responsive Styles */
+    @media (max-width: 1200px) {
+        .service-history-grid {
+            grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+        }
+    }
+
+    @media (max-width: 992px) {
+        .service-history-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .service-details-modal {
+            width: 95%;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .filters-container {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .service-summary {
+            grid-template-columns: 1fr;
+        }
+
+        .details-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .task-meta {
+            flex-direction: column;
+            gap: var(--spacing-xs);
+        }
+
+        .modal-footer {
+            flex-direction: column;
+        }
+
+        .btn-download-report, .btn-close-modal, .btn-print-invoice {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .service-history-header,
+        .service-history-body,
+        .service-history-footer {
+            padding: var(--spacing-sm);
+        }
+
+        .vehicle-info {
+            flex-direction: column;
+        }
+
+        .vehicle-image {
+            width: 100%;
+            height: 150px;
+        }
+
+        .pagination-prev, .pagination-next {
+            padding: 8px 10px;
+        }
+
+        .pagination-number {
+            width: 32px;
+            height: 32px;
+        }
+
+        .service-details-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--spacing-sm);
+        }
+    }
+</style>
+<body data-page="service-history">
+<div class="app-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>Albany Service</h2>
+        </div>
+
+        <div class="sidebar-user">
+            <div class="user-avatar">
+                <img src="assets/user-avatar.jpg" alt="User">
+            </div>
+            <div class="user-info">
+                <h3>John Smith</h3>
+                <p>Service Advisor</p>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+                <li><a href="vehicle-list.html"><i class="fas fa-car-side"></i> <span>Vehicles Under Service</span></a></li>
+                <li class="active"><a href="service-history.html"><i class="fas fa-history"></i> <span>Service History</span></a></li>
+                <!-- <li><a href="customer-management.html"><i class="fas fa-users"></i> <span>Customers</span></a></li> -->
+                <li><a href="inventory.html"><i class="fas fa-boxes"></i> <span>Inventory</span></a></li>
+                <li><a href="reports.html"><i class="fas fa-chart-bar"></i> <span>Reports</span></a></li>
+                <li><a href="profile.html"><i class="fas fa-user-cog"></i> <span>My Profile</span></a></li>
+            </ul>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="#" class="logout-btn"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <div class="main-header">
+            <div class="header-search">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Search service history...">
+            </div>
+
+            <div class="header-actions">
+                <button class="notification-btn">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge">3</span>
+                </button>
+
+                <button class="message-btn">
+                    <i class="fas fa-envelope"></i>
+                    <span class="badge">5</span>
+                </button>
+
+                <div class="user-dropdown">
+                    <button class="dropdown-toggle">
+                        <img src="assets/user-avatar.jpg" alt="User">
+                        <span>John Smith</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Content -->
+        <div class="dashboard-content">
+            <div class="page-title">
+                <h1>Service History</h1>
+                <p>View all completed service records</p>
+            </div>
+
+            <!-- Filters Section -->
+            <div class="filters-container">
+                <div class="filter-group">
+                    <label for="vehicleFilter">Vehicle:</label>
+                    <select id="vehicleFilter" class="filter-select">
+                        <option value="all">All Vehicles</option>
+                        <option value="toyota">Toyota</option>
+                        <option value="honda">Honda</option>
+                        <option value="ford">Ford</option>
+                        <option value="chevrolet">Chevrolet</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="customerFilter">Customer:</label>
+                    <select id="customerFilter" class="filter-select">
+                        <option value="all">All Customers</option>
+                        <option value="1">Michael Johnson</option>
+                        <option value="2">Sarah Williams</option>
+                        <option value="3">Robert Thompson</option>
+                        <option value="4">Jennifer Davis</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="dateRangeFilter">Date Range:</label>
+                    <select id="dateRangeFilter" class="filter-select">
+                        <option value="last-week">Last Week</option>
+                        <option value="last-month">Last Month</option>
+                        <option value="last-3-months">Last 3 Months</option>
+                        <option value="last-6-months">Last 6 Months</option>
+                        <option value="last-year">Last Year</option>
+                        <option value="custom">Custom Range</option>
+                    </select>
+                </div>
+
+                <button class="btn-apply-filters">
+                    <i class="fas fa-filter"></i> Apply Filters
+                </button>
+            </div>
+
+            <!-- Service History Grid -->
+            <div class="service-history-grid">
+                <!-- Service History Card 1 -->
+                <div class="service-history-card" data-service-id="1001">
+                    <div class="service-history-header">
+                        <div class="service-date">
+                            <i class="far fa-calendar-alt"></i> June 15, 2023
+                        </div>
+                        <div class="service-id">#SRV-1001</div>
+                    </div>
+
+                    <div class="service-history-body">
+                        <div class="vehicle-info">
+                            <div class="vehicle-image">
+                                <img src="assets/car-placeholder.jpg" alt="Toyota Camry">
+                            </div>
+                            <div class="vehicle-details">
+                                <h3>Toyota Camry (2019)</h3>
+                                <p class="vehicle-plate">ABC-1234</p>
+                                <p class="customer-name">Michael Johnson</p>
+                            </div>
+                        </div>
+
+                        <div class="service-summary">
+                            <div class="service-type">
+                                <span class="label">Service Type:</span>
+                                <span class="value">Regular Maintenance</span>
+                            </div>
+                            <div class="service-advisor">
+                                <span class="label">Service Advisor:</span>
+                                <span class="value">John Smith</span>
+                            </div>
+                            <div class="service-technician">
+                                <span class="label">Lead Technician:</span>
+                                <span class="value">Mike Wilson</span>
+                            </div>
+                            <div class="service-cost">
+                                <span class="label">Total Cost:</span>
+                                <span class="value">$345.75</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="service-history-footer">
+                        <button class="btn-view-details" data-service-id="1001">
+                            <i class="fas fa-eye"></i> View Details
+                        </button>
+                        <button class="btn-print-invoice" data-service-id="1001">
+                            <i class="fas fa-print"></i> Print Invoice
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Service History Card 2 -->
+                <div class="service-history-card" data-service-id="1002">
+                    <div class="service-history-header">
+                        <div class="service-date">
+                            <i class="far fa-calendar-alt"></i> May 28, 2023
+                        </div>
+                        <div class="service-id">#SRV-1002</div>
+                    </div>
+
+                    <div class="service-history-body">
+                        <div class="vehicle-info">
+                            <div class="vehicle-image">
+                                <img src="assets/car-placeholder.jpg" alt="Honda Civic">
+                            </div>
+                            <div class="vehicle-details">
+                                <h3>Honda Civic (2020)</h3>
+                                <p class="vehicle-plate">XYZ-5678</p>
+                                <p class="customer-name">Sarah Williams</p>
+                            </div>
+                        </div>
+
+                        <div class="service-summary">
+                            <div class="service-type">
+                                <span class="label">Service Type:</span>
+                                <span class="value">Brake Replacement</span>
+                            </div>
+                            <div class="service-advisor">
+                                <span class="label">Service Advisor:</span>
+                                <span class="value">John Smith</span>
+                            </div>
+                            <div class="service-technician">
+                                <span class="label">Lead Technician:</span>
+                                <span class="value">Robert Chen</span>
+                            </div>
+                            <div class="service-cost">
+                                <span class="label">Total Cost:</span>
+                                <span class="value">$520.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="service-history-footer">
+                        <button class="btn-view-details" data-service-id="1002">
+                            <i class="fas fa-eye"></i> View Details
+                        </button>
+                        <button class="btn-print-invoice" data-service-id="1002">
+                            <i class="fas fa-print"></i> Print Invoice
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Service History Card 3 -->
+                <div class="service-history-card" data-service-id="1003">
+                    <div class="service-history-header">
+                        <div class="service-date">
+                            <i class="far fa-calendar-alt"></i> May 10, 2023
+                        </div>
+                        <div class="service-id">#SRV-1003</div>
+                    </div>
+
+                    <div class="service-history-body">
+                        <div class="vehicle-info">
+                            <div class="vehicle-image">
+                                <img src="assets/car-placeholder.jpg" alt="Ford F-150">
+                            </div>
+                            <div class="vehicle-details">
+                                <h3>Ford F-150 (2021)</h3>
+                                <p class="vehicle-plate">DEF-9012</p>
+                                <p class="customer-name">Robert Thompson</p>
+                            </div>
+                        </div>
+
+                        <div class="service-summary">
+                            <div class="service-type">
+                                <span class="label">Service Type:</span>
+                                <span class="value">Engine Diagnostics</span>
+                            </div>
+                            <div class="service-advisor">
+                                <span class="label">Service Advisor:</span>
+                                <span class="value">John Smith</span>
+                            </div>
+                            <div class="service-technician">
+                                <span class="label">Lead Technician:</span>
+                                <span class="value">Sarah Johnson</span>
+                            </div>
+                            <div class="service-cost">
+                                <span class="label">Total Cost:</span>
+                                <span class="value">$275.50</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="service-history-footer">
+                        <button class="btn-view-details" data-service-id="1003">
+                            <i class="fas fa-eye"></i> View Details
+                        </button>
+                        <button class="btn-print-invoice" data-service-id="1003">
+                            <i class="fas fa-print"></i> Print Invoice
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Service History Card 4 -->
+                <div class="service-history-card" data-service-id="1004">
+                    <div class="service-history-header">
+                        <div class="service-date">
+                            <i class="far fa-calendar-alt"></i> April 22, 2023
+                        </div>
+                        <div class="service-id">#SRV-1004</div>
+                    </div>
+
+                    <div class="service-history-body">
+                        <div class="vehicle-info">
+                            <div class="vehicle-image">
+                                <img src="assets/car-placeholder.jpg" alt="Chevrolet Malibu">
+                            </div>
+                            <div class="vehicle-details">
+                                <h3>Chevrolet Malibu (2018)</h3>
+                                <p class="vehicle-plate">GHI-3456</p>
+                                <p class="customer-name">Jennifer Davis</p>
+                            </div>
+                        </div>
+
+                        <div class="service-summary">
+                            <div class="service-type">
+                                <span class="label">Service Type:</span>
+                                <span class="value">Transmission Service</span>
+                            </div>
+                            <div class="service-advisor">
+                                <span class="label">Service Advisor:</span>
+                                <span class="value">John Smith</span>
+                            </div>
+                            <div class="service-technician">
+                                <span class="label">Lead Technician:</span>
+                                <span class="value">David Lee</span>
+                            </div>
+                            <div class="service-cost">
+                                <span class="label">Total Cost:</span>
+                                <span class="value">$695.25</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="service-history-footer">
+                        <button class="btn-view-details" data-service-id="1004">
+                            <i class="fas fa-eye"></i> View Details
+                        </button>
+                        <button class="btn-print-invoice" data-service-id="1004">
+                            <i class="fas fa-print"></i> Print Invoice
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination">
+                <button class="pagination-prev disabled">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+
+                <div class="pagination-numbers">
+                    <button class="pagination-number active">1</button>
+                    <button class="pagination-number">2</button>
+                    <button class="pagination-number">3</button>
+                </div>
+
+                <button class="pagination-next">
+                    Next <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Service Details Modal -->
+<div class="modal" id="serviceDetailsModal">
+    <div class="modal-content service-details-modal">
+        <div class="modal-header">
+            <h2>Service Details</h2>
+            <button class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="service-details-header">
+                <div class="service-id-date">
+                    <h3 id="modalServiceId">#SRV-1001</h3>
+                    <p id="modalServiceDate">June 15, 2023</p>
+                </div>
+                <div class="service-status completed">Completed</div>
+            </div>
+
+            <div class="service-details-section">
+                <h4>Vehicle & Customer Information</h4>
+                <div class="details-grid">
+                    <div class="details-item">
+                        <span class="label">Vehicle:</span>
+                        <span class="value" id="modalVehicleName">Toyota Camry (2019)</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="label">License Plate:</span>
+                        <span class="value" id="modalVehiclePlate">ABC-1234</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="label">VIN:</span>
+                        <span class="value" id="modalVehicleVin">1HGCM82633A123456</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="label">Mileage:</span>
+                        <span class="value" id="modalVehicleMileage">45,230 miles</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="label">Customer:</span>
+                        <span class="value" id="modalCustomerName">Michael Johnson</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="label">Phone:</span>
+                        <span class="value" id="modalCustomerPhone">(555) 123-4567</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="label">Email:</span>
+                        <span class="value" id="modalCustomerEmail">michael.johnson@example.com</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="service-details-section">
+                <h4>Service Information</h4>
+                <div class="details-grid">
+                    <div class="details-item">
+                        <span class="label">Service Type:</span>
+                        <span class="value" id="modalServiceType">Regular Maintenance</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="label">Service Advisor:</span>
+                        <span class="value" id="modalServiceAdvisor">John Smith</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="label">Lead Technician:</span>
+                        <span class="value" id="modalLeadTechnician">Mike Wilson</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="label">Start Date:</span>
+                        <span class="value" id="modalStartDate">June 15, 2023 (09:30 AM)</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="label">Completion Date:</span>
+                        <span class="value" id="modalCompletionDate">June 15, 2023 (03:45 PM)</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="label">Total Duration:</span>
+                        <span class="value" id="modalTotalDuration">6 hours 15 minutes</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="service-details-section">
+                <h4>Tasks Performed</h4>
+                <div class="tasks-list" id="modalTasksList">
+                    <div class="task-item completed">
+                        <div class="task-status"><i class="fas fa-check-circle"></i></div>
+                        <div class="task-details">
+                            <h5>Oil Change</h5>
+                            <p>Changed oil and replaced oil filter</p>
+                            <div class="task-meta">
+                                <span>Technician: Mike Wilson</span>
+                                <span>Duration: 45 minutes</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="task-item completed">
+                        <div class="task-status"><i class="fas fa-check-circle"></i></div>
+                        <div class="task-details">
+                            <h5>Tire Rotation</h5>
+                            <p>Rotated all four tires and checked pressure</p>
+                            <div class="task-meta">
+                                <span>Technician: Mike Wilson</span>
+                                <span>Duration: 30 minutes</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="task-item completed">
+                        <div class="task-status"><i class="fas fa-check-circle"></i></div>
+                        <div class="task-details">
+                            <h5>Brake Inspection</h5>
+                            <p>Inspected brake pads, rotors, and calipers</p>
+                            <div class="task-meta">
+                                <span>Technician: Robert Chen</span>
+                                <span>Duration: 1 hour</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="task-item completed">
+                        <div class="task-status"><i class="fas fa-check-circle"></i></div>
+                        <div class="task-details">
+                            <h5>Air Filter Replacement</h5>
+                            <p>Replaced engine air filter</p>
+                            <div class="task-meta">
+                                <span>Technician: Mike Wilson</span>
+                                <span>Duration: 15 minutes</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="service-details-section">
+                <h4>Parts & Materials Used</h4>
+                <table class="details-table">
+                    <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Part Number</th>
+                        <th>Quantity</th>
+                        <th>Unit Price</th>
+                        <th>Total</th>
+                    </tr>
+                    </thead>
+                    <button class="btn-view-details" data-service-id="1004">
+                        <i class="fas fa-eye"></i> View Details
+                    </button>
+                    <button class="btn-print-invoice" data-service-id="1004">
+                        <i class="fas fa-print"></i> Print Invoice
+                    </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination">
+        <button class="pagination-prev disabled">
+            <i class="fas fa-chevron-left"></i> Previous
+        </button>
+
+        <div class="pagination-numbers">
+            <button class="pagination-number active">1</button>
+            <button class="pagination-number">2</button>
+            <button class="pagination-number">3</button>
+        </div>
+
+        <button class="pagination-next">
+            Next <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+</div>
+</div>
+</div>
+
+<!-- Service Details Modal -->
+<div class="modal" id="serviceDetailsModal">
+    <div class="modal-content service-details-modal">
+        <div class="modal-header">
+            <h2>Service Details</h2>
+            <button class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="service-details-header">
+                <div class="service-id-date">
+                    <h3 id="modalServiceId">#SRV-1001</h3>
+                    <p id="modalServiceDate">June 15, 2023</p>
+                </div>
+                <div class="service-status completed">Completed</div>
+            </div>
+
+            <div class="service-details-section">
+                <h4>Vehicle & Customer Information</h4>
+                <div class="details-grid">
+                    <div class="details-item">
+                        <span class="label">Vehicle:</span>
+                        <span class="value" id="modalVehicleName">Toyota Camry (2019)</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="label">License Plate:</span>
+                        <span class="value" id="modalVehiclePlate">ABC-1234</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="label">VIN:</span>
+                        <span class="value" id="modalVehicleVin">1HGCM82633A123456</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="label">Mileage:</span>
+                        <span class="value" id="modalVehicleMileage">45,230 miles</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="label">Customer:</span>
+                        <span class="value" id="modalCustomerName">Michael Johnson</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="label">Phone:</span>
+                        <span class="value" id="modalCustomerPhone">(555) 123-4567</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="label">Email:</span>
+                        <span class="value" id="modalCustomerEmail">michael.johnson@example.com</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="service-details-section">
+                <h4>Service Information</h4>
+                <div class="details-grid">
+                    <div class="details-item">
+                        <span class="label">Service Type:</span>
+                        <span class="value" id="modalServiceType">Regular Maintenance</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="label">Service Advisor:</span>
+                        <span class="value" id="modalServiceAdvisor">John Smith</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="label">Lead Technician:</span>
+                        <span class="value" id="modalLeadTechnician">Mike Wilson</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="label">Start Date:</span>
+                        <span class="value" id="modalStartDate">June 15, 2023 (09:30 AM)</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="label">Completion Date:</span>
+                        <span class="value" id="modalCompletionDate">June 15, 2023 (03:45 PM)</span>
+                    </div>
+                    <div class="details-item">
+                        <span class="label">Total Duration:</span>
+                        <span class="value" id="modalTotalDuration">6 hours 15 minutes</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="service-details-section">
+                <h4>Tasks Performed</h4>
+                <div class="tasks-list" id="modalTasksList">
+                    <div class="task-item completed">
+                        <div class="task-status"><i class="fas fa-check-circle"></i></div>
+                        <div class="task-details">
+                            <h5>Oil Change</h5>
+                            <p>Changed oil and replaced oil filter</p>
+                            <div class="task-meta">
+                                <span>Technician: Mike Wilson</span>
+                                <span>Duration: 45 minutes</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="task-item completed">
+                        <div class="task-status"><i class="fas fa-check-circle"></i></div>
+                        <div class="task-details">
+                            <h5>Tire Rotation</h5>
+                            <p>Rotated all four tires and checked pressure</p>
+                            <div class="task-meta">
+                                <span>Technician: Mike Wilson</span>
+                                <span>Duration: 30 minutes</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="task-item completed">
+                        <div class="task-status"><i class="fas fa-check-circle"></i></div>
+                        <div class="task-details">
+                            <h5>Brake Inspection</h5>
+                            <p>Inspected brake pads, rotors, and calipers</p>
+                            <div class="task-meta">
+                                <span>Technician: Robert Chen</span>
+                                <span>Duration: 1 hour</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="task-item completed">
+                        <div class="task-status"><i class="fas fa-check-circle"></i></div>
+                        <div class="task-details">
+                            <h5>Air Filter Replacement</h5>
+                            <p>Replaced engine air filter</p>
+                            <div class="task-meta">
+                                <span>Technician: Mike Wilson</span>
+                                <span>Duration: 15 minutes</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="service-details-section">
+                <h4>Parts & Materials Used</h4>
+                <table class="details-table">
+                    <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Part Number</th>
+                        <th>Quantity</th>
+                        <th>Unit Price</th>
+                        <th>Total</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>Synthetic Oil (5W-30)</td>
+                        <td>OIL-5W30-SYN</td>
+                        <td>5 quarts</td>
+                        <td>$9.99</td>
+                        <td>$49.95</td>
+                    </tr>
+                    <tr>
+                        <td>Oil Filter</td>
+                        <td>FIL-TOY-1234</td>
+                        <td>1</td>
+                        <td>$12.50</td>
+                        <td>$12.50</td>
+                    </tr>
+                    <tr>
+                        <td>Engine Air Filter</td>
+                        <td>AIR-TOY-5678</td>
+                        <td>1</td>
+                        <td>$24.99</td>
+                        <td>$24.99</td>
+                    </tr>
+                    <tr>
+                        <td>Wiper Blades (Front)</td>
+                        <td>WIP-26-INCH</td>
+                        <td>2</td>
+                        <td>$18.75</td>
+                        <td>$37.50</td>
+                    </tr>
+                    </tbody>
+                    <tfoot>
+                    <tr>
+                        <td colspan="4" class="text-right"><strong>Subtotal:</strong></td>
+                        <td>$124.94</td>
+                    </tr>
+                    <tr>
+                        <td colspan="4" class="text-right"><strong>Labor:</strong></td>
+                        <td>$195.00</td>
+                    </tr>
+                    <tr>
+                        <td colspan="4" class="text-right"><strong>Tax:</strong></td>
+                        <td>$25.81</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td colspan="4" class="text-right"><strong>Total:</strong></td>
+                        <td>$345.75</td>
+                    </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <div class="service-details-section">
+                <h4>Notes & Recommendations</h4>
+                <div class="notes-container">
+                    <div class="note-item">
+                        <div class="note-header">
+                            <h5>Service Notes</h5>
+                            <span class="note-author">By: Mike Wilson (Technician)</span>
+                        </div>
+                        <div class="note-content">
+                            <p>Vehicle is in good overall condition. All maintenance tasks completed as scheduled. Customer requested to check A/C performance, which was found to be working properly.</p>
+                        </div>
+                    </div>
+                    <div class="note-item">
+                        <div class="note-header">
+                            <h5>Recommendations</h5>
+                            <span class="note-author">By: John Smith (Service Advisor)</span>
+                        </div>
+                        <div class="note-content">
+                            <p>Recommend replacing the cabin air filter at the next service. Front brake pads are at 40% and should be replaced within the next 5,000 miles. Transmission fluid should be changed at the next major service interval.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="service-details-section">
+                <h4>Customer Feedback</h4>
+                <div class="feedback-container">
+                    <div class="rating">
+                        <span class="rating-stars">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </span>
+                        <span class="rating-value">4.5/5</span>
+                    </div>
+                    <div class="feedback-comment">
+                        <p>"Great service as always. The team was professional and completed the work in a timely manner. I appreciate the detailed explanation of what was done and the recommendations for future maintenance."</p>
+                        <div class="feedback-meta">
+                            <span>Michael Johnson</span>
+                            <span>June 16, 2023</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-print-invoice" data-service-id="1001">
+                <i class="fas fa-print"></i> Print Invoice
+            </button>
+            <button class="btn-download-report">
+                <i class="fas fa-file-pdf"></i> Download Report
+            </button>
+            <button class="btn-close-modal">Close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize the service history page
+        initServiceHistoryPage();
+
+        // Set up event listeners
+        setupEventListeners();
+    });
+
+    function initServiceHistoryPage() {
+        console.log('Service History Page initialized');
+
+        // Initialize any components that need setup
+        setupPagination();
+    }
+
+    function setupEventListeners() {
+        // Filter button
+        const applyFiltersBtn = document.querySelector('.btn-apply-filters');
+        if (applyFiltersBtn) {
+            applyFiltersBtn.addEventListener('click', applyFilters);
+        }
+
+        // View details buttons
+        const viewDetailsButtons = document.querySelectorAll('.btn-view-details');
+        viewDetailsButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const serviceId = this.getAttribute('data-service-id');
+                openServiceDetailsModal(serviceId);
+            });
+        });
+
+        // Print invoice buttons
+        const printInvoiceButtons = document.querySelectorAll('.btn-print-invoice');
+        printInvoiceButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const serviceId = this.getAttribute('data-service-id');
+                printServiceInvoice(serviceId);
+            });
+        });
+
+        // Close modal button
+        const closeModalBtn = document.querySelector('.close-modal');
+        if (closeModalBtn) {
+            closeModalBtn.addEventListener('click', closeModal);
+        }
+
+        // Pagination buttons
+        const prevPageBtn = document.querySelector('.pagination-prev');
+        const nextPageBtn = document.querySelector('.pagination-next');
+        const pageNumbers = document.querySelectorAll('.pagination-number');
+
+        if (prevPageBtn) {
+            prevPageBtn.addEventListener('click', goToPreviousPage);
+        }
+
+        if (nextPageBtn) {
+            nextPageBtn.addEventListener('click', goToNextPage);
+        }
+
+        pageNumbers.forEach(button => {
+            button.addEventListener('click', function() {
+                goToPage(parseInt(this.textContent));
+            });
+        });
+
+        // Search input
+        const searchInput = document.querySelector('.header-search input');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                // Debounce the search to avoid too many searches while typing
+                clearTimeout(this.searchTimeout);
+                this.searchTimeout = setTimeout(() => {
+                    searchServiceHistory(this.value);
+                }, 300);
+            });
+        }
+
+        // Date range filter
+        const dateRangeFilter = document.getElementById('dateRangeFilter');
+        if (dateRangeFilter) {
+            dateRangeFilter.addEventListener('change', function() {
+                if (this.value === 'custom') {
+                    // In a real app, you would show a date picker here
+                    alert('Custom date range selection would open a date picker in a real app.');
+                }
+            });
+        }
+    }
+
+    function applyFilters() {
+        const vehicleFilter = document.getElementById('vehicleFilter').value;
+        const customerFilter = document.getElementById('customerFilter').value;
+        const dateRangeFilter = document.getElementById('dateRangeFilter').value;
+
+        console.log('Applying filters:', {
+            vehicle: vehicleFilter,
+            customer: customerFilter,
+            dateRange: dateRangeFilter
+        });
+
+        // In a real app, you would filter the service history records based on the selected filters
+        // For this demo, we'll just show a loading indicator and then a success message
+
+        const applyBtn = document.querySelector('.btn-apply-filters');
+        const originalText = applyBtn.innerHTML;
+
+        applyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Applying...';
+        applyBtn.disabled = true;
+
+        setTimeout(() => {
+            // Reset the button
+            applyBtn.innerHTML = originalText;
+            applyBtn.disabled = false;
+
+            // Show a success message
+            alert('Filters applied successfully');
+        }, 1000);
+    }
+
+    function openServiceDetailsModal(serviceId) {
+        console.log('Opening service details for ID:', serviceId);
+
+        // In a real app, you would fetch the service details from the server
+        // For this demo, we'll just populate the modal with mock data based on the service ID
+
+        // Set the service ID in the modal
+        document.getElementById('modalServiceId').textContent = `#SRV-${serviceId}`;
+
+        // Show the modal
+        const modal = document.getElementById('serviceDetailsModal');
+        modal.style.display = 'flex';
+
+        // Add a class to the body to prevent scrolling
+        document.body.classList.add('modal-open');
+    }
+
+    function closeModal() {
+        // Hide all modals
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            modal.style.display = 'none';
+        });
+
+        // Remove the class from the body to allow scrolling again
+        document.body.classList.remove('modal-open');
+    }
+
+    function printServiceInvoice(serviceId) {
+        console.log('Printing invoice for service ID:', serviceId);
+
+        // In a real app, you would generate and print an invoice
+        // For this demo, we'll just show a message
+
+        alert(`Printing invoice for service #SRV-${serviceId}`);
+
+        // In a real app, you might open a new window with the invoice and call window.print()
+        // Example:
+        // const invoiceWindow = window.open('', '_blank');
+        // invoiceWindow.document.write('<html><head><title>Service Invoice</title></head><body>');
+        // invoiceWindow.document.write(`<h1>Invoice for Service #SRV-${serviceId}</h1>`);
+        // ... add more invoice content ...
+        // invoiceWindow.document.write('</body></html>');
+        // invoiceWindow.document.close();
+        // invoiceWindow.print();
+    }
+
+    function setupPagination() {
+        // Get the pagination elements
+        const prevBtn = document.querySelector('.pagination-prev');
+        const nextBtn = document.querySelector('.pagination-next');
+        const pageNumbers = document.querySelectorAll('.pagination-number');
+
+        // Disable the previous button on the first page
+        if (pageNumbers.length > 0 && pageNumbers[0].classList.contains('active')) {
+            prevBtn.classList.add('disabled');
+            prevBtn.disabled = true;
+        } else {
+            prevBtn.classList.remove('disabled');
+            prevBtn.disabled = false;
+        }
+
+        // Disable the next button on the last page
+        if (pageNumbers.length > 0 && pageNumbers[pageNumbers.length - 1].classList.contains('active')) {
+            nextBtn.classList.add('disabled');
+            nextBtn.disabled = true;
+        } else {
+            nextBtn.classList.remove('disabled');
+            nextBtn.disabled = false;
+        }
+    }
+
+    function goToPreviousPage() {
+        if (this.classList.contains('disabled')) return;
+
+        const activePage = document.querySelector('.pagination-number.active');
+        const prevPage = activePage.previousElementSibling;
+
+        if (prevPage && prevPage.classList.contains('pagination-number')) {
+            activePage.classList.remove('active');
+            prevPage.classList.add('active');
+
+            // Update pagination buttons
+            setupPagination();
+
+            // In a real app, you would load the previous page of service history records
+            console.log('Loading page', prevPage.textContent);
+        }
+    }
+
+    function goToNextPage() {
+        if (this.classList.contains('disabled')) return;
+
+        const activePage = document.querySelector('.pagination-number.active');
+        const nextPage = activePage.nextElementSibling;
+
+        if (nextPage && nextPage.classList.contains('pagination-number')) {
+            activePage.classList.remove('active');
+            nextPage.classList.add('active');
+
+            // Update pagination buttons
+            setupPagination();
+
+            // In a real app, you would load the next page of service history records
+            console.log('Loading page', nextPage.textContent);
+        }
+    }
+
+    function goToPage(pageNumber) {
+        const pageButtons = document.querySelectorAll('.pagination-number');
+
+        pageButtons.forEach(button => {
+            if (parseInt(button.textContent) === pageNumber) {
+                button.classList.add('active');
+            } else {
+                button.classList.remove('active');
+            }
+        });
+
+        // Update pagination buttons
+        setupPagination();
+
+        // In a real app, you would load the selected page of service history records
+        console.log('Loading page', pageNumber);
+    }
+
+    function searchServiceHistory(query) {
+        console.log('Searching service history for:', query);
+
+        // In a real app, you would search the service history records based on the query
+        // For this demo, we'll just log the search query
+
+        if (query.length > 2) {
+            // Simulate search results
+            const cards = document.querySelectorAll('.service-history-card');
+            let matchCount = 0;
+
+            cards.forEach(card => {
+                const vehicleName = card.querySelector('.vehicle-details h3').textContent.toLowerCase();
+                const customerName = card.querySelector('.customer-name').textContent.toLowerCase();
+                const serviceId = card.querySelector('.service-id').textContent.toLowerCase();
+
+                if (vehicleName.includes(query.toLowerCase()) ||
+                    customerName.includes(query.toLowerCase()) ||
+                    serviceId.includes(query.toLowerCase())) {
+                    card.style.display = '';
+                    matchCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+
+            console.log(`Found ${matchCount} matches for "${query}"`);
+        } else if (query.length === 0) {
+            // Reset all cards to visible
+            document.querySelectorAll('.service-history-card').forEach(card => {
+                card.style.display = '';
+            });
+        }
+    }
+
+    // Add event listener for when the user clicks outside the modal to close it
+    window.addEventListener('click', function(event) {
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+    });
+</script>
+</body>
+</html>

@@ -11,156 +11,6 @@
     <link rel="stylesheet" href="dashboard.css">
 </head>
 <style>
-    /* Styles for the assign button */
-    .btn-assign {
-        background-color: #4CAF50;
-        color: white;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-weight: 500;
-        transition: background-color 0.3s;
-    }
-
-    .btn-assign:hover {
-        background-color: #45a049;
-    }
-
-    /* Modal styles */
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0, 0, 0, 0.5);
-    }
-
-    .modal-content {
-        background-color: #fefefe;
-        margin: 10% auto;
-        padding: 0;
-        border-radius: 8px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-        width: 500px;
-        max-width: 90%;
-        animation: modalFadeIn 0.3s;
-    }
-
-    @keyframes modalFadeIn {
-        from {opacity: 0; transform: translateY(-20px);}
-        to {opacity: 1; transform: translateY(0);}
-    }
-
-    .modal-header {
-        padding: 16px 24px;
-        background-color: #f8f9fa;
-        border-bottom: 1px solid #e9ecef;
-        border-top-left-radius: 8px;
-        border-top-right-radius: 8px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .modal-header h2 {
-        margin: 0;
-        font-size: 1.25rem;
-        color: #333;
-    }
-
-    .close-modal {
-        background: none;
-        border: none;
-        font-size: 1.5rem;
-        cursor: pointer;
-        color: #aaa;
-    }
-
-    .close-modal:hover {
-        color: #333;
-    }
-
-    .modal-body {
-        padding: 24px;
-    }
-
-    .modal-footer {
-        padding: 16px 24px;
-        background-color: #f8f9fa;
-        border-top: 1px solid #e9ecef;
-        border-bottom-left-radius: 8px;
-        border-bottom-right-radius: 8px;
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-    }
-
-    .form-group {
-        margin-bottom: 16px;
-    }
-
-    .form-group label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: 500;
-        color: #333;
-    }
-
-    .form-control {
-        width: 100%;
-        padding: 10px 12px;
-        border: 1px solid #ced4da;
-        border-radius: 4px;
-        font-size: 1rem;
-        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-    }
-
-    .form-control:focus {
-        border-color: #80bdff;
-        outline: 0;
-        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-    }
-
-    .btn-cancel {
-        background-color: #6c757d;
-        color: white;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-weight: 500;
-        transition: background-color 0.3s;
-    }
-
-    .btn-cancel:hover {
-        background-color: #5a6268;
-    }
-
-    .btn-submit {
-        background-color: #007bff;
-        color: white;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-weight: 500;
-        transition: background-color 0.3s;
-    }
-
-    .btn-submit:hover {
-        background-color: #0069d9;
-    }
-
-    /* Status badge for assigned state */
-    .status-badge.assigned {
-        background-color: #17a2b8;
-    }
-
     /* Base Styles */
     :root {
         /* Primary Colors */
@@ -718,7 +568,7 @@
 
     .status-badge.almost-done {
         background-color: rgba(114, 9, 183, 0.1);
-        color: var(--secondary-color);
+        color: var(--primary-color);
     }
 
     .action-buttons {
@@ -1371,7 +1221,6 @@
     .btn-submit:hover::before {
         left: 100%;
     }
-
 </style>
 <body>
 <div class="app-container">
@@ -1744,71 +1593,6 @@
     </main>
 </div>
 
-<!-- Decline Reason Modal -->
-<div class="modal" id="declineModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>Decline Service Assignment</h2>
-            <button class="close-modal">&times;</button>
-        </div>
-        <div class="modal-body">
-            <p>Please provide a reason for declining this service assignment:</p>
-            <div class="form-group">
-                <label for="declineReason">Reason:</label>
-                <select id="declineReason" class="form-control">
-                    <option value="">Select a reason</option>
-                    <option value="workload">Current workload is too high</option>
-                    <option value="expertise">Requires different expertise</option>
-                    <option value="equipment">Required equipment unavailable</option>
-                    <option value="schedule">Schedule conflict</option>
-                    <option value="other">Other reason</option>
-                </select>
-            </div>
-            <div class="form-group" id="otherReasonGroup" style="display: none;">
-                <label for="otherReason">Please specify:</label>
-                <textarea id="otherReason" class="form-control" rows="3"></textarea>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn-cancel">Cancel</button>
-            <button class="btn-submit">Submit</button>
-        </div>
-    </div>
-</div>
-
-<script src="dashboard.js"></script>
-</body>
-<!-- Decline Reason Modal -->
-<div class="modal" id="declineModal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>Decline Service Assignment</h2>
-            <button class="close-modal">&times;</button>
-        </div>
-        <div class="modal-body">
-            <p>Please provide a reason for declining this service assignment:</p>
-            <div class="form-group">
-                <label for="declineReason">Reason:</label>
-                <select id="declineReason" class="form-control">
-                    <option value="">Select a reason</option>
-                    <option value="workload">Current workload is too high</option>
-                    <option value="expertise">Requires different expertise</option>
-                    <option value="equipment">Required equipment unavailable</option>
-                    <option value="schedule">Schedule conflict</option>
-                    <option value="other">Other reason</option>
-                </select>
-            </div>
-            <div class="form-group" id="otherReasonGroup" style="display: none;">
-                <label for="otherReason">Please specify:</label>
-                <textarea id="otherReason" class="form-control" rows="3"></textarea>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn-cancel">Cancel</button>
-            <button class="btn-submit">Submit</button>
-        </div>
-    </div>
-</div>
 
 <!-- Assign Technician Modal -->
 <div class="modal" id="assignModal">
@@ -1837,19 +1621,15 @@
                 <input type="date" id="estimatedDeliveryDate" class="form-control" min="">
             </div>
 
-            <div class="form-group">
-                <label for="estimatedDeliveryTime">Estimated Delivery Time:</label>
-                <input type="time" id="estimatedDeliveryTime" class="form-control">
-            </div>
 
 
 
             <div class="form-group">
-                <label for="servicePriority">Priority:</label>
+                <label for="servicePriority">Vehicle collection preference:</label>
                 <select id="servicePriority" class="form-control">
-                    <option value="normal">Normal</option>
-                    <option value="high">High</option>
-                    <option value="urgent">Urgent</option>
+                    <option value="normal">Drop in</option>
+                    <option value="high">Pick up</option>
+                    <option value="urgent">Tow Truck pickup</option>
                 </select>
             </div>
         </div>
@@ -1863,502 +1643,245 @@
 <script src="dashboard.js"></script>
 
 <script>
+    // Set minimum date for delivery date picker to today
     document.addEventListener('DOMContentLoaded', function() {
-        // Initialize the dashboard
-        initDashboard();
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('estimatedDeliveryDate').min = today;
 
-        // Set up event listeners
-        setupEventListeners();
-    });
+        // Assign button click handlers
+        const assignButtons = document.querySelectorAll('.btn-assign');
+        const assignModal = document.getElementById('assignModal');
+        const closeModalButtons = document.querySelectorAll('.close-modal, .btn-cancel');
 
-    function initDashboard() {
-        console.log('Dashboard initialized');
-        // You can add any initialization code here
-        // For example, fetching initial data, setting up charts, etc.
-    }
+        // Vehicle ID to be assigned
+        let currentVehicleId = '';
 
-    function setupEventListeners() {
-        // Accept button click handlers
-        const acceptButtons = document.querySelectorAll('.btn-accept');
-        acceptButtons.forEach(button => {
+        // Open assign modal when assign button is clicked
+        assignButtons.forEach(button => {
             button.addEventListener('click', function() {
-                const vehicleId = this.getAttribute('data-id');
-                acceptVehicle(vehicleId);
+                currentVehicleId = this.getAttribute('data-id');
+                assignModal.style.display = 'block';
             });
         });
 
-        // Decline button click handlers
-        const declineButtons = document.querySelectorAll('.btn-decline');
-        declineButtons.forEach(button => {
+        // Close modals when close button or cancel is clicked
+        closeModalButtons.forEach(button => {
             button.addEventListener('click', function() {
-                const vehicleId = this.getAttribute('data-id');
-                showDeclineModal(vehicleId);
+                assignModal.style.display = 'none';
+                document.getElementById('declineModal').style.display = 'none';
             });
         });
 
-        // Close modal handler
-        const closeModalBtn = document.querySelector('.close-modal');
-        if (closeModalBtn) {
-            closeModalBtn.addEventListener('click', closeModal);
-        }
+        // Close modal when clicking outside of it
+        window.addEventListener('click', function(event) {
+            if (event.target === assignModal) {
+                assignModal.style.display = 'none';
+            }
+            if (event.target === document.getElementById('declineModal')) {
+                document.getElementById('declineModal').style.display = 'none';
+            }
+        });
 
-        // Cancel button in modal
-        const cancelBtn = document.querySelector('.btn-cancel');
-        if (cancelBtn) {
-            cancelBtn.addEventListener('click', closeModal);
-        }
+        // Handle form submission
+        const submitButton = assignModal.querySelector('.btn-submit');
+        submitButton.addEventListener('click', function() {
+            const technician = document.getElementById('assignTechnician').value;
+            const deliveryDate = document.getElementById('estimatedDeliveryDate').value;
+            const deliveryTime = document.getElementById('estimatedDeliveryTime').value;
+            const priority = document.getElementById('servicePriority').value;
 
-        // Submit button in modal
-        const submitBtn = document.querySelector('.btn-submit');
-        if (submitBtn) {
-            submitBtn.addEventListener('click', submitDeclineReason);
-        }
+            if (!technician || !deliveryDate || !deliveryTime) {
+                alert('Please select a technician and set an estimated delivery date and time.');
+                return;
+            }
 
-        // Reason dropdown change handler
-        const reasonSelect = document.getElementById('declineReason');
-        if (reasonSelect) {
-            reasonSelect.addEventListener('change', function() {
-                const otherReasonGroup = document.getElementById('otherReasonGroup');
-                if (this.value === 'other') {
-                    otherReasonGroup.style.display = 'block';
-                } else {
-                    otherReasonGroup.style.display = 'none';
+            // Here you would typically send this data to your backend
+            console.log('Assigning vehicle', currentVehicleId, 'to technician', technician);
+            console.log('Estimated delivery:', deliveryDate, deliveryTime);
+            console.log('Priority:', priority);
+
+            // Find the row to remove
+            const row = document.querySelector(`button[data-id="${currentVehicleId}"]`).closest('tr');
+
+            // Remove the row from the table with a fade-out effect
+            row.style.transition = 'opacity 0.5s ease';
+            row.style.opacity = '0';
+
+            setTimeout(() => {
+                row.remove();
+
+                // Show success message
+                alert(`Service for vehicle ${currentVehicleId} has been successfully assigned.`);
+
+                // Check if there are no more rows and show a message
+                const remainingRows = document.querySelectorAll('.data-table tbody tr').length;
+                if (remainingRows === 0) {
+                    const tbody = document.querySelector('.data-table tbody');
+                    const emptyRow = document.createElement('tr');
+                    emptyRow.innerHTML = '<td colspan="7" style="text-align: center; padding: 20px;">No new vehicle assignments available.</td>';
+                    tbody.appendChild(emptyRow);
                 }
-            });
-        }
+            }, 500);
 
-        // Update service buttons
-        const updateButtons = document.querySelectorAll('.btn-update');
-        updateButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                // Get the closest service card to find the vehicle ID
-                const serviceCard = this.closest('.service-card');
-                const vehicleInfo = serviceCard.querySelector('.vehicle-info h3').textContent;
-                navigateToServiceUpdate(vehicleInfo);
-            });
+            // Close the modal
+            assignModal.style.display = 'none';
         });
 
-        // View details buttons
-        const viewDetailsButtons = document.querySelectorAll('.btn-view-details');
-        viewDetailsButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                // Get the closest service card to find the vehicle ID
-                const serviceCard = this.closest('.service-card');
-                const vehicleInfo = serviceCard.querySelector('.vehicle-info h3').textContent;
-                viewVehicleDetails(vehicleInfo);
-            });
-        });
-
-        // Refresh button
-        const refreshBtn = document.querySelector('.refresh-btn');
-        if (refreshBtn) {
-            refreshBtn.addEventListener('click', refreshData);
-        }
-    }
-
-    // Function to handle accepting a vehicle
-    function acceptVehicle(vehicleId) {
-        console.log(`Accepting vehicle with ID: ${vehicleId}`);
-        // Here you would typically make an API call to update the vehicle status
-
-        // For demo purposes, we'll just show a success message
-        alert(`Vehicle ${vehicleId} has been accepted for service.`);
-
-        // You might want to refresh the data or update the UI
-        // For now, let's just remove the row from the table
-        const row = document.querySelector(`button[data-id="${vehicleId}"]`).closest('tr');
-        row.style.backgroundColor = '#e8f5e9';
-        setTimeout(() => {
-            row.remove();
-        }, 1000);
-    }
-
-    // Function to show the decline modal
-    // Function to show the decline modal
-    function showDeclineModal(vehicleId) {
-        console.log(`Showing decline modal for vehicle with ID: ${vehicleId}`);
-
-        // Store the vehicle ID in the modal for later use
-        const modal = document.getElementById('declineModal');
-        modal.setAttribute('data-vehicle-id', vehicleId);
-
-        // Reset the form
-        const reasonSelect = document.getElementById('declineReason');
-        const otherReasonInput = document.getElementById('otherReason');
-
-        if (reasonSelect) reasonSelect.value = '';
-        if (otherReasonInput) otherReasonInput.value = '';
-
-        // Show the modal
-        modal.classList.add('active');
-    }
-
-    // Function to close the modal
-    function closeModal() {
-        const modal = document.getElementById('declineModal');
-        modal.classList.remove('active');
-    }
-
-    // Function to submit the decline reason
-    function submitDeclineReason() {
-        const modal = document.getElementById('declineModal');
-        const vehicleId = modal.getAttribute('data-vehicle-id');
-        const reasonSelect = document.getElementById('declineReason');
-        const otherReasonInput = document.getElementById('otherReason');
-
-        let reason = reasonSelect.value;
-
-        // If "Other" is selected, use the text from the other reason input
-        if (reason === 'other') {
-            reason = otherReasonInput.value;
-        }
-
-        if (!reason) {
-            alert('Please select or enter a reason for declining.');
-            return;
-        }
-
-        console.log(`Declining vehicle ${vehicleId} with reason: ${reason}`);
-
-        // Here you would typically make an API call to update the vehicle status
-
-        // For demo purposes, we'll just show a success message
-        alert(`Vehicle ${vehicleId} has been declined for service.\nReason: ${reason}`);
-
-        // Close the modal
-        closeModal();
-
-        // You might want to refresh the data or update the UI
-        // For now, let's just remove the row from the table
-        const row = document.querySelector(`button[data-id="${vehicleId}"]`).closest('tr');
-        row.style.backgroundColor = '#ffebee';
-        setTimeout(() => {
-            row.remove();
-        }, 1000);
-    }
-
-    // Function to navigate to the service update page
-    function navigateToServiceUpdate(vehicleInfo) {
-        console.log(`Navigating to service update page for vehicle: ${vehicleInfo}`);
-        // In a real application, you would redirect to the service update page
-        // window.location.href = `/service-update?vehicle=${encodeURIComponent(vehicleInfo)}`;
-
-        // For demo purposes, we'll just show an alert
-        alert(`Navigating to service update page for ${vehicleInfo}`);
-    }
-
-    // Function to view vehicle details
-    function viewVehicleDetails(vehicleInfo) {
-        console.log(`Viewing details for vehicle: ${vehicleInfo}`);
-        // In a real application, you would redirect to the vehicle details page
-        // window.location.href = `/vehicle-details?vehicle=${encodeURIComponent(vehicleInfo)}`;
-
-        // For demo purposes, we'll just show an alert
-        alert(`Viewing details for ${vehicleInfo}`);
-    }
-
-    // Function to refresh the data
-    function refreshData() {
-        console.log('Refreshing data...');
-        // Here you would typically make API calls to fetch fresh data
-
-        // For demo purposes, we'll just show a loading indicator and then hide it
-        const refreshBtn = document.querySelector('.refresh-btn');
-        const originalContent = refreshBtn.innerHTML;
-
-        refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-        refreshBtn.disabled = true;
-
-        setTimeout(() => {
-            refreshBtn.innerHTML = originalContent;
-            refreshBtn.disabled = false;
-            alert('Data refreshed successfully!');
-        }, 1500);
-    }
-
-    // Function to handle pagination
-    function handlePagination(page) {
-        console.log(`Navigating to page ${page}`);
-        // Here you would typically make an API call to fetch data for the selected page
-
-        // For demo purposes, we'll just update the active page indicator
-        const paginationNumbers = document.querySelectorAll('.pagination-number');
-        paginationNumbers.forEach(num => {
-            num.classList.remove('active');
-            if (parseInt(num.textContent) === page) {
-                num.classList.add('active');
-            }
-        });
-    }
-
-    // Function to initialize pagination
-    function initPagination() {
-        const paginationNumbers = document.querySelectorAll('.pagination-number');
-        paginationNumbers.forEach(num => {
-            num.addEventListener('click', function() {
-                const page = parseInt(this.textContent);
-                handlePagination(page);
-            });
-        });
-
-        const prevBtn = document.querySelector('.pagination-btn.prev');
-        const nextBtn = document.querySelector('.pagination-btn.next');
-
-        if (prevBtn) {
-            prevBtn.addEventListener('click', function() {
-                const activePage = document.querySelector('.pagination-number.active');
-                if (activePage) {
-                    const page = parseInt(activePage.textContent);
-                    if (page > 1) {
-                        handlePagination(page - 1);
-                    }
-                }
-            });
-        }
-
-        if (nextBtn) {
-            nextBtn.addEventListener('click', function() {
-                const activePage = document.querySelector('.pagination-number.active');
-                if (activePage) {
-                    const page = parseInt(activePage.textContent);
-                    const totalPages = document.querySelectorAll('.pagination-number').length;
-                    if (page < totalPages) {
-                        handlePagination(page + 1);
-                    }
-                }
-            });
-        }
-    }
-
-    // Function to initialize the service checklist
-    function initServiceChecklist() {
-        const checklistItems = document.querySelectorAll('.checklist-item');
-
-        checklistItems.forEach(item => {
-            const checkbox = item.querySelector('.checklist-item-checkbox input');
-            const decreaseBtn = item.querySelector('.quantity-btn.decrease');
-            const increaseBtn = item.querySelector('.quantity-btn.increase');
-            const quantityInput = item.querySelector('.quantity-input');
-
-            if (checkbox) {
-                checkbox.addEventListener('change', function() {
-                    if (this.checked) {
-                        item.style.backgroundColor = 'rgba(56, 176, 0, 0.05)';
-                        item.style.borderColor = 'var(--success)';
-                    } else {
-                        item.style.backgroundColor = '';
-                        item.style.borderColor = 'var(--medium-gray)';
-                    }
-
-                    updateServiceProgress();
-                });
-            }
-
-            if (decreaseBtn && quantityInput) {
-                decreaseBtn.addEventListener('click', function() {
-                    let value = parseInt(quantityInput.value);
-                    if (value > 0) {
-                        quantityInput.value = value - 1;
-                    }
-                });
-            }
-
-            if (increaseBtn && quantityInput) {
-                increaseBtn.addEventListener('click', function() {
-                    let value = parseInt(quantityInput.value);
-                    quantityInput.value = value + 1;
-                });
-            }
-        });
-    }
-
-    // Function to update the service progress
-    function updateServiceProgress() {
-        const checklistItems = document.querySelectorAll('.checklist-item-checkbox input');
-        const progressBar = document.querySelector('.progress');
-
-        if (!checklistItems.length || !progressBar) return;
-
-        let checkedCount = 0;
-        checklistItems.forEach(item => {
-            if (item.checked) {
-                checkedCount++;
-            }
-        });
-
-        const progressPercentage = (checkedCount / checklistItems.length) * 100;
-        progressBar.style.width = `${progressPercentage}%`;
-
-        const progressLabel = document.querySelector('.progress-label .percentage');
-        if (progressLabel) {
-            progressLabel.textContent = `${Math.round(progressPercentage)}%`;
-        }
-    }
-
-    // Function to initialize the filter functionality
-    function initFilters() {
-        const applyFilterBtn = document.querySelector('.btn-apply-filter');
-        const resetFilterBtn = document.querySelector('.btn-reset-filter');
-
-        if (applyFilterBtn) {
-            applyFilterBtn.addEventListener('click', applyFilters);
-        }
-
-        if (resetFilterBtn) {
-            resetFilterBtn.addEventListener('click', resetFilters);
-        }
-    }
-
-    // Function to apply filters
-    function applyFilters() {
-        console.log('Applying filters...');
-        // Here you would typically make API calls to fetch filtered data
-
-        // For demo purposes, we'll just show a loading indicator and then hide it
-        const applyFilterBtn = document.querySelector('.btn-apply-filter');
-        const originalContent = applyFilterBtn.textContent;
-
-        applyFilterBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Filtering...';
-        applyFilterBtn.disabled = true;
-
-        setTimeout(() => {
-            applyFilterBtn.textContent = originalContent;
-            applyFilterBtn.disabled = false;
-            alert('Filters applied successfully!');
-        }, 1500);
-    }
-
-    // Function to reset filters
-    function resetFilters() {
-        console.log('Resetting filters...');
-
-        // Reset all filter inputs
-        const filterInputs = document.querySelectorAll('.filter-input, .filter-select');
-        filterInputs.forEach(input => {
-            input.value = '';
-        });
-
-        // Here you would typically make API calls to fetch unfiltered data
-
-        // For demo purposes, we'll just show a success message
-        alert('Filters have been reset.');
-    }
-
-    // Function to initialize the profile page
-    function initProfilePage() {
-        const editProfileBtn = document.querySelector('.btn-edit-profile');
-        const changePasswordBtn = document.querySelector('.btn-change-password');
-
-        if (editProfileBtn) {
-            editProfileBtn.addEventListener('click', function() {
-                console.log('Edit profile clicked');
-                // In a real application, you would show a form to edit the profile
-                alert('Edit profile functionality would be implemented here.');
-            });
-        }
-
-        if (changePasswordBtn) {
-            changePasswordBtn.addEventListener('click', function() {
-                console.log('Change password clicked');
-                // In a real application, you would show a form to change the password
-                alert('Change password functionality would be implemented here.');
-            });
-        }
-    }
-
-    // Function to initialize charts (if using a charting library)
-    function initCharts() {
-        // This is a placeholder for chart initialization
-        // You would typically use a library like Chart.js or ApexCharts
-        console.log('Charts would be initialized here.');
-    }
-
-    // Function to handle notifications
-    function handleNotifications() {
-        const notificationBtn = document.querySelector('.notification-btn');
-
-        if (notificationBtn) {
-            notificationBtn.addEventListener('click', function() {
-                console.log('Notification button clicked');
-                // In a real application, you would show a dropdown with notifications
-                alert('Notifications would be displayed here.');
-            });
-        }
-    }
-
-    // Function to handle messages
-    function handleMessages() {
-        const messageBtn = document.querySelector('.message-btn');
-
-        if (messageBtn) {
-            messageBtn.addEventListener('click', function() {
-                console.log('Message button clicked');
-                // In a real application, you would show a dropdown with messages
-                alert('Messages would be displayed here.');
-            });
-        }
-    }
-
-    // Function to handle user dropdown
-    function handleUserDropdown() {
-        const dropdownToggle = document.querySelector('.dropdown-toggle');
-
-        if (dropdownToggle) {
-            dropdownToggle.addEventListener('click', function() {
-                console.log('User dropdown clicked');
-                // In a real application, you would toggle a dropdown menu
-                alert('User dropdown menu would be displayed here.');
-            });
-        }
-    }
-
-    // Function to initialize the dashboard based on the current page
-    function initCurrentPage() {
-        // Get the current page from the URL or a data attribute
-        const currentPage = document.body.getAttribute('data-page') || 'dashboard';
-
-        console.log(`Initializing page: ${currentPage}`);
-
-        // Initialize common elements
-        initPagination();
-        handleNotifications();
-        handleMessages();
-        handleUserDropdown();
-
-        // Initialize page-specific elements
-        switch (currentPage) {
-            case 'dashboard':
-                // Dashboard specific initializations
-                initCharts();
-                break;
-            case 'service-update':
-                // Service update page specific initializations
-                initServiceChecklist();
-                break;
-            case 'service-history':
-                // Service history page specific initializations
-                initFilters();
-                break;
-            case 'profile':
-                // Profile page specific initializations
-                initProfilePage();
-                break;
-        }
-    }
-
-    // Call the initialization function when the DOM is loaded
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('DOM fully loaded');
-        initDashboard();
-        setupEventListeners();
-        initCurrentPage();
-    });
-
-    // Add window resize event listener to handle responsive behavior
-    window.addEventListener('resize', function() {
-        // Handle responsive behavior if needed
-        console.log('Window resized');
+        // // Show success message
+        // alert(`Service for vehicle ${currentVehicleId} has been successfully assigned.`);
     });
 </script>
+
+<style>
+    /* Styles for the assign button */
+    .btn-assign {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background-color 0.3s;
+    }
+
+    .btn-assign:hover {
+        background-color: #45a049;
+    }
+
+    /* Modal styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-content {
+        background-color: #fefefe;
+        margin: 10% auto;
+        padding: 0;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        width: 500px;
+        max-width: 90%;
+        animation: modalFadeIn 0.3s;
+    }
+
+    @keyframes modalFadeIn {
+        from {opacity: 0; transform: translateY(-20px);}
+        to {opacity: 1; transform: translateY(0);}
+    }
+
+    .modal-header {
+        padding: 16px 24px;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #e9ecef;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-header h2 {
+        margin: 0;
+        font-size: 1.25rem;
+        color: #333;
+    }
+
+    .close-modal {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #aaa;
+    }
+
+    .close-modal:hover {
+        color: #333;
+    }
+
+    .modal-body {
+        padding: 24px;
+    }
+
+    .modal-footer {
+        padding: 16px 24px;
+        background-color: #f8f9fa;
+        border-top: 1px solid #e9ecef;
+        border-bottom-left-radius: 8px;
+        border-bottom-right-radius: 8px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: #333;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 1rem;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+    .form-control:focus {
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
+    .btn-cancel {
+        background-color: #6c757d;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background-color 0.3s;
+    }
+
+    .btn-cancel:hover {
+        background-color: #5a6268;
+    }
+
+    .btn-submit {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background-color 0.3s;
+    }
+
+    .btn-submit:hover {
+        background-color: #0069d9;
+    }
+
+    /* Status badge for assigned state */
+    .status-badge.assigned {
+        background-color: #17a2b8;
+    }
+</style>
 </body>
 </html>

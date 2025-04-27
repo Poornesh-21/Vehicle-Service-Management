@@ -802,7 +802,7 @@
 </div>
 </div>
 
-<!-- Change Password Modal -->
+
 <div class="modal fade" id="changePasswordModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content glass-modal">
@@ -816,6 +816,9 @@
                 <p class="password-change-message">This appears to be your first login. Please change your temporary password to continue.</p>
 
                 <form id="changePasswordForm">
+                    <!-- Add hidden field for current/temporary password -->
+                    <input type="hidden" id="currentPassword" name="currentPassword">
+
                     <div class="form-floating position-relative mb-3">
                         <input type="password" class="form-control" id="newPassword" placeholder="New Password" required>
                         <label for="newPassword">New Password</label>
@@ -1082,6 +1085,9 @@
                         const isTemporaryPassword = checkIfTemporaryPassword(passwordValue);
 
                         if (isTemporaryPassword) {
+                            // Set the current password in the hidden field for the API request
+                            document.getElementById('currentPassword').value = passwordValue;
+
                             // Show change password modal
                             const changePasswordModal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
                             changePasswordModal.show();
@@ -1116,10 +1122,16 @@
 
                 const newPasswordValue = newPassword.value;
                 const confirmPasswordValue = confirmPassword.value;
+                const currentPasswordValue = document.getElementById('currentPassword').value;
+                const passwordMismatch = document.getElementById('passwordMismatch');
+
+                // Hide any previous error messages
+                hideErrorMessage();
+                passwordMismatch.classList.add('d-none');
 
                 // Validate password match
                 if (newPasswordValue !== confirmPasswordValue) {
-                    document.getElementById('passwordMismatch').classList.remove('d-none');
+                    passwordMismatch.classList.remove('d-none');
                     return;
                 }
 
@@ -1135,56 +1147,65 @@
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Setting password...';
 
-                // In a real application, we would make an API call to change the password
-                // For now, we're simulating success after a brief delay
-                setTimeout(() => {
-                    // Mark password as changed
-                    localStorage.setItem('passwordChanged', 'true');
+                // Get the token from localStorage
+                const token = localStorage.getItem('jwtToken');
 
-                    // Get token and redirect
-                    const token = localStorage.getItem('jwtToken');
-                    window.location.href = '/serviceAdvisor/dashboard?token=' + token;
-                }, 1500);
+                // Prepare request data
+                const requestData = {
+                    currentPassword: currentPasswordValue,
+                    newPassword: newPasswordValue,
+                    confirmPassword: confirmPasswordValue,
+                    isTemporaryPassword: true  // This is a first-time login password change
+                };
+
+                // Send the password change request to our new endpoint
+                fetch('/serviceAdvisor/api/change-password?token=' + token, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify(requestData)
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(errorData => {
+                                throw new Error(errorData.error || 'Failed to change password');
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Password change successful
+                        console.log('Password changed successfully', data);
+
+                        // Update token in localStorage if a new one was returned
+                        if (data.token) {
+                            localStorage.setItem('jwtToken', data.token);
+                        }
+
+                        // Show success message briefly
+                        showSuccessMessage('Password changed successfully! Redirecting to dashboard...');
+
+                        // Redirect to dashboard after a short delay
+                        setTimeout(() => {
+                            window.location.href = '/serviceAdvisor/dashboard?token=' + (data.token || token);
+                        }, 1500);
+                    })
+                    .catch(error => {
+                        console.error('Password change error:', error);
+
+                        // Reset button state
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalBtnText;
+
+                        // Show error message
+                        showErrorMessage(error.message || 'Failed to change password. Please try again.');
+                    });
             });
         }
 
         // ===== Utility Functions =====
-
-        // Show error message
-        function showErrorMessage(message) {
-            // Create error alert if it doesn't exist
-            let errorAlert = document.getElementById('loginError');
-
-            if (!errorAlert) {
-                errorAlert = document.createElement('div');
-                errorAlert.className = 'alert alert-danger mt-3';
-                errorAlert.id = 'loginError';
-                errorAlert.role = 'alert';
-
-                const formEl = document.querySelector('.glass-card') || document.body;
-                formEl.prepend(errorAlert);
-            }
-
-            errorAlert.textContent = message;
-            errorAlert.classList.remove('d-none');
-        }
-
-        // Hide error message
-        function hideErrorMessage() {
-            const errorAlert = document.getElementById('loginError');
-            if (errorAlert) {
-                errorAlert.classList.add('d-none');
-            }
-        }
-
-        // Check if password is temporary
-        function checkIfTemporaryPassword(password) {
-            // This is a simplified check - in a real scenario, you'd have specific patterns
-            // for temporary passwords or check with the server
-
-            // Example: Consider passwords starting with SA2025- as temporary
-            return password.startsWith('SA2025-');
-        }
 
         // Calculate password strength (returns 0-100)
         function validatePasswordStrength(password) {
@@ -1206,6 +1227,71 @@
             if (/[^A-Za-z0-9]/.test(password)) strength += 20;
 
             return strength;
+        }
+
+        // Show error message
+        function showErrorMessage(message) {
+            // Create error alert if it doesn't exist
+            let errorAlert = document.getElementById('loginError');
+
+            if (!errorAlert) {
+                errorAlert = document.createElement('div');
+                errorAlert.className = 'alert alert-danger mt-3';
+                errorAlert.id = 'loginError';
+                errorAlert.role = 'alert';
+
+                const formEl = document.querySelector('.glass-card') || document.body;
+                formEl.prepend(errorAlert);
+            }
+
+            errorAlert.textContent = message;
+            errorAlert.classList.remove('d-none');
+        }
+
+        // Function to display success message
+        function showSuccessMessage(message) {
+            // Create success alert if it doesn't exist
+            let successAlert = document.getElementById('passwordSuccess');
+
+            if (!successAlert) {
+                successAlert = document.createElement('div');
+                successAlert.className = 'alert alert-success mt-3';
+                successAlert.id = 'passwordSuccess';
+                successAlert.role = 'alert';
+
+                const formEl = document.querySelector('#changePasswordForm') || document.body;
+                formEl.prepend(successAlert);
+            }
+
+            successAlert.textContent = message;
+            successAlert.classList.remove('d-none');
+        }
+
+        // Hide error message
+        function hideErrorMessage() {
+            const errorAlert = document.getElementById('loginError');
+            if (errorAlert) {
+                errorAlert.classList.add('d-none');
+            }
+
+            const passwordError = document.getElementById('passwordError');
+            if (passwordError) {
+                passwordError.classList.add('d-none');
+            }
+
+            const successAlert = document.getElementById('passwordSuccess');
+            if (successAlert) {
+                successAlert.classList.add('d-none');
+            }
+        }
+
+        // Check if password is temporary
+        function checkIfTemporaryPassword(password) {
+            // This is a simplified check - in a real scenario, you'd have specific patterns
+            // for temporary passwords or check with the server
+
+            // Example: Consider passwords starting with SA2025- as temporary
+            return password.startsWith('SA2025-');
         }
 
         // ===== Auto-login with token if available =====

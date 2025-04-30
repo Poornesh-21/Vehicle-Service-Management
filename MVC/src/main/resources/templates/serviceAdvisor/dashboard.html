@@ -8,7 +8,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="dashboard.css">
 </head>
 <style>
     /* Base Styles */
@@ -123,6 +122,21 @@
         border-radius: var(--radius-md);
         backdrop-filter: blur(10px);
     }
+    /* Styles for the assign button */
+    .btn-assign {
+        background-color: #4CAF50;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background-color 0.3s;
+    }
+
+    .btn-assign:hover {
+        background-color: #45a049;
+    }
 
     .user-avatar img {
         width: 50px;
@@ -216,39 +230,11 @@
 
     .main-header {
         display: flex;
-        justify-content: space-between;
+        justify-content: flex-end;
         align-items: center;
         margin-bottom: var(--spacing-xl);
         padding-bottom: var(--spacing-md);
         border-bottom: 1px solid var(--medium-gray);
-    }
-
-    .header-search {
-        position: relative;
-        width: 300px;
-    }
-
-    .header-search i {
-        position: absolute;
-        left: var(--spacing-md);
-        top: 50%;
-        transform: translateY(-50%);
-        color: var(--gray);
-    }
-
-    .header-search input {
-        width: 100%;
-        padding: var(--spacing-md) var(--spacing-md) var(--spacing-md) calc(var(--spacing-md) * 2 + 16px);
-        border: 1px solid var(--medium-gray);
-        border-radius: var(--radius-md);
-        background-color: var(--white);
-        transition: all var(--transition-fast);
-    }
-
-    .header-search input:focus {
-        outline: none;
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
     }
 
     .header-actions {
@@ -329,94 +315,6 @@
 
     .page-title p {
         color: var(--gray);
-    }
-
-    /* Stats Cards */
-    .stats-container {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: var(--spacing-lg);
-        margin-bottom: var(--spacing-xl);
-    }
-
-    .stat-card ,vehicle-card{
-        background: var(--white);
-        border-radius: var(--radius-lg);
-        padding: var(--spacing-lg);
-        display: flex;
-        align-items: center;
-        box-shadow: var(--shadow-md);
-        transition: transform var(--transition-fast);
-    }
-
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: var(--shadow-lg);
-    }
-
-    .stat-icon {
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: var(--spacing-lg);
-        font-size: 1.5rem;
-    }
-
-    .stat-card.pending .stat-icon {
-        background: rgba(255, 170, 0, 0.1);
-        color: var(--warning);
-    }
-
-    .stat-card.in-progress .stat-icon {
-        background: rgba(76, 201, 240, 0.1);
-        color: var(--info);
-    }
-
-    .stat-card.completed .stat-icon {
-        background: rgba(56, 176, 0, 0.1);
-        color: var(--success);
-    }
-
-    .stat-card.total .stat-icon {
-        background: rgba(114, 9, 183, 0.1);
-        color: var(--secondary-color);
-    }
-
-    .stat-details {
-        flex: 1;
-    }
-
-    .stat-details h3 {
-        font-size: 0.9rem;
-        color: var(--gray);
-        margin-bottom: var(--spacing-xs);
-    }
-
-    .stat-number {
-        font-size: 1.8rem;
-        font-weight: 700;
-        margin-bottom: var(--spacing-xs);
-    }
-
-    .stat-trend {
-        font-size: 0.8rem;
-        display: flex;
-        align-items: center;
-    }
-
-    .stat-trend i {
-        margin-right: var(--spacing-xs);
-    }
-
-    .stat-trend.up {
-        color: var(--success);
-    }
-
-    .stat-trend.down {
-        color: var(--danger);
     }
 
     /* Section Container */
@@ -910,10 +808,6 @@
 
     /* Responsive Styles */
     @media (max-width: 1200px) {
-        .stats-container {
-            grid-template-columns: repeat(2, 1fr);
-        }
-
         .cards-container {
             grid-template-columns: repeat(2, 1fr);
         }
@@ -962,10 +856,6 @@
     }
 
     @media (max-width: 768px) {
-        .stats-container {
-            grid-template-columns: 1fr;
-        }
-
         .cards-container {
             grid-template-columns: 1fr;
         }
@@ -973,11 +863,6 @@
         .main-header {
             flex-direction: column;
             align-items: flex-start;
-        }
-
-        .header-search {
-            width: 100%;
-            margin-bottom: var(--spacing-md);
         }
 
         .header-actions {
@@ -1019,6 +904,8 @@
         align-items: center;
         justify-content: center;
         transition: all var(--transition-normal);
+        overflow-y: auto;
+        padding: 20px;
     }
 
     .modal.active {
@@ -1038,27 +925,21 @@
     }
 
     .modal-content {
-        background-color: rgba(255, 255, 255, 0.85);
+        background-color: rgba(255, 255, 255, 0.95);
         backdrop-filter: blur(10px);
         border-radius: var(--radius-lg);
         width: 100%;
-        max-width: 500px;
+        max-width: 550px;
         box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2),
         0 0 0 1px rgba(255, 255, 255, 0.3) inset;
         animation: modalFadeIn 0.4s ease;
         border: 1px solid rgba(255, 255, 255, 0.18);
         overflow: hidden;
-    }
-
-    @keyframes modalFadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(-30px) scale(0.95);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-        }
+        margin: auto;
+        position: relative;
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
     }
 
     .modal-header {
@@ -1101,6 +982,8 @@
 
     .modal-body {
         padding: var(--spacing-xl);
+        overflow-y: auto;
+        flex: 1;
     }
 
     .modal-footer {
@@ -1156,20 +1039,28 @@
         display: flex;
         align-items: center;
         gap: var(--spacing-md);
-        background-color: rgba(255, 255, 255, 0.5);
-        padding: var(--spacing-sm) var(--spacing-md);
+        background-color: rgba(255, 255, 255, 0.6);
+        padding: 10px var(--spacing-md);
         border-radius: var(--radius-md);
         transition: all var(--transition-fast);
+        margin-bottom: 6px;
     }
 
     .checkbox-group:hover {
-        background-color: rgba(255, 255, 255, 0.8);
+        background-color: rgba(255, 255, 255, 0.9);
+        transform: translateX(5px);
+    }
+
+    .checkbox-group label {
+        margin-bottom: 0;
+        flex: 1;
     }
 
     .checkbox-group input[type="checkbox"] {
         width: 18px;
         height: 18px;
         accent-color: var(--primary-color);
+        cursor: pointer;
     }
 
     .btn-cancel, .btn-submit {
@@ -1221,10 +1112,19 @@
     .btn-submit:hover::before {
         left: 100%;
     }
+
+    /* Fix form element styles */
+    textarea.form-control {
+        resize: vertical;
+        min-height: 80px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
 </style>
 <body>
 <div class="app-container">
-    <!-- Sidebar -->
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
@@ -1233,9 +1133,7 @@
         </div>
 
         <div class="sidebar-user">
-            <div class="user-avatar">
-                <img src="assets/user-avatar.jpg" alt="User">
-            </div>
+
             <div class="user-info">
                 <h3>John Smith</h3>
                 <p>Service Advisor</p>
@@ -1245,12 +1143,8 @@
         <nav class="sidebar-nav">
             <ul>
                 <li class="active"><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
-                <li ><a href="vehicle-list.html"><i class="fas fa-car-side"></i> <span>Vehicles Under Service</span></a></li>
-                <li><a href="service-history.html"><i class="fas fa-history"></i> <span>Service History</span></a></li>
-                <!-- <li><a href="customer-management.html"><i class="fas fa-users"></i> <span>Customers</span></a></li> -->
-                <li><a href="inventory.html"><i class="fas fa-boxes"></i> <span>Inventory</span></a></li>
-                <!-- <li><a href="reports.html"><i class="fas fa-chart-bar"></i> <span>Reports</span></a></li> -->
-                <li><a href="profile.html"><i class="fas fa-user-cog"></i> <span>My Profile</span></a></li>
+                <li><a href="vehicle-list.html"><i class="fas fa-car-side"></i> <span>Vehicles Under Service</span></a></li>
+                <li><a href="mechanics.html"><i class="fas fa-users-cog"></i> <span>Mechanics</span></a></li>
             </ul>
         </nav>
 
@@ -1262,11 +1156,6 @@
     <!-- Main Content -->
     <main class="main-content">
         <header class="main-header">
-            <div class="header-search">
-                <i class="fas fa-search"></i>
-                <input type="text" placeholder="Search...">
-            </div>
-
             <div class="header-actions">
                 <!-- <button class="notification-btn">
                     <i class="fas fa-bell"></i>
@@ -1290,61 +1179,6 @@
             <div class="page-title">
                 <h1>Dashboard</h1>
                 <p>Welcome back, John! Here's what's happening today.</p>
-            </div>
-
-            <!-- Stats Cards -->
-            <div class="stats-container">
-                <div class="stat-card pending">
-                    <div class="stat-icon">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <div class="stat-details">
-                        <h3>Pending Services</h3>
-                        <p class="stat-number">12</p>
-                        <p class="stat-trend up">
-                            <i class="fas fa-arrow-up"></i> 8% from yesterday
-                        </p>
-                    </div>
-                </div>
-
-                <div class="stat-card in-progress">
-                    <div class="stat-icon">
-                        <i class="fas fa-tools"></i>
-                    </div>
-                    <div class="stat-details">
-                        <h3>In Progress</h3>
-                        <p class="stat-number">8</p>
-                        <p class="stat-trend down">
-                            <i class="fas fa-arrow-down"></i> 3% from yesterday
-                        </p>
-                    </div>
-                </div>
-
-                <div class="stat-card completed">
-                    <div class="stat-icon">
-                        <i class="fas fa-check-circle"></i>
-                    </div>
-                    <div class="stat-details">
-                        <h3>Completed Today</h3>
-                        <p class="stat-number">5</p>
-                        <p class="stat-trend up">
-                            <i class="fas fa-arrow-up"></i> 12% from yesterday
-                        </p>
-                    </div>
-                </div>
-
-                <div class="stat-card total">
-                    <div class="stat-icon">
-                        <i class="fas fa-calendar-check"></i>
-                    </div>
-                    <div class="stat-details">
-                        <h3>Total This Week</h3>
-                        <p class="stat-number">42</p>
-                        <p class="stat-trend up">
-                            <i class="fas fa-arrow-up"></i> 15% from last week
-                        </p>
-                    </div>
-                </div>
             </div>
 
             <!-- New Assignments Section -->
@@ -1395,7 +1229,7 @@
                             <td>Regular Maintenance</td>
                             <td>Oct 15, 2023</td>
                             <!-- ... existing code ... -->
-                            <td><span class="status-badge new">Pickup</span></td>
+                            <td><span class="status-badge new">New Assignment</span></td>
                             <td>
                                 <div class="action-buttons">
                                     <button class="btn-assign" data-id="VH-2023-001">Assign</button>
@@ -1419,7 +1253,7 @@
                             </td>
                             <td>Oil Change</td>
                             <td>Oct 15, 2023</td>
-                            <td><span class="status-badge new">Drop inn</span></td>
+                            <td><span class="status-badge new">New Assignment</span></td>
                             <td>
                                 <div class="action-buttons">
                                     <button class="btn-assign" data-id="VH-2023-002">Assign</button>
@@ -1446,149 +1280,6 @@
                     </button>
                 </div>
             </div>
-
-            <!-- Vehicles Under Service Section -->
-            <div class="section-container">
-                <div class="section-header">
-                    <h2>Vehicles Under Service</h2>
-                    <div class="section-actions">
-                        <button class="view-all-btn"> <a href="vehicle-list.html"></a>
-                            View All <i class="fas fa-arrow-right"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="cards-container">
-                    <div class="service-card">
-                        <div class="service-card-header">
-                            <div class="vehicle-info">
-                                <h3>Toyota Camry</h3>
-                                <p>TN 05 IJ 7890 • Michael Johnson</p>
-                            </div>
-                            <span class="status-badge in-progress">In Progress</span>
-                        </div>
-                        <div class="service-card-body">
-                            <div class="service-details">
-                                <div class="detail-item">
-                                    <span class="label">Service Type:</span>
-                                    <span class="value">Regular Maintenance</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="label">Started:</span>
-                                    <span class="value">Oct 14, 2023 • 10:30 AM</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="label">Estimated Completion:</span>
-                                    <span class="value">Oct 15, 2023 • 2:00 PM</span>
-                                </div>
-                            </div>
-                            <div class="progress-container">
-                                <div class="progress-label">
-                                    <span>Progress</span>
-                                    <span>65%</span>
-                                </div>
-                                <div class="progress-bar">
-                                    <div class="progress" style="width: 65%;"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="service-card-footer">
-                            <button class="btn-update">
-                                <i class="fas fa-tools"></i> Update Service
-                            </button>
-                            <button class="btn-view-details">
-                                <i class="fas fa-eye"></i> View Details
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="service-card">
-                        <div class="service-card-header">
-                            <div class="vehicle-info">
-                                <h3>Honda Civic</h3>
-                                <p>TN 06 KL 1234 • Sarah Williams</p>
-                            </div>
-                            <span class="status-badge in-progress">In Progress</span>
-                        </div>
-                        <div class="service-card-body">
-                            <div class="service-details">
-                                <div class="detail-item">
-                                    <span class="label">Service Type:</span>
-                                    <span class="value">Oil Change</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="label">Started:</span>
-                                    <span class="value">Oct 14, 2023 • 11:45 AM</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="label">Estimated Completion:</span>
-                                    <span class="value">Oct 15, 2023 • 12:30 PM</span>
-                                </div>
-                            </div>
-                            <div class="progress-container">
-                                <div class="progress-label">
-                                    <span>Progress</span>
-                                    <span>40%</span>
-                                </div>
-                                <div class="progress-bar">
-                                    <div class="progress" style="width: 40%;"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="service-card-footer">
-                            <button class="btn-update">
-                                <i class="fas fa-tools"></i> Update Service
-                            </button>
-                            <button class="btn-view-details">
-                                <i class="fas fa-eye"></i> View Details
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="service-card">
-                        <div class="service-card-header">
-                            <div class="vehicle-info">
-                                <h3>Ford Mustang</h3>
-                                <p>TN 07 MN 5678 • David Brown</p>
-                            </div>
-                            <span class="status-badge almost-done">Almost Done</span>
-                        </div>
-                        <div class="service-card-body">
-                            <div class="service-details">
-                                <div class="detail-item">
-                                    <span class="label">Service Type:</span>
-                                    <span class="value">Brake Inspection</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="label">Started:</span>
-                                    <span class="value">Oct 14, 2023 • 9:15 AM</span>
-                                </div>
-                                <div class="detail-item">
-                                    <span class="label">Estimated Completion:</span>
-                                    <span class="value">Oct 15, 2023 • 11:00 AM</span>
-                                </div>
-                            </div>
-                            <div class="progress-container">
-                                <div class="progress-label">
-                                    <span>Progress</span>
-                                    <span>85%</span>
-                                </div>
-                                <div class="progress-bar">
-                                    <div class="progress" style="width: 85%;"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="service-card-footer">
-                            <button class="btn-update">
-                                <i class="fas fa-tools"></i> Update Service
-                            </button>
-                            <button class="btn-view-details">
-                                <i class="fas fa-eye"></i> View Details
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </main>
 </div>
@@ -1598,16 +1289,16 @@
 <div class="modal" id="assignModal">
     <div class="modal-content">
         <div class="modal-header">
-            <h2>Assign Service to Technician</h2>
+            <h2>Assign Mechanics to Service</h2>
             <button class="close-modal">&times;</button>
         </div>
         <div class="modal-body">
-            <p>Please assign this service to a technician and set an estimated delivery date:</p>
+            <p>Please assign mechanics to work on this service:</p>
 
             <div class="form-group">
-                <label for="assignTechnician">Technician:</label>
-                <select id="assignTechnician" class="form-control">
-                    <option value="">Select a technician</option>
+                <label>Primary Mechanic:</label>
+                <select id="primaryMechanic" class="form-control">
+                    <option value="">Select primary mechanic</option>
                     <option value="tech1">James Wilson - Engine Specialist</option>
                     <option value="tech2">Robert Garcia - Brake Specialist</option>
                     <option value="tech3">Emily Chen - Electrical Systems</option>
@@ -1617,20 +1308,54 @@
             </div>
 
             <div class="form-group">
-                <label for="estimatedDeliveryDate">Estimated Delivery Date:</label>
-                <input type="date" id="estimatedDeliveryDate" class="form-control" min="">
+                <label>Additional Mechanics:</label>
+                <div class="mechanic-checkboxes">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="mechanic1" name="additional-mechanics" value="tech1">
+                        <label for="mechanic1">James Wilson - Engine Specialist</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="mechanic2" name="additional-mechanics" value="tech2">
+                        <label for="mechanic2">Robert Garcia - Brake Specialist</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="mechanic3" name="additional-mechanics" value="tech3">
+                        <label for="mechanic3">Emily Chen - Electrical Systems</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="mechanic4" name="additional-mechanics" value="tech4">
+                        <label for="mechanic4">Daniel Martinez - General Maintenance</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="mechanic5" name="additional-mechanics" value="tech5">
+                        <label for="mechanic5">Sophia Lee - Transmission Specialist</label>
+                    </div>
+                </div>
             </div>
 
+            <div class="section-divider">
+                <span>Service Details</span>
+            </div>
 
+            <div class="grid-2-columns">
+                <div class="form-group">
+                    <label for="estimatedDeliveryDate">Estimated Completion Date:</label>
+                    <input type="date" id="estimatedDeliveryDate" class="form-control" min="">
+                </div>
 
+                <div class="form-group">
+                    <label for="servicePriority">Service Priority:</label>
+                    <select id="servicePriority" class="form-control">
+                        <option value="normal">Normal</option>
+                        <option value="high">High Priority</option>
+                        <option value="urgent">Urgent</option>
+                    </select>
+                </div>
+            </div>
 
             <div class="form-group">
-                <label for="servicePriority">Vehicle collection preference:</label>
-                <select id="servicePriority" class="form-control">
-                    <option value="normal">Drop in</option>
-                    <option value="high">Pick up</option>
-                    <option value="urgent">Tow Truck pickup</option>
-                </select>
+                <label for="serviceNotes">Service Notes:</label>
+                <textarea id="serviceNotes" class="form-control" rows="3" placeholder="Enter specific tasks for each mechanic..."></textarea>
             </div>
         </div>
         <div class="modal-footer">
@@ -1660,45 +1385,50 @@
         assignButtons.forEach(button => {
             button.addEventListener('click', function() {
                 currentVehicleId = this.getAttribute('data-id');
-                assignModal.style.display = 'block';
+                assignModal.classList.add('active');
             });
         });
 
         // Close modals when close button or cancel is clicked
         closeModalButtons.forEach(button => {
             button.addEventListener('click', function() {
-                assignModal.style.display = 'none';
-                document.getElementById('declineModal').style.display = 'none';
+                assignModal.classList.remove('active');
             });
         });
 
         // Close modal when clicking outside of it
         window.addEventListener('click', function(event) {
             if (event.target === assignModal) {
-                assignModal.style.display = 'none';
-            }
-            if (event.target === document.getElementById('declineModal')) {
-                document.getElementById('declineModal').style.display = 'none';
+                assignModal.classList.remove('active');
             }
         });
 
         // Handle form submission
         const submitButton = assignModal.querySelector('.btn-submit');
         submitButton.addEventListener('click', function() {
-            const technician = document.getElementById('assignTechnician').value;
+            const primaryMechanic = document.getElementById('primaryMechanic').value;
             const deliveryDate = document.getElementById('estimatedDeliveryDate').value;
-            const deliveryTime = document.getElementById('estimatedDeliveryTime').value;
             const priority = document.getElementById('servicePriority').value;
+            const serviceNotes = document.getElementById('serviceNotes').value;
 
-            if (!technician || !deliveryDate || !deliveryTime) {
-                alert('Please select a technician and set an estimated delivery date and time.');
+            // Get all selected additional mechanics
+            const additionalMechanics = [];
+            const mechanicCheckboxes = document.querySelectorAll('input[name="additional-mechanics"]:checked');
+            mechanicCheckboxes.forEach(checkbox => {
+                additionalMechanics.push(checkbox.value);
+            });
+
+            if (!primaryMechanic || !deliveryDate) {
+                alert('Please select a primary mechanic and set an estimated completion date.');
                 return;
             }
 
             // Here you would typically send this data to your backend
-            console.log('Assigning vehicle', currentVehicleId, 'to technician', technician);
-            console.log('Estimated delivery:', deliveryDate, deliveryTime);
-            console.log('Priority:', priority);
+            console.log('Assigning vehicle', currentVehicleId, 'to primary mechanic:', primaryMechanic);
+            console.log('Additional mechanics:', additionalMechanics);
+            console.log('Estimated completion date:', deliveryDate);
+            console.log('Service priority:', priority);
+            console.log('Service notes:', serviceNotes);
 
             // Find the row to remove
             const row = document.querySelector(`button[data-id="${currentVehicleId}"]`).closest('tr');
@@ -1724,164 +1454,10 @@
             }, 500);
 
             // Close the modal
-            assignModal.style.display = 'none';
+            assignModal.classList.remove('active');
         });
-
-        // // Show success message
-        // alert(`Service for vehicle ${currentVehicleId} has been successfully assigned.`);
     });
 </script>
 
-<style>
-    /* Styles for the assign button */
-    .btn-assign {
-        background-color: #4CAF50;
-        color: white;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-weight: 500;
-        transition: background-color 0.3s;
-    }
-
-    .btn-assign:hover {
-        background-color: #45a049;
-    }
-
-    /* Modal styles */
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto;
-        background-color: rgba(0, 0, 0, 0.5);
-    }
-
-    .modal-content {
-        background-color: #fefefe;
-        margin: 10% auto;
-        padding: 0;
-        border-radius: 8px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-        width: 500px;
-        max-width: 90%;
-        animation: modalFadeIn 0.3s;
-    }
-
-    @keyframes modalFadeIn {
-        from {opacity: 0; transform: translateY(-20px);}
-        to {opacity: 1; transform: translateY(0);}
-    }
-
-    .modal-header {
-        padding: 16px 24px;
-        background-color: #f8f9fa;
-        border-bottom: 1px solid #e9ecef;
-        border-top-left-radius: 8px;
-        border-top-right-radius: 8px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .modal-header h2 {
-        margin: 0;
-        font-size: 1.25rem;
-        color: #333;
-    }
-
-    .close-modal {
-        background: none;
-        border: none;
-        font-size: 1.5rem;
-        cursor: pointer;
-        color: #aaa;
-    }
-
-    .close-modal:hover {
-        color: #333;
-    }
-
-    .modal-body {
-        padding: 24px;
-    }
-
-    .modal-footer {
-        padding: 16px 24px;
-        background-color: #f8f9fa;
-        border-top: 1px solid #e9ecef;
-        border-bottom-left-radius: 8px;
-        border-bottom-right-radius: 8px;
-        display: flex;
-        justify-content: flex-end;
-        gap: 10px;
-    }
-
-    .form-group {
-        margin-bottom: 16px;
-    }
-
-    .form-group label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: 500;
-        color: #333;
-    }
-
-    .form-control {
-        width: 100%;
-        padding: 10px 12px;
-        border: 1px solid #ced4da;
-        border-radius: 4px;
-        font-size: 1rem;
-        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-    }
-
-    .form-control:focus {
-        border-color: #80bdff;
-        outline: 0;
-        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-    }
-
-    .btn-cancel {
-        background-color: #6c757d;
-        color: white;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-weight: 500;
-        transition: background-color 0.3s;
-    }
-
-    .btn-cancel:hover {
-        background-color: #5a6268;
-    }
-
-    .btn-submit {
-        background-color: #007bff;
-        color: white;
-        border: none;
-        padding: 8px 16px;
-        border-radius: 4px;
-        cursor: pointer;
-        font-weight: 500;
-        transition: background-color 0.3s;
-    }
-
-    .btn-submit:hover {
-        background-color: #0069d9;
-    }
-
-    /* Status badge for assigned state */
-    .status-badge.assigned {
-        background-color: #17a2b8;
-    }
-</style>
 </body>
 </html>

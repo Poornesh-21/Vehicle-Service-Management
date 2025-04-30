@@ -157,13 +157,28 @@
     }
 
     .btn-delete {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
         background-color: rgba(217, 4, 41, 0.1);
         color: var(--danger);
+        border: none;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .btn-delete:hover {
         background-color: var(--danger);
         color: var(--white);
+    }
+
+    .btn-delete i {
+        font-size: 14px;
+        display: inline-block;
+        line-height: 1;
     }
 
     /* Mechanics Search */
@@ -180,7 +195,7 @@
         margin-top: var(--spacing-md);
     }
 
-    .btn-delete {
+    .btn-delete-confirm {
         background: linear-gradient(135deg, #d90429, #ef233c);
         color: var(--white);
         border: none;
@@ -191,7 +206,7 @@
         transition: all var(--transition-normal);
     }
 
-    .btn-delete:hover {
+    .btn-delete-confirm:hover {
         background: linear-gradient(135deg, #ef233c, #d90429);
         transform: translateY(-2px);
         box-shadow: 0 6px 15px rgba(217, 4, 41, 0.3);
@@ -206,6 +221,32 @@
 
     .collapsed .toggle-form-btn i {
         transform: rotate(180deg);
+    }
+
+    /* Add Mechanic Button */
+    .add-mechanic-btn {
+        padding: 10px 16px;
+        border-radius: var(--radius-md);
+        background-color: var(--primary-color);
+        color: var(--white);
+        border: none;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all var(--transition-normal);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-left: var(--spacing-md);
+    }
+
+    .add-mechanic-btn:hover {
+        background-color: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(114, 47, 55, 0.3);
+    }
+
+    .add-mechanic-btn i {
+        font-size: 1rem;
     }
 
     /* Responsive Adjustments */
@@ -242,34 +283,1132 @@
             grid-template-columns: 1fr;
         }
     }
+
+    /* Base Styles */
+    :root {
+        /* Primary Colors */
+        --primary-color: #722F37;
+        --primary-light: #8A3A43;
+        --primary-dark: #5A2329;
+        --secondary-color: #EFFFBB;
+        --secondary-light: #F1FF92;
+        --secondary-dark: #C6D880;
+
+        /* Neutral Colors */
+        --white: #ffffff;
+        --light-gray: #f8f9fa;
+        --medium-gray: #e9ecef;
+        --gray: #6c757d;
+        --dark-gray: #343a40;
+        --black: #212529;
+
+        /* Status Colors */
+        --success: #38b000;
+        --warning: #ffaa00;
+        --danger: #d90429;
+        --info: #4cc9f0;
+
+        /* Shadows */
+        --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+
+        /* Border Radius */
+        --radius-sm: 4px;
+        --radius-md: 8px;
+        --radius-lg: 16px;
+        --radius-xl: 24px;
+
+        /* Spacing */
+        --spacing-xs: 4px;
+        --spacing-sm: 8px;
+        --spacing-md: 16px;
+        --spacing-lg: 24px;
+        --spacing-xl: 32px;
+        --spacing-xxl: 48px;
+
+        /* Transitions */
+        --transition-fast: 0.2s ease;
+        --transition-normal: 0.3s ease;
+        --transition-slow: 0.5s ease;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Baloo Bhaijaan 2', sans-serif;
+        font-size: 16px;
+        line-height: 1.5;
+        color: var(--dark-gray);
+        background-color: var(--secondary-color);
+    }
+
+    /* App Container */
+    .app-container {
+        display: flex;
+        min-height: 100vh;
+    }
+
+    /* Sidebar Styles */
+    .sidebar {
+        width: 280px;
+        background:var(--primary-dark);
+        color: var(--white);
+        padding: var(--spacing-lg);
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        height: 100vh;
+        z-index: 100;
+        box-shadow: var(--shadow-lg);
+        transition: all var(--transition-normal);
+    }
+
+    .sidebar-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: var(--spacing-xl);
+        padding-bottom: var(--spacing-md);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .sidebar-header h2 {
+        font-size: 1.5rem;
+        font-weight: 600;
+    }
+
+    .sidebar-user {
+        display: flex;
+        align-items: center;
+        margin-bottom: var(--spacing-xl);
+        padding: var(--spacing-md);
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: var(--radius-md);
+        backdrop-filter: blur(10px);
+    }
+
+    .user-avatar img {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--white);
+        margin-right: var(--spacing-md);
+    }
+
+    .user-info h3 {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .user-info p {
+        font-size: 0.85rem;
+        opacity: 0.8;
+    }
+
+    .sidebar-nav {
+        flex: 1;
+    }
+
+    .sidebar-nav ul {
+        list-style: none;
+    }
+
+    .sidebar-nav li {
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .sidebar-nav a {
+        display: flex;
+        align-items: center;
+        padding: var(--spacing-md);
+        color: var(--white);
+        text-decoration: none;
+        border-radius: var(--radius-md);
+        transition: all var(--transition-fast);
+    }
+
+    .sidebar-nav a:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .sidebar-nav li.active a {
+        background: rgba(255, 255, 255, 0.2);
+        font-weight: 500;
+    }
+
+    .sidebar-nav i {
+        margin-right: var(--spacing-md);
+        font-size: 1.2rem;
+        width: 24px;
+        text-align: center;
+    }
+
+    .sidebar-footer {
+        margin-top: auto;
+        padding-top: var(--spacing-lg);
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .logout-btn {
+        display: flex;
+        align-items: center;
+        padding: var(--spacing-md);
+        color: var(--white);
+        text-decoration: none;
+        border-radius: var(--radius-md);
+        transition: all var(--transition-fast);
+    }
+
+    .logout-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .logout-btn i {
+        margin-right: var(--spacing-md);
+    }
+
+    /* Main Content Styles */
+    .main-content {
+        flex: 1;
+        margin-left: 280px;
+        padding: var(--spacing-lg);
+        transition: all var(--transition-normal);
+    }
+
+    .main-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--spacing-xl);
+        padding-bottom: var(--spacing-md);
+        border-bottom: 1px solid var(--medium-gray);
+    }
+
+    .header-search {
+        position: relative;
+        width: 300px;
+    }
+
+    .header-search i {
+        position: absolute;
+        left: var(--spacing-md);
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--gray);
+    }
+
+    .header-search input {
+        width: 100%;
+        padding: var(--spacing-md) var(--spacing-md) var(--spacing-md) calc(var(--spacing-md) * 2 + 16px);
+        border: 1px solid var(--medium-gray);
+        border-radius: var(--radius-md);
+        background-color: var(--white);
+        transition: all var(--transition-fast);
+    }
+
+    .header-search input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+    }
+
+    .header-actions {
+        display: flex;
+        align-items: center;
+    }
+
+    .notification-btn, .message-btn {
+        position: relative;
+        background: none;
+        border: none;
+        color: var(--gray);
+        font-size: 1.2rem;
+        margin-right: var(--spacing-lg);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+    }
+
+    .notification-btn:hover, .message-btn:hover {
+        color: var(--primary-color);
+    }
+
+    .badge {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background-color: var(--danger);
+        color: var(--white);
+        font-size: 0.7rem;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .user-dropdown {
+        position: relative;
+    }
+
+    .dropdown-toggle {
+        display: flex;
+        align-items: center;
+        background: none;
+        border: none;
+        cursor: pointer;
+    }
+
+    .dropdown-toggle img {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: var(--spacing-sm);
+    }
+
+    .dropdown-toggle span {
+        margin-right: var(--spacing-sm);
+        font-weight: 500;
+    }
+
+    /* Dashboard Content */
+    .dashboard-content {
+        padding: var(--spacing-md);
+    }
+
+    .page-title {
+        margin-bottom: var(--spacing-xl);
+    }
+
+    .page-title h1 {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: var(--spacing-xs);
+        color: var(--black);
+    }
+
+    .page-title p {
+        color: var(--gray);
+    }
+
+    /* Section Container */
+    .section-container {
+        background: var(--white);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-lg);
+        margin-bottom: var(--spacing-xl);
+        box-shadow: var(--shadow-md);
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .section-header h2 {
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+
+    .section-actions {
+        display: flex;
+        align-items: center;
+    }
+
+    .refresh-btn, .dropdown-btn, .view-all-btn {
+        display: flex;
+        align-items: center;
+        padding: var(--spacing-sm) var(--spacing-md);
+        border: 1px solid var(--medium-gray);
+        border-radius: var(--radius-md);
+        background: var(--white);
+        color: var(--gray);
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        margin-left: var(--spacing-sm);
+    }
+
+    .refresh-btn:hover, .dropdown-btn:hover {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+
+    .view-all-btn {
+        background: var(--primary-color);
+        color: var(--white);
+        border: none;
+
+    }
+
+    .view-all-btn:hover {
+        background: var(--primary-dark);
+    }
+
+    .view-all-btn i {
+        margin-left: var(--spacing-sm);
+    }
+
+    /* Table Styles */
+    .table-container {
+        overflow-x: auto;
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .data-table th, .data-table td {
+        padding: var(--spacing-md);
+        text-align: left;
+        border-bottom: 1px solid var(--medium-gray);
+    }
+
+    .data-table th {
+        font-weight: 600;
+        color: var(--gray);
+        background-color: var(--light-gray);
+    }
+
+    .data-table tbody tr {
+        transition: background-color var(--transition-fast);
+    }
+
+    .data-table tbody tr:hover {
+        background-color: rgba(67, 97, 238, 0.05);
+    }
+
+    .customer-info, .vehicle-info {
+        display: flex;
+        align-items: center;
+    }
+
+    .customer-info img {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: var(--spacing-md);
+    }
+
+    .customer-info .name {
+        font-weight: 500;
+        margin-bottom: 2px;
+    }
+
+    .customer-info .email {
+        font-size: 0.85rem;
+        color: var(--gray);
+    }
+
+    .vehicle-model {
+        font-weight: 500;
+        margin-bottom: 2px;
+    }
+
+    .vehicle-details {
+        font-size: 0.85rem;
+        color: var(--gray);
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: var(--radius-sm);
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+
+    .status-badge.new {
+        background-color: rgba(76, 201, 240, 0.1);
+        color: var(--info);
+    }
+
+    .status-badge.in-progress {
+        background-color: rgba(255, 170, 0, 0.1);
+        color: var(--warning);
+    }
+
+    .status-badge.completed {
+        background-color: rgba(56, 176, 0, 0.1);
+        color: var(--success);
+    }
+
+    .status-badge.almost-done {
+        background-color: rgba(114, 9, 183, 0.1);
+        color: var(--primary-color);
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: var(--spacing-sm);
+    }
+
+    .btn-accept, .btn-decline, .btn-update, .btn-view-details {
+        padding: 6px 12px;
+        border-radius: var(--radius-sm);
+        font-size: 0.85rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        border: none;
+    }
+
+    .btn-accept {
+        background-color: var(--success);
+        color: var(--white);
+    }
+
+    .btn-accept:hover {
+        background-color: #2d9000;
+    }
+
+    .btn-decline {
+        background-color: var(--danger);
+        color: var(--white);
+    }
+
+    .btn-decline:hover {
+        background-color: #b50020;
+    }
+
+    .btn-update, .btn-view-details {
+        background-color: var(--primary-color);
+        color: var(--white);
+    }
+
+    .btn-update:hover, .btn-view-details:hover {
+        background-color: var(--primary-dark);
+    }
+
+    .btn-view-details {
+        background-color: var(--primary-light);
+    }
+
+    .btn-view-details:hover {
+        background:var(--primary-dark);
+    }
+
+    /* Pagination */
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: var(--spacing-lg);
+    }
+
+    .pagination-btn {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--medium-gray);
+        background: var(--white);
+        color: var(--gray);
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+    }
+
+    .pagination-btn:hover {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+
+    .pagination-numbers {
+        display: flex;
+        align-items: center;
+        margin: 0 var(--spacing-md);
+    }
+
+    .pagination-number {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid var(--medium-gray);
+        background: var(--white);
+        color: var(--gray);
+        border-radius: var(--radius-md);
+        margin: 0 var(--spacing-xs);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+    }
+
+    .pagination-number:hover {
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+    }
+
+    .pagination-number.active {
+        background: var(--primary-color);
+        color: var(--white);
+        border-color: var(--primary-color);
+    }
+
+    .pagination-ellipsis {
+        margin: 0 var(--spacing-xs);
+        color: var(--gray);
+    }
+
+    /* Service Cards */
+    .cards-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--spacing-lg);
+    }
+
+    .service-card {
+        background: var(--white);
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-md);
+        overflow: hidden;
+        transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+        border: 1px solid var(--medium-gray);
+    }
+
+    .service-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .service-card-header {
+        padding: var(--spacing-md);
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        border-bottom: 1px solid var(--medium-gray);
+    }
+
+    .vehicle-info h3 {
+        font-size: 1.1rem;
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .vehicle-info p {
+        font-size: 0.85rem;
+        color: var(--gray);
+    }
+
+    .service-card-body {
+        padding: var(--spacing-md);
+    }
+
+    .service-details {
+        margin-bottom: var(--spacing-md);
+    }
+
+    .detail-item {
+        display: flex;
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .detail-item .label {
+        font-weight: 500;
+        width: 40%;
+        color: var(--gray);
+    }
+
+    .detail-item .value {
+        width: 60%;
+    }
+
+    .progress-container {
+        margin-top: var(--spacing-md);
+    }
+
+    .progress-label {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: var(--spacing-xs);
+        font-size: 0.85rem;
+    }
+
+    .progress-bar {
+        height: 8px;
+        background-color: var(--medium-gray);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .progress {
+        height: 100%;
+        background:var(--primary-dark);
+        border-radius: 8px;
+    }
+
+    .service-card-footer {
+        padding: var(--spacing-md);
+        display: flex;
+        justify-content: space-between;
+        border-top: 1px solid var(--medium-gray);
+    }
+
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal.active {
+        display: flex;
+    }
+
+    .modal-content {
+        background-color: var(--white);
+        border-radius: var(--radius-lg);
+        width: 500px;
+        max-width: 90%;
+        box-shadow: var(--shadow-lg);
+        animation: modalFadeIn 0.3s ease;
+    }
+
+    @keyframes modalFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .modal-header {
+        padding: var(--spacing-lg);
+        border-bottom: 1px solid var(--medium-gray);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-header h2 {
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+
+    .close-modal {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--gray);
+        transition: color var(--transition-fast);
+    }
+
+    .close-modal:hover {
+        color: var(--danger);
+    }
+
+    .modal-body {
+        padding: var(--spacing-lg);
+    }
+
+    .form-group {
+        margin-bottom: var(--spacing-md);
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: var(--spacing-xs);
+        font-weight: 500;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: var(--spacing-md);
+        border: 1px solid var(--medium-gray);
+        border-radius: var(--radius-md);
+        font-family: inherit;
+        font-size: 1rem;
+        transition: border-color var(--transition-fast);
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-color);
+    }
+
+    .modal-footer {
+        padding: var(--spacing-lg);
+        border-top: 1px solid var(--medium-gray);
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--spacing-md);
+    }
+
+    .btn-cancel, .btn-submit {
+        padding: var(--spacing-sm) var(--spacing-lg);
+        border-radius: var(--radius-md);
+        font-weight: 500;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+    }
+
+    .btn-cancel {
+        background-color: var(--medium-gray);
+        color: var(--dark-gray);
+        border: none;
+    }
+
+    .btn-cancel:hover {
+        background-color: var(--gray);
+        color: var(--white);
+    }
+
+    .btn-submit {
+        background-color: var(--primary-color);
+        color: var(--white);
+        border: none;
+    }
+
+    .btn-submit:hover {
+        background-color: var(--primary-dark);
+    }
+
+    /* Responsive Styles */
+    @media (max-width: 1200px) {
+        .stats-container {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .cards-container {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 992px) {
+        .sidebar {
+            width: 80px;
+            padding: var(--spacing-md);
+        }
+
+        .sidebar-header h2,
+        .user-info,
+        .sidebar-nav span {
+            display: none;
+        }
+
+        .sidebar-user {
+            justify-content: center;
+            padding: var(--spacing-sm);
+        }
+
+        .user-avatar img {
+            margin-right: 0;
+        }
+
+        .sidebar-nav a {
+            justify-content: center;
+        }
+
+        .sidebar-nav i {
+            margin-right: 0;
+        }
+
+        .logout-btn span {
+            display: none;
+        }
+
+        .main-content {
+            margin-left: 80px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .main-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .header-search {
+            width: 100%;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .header-actions {
+            width: 100%;
+            justify-content: flex-end;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .main-content {
+            padding: var(--spacing-md);
+        }
+
+        .section-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .section-actions {
+            margin-top: var(--spacing-sm);
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+    }
+
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(5px);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        transition: all var(--transition-normal);
+    }
+
+    .modal.active {
+        display: flex;
+        animation: modalBackdropFadeIn 0.3s ease forwards;
+    }
+
+    @keyframes modalBackdropFadeIn {
+        from {
+            background-color: rgba(0, 0, 0, 0);
+            backdrop-filter: blur(0px);
+        }
+        to {
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+    }
+
+    .modal-content {
+        background-color: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(10px);
+        border-radius: var(--radius-lg);
+        width: 100%;
+        max-width: 500px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2),
+        0 0 0 1px rgba(255, 255, 255, 0.3) inset;
+        animation: modalFadeIn 0.4s ease;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        overflow: hidden;
+    }
+
+    @keyframes modalFadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-30px) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .modal-header {
+        padding: var(--spacing-lg) var(--spacing-xl);
+        border-bottom: 1px solid rgba(233, 236, 239, 0.5);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: linear-gradient(to right, rgba(114, 47, 55, 0.1), rgba(114, 47, 55, 0.05));
+    }
+
+    .modal-header h2 {
+        font-size: 1.4rem;
+        font-weight: 600;
+        margin: 0;
+        color: var(--primary-dark);
+    }
+
+    .close-modal {
+        background: none;
+        border: none;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        color: var(--gray);
+        cursor: pointer;
+        transition: all var(--transition-normal);
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .close-modal:hover {
+        color: var(--danger);
+        background-color: rgba(217, 4, 41, 0.1);
+        transform: rotate(90deg);
+    }
+
+    .modal-body {
+        padding: var(--spacing-xl);
+    }
+
+    .modal-footer {
+        padding: var(--spacing-md) var(--spacing-xl);
+        border-top: 1px solid rgba(233, 236, 239, 0.5);
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--spacing-md);
+        background: rgba(248, 249, 250, 0.5);
+    }
+
+    /* Form Styles for Modal */
+    .form-group {
+        margin-bottom: var(--spacing-lg);
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: var(--spacing-sm);
+        font-weight: 500;
+        color: var(--dark-gray);
+        font-size: 0.95rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid rgba(108, 117, 125, 0.2);
+        border-radius: var(--radius-md);
+        font-family: 'Baloo Bhaijaan 2', sans-serif;
+        font-size: 1rem;
+        transition: all var(--transition-normal);
+        background-color: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(5px);
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
+        background-color: rgba(255, 255, 255, 0.95);
+    }
+
+    select.form-control {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23666' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 15px center;
+        padding-right: 35px;
+    }
+
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        background-color: rgba(255, 255, 255, 0.5);
+        padding: var(--spacing-sm) var(--spacing-md);
+        border-radius: var(--radius-md);
+        transition: all var(--transition-fast);
+    }
+
+    .checkbox-group:hover {
+        background-color: rgba(255, 255, 255, 0.8);
+    }
+
+    .checkbox-group input[type="checkbox"] {
+        width: 18px;
+        height: 18px;
+        accent-color: var(--primary-color);
+    }
+
+    .btn-cancel, .btn-submit {
+        padding: 10px 20px;
+        border-radius: var(--radius-md);
+        font-size: 0.95rem;
+        font-weight: 500;
+        transition: all var(--transition-normal);
+    }
+
+    .btn-cancel {
+        background-color: rgba(233, 236, 239, 0.8);
+        color: var(--dark-gray);
+        border: 1px solid rgba(108, 117, 125, 0.2);
+        backdrop-filter: blur(5px);
+    }
+
+    .btn-cancel:hover {
+        background-color: rgba(233, 236, 239, 1);
+        transform: translateY(-2px);
+    }
+
+    .btn-submit {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: var(--white);
+        border: none;
+        box-shadow: 0 4px 10px rgba(114, 47, 55, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-submit::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: all 0.6s ease;
+    }
+
+    .btn-submit:hover {
+        background: linear-gradient(135deg, var(--primary-light), var(--primary-color));
+        transform: translateY(-2px);
+        box-shadow: 0 6px 15px rgba(114, 47, 55, 0.4);
+    }
+
+    .btn-submit:hover::before {
+        left: 100%;
+    }
 </style>
 <body>
 <div class="app-container">
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
-            <div class="logo">
-                <img src="assets/logo.png" alt="Albany Service">
-            </div>
             <h2>Albany Service</h2>
         </div>
 
         <div class="sidebar-user">
-            <div class="user-avatar">
-                <!-- <img src="assets/user-avatar.jpg" alt="User"> -->
-            </div>
             <div class="user-info">
                 <h3>John Doe</h3>
-                <p>Service Manager</p>
+                <p>Service Advisor</p>
             </div>
         </div>
 
         <nav class="sidebar-nav">
             <ul>
-                <li class="active"><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
-                <li ><a href="vehicle-list.html"><i class="fas fa-car-side"></i> <span>Vehicles Under Service</span></a></li>
-                <li><a href="service-history.html"><i class="fas fa-history"></i> <span>Service History</span></a></li>
-
+                <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+                <li><a href="vehicle-list.html"><i class="fas fa-car-side"></i> <span>Vehicles Under Service</span></a></li>
+                <li class="active"><a href="mechanics.html"><i class="fas fa-users-cog"></i> <span>Mechanics</span></a></li>
             </ul>
         </nav>
 
@@ -283,130 +1422,10 @@
 
     <!-- Main Content -->
     <div class="main-content">
-
-
         <div class="dashboard-content">
             <div class="page-title">
                 <h1>Mechanics Management</h1>
                 <p>Add, edit, and manage your service mechanics</p>
-            </div>
-
-            <!-- Mechanics Stats -->
-            <div class="stats-container">
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="stat-details">
-                        <h3>Total Mechanics</h3>
-                        <p class="stat-number">12</p>
-                        <p class="stat-trend up">
-                            <i class="fas fa-arrow-up"></i> 2 new this month
-                        </p>
-                    </div>
-                </div>
-
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-car-battery"></i>
-                    </div>
-                    <div class="stat-details">
-                        <h3>Electrical Specialists</h3>
-                        <p class="stat-number">4</p>
-                        <p class="stat-trend neutral">
-                            <i class="fas fa-minus"></i> No change
-                        </p>
-                    </div>
-                </div>
-
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-oil-can"></i>
-                    </div>
-                    <div class="stat-details">
-                        <h3>Engine Specialists</h3>
-                        <p class="stat-number">5</p>
-                        <p class="stat-trend up">
-                            <i class="fas fa-arrow-up"></i> 1 new this month
-                        </p>
-                    </div>
-                </div>
-
-                <div class="stat-card">
-                    <div class="stat-icon">
-                        <i class="fas fa-tools"></i>
-                    </div>
-                    <div class="stat-details">
-                        <h3>General Mechanics</h3>
-                        <p class="stat-number">3</p>
-                        <p class="stat-trend up">
-                            <i class="fas fa-arrow-up"></i> 1 new this month
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Add Mechanic Section -->
-            <div class="section-container glassmorphic">
-                <div class="section-header">
-                    <h2><i class="fas fa-user-plus"></i> Add New Mechanic</h2>
-                    <div class="section-actions">
-                        <button class="toggle-form-btn">
-                            <i class="fas fa-chevron-up"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="add-mechanic-form">
-                    <form id="mechanicForm">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="firstName">First Name</label>
-                                <input type="text" id="firstName" class="form-control" placeholder="Enter first name" required>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="lastName">Last Name</label>
-                                <input type="text" id="lastName" class="form-control" placeholder="Enter last name" required>
-                            </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="email">Email Address</label>
-                                <input type="email" id="email" class="form-control" placeholder="Enter email address" required>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="phone">Phone Number</label>
-                                <input type="tel" id="phone" class="form-control" placeholder="Enter phone number" required>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="specialization">Specialization</label>
-                            <select id="specialization" class="form-control" required>
-                                <option value="" disabled selected>Select specialization</option>
-                                <option value="General Mechanic">General Mechanic</option>
-                                <option value="Engine Specialist">Engine Specialist</option>
-                                <option value="Electrical Specialist">Electrical Specialist</option>
-                                <option value="Transmission Specialist">Transmission Specialist</option>
-                                <option value="Brake Specialist">Brake Specialist</option>
-                                <option value="Diagnostic Technician">Diagnostic Technician</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="experience">Years of Experience</label>
-                            <input type="number" id="experience" class="form-control" placeholder="Enter years of experience" min="0" max="50" required>
-                        </div>
-
-                        <div class="form-actions">
-                            <button type="reset" class="btn-cancel">Reset</button>
-                            <button type="submit" class="btn-submit">Add Mechanic</button>
-                        </div>
-                    </form>
-                </div>
             </div>
 
             <!-- Mechanics List Section -->
@@ -423,6 +1442,9 @@
                                 <i class="fas fa-filter"></i> Filter
                             </button>
                         </div>
+                        <button class="add-mechanic-btn" id="openAddMechanicModal">
+                            <i class="fas fa-user-plus"></i> Add Mechanic
+                        </button>
                     </div>
                 </div>
 
@@ -444,7 +1466,6 @@
                             <td>M001</td>
                             <td>
                                 <div class="mechanic-info">
-                                    <!-- <img src="assets/mechanic1.jpg" alt="Mechanic"> -->
                                     <div>
                                         <p class="name">Robert Johnson</p>
                                         <p class="joined">Joined: Jan 15, 2020</p>
@@ -469,7 +1490,6 @@
                             <td>M002</td>
                             <td>
                                 <div class="mechanic-info">
-                                    <!-- <img src="assets/mechanic2.jpg" alt="Mechanic"> -->
                                     <div>
                                         <p class="name">Sarah Williams</p>
                                         <p class="joined">Joined: Mar 22, 2021</p>
@@ -494,7 +1514,6 @@
                             <td>M003</td>
                             <td>
                                 <div class="mechanic-info">
-                                    <!-- <img src="assets/mechanic3.jpg" alt="Mechanic"> -->
                                     <div>
                                         <p class="name">Michael Brown</p>
                                         <p class="joined">Joined: Jun 10, 2019</p>
@@ -533,6 +1552,66 @@
                     </button>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- Add Mechanic Modal -->
+<div class="modal" id="addMechanicModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2><i class="fas fa-user-plus"></i> Add New Mechanic</h2>
+            <button class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="mechanicForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="firstName">First Name</label>
+                        <input type="text" id="firstName" class="form-control" placeholder="Enter first name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lastName">Last Name</label>
+                        <input type="text" id="lastName" class="form-control" placeholder="Enter last name" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input type="email" id="email" class="form-control" placeholder="Enter email address" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" class="form-control" placeholder="Enter phone number" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="specialization">Specialization</label>
+                    <select id="specialization" class="form-control" required>
+                        <option value="" disabled selected>Select specialization</option>
+                        <option value="General Mechanic">General Mechanic</option>
+                        <option value="Engine Specialist">Engine Specialist</option>
+                        <option value="Electrical Specialist">Electrical Specialist</option>
+                        <option value="Transmission Specialist">Transmission Specialist</option>
+                        <option value="Brake Specialist">Brake Specialist</option>
+                        <option value="Diagnostic Technician">Diagnostic Technician</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="experience">Years of Experience</label>
+                    <input type="number" id="experience" class="form-control" placeholder="Enter years of experience" min="0" max="50" required>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-cancel" id="cancelAdd">Cancel</button>
+            <button type="button" class="btn-submit" id="submitAdd">Add Mechanic</button>
         </div>
     </div>
 </div>
@@ -621,29 +1700,45 @@
         </div>
         <div class="modal-footer">
             <button class="btn-cancel" id="cancelDelete">Cancel</button>
-            <button class="btn-delete" id="confirmDelete">Delete</button>
+            <button class="btn-delete-confirm" id="confirmDelete">Delete</button>
         </div>
     </div>
 </div>
 
 <script>
-
     document.addEventListener('DOMContentLoaded', function() {
-        // Toggle Add Mechanic Form
-        const formContainer = document.querySelector('.section-container:nth-of-type(1)');
-        const toggleFormBtn = document.querySelector('.toggle-form-btn');
+        // Modal handling
+        const addMechanicModal = document.getElementById('addMechanicModal');
+        const editModal = document.getElementById('editMechanicModal');
+        const deleteModal = document.getElementById('deleteMechanicModal');
 
-        toggleFormBtn.addEventListener('click', function() {
-            formContainer.classList.toggle('collapsed');
-            const icon = this.querySelector('i');
-            icon.classList.toggle('fa-chevron-up');
-            icon.classList.toggle('fa-chevron-down');
+        // Open Add Mechanic Modal
+        const openAddMechanicBtn = document.getElementById('openAddMechanicModal');
+        const closeAddModalBtn = addMechanicModal.querySelector('.close-modal');
+        const cancelAddBtn = document.getElementById('cancelAdd');
+        const submitAddBtn = document.getElementById('submitAdd');
+
+        openAddMechanicBtn.addEventListener('click', function() {
+            addMechanicModal.classList.add('active');
+        });
+
+        closeAddModalBtn.addEventListener('click', function() {
+            addMechanicModal.classList.remove('active');
+        });
+
+        cancelAddBtn.addEventListener('click', function() {
+            addMechanicModal.classList.remove('active');
         });
 
         // Add Mechanic Form Submission
-        const mechanicForm = document.getElementById('mechanicForm');
-        mechanicForm.addEventListener('submit', function(e) {
-            e.preventDefault();
+        submitAddBtn.addEventListener('click', function() {
+            const mechanicForm = document.getElementById('mechanicForm');
+
+            // Check form validity
+            if (!mechanicForm.checkValidity()) {
+                mechanicForm.reportValidity();
+                return;
+            }
 
             // Get form values
             const firstName = document.getElementById('firstName').value;
@@ -659,6 +1754,9 @@
             // Create a new row in the table
             addMechanicToTable(mechanicId, firstName, lastName, email, phone, specialization, experience);
 
+            // Close modal
+            addMechanicModal.classList.remove('active');
+
             // Show success message
             showNotification('Mechanic added successfully!', 'success');
 
@@ -668,7 +1766,6 @@
 
         // Edit Mechanic
         const editButtons = document.querySelectorAll('.btn-edit');
-        const editModal = document.getElementById('editMechanicModal');
         const closeEditModalBtn = editModal.querySelector('.close-modal');
         const cancelEditBtn = document.getElementById('cancelEdit');
         const saveEditBtn = document.getElementById('saveEdit');
@@ -689,7 +1786,6 @@
 
         // Delete Mechanic
         const deleteButtons = document.querySelectorAll('.btn-delete');
-        const deleteModal = document.getElementById('deleteMechanicModal');
         const closeDeleteModalBtn = deleteModal.querySelector('.close-modal');
         const cancelDeleteBtn = document.getElementById('cancelDelete');
         const confirmDeleteBtn = document.getElementById('confirmDelete');
@@ -724,30 +1820,29 @@
             const joinedDate = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
             newRow.innerHTML = `
-            <td>${id}</td>
-            <td>
-                <div class="mechanic-info">
-                    <img src="assets/default-user.jpg" alt="Mechanic">
-                    <div>
-                        <p class="name">${firstName} ${lastName}</p>
-                        <p class="joined">Joined: ${joinedDate}</p>
-                    </div>
-                </div>
-            </td>
-            <td>
-                <p><i class="fas fa-envelope"></i> ${email}</p>
-                <p><i class="fas fa-phone"></i> ${phone}</p>
-            </td>
-            <td>${specialization}</td>
-            <td>${experience} years</td>
-            <td><span class="status-badge active">Active</span></td>
-            <td>
-                <div class="action-buttons">
-                    <button class="btn-edit" data-id="${id}"><i class="fas fa-edit"></i></button>
-                    <button class="btn-delete" data-id="${id}"><i class="fas fa-trash-alt"></i></button>
-                </div>
-            </td>
-        `;
+                    <td>${id}</td>
+                    <td>
+                        <div class="mechanic-info">
+                            <div>
+                                <p class="name">${firstName} ${lastName}</p>
+                                <p class="joined">Joined: ${joinedDate}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <p><i class="fas fa-envelope"></i> ${email}</p>
+                        <p><i class="fas fa-phone"></i> ${phone}</p>
+                    </td>
+                    <td>${specialization}</td>
+                    <td>${experience} years</td>
+                    <td><span class="status-badge active">Active</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-edit" data-id="${id}"><i class="fas fa-edit"></i></button>
+                            <button class="btn-delete" data-id="${id}"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    </td>
+                `;
 
             // Add event listeners to the new buttons
             const newEditBtn = newRow.querySelector('.btn-edit');
@@ -763,9 +1858,6 @@
 
             // Add the new row to the table
             tbody.appendChild(newRow);
-
-            // Update stats
-            updateMechanicStats();
         }
 
         function openEditModal(mechanicId) {
@@ -775,8 +1867,8 @@
             const nameParts = name.split(' ');
             const firstName = nameParts[0];
             const lastName = nameParts.slice(1).join(' ');
-            const email = row.querySelector('td:nth-child(3) p:nth-child(1)').textContent.replace('📧 ', '');
-            const phone = row.querySelector('td:nth-child(3) p:nth-child(2)').textContent.replace('📱 ', '');
+            const email = row.querySelector('td:nth-child(3) p:nth-child(1)').textContent.replace(/.*\s/, '');
+            const phone = row.querySelector('td:nth-child(3) p:nth-child(2)').textContent.replace(/.*\s/, '');
             const specialization = row.querySelector('td:nth-child(4)').textContent;
             const experience = row.querySelector('td:nth-child(5)').textContent.replace(' years', '');
             const status = row.querySelector('.status-badge').textContent.toLowerCase();
@@ -830,9 +1922,6 @@
 
             // Show success message
             showNotification('Mechanic updated successfully!', 'success');
-
-            // Update stats
-            updateMechanicStats();
         }
 
         function openDeleteModal(mechanicId) {
@@ -870,9 +1959,6 @@
             setTimeout(() => {
                 row.remove();
 
-                // Update stats
-                updateMechanicStats();
-
                 // Show success message
                 showNotification('Mechanic deleted successfully!', 'info');
             }, 500);
@@ -899,37 +1985,21 @@
             });
         }
 
-        function updateMechanicStats() {
-            // Count total mechanics
-            const totalMechanics = document.querySelectorAll('#mechanicsTable tbody tr').length;
-            document.querySelector('.stat-card:nth-child(1) .stat-number').textContent = totalMechanics;
-
-            // Count by specialization
-            const electricalSpecialists = document.querySelectorAll('#mechanicsTable tbody tr td:nth-child(4)').length;
-            document.querySelector('.stat-card:nth-child(2) .stat-number').textContent = electricalSpecialists;
-
-            const engineSpecialists = document.querySelectorAll('#mechanicsTable tbody tr td:nth-child(4)').length;
-            document.querySelector('.stat-card:nth-child(3) .stat-number').textContent = engineSpecialists;
-
-            const generalMechanics = document.querySelectorAll('#mechanicsTable tbody tr td:nth-child(4)').length;
-            document.querySelector('.stat-card:nth-child(4) .stat-number').textContent = generalMechanics;
-        }
-
         function showNotification(message, type) {
             // Create notification element
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
             notification.innerHTML = `
-            <div class="notification-icon">
-                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'info' ? 'fa-info-circle' : 'fa-exclamation-circle'}"></i>
-            </div>
-            <div class="notification-content">
-                <p>${message}</p>
-            </div>
-            <button class="notification-close">
-                <i class="fas fa-times"></i>
-            </button>
-        `;
+                    <div class="notification-icon">
+                        <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'info' ? 'fa-info-circle' : 'fa-exclamation-circle'}"></i>
+                    </div>
+                    <div class="notification-content">
+                        <p>${message}</p>
+                    </div>
+                    <button class="notification-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
 
             // Add to the DOM
             document.body.appendChild(notification);
@@ -961,77 +2031,77 @@
             const style = document.createElement('style');
             style.id = 'notification-styles';
             style.textContent = `
-            .notification {
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                display: flex;
-                align-items: center;
-                background: white;
-                border-radius: 8px;
-                padding: 16px;
-                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-                z-index: 1100;
-                max-width: 350px;
-                transform: translateX(120%);
-                opacity: 0;
-                transition: transform 0.3s ease, opacity 0.3s ease;
-            }
+                    .notification {
+                        position: fixed;
+                        top: 20px;
+                        right: 20px;
+                        display: flex;
+                        align-items: center;
+                        background: white;
+                        border-radius: 8px;
+                        padding: 16px;
+                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                        z-index: 1100;
+                        max-width: 350px;
+                        transform: translateX(120%);
+                        opacity: 0;
+                        transition: transform 0.3s ease, opacity 0.3s ease;
+                    }
 
-            .notification.show {
-                transform: translateX(0);
-                opacity: 1;
-            }
+                    .notification.show {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
 
-            .notification.closing {
-                transform: translateX(120%);
-                opacity: 0;
-            }
+                    .notification.closing {
+                        transform: translateX(120%);
+                        opacity: 0;
+                    }
 
-            .notification-icon {
-                margin-right: 12px;
-                font-size: 24px;
-            }
+                    .notification-icon {
+                        margin-right: 12px;
+                        font-size: 24px;
+                    }
 
-            .notification.success .notification-icon {
-                color: var(--success);
-            }
+                    .notification.success .notification-icon {
+                        color: var(--success);
+                    }
 
-            .notification.info .notification-icon {
-                color: var(--info);
-            }
+                    .notification.info .notification-icon {
+                        color: var(--info);
+                    }
 
-            .notification.warning .notification-icon {
-                color: var(--warning);
-            }
+                    .notification.warning .notification-icon {
+                        color: var(--warning);
+                    }
 
-            .notification.error .notification-icon {
-                color: var(--danger);
-            }
+                    .notification.error .notification-icon {
+                        color: var(--danger);
+                    }
 
-            .notification-content {
-                flex: 1;
-            }
+                    .notification-content {
+                        flex: 1;
+                    }
 
-            .notification-content p {
-                margin: 0;
-                font-size: 14px;
-                color: var(--dark-gray);
-            }
+                    .notification-content p {
+                        margin: 0;
+                        font-size: 14px;
+                        color: var(--dark-gray);
+                    }
 
-            .notification-close {
-                background: none;
-                border: none;
-                color: var(--gray);
-                cursor: pointer;
-                margin-left: 12px;
-                transition: color 0.2s ease;
-            }
+                    .notification-close {
+                        background: none;
+                        border: none;
+                        color: var(--gray);
+                        cursor: pointer;
+                        margin-left: 12px;
+                        transition: color 0.2s ease;
+                    }
 
-            .notification-close:hover {
-                color: var(--dark-gray);
-            }
-        `;
+                    .notification-close:hover {
+                        color: var(--dark-gray);
+                    }
+                `;
             document.head.appendChild(style);
         }
     });

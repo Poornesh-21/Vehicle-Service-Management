@@ -28,6 +28,8 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
 
+// Update the securityFilterChain method in SecurityConfig.java
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -47,6 +49,10 @@ public class SecurityConfig {
                                 "ROLE_ADMIN", "ROLE_admin")
                         .requestMatchers(HttpMethod.DELETE, "/api/service-advisors/**").hasAnyAuthority(
                                 "ROLE_ADMIN", "ROLE_admin")
+
+                        // Mechanics API paths
+                        .requestMatchers("/api/mechanics/**").hasAnyAuthority(
+                                "ROLE_ADMIN", "ROLE_admin", "ROLE_SERVICE_ADVISOR", "ROLE_serviceAdvisor")
 
                         // Other API paths can remain as they were
                         .requestMatchers("/api/vehicles/**").hasAnyAuthority(

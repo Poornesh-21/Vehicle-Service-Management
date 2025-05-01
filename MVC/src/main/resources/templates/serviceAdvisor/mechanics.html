@@ -8,1387 +8,944 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="dashboard.css">
-    <link rel="stylesheet" href="mechanics.css">
-</head>
-<style>
-    /* Mechanics Management Specific Styles */
+    <style>
+        /* Base Styles */
+        :root {
+            /* Primary Colors */
+            --primary-color: #722F37;
+            --primary-light: #8A3A43;
+            --primary-dark: #5A2329;
+            --secondary-color: #EFFFBB;
+            --secondary-light: #F1FF92;
+            --secondary-dark: #C6D880;
 
-    /* Glassmorphic Effect for Containers */
-    .glassmorphic {
-        background: rgba(255, 255, 255, 0.85) !important;
-        backdrop-filter: blur(10px) !important;
-        border: 1px solid rgba(255, 255, 255, 0.18) !important;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
-    }
+            /* Neutral Colors */
+            --white: #ffffff;
+            --light-gray: #f8f9fa;
+            --medium-gray: #e9ecef;
+            --gray: #6c757d;
+            --dark-gray: #343a40;
+            --black: #212529;
 
-    /* Stats Card Styling */
-    .stat-card .stat-icon {
-        background: rgba(114, 47, 55, 0.1);
-        color: var(--primary-color);
-    }
+            /* Status Colors */
+            --success: #38b000;
+            --warning: #ffaa00;
+            --danger: #d90429;
+            --info: #4cc9f0;
 
-    .stat-trend.neutral {
-        color: var(--gray);
-    }
+            /* Shadows */
+            --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
 
-    /* Add Mechanic Form */
-    .add-mechanic-form {
-        padding: var(--spacing-lg);
-        transition: all var(--transition-normal);
-    }
+            /* Border Radius */
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
 
-    .form-row {
-        display: flex;
-        gap: var(--spacing-lg);
-        margin-bottom: var(--spacing-md);
-    }
+            /* Spacing */
+            --spacing-xs: 4px;
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+            --spacing-xxl: 48px;
 
-    .form-row .form-group {
-        flex: 1;
-    }
-
-    .form-actions {
-        display: flex;
-        justify-content: flex-end;
-        gap: var(--spacing-md);
-        margin-top: var(--spacing-xl);
-    }
-
-    .toggle-form-btn {
-        background: none;
-        border: none;
-        color: var(--gray);
-        font-size: 1rem;
-        cursor: pointer;
-        transition: all var(--transition-fast);
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .toggle-form-btn:hover {
-        background-color: rgba(114, 47, 55, 0.1);
-        color: var(--primary-color);
-    }
-
-    /* Mechanics Table Styling */
-    .mechanic-info {
-        display: flex;
-        align-items: center;
-    }
-
-    .mechanic-info img {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        object-fit: cover;
-        margin-right: var(--spacing-md);
-        border: 2px solid var(--primary-light);
-    }
-
-    .mechanic-info .name {
-        font-weight: 500;
-        margin-bottom: 2px;
-    }
-
-    .mechanic-info .joined {
-        font-size: 0.8rem;
-        color: var(--gray);
-    }
-
-    td p {
-        margin-bottom: 4px;
-        font-size: 0.9rem;
-    }
-
-    td p i {
-        width: 16px;
-        margin-right: 8px;
-        color: var(--primary-color);
-    }
-
-    .status-badge {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 500;
-    }
-
-    .status-badge.active {
-        background-color: rgba(56, 176, 0, 0.1);
-        color: var(--success);
-    }
-
-    .status-badge.inactive {
-        background-color: rgba(108, 117, 125, 0.1);
-        color: var(--gray);
-    }
-
-    .status-badge.on-leave {
-        background-color: rgba(255, 170, 0, 0.1);
-        color: var(--warning);
-    }
-
-    .btn-edit, .btn-delete {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: none;
-        cursor: pointer;
-        transition: all var(--transition-fast);
-    }
-
-    .btn-edit {
-        background-color: rgba(76, 201, 240, 0.1);
-        color: var(--info);
-    }
-
-    .btn-edit:hover {
-        background-color: var(--info);
-        color: var(--white);
-    }
-
-    .btn-delete {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        background-color: rgba(217, 4, 41, 0.1);
-        color: var(--danger);
-        border: none;
-        cursor: pointer;
-        transition: all var(--transition-fast);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .btn-delete:hover {
-        background-color: var(--danger);
-        color: var(--white);
-    }
-
-    .btn-delete i {
-        font-size: 14px;
-        display: inline-block;
-        line-height: 1;
-    }
-
-    /* Mechanics Search */
-    .mechanics-search {
-        width: 250px;
-        margin-right: var(--spacing-md);
-    }
-
-    /* Delete Modal Styling */
-    .mechanic-delete-info {
-        background-color: rgba(217, 4, 41, 0.05);
-        border-radius: var(--radius-md);
-        padding: var(--spacing-md);
-        margin-top: var(--spacing-md);
-    }
-
-    .btn-delete-confirm {
-        background: linear-gradient(135deg, #d90429, #ef233c);
-        color: var(--white);
-        border: none;
-        padding: 10px 20px;
-        border-radius: var(--radius-md);
-        font-size: 0.95rem;
-        font-weight: 500;
-        transition: all var(--transition-normal);
-    }
-
-    .btn-delete-confirm:hover {
-        background: linear-gradient(135deg, #ef233c, #d90429);
-        transform: translateY(-2px);
-        box-shadow: 0 6px 15px rgba(217, 4, 41, 0.3);
-    }
-
-    /* Animation for form collapse/expand */
-    .collapsed .add-mechanic-form {
-        height: 0;
-        padding: 0;
-        overflow: hidden;
-    }
-
-    .collapsed .toggle-form-btn i {
-        transform: rotate(180deg);
-    }
-
-    /* Add Mechanic Button */
-    .add-mechanic-btn {
-        padding: 10px 16px;
-        border-radius: var(--radius-md);
-        background-color: var(--primary-color);
-        color: var(--white);
-        border: none;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all var(--transition-normal);
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-left: var(--spacing-md);
-    }
-
-    .add-mechanic-btn:hover {
-        background-color: var(--primary-dark);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(114, 47, 55, 0.3);
-    }
-
-    .add-mechanic-btn i {
-        font-size: 1rem;
-    }
-
-    /* Responsive Adjustments */
-    @media (max-width: 992px) {
-        .form-row {
-            flex-direction: column;
-            gap: var(--spacing-md);
+            /* Transitions */
+            --transition-fast: 0.2s ease;
+            --transition-normal: 0.3s ease;
+            --transition-slow: 0.5s ease;
         }
 
-        .section-header {
-            flex-direction: column;
-            align-items: flex-start;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        .section-actions {
-            margin-top: var(--spacing-md);
-            width: 100%;
+        body {
+            font-family: 'Baloo Bhaijaan 2', sans-serif;
+            font-size: 16px;
+            line-height: 1.5;
+            color: var(--dark-gray);
+            background-color: var(--secondary-color);
         }
 
-        .mechanics-search {
-            width: 100%;
-            margin-bottom: var(--spacing-md);
-        }
-    }
-
-    @media (max-width: 768px) {
-        .stats-container {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-
-    @media (max-width: 576px) {
-        .stats-container {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    /* Base Styles */
-    :root {
-        /* Primary Colors */
-        --primary-color: #722F37;
-        --primary-light: #8A3A43;
-        --primary-dark: #5A2329;
-        --secondary-color: #EFFFBB;
-        --secondary-light: #F1FF92;
-        --secondary-dark: #C6D880;
-
-        /* Neutral Colors */
-        --white: #ffffff;
-        --light-gray: #f8f9fa;
-        --medium-gray: #e9ecef;
-        --gray: #6c757d;
-        --dark-gray: #343a40;
-        --black: #212529;
-
-        /* Status Colors */
-        --success: #38b000;
-        --warning: #ffaa00;
-        --danger: #d90429;
-        --info: #4cc9f0;
-
-        /* Shadows */
-        --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
-        --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-        --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
-
-        /* Border Radius */
-        --radius-sm: 4px;
-        --radius-md: 8px;
-        --radius-lg: 16px;
-        --radius-xl: 24px;
-
-        /* Spacing */
-        --spacing-xs: 4px;
-        --spacing-sm: 8px;
-        --spacing-md: 16px;
-        --spacing-lg: 24px;
-        --spacing-xl: 32px;
-        --spacing-xxl: 48px;
-
-        /* Transitions */
-        --transition-fast: 0.2s ease;
-        --transition-normal: 0.3s ease;
-        --transition-slow: 0.5s ease;
-    }
-
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-
-    body {
-        font-family: 'Baloo Bhaijaan 2', sans-serif;
-        font-size: 16px;
-        line-height: 1.5;
-        color: var(--dark-gray);
-        background-color: var(--secondary-color);
-    }
-
-    /* App Container */
-    .app-container {
-        display: flex;
-        min-height: 100vh;
-    }
-
-    /* Sidebar Styles */
-    .sidebar {
-        width: 280px;
-        background:var(--primary-dark);
-        color: var(--white);
-        padding: var(--spacing-lg);
-        display: flex;
-        flex-direction: column;
-        position: fixed;
-        height: 100vh;
-        z-index: 100;
-        box-shadow: var(--shadow-lg);
-        transition: all var(--transition-normal);
-    }
-
-    .sidebar-header {
-        display: flex;
-        align-items: center;
-        margin-bottom: var(--spacing-xl);
-        padding-bottom: var(--spacing-md);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .sidebar-header h2 {
-        font-size: 1.5rem;
-        font-weight: 600;
-    }
-
-    .sidebar-user {
-        display: flex;
-        align-items: center;
-        margin-bottom: var(--spacing-xl);
-        padding: var(--spacing-md);
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: var(--radius-md);
-        backdrop-filter: blur(10px);
-    }
-
-    .user-avatar img {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 2px solid var(--white);
-        margin-right: var(--spacing-md);
-    }
-
-    .user-info h3 {
-        font-size: 1rem;
-        font-weight: 600;
-        margin-bottom: var(--spacing-xs);
-    }
-
-    .user-info p {
-        font-size: 0.85rem;
-        opacity: 0.8;
-    }
-
-    .sidebar-nav {
-        flex: 1;
-    }
-
-    .sidebar-nav ul {
-        list-style: none;
-    }
-
-    .sidebar-nav li {
-        margin-bottom: var(--spacing-sm);
-    }
-
-    .sidebar-nav a {
-        display: flex;
-        align-items: center;
-        padding: var(--spacing-md);
-        color: var(--white);
-        text-decoration: none;
-        border-radius: var(--radius-md);
-        transition: all var(--transition-fast);
-    }
-
-    .sidebar-nav a:hover {
-        background: rgba(255, 255, 255, 0.1);
-    }
-
-    .sidebar-nav li.active a {
-        background: rgba(255, 255, 255, 0.2);
-        font-weight: 500;
-    }
-
-    .sidebar-nav i {
-        margin-right: var(--spacing-md);
-        font-size: 1.2rem;
-        width: 24px;
-        text-align: center;
-    }
-
-    .sidebar-footer {
-        margin-top: auto;
-        padding-top: var(--spacing-lg);
-        border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .logout-btn {
-        display: flex;
-        align-items: center;
-        padding: var(--spacing-md);
-        color: var(--white);
-        text-decoration: none;
-        border-radius: var(--radius-md);
-        transition: all var(--transition-fast);
-    }
-
-    .logout-btn:hover {
-        background: rgba(255, 255, 255, 0.1);
-    }
-
-    .logout-btn i {
-        margin-right: var(--spacing-md);
-    }
-
-    /* Main Content Styles */
-    .main-content {
-        flex: 1;
-        margin-left: 280px;
-        padding: var(--spacing-lg);
-        transition: all var(--transition-normal);
-    }
-
-    .main-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: var(--spacing-xl);
-        padding-bottom: var(--spacing-md);
-        border-bottom: 1px solid var(--medium-gray);
-    }
-
-    .header-search {
-        position: relative;
-        width: 300px;
-    }
-
-    .header-search i {
-        position: absolute;
-        left: var(--spacing-md);
-        top: 50%;
-        transform: translateY(-50%);
-        color: var(--gray);
-    }
-
-    .header-search input {
-        width: 100%;
-        padding: var(--spacing-md) var(--spacing-md) var(--spacing-md) calc(var(--spacing-md) * 2 + 16px);
-        border: 1px solid var(--medium-gray);
-        border-radius: var(--radius-md);
-        background-color: var(--white);
-        transition: all var(--transition-fast);
-    }
-
-    .header-search input:focus {
-        outline: none;
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
-    }
-
-    .header-actions {
-        display: flex;
-        align-items: center;
-    }
-
-    .notification-btn, .message-btn {
-        position: relative;
-        background: none;
-        border: none;
-        color: var(--gray);
-        font-size: 1.2rem;
-        margin-right: var(--spacing-lg);
-        cursor: pointer;
-        transition: all var(--transition-fast);
-    }
-
-    .notification-btn:hover, .message-btn:hover {
-        color: var(--primary-color);
-    }
-
-    .badge {
-        position: absolute;
-        top: -8px;
-        right: -8px;
-        background-color: var(--danger);
-        color: var(--white);
-        font-size: 0.7rem;
-        width: 18px;
-        height: 18px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .user-dropdown {
-        position: relative;
-    }
-
-    .dropdown-toggle {
-        display: flex;
-        align-items: center;
-        background: none;
-        border: none;
-        cursor: pointer;
-    }
-
-    .dropdown-toggle img {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        object-fit: cover;
-        margin-right: var(--spacing-sm);
-    }
-
-    .dropdown-toggle span {
-        margin-right: var(--spacing-sm);
-        font-weight: 500;
-    }
-
-    /* Dashboard Content */
-    .dashboard-content {
-        padding: var(--spacing-md);
-    }
-
-    .page-title {
-        margin-bottom: var(--spacing-xl);
-    }
-
-    .page-title h1 {
-        font-size: 2rem;
-        font-weight: 700;
-        margin-bottom: var(--spacing-xs);
-        color: var(--black);
-    }
-
-    .page-title p {
-        color: var(--gray);
-    }
-
-    /* Section Container */
-    .section-container {
-        background: var(--white);
-        border-radius: var(--radius-lg);
-        padding: var(--spacing-lg);
-        margin-bottom: var(--spacing-xl);
-        box-shadow: var(--shadow-md);
-    }
-
-    .section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: var(--spacing-lg);
-    }
-
-    .section-header h2 {
-        font-size: 1.25rem;
-        font-weight: 600;
-    }
-
-    .section-actions {
-        display: flex;
-        align-items: center;
-    }
-
-    .refresh-btn, .dropdown-btn, .view-all-btn {
-        display: flex;
-        align-items: center;
-        padding: var(--spacing-sm) var(--spacing-md);
-        border: 1px solid var(--medium-gray);
-        border-radius: var(--radius-md);
-        background: var(--white);
-        color: var(--gray);
-        font-size: 0.9rem;
-        cursor: pointer;
-        transition: all var(--transition-fast);
-        margin-left: var(--spacing-sm);
-    }
-
-    .refresh-btn:hover, .dropdown-btn:hover {
-        border-color: var(--primary-color);
-        color: var(--primary-color);
-    }
-
-    .view-all-btn {
-        background: var(--primary-color);
-        color: var(--white);
-        border: none;
-
-    }
-
-    .view-all-btn:hover {
-        background: var(--primary-dark);
-    }
-
-    .view-all-btn i {
-        margin-left: var(--spacing-sm);
-    }
-
-    /* Table Styles */
-    .table-container {
-        overflow-x: auto;
-        margin-bottom: var(--spacing-lg);
-    }
-
-    .data-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    .data-table th, .data-table td {
-        padding: var(--spacing-md);
-        text-align: left;
-        border-bottom: 1px solid var(--medium-gray);
-    }
-
-    .data-table th {
-        font-weight: 600;
-        color: var(--gray);
-        background-color: var(--light-gray);
-    }
-
-    .data-table tbody tr {
-        transition: background-color var(--transition-fast);
-    }
-
-    .data-table tbody tr:hover {
-        background-color: rgba(67, 97, 238, 0.05);
-    }
-
-    .customer-info, .vehicle-info {
-        display: flex;
-        align-items: center;
-    }
-
-    .customer-info img {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        object-fit: cover;
-        margin-right: var(--spacing-md);
-    }
-
-    .customer-info .name {
-        font-weight: 500;
-        margin-bottom: 2px;
-    }
-
-    .customer-info .email {
-        font-size: 0.85rem;
-        color: var(--gray);
-    }
-
-    .vehicle-model {
-        font-weight: 500;
-        margin-bottom: 2px;
-    }
-
-    .vehicle-details {
-        font-size: 0.85rem;
-        color: var(--gray);
-    }
-
-    .status-badge {
-        display: inline-block;
-        padding: 4px 8px;
-        border-radius: var(--radius-sm);
-        font-size: 0.8rem;
-        font-weight: 500;
-    }
-
-    .status-badge.new {
-        background-color: rgba(76, 201, 240, 0.1);
-        color: var(--info);
-    }
-
-    .status-badge.in-progress {
-        background-color: rgba(255, 170, 0, 0.1);
-        color: var(--warning);
-    }
-
-    .status-badge.completed {
-        background-color: rgba(56, 176, 0, 0.1);
-        color: var(--success);
-    }
-
-    .status-badge.almost-done {
-        background-color: rgba(114, 9, 183, 0.1);
-        color: var(--primary-color);
-    }
-
-    .action-buttons {
-        display: flex;
-        gap: var(--spacing-sm);
-    }
-
-    .btn-accept, .btn-decline, .btn-update, .btn-view-details {
-        padding: 6px 12px;
-        border-radius: var(--radius-sm);
-        font-size: 0.85rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all var(--transition-fast);
-        border: none;
-    }
-
-    .btn-accept {
-        background-color: var(--success);
-        color: var(--white);
-    }
-
-    .btn-accept:hover {
-        background-color: #2d9000;
-    }
-
-    .btn-decline {
-        background-color: var(--danger);
-        color: var(--white);
-    }
-
-    .btn-decline:hover {
-        background-color: #b50020;
-    }
-
-    .btn-update, .btn-view-details {
-        background-color: var(--primary-color);
-        color: var(--white);
-    }
-
-    .btn-update:hover, .btn-view-details:hover {
-        background-color: var(--primary-dark);
-    }
-
-    .btn-view-details {
-        background-color: var(--primary-light);
-    }
-
-    .btn-view-details:hover {
-        background:var(--primary-dark);
-    }
-
-    /* Pagination */
-    .pagination {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin-top: var(--spacing-lg);
-    }
-
-    .pagination-btn {
-        width: 36px;
-        height: 36px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid var(--medium-gray);
-        background: var(--white);
-        color: var(--gray);
-        border-radius: var(--radius-md);
-        cursor: pointer;
-        transition: all var(--transition-fast);
-    }
-
-    .pagination-btn:hover {
-        border-color: var(--primary-color);
-        color: var(--primary-color);
-    }
-
-    .pagination-numbers {
-        display: flex;
-        align-items: center;
-        margin: 0 var(--spacing-md);
-    }
-
-    .pagination-number {
-        width: 36px;
-        height: 36px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: 1px solid var(--medium-gray);
-        background: var(--white);
-        color: var(--gray);
-        border-radius: var(--radius-md);
-        margin: 0 var(--spacing-xs);
-        cursor: pointer;
-        transition: all var(--transition-fast);
-    }
-
-    .pagination-number:hover {
-        border-color: var(--primary-color);
-        color: var(--primary-color);
-    }
-
-    .pagination-number.active {
-        background: var(--primary-color);
-        color: var(--white);
-        border-color: var(--primary-color);
-    }
-
-    .pagination-ellipsis {
-        margin: 0 var(--spacing-xs);
-        color: var(--gray);
-    }
-
-    /* Service Cards */
-    .cards-container {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: var(--spacing-lg);
-    }
-
-    .service-card {
-        background: var(--white);
-        border-radius: var(--radius-lg);
-        box-shadow: var(--shadow-md);
-        overflow: hidden;
-        transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-        border: 1px solid var(--medium-gray);
-    }
-
-    .service-card:hover {
-        transform: translateY(-5px);
-        box-shadow: var(--shadow-lg);
-    }
-
-    .service-card-header {
-        padding: var(--spacing-md);
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        border-bottom: 1px solid var(--medium-gray);
-    }
-
-    .vehicle-info h3 {
-        font-size: 1.1rem;
-        margin-bottom: var(--spacing-xs);
-    }
-
-    .vehicle-info p {
-        font-size: 0.85rem;
-        color: var(--gray);
-    }
-
-    .service-card-body {
-        padding: var(--spacing-md);
-    }
-
-    .service-details {
-        margin-bottom: var(--spacing-md);
-    }
-
-    .detail-item {
-        display: flex;
-        margin-bottom: var(--spacing-xs);
-    }
-
-    .detail-item .label {
-        font-weight: 500;
-        width: 40%;
-        color: var(--gray);
-    }
-
-    .detail-item .value {
-        width: 60%;
-    }
-
-    .progress-container {
-        margin-top: var(--spacing-md);
-    }
-
-    .progress-label {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: var(--spacing-xs);
-        font-size: 0.85rem;
-    }
-
-    .progress-bar {
-        height: 8px;
-        background-color: var(--medium-gray);
-        border-radius: 4px;
-        overflow: hidden;
-    }
-
-    .progress {
-        height: 100%;
-        background:var(--primary-dark);
-        border-radius: 8px;
-    }
-
-    .service-card-footer {
-        padding: var(--spacing-md);
-        display: flex;
-        justify-content: space-between;
-        border-top: 1px solid var(--medium-gray);
-    }
-
-    /* Modal Styles */
-    .modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.5);
-        z-index: 1000;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .modal.active {
-        display: flex;
-    }
-
-    .modal-content {
-        background-color: var(--white);
-        border-radius: var(--radius-lg);
-        width: 500px;
-        max-width: 90%;
-        box-shadow: var(--shadow-lg);
-        animation: modalFadeIn 0.3s ease;
-    }
-
-    @keyframes modalFadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(-20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .modal-header {
-        padding: var(--spacing-lg);
-        border-bottom: 1px solid var(--medium-gray);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .modal-header h2 {
-        font-size: 1.25rem;
-        font-weight: 600;
-    }
-
-    .close-modal {
-        background: none;
-        border: none;
-        font-size: 1.5rem;
-        cursor: pointer;
-        color: var(--gray);
-        transition: color var(--transition-fast);
-    }
-
-    .close-modal:hover {
-        color: var(--danger);
-    }
-
-    .modal-body {
-        padding: var(--spacing-lg);
-    }
-
-    .form-group {
-        margin-bottom: var(--spacing-md);
-    }
-
-    .form-group label {
-        display: block;
-        margin-bottom: var(--spacing-xs);
-        font-weight: 500;
-    }
-
-    .form-control {
-        width: 100%;
-        padding: var(--spacing-md);
-        border: 1px solid var(--medium-gray);
-        border-radius: var(--radius-md);
-        font-family: inherit;
-        font-size: 1rem;
-        transition: border-color var(--transition-fast);
-    }
-
-    .form-control:focus {
-        outline: none;
-        border-color: var(--primary-color);
-    }
-
-    .modal-footer {
-        padding: var(--spacing-lg);
-        border-top: 1px solid var(--medium-gray);
-        display: flex;
-        justify-content: flex-end;
-        gap: var(--spacing-md);
-    }
-
-    .btn-cancel, .btn-submit {
-        padding: var(--spacing-sm) var(--spacing-lg);
-        border-radius: var(--radius-md);
-        font-weight: 500;
-        cursor: pointer;
-        transition: all var(--transition-fast);
-    }
-
-    .btn-cancel {
-        background-color: var(--medium-gray);
-        color: var(--dark-gray);
-        border: none;
-    }
-
-    .btn-cancel:hover {
-        background-color: var(--gray);
-        color: var(--white);
-    }
-
-    .btn-submit {
-        background-color: var(--primary-color);
-        color: var(--white);
-        border: none;
-    }
-
-    .btn-submit:hover {
-        background-color: var(--primary-dark);
-    }
-
-    /* Responsive Styles */
-    @media (max-width: 1200px) {
-        .stats-container {
-            grid-template-columns: repeat(2, 1fr);
+        /* App Container */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
         }
 
-        .cards-container {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-
-    @media (max-width: 992px) {
+        /* Sidebar Styles */
         .sidebar {
-            width: 80px;
-            padding: var(--spacing-md);
+            width: 280px;
+            background:var(--primary-dark);
+            color: var(--white);
+            padding: var(--spacing-lg);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+            box-shadow: var(--shadow-lg);
+            transition: all var(--transition-normal);
         }
 
-        .sidebar-header h2,
-        .user-info,
-        .sidebar-nav span {
-            display: none;
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: var(--spacing-xl);
+            padding-bottom: var(--spacing-md);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
         }
 
         .sidebar-user {
-            justify-content: center;
-            padding: var(--spacing-sm);
+            display: flex;
+            align-items: center;
+            margin-bottom: var(--spacing-xl);
+            padding: var(--spacing-md);
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: var(--radius-md);
+            backdrop-filter: blur(10px);
         }
 
-        .user-avatar img {
-            margin-right: 0;
+        .user-info h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: var(--spacing-xs);
+        }
+
+        .user-info p {
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+        }
+
+        .sidebar-nav ul {
+            list-style: none;
+        }
+
+        .sidebar-nav li {
+            margin-bottom: var(--spacing-sm);
         }
 
         .sidebar-nav a {
-            justify-content: center;
+            display: flex;
+            align-items: center;
+            padding: var(--spacing-md);
+            color: var(--white);
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            transition: all var(--transition-fast);
+        }
+
+        .sidebar-nav a:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-nav li.active a {
+            background: rgba(255, 255, 255, 0.2);
+            font-weight: 500;
         }
 
         .sidebar-nav i {
-            margin-right: 0;
+            margin-right: var(--spacing-md);
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
         }
 
-        .logout-btn span {
-            display: none;
+        .sidebar-footer {
+            margin-top: auto;
+            padding-top: var(--spacing-lg);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
 
+        .logout-btn {
+            display: flex;
+            align-items: center;
+            padding: var(--spacing-md);
+            color: var(--white);
+            text-decoration: none;
+            border-radius: var(--radius-md);
+            transition: all var(--transition-fast);
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .logout-btn i {
+            margin-right: var(--spacing-md);
+        }
+
+        /* Main Content Styles */
         .main-content {
-            margin-left: 80px;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .main-header {
-            flex-direction: column;
-            align-items: flex-start;
+            flex: 1;
+            margin-left: 280px;
+            padding: var(--spacing-lg);
+            transition: all var(--transition-normal);
         }
 
-        .header-search {
-            width: 100%;
-            margin-bottom: var(--spacing-md);
-        }
-
-        .header-actions {
-            width: 100%;
-            justify-content: flex-end;
-        }
-    }
-
-    @media (max-width: 576px) {
-        .main-content {
+        .dashboard-content {
             padding: var(--spacing-md);
         }
 
+        .page-title {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .page-title h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: var(--spacing-xs);
+            color: var(--black);
+        }
+
+        .page-title p {
+            color: var(--gray);
+        }
+
+        /* Section Container */
+        .section-container {
+            background: var(--white);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Glassmorphic Effect for Containers */
+        .glassmorphic {
+            background: rgba(255, 255, 255, 0.85) !important;
+            backdrop-filter: blur(10px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.18) !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+        }
+
         .section-header {
-            flex-direction: column;
-            align-items: flex-start;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .section-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
         }
 
         .section-actions {
-            margin-top: var(--spacing-sm);
+            display: flex;
+            align-items: center;
+        }
+
+        .mechanics-search {
+            width: 250px;
+            margin-right: var(--spacing-md);
+        }
+
+        .header-search {
+            position: relative;
+        }
+
+        .header-search i {
+            position: absolute;
+            left: var(--spacing-md);
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray);
+        }
+
+        .header-search input {
+            width: 100%;
+            padding: var(--spacing-md) var(--spacing-md) var(--spacing-md) calc(var(--spacing-md) * 2 + 16px);
+            border: 1px solid var(--medium-gray);
+            border-radius: var(--radius-md);
+            background-color: var(--white);
+            transition: all var(--transition-fast);
+        }
+
+        .header-search input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
+        }
+
+        /* Add Mechanic Button */
+        .add-mechanic-btn {
+            padding: 10px 16px;
+            border-radius: var(--radius-md);
+            background-color: var(--primary-color);
+            color: var(--white);
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: var(--spacing-md);
+        }
+
+        .add-mechanic-btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(114, 47, 55, 0.3);
+        }
+
+        .add-mechanic-btn i {
+            font-size: 1rem;
+        }
+
+        .dropdown-btn {
+            display: flex;
+            align-items: center;
+            padding: var(--spacing-sm) var(--spacing-md);
+            border: 1px solid var(--medium-gray);
+            border-radius: var(--radius-md);
+            background: var(--white);
+            color: var(--gray);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            margin-left: var(--spacing-sm);
+        }
+
+        .dropdown-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        /* Table Styles */
+        .table-container {
+            overflow-x: auto;
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th, .data-table td {
+            padding: var(--spacing-md);
+            text-align: left;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+
+        .data-table th {
+            font-weight: 600;
+            color: var(--gray);
+            background-color: var(--light-gray);
+        }
+
+        .data-table tbody tr {
+            transition: background-color var(--transition-fast);
+        }
+
+        .data-table tbody tr:hover {
+            background-color: rgba(114, 47, 55, 0.05);
+        }
+
+        /* Mechanics Table Styling */
+        .mechanic-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .mechanic-info .name {
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .mechanic-info .joined {
+            font-size: 0.8rem;
+            color: var(--gray);
+        }
+
+        td p {
+            margin-bottom: 4px;
+            font-size: 0.9rem;
+        }
+
+        td p i {
+            width: 16px;
+            margin-right: 8px;
+            color: var(--primary-color);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-badge.active {
+            background-color: rgba(56, 176, 0, 0.1);
+            color: var(--success);
+        }
+
+        .status-badge.inactive {
+            background-color: rgba(108, 117, 125, 0.1);
+            color: var(--gray);
+        }
+
+        .status-badge.on-leave {
+            background-color: rgba(255, 170, 0, 0.1);
+            color: var(--warning);
         }
 
         .action-buttons {
-            flex-direction: column;
+            display: flex;
+            gap: var(--spacing-sm);
         }
-    }
 
-    /* Modal Styles */
-    .modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: rgba(0, 0, 0, 0.5);
-        backdrop-filter: blur(5px);
-        z-index: 1000;
-        align-items: center;
-        justify-content: center;
-        transition: all var(--transition-normal);
-    }
-
-    .modal.active {
-        display: flex;
-        animation: modalBackdropFadeIn 0.3s ease forwards;
-    }
-
-    @keyframes modalBackdropFadeIn {
-        from {
-            background-color: rgba(0, 0, 0, 0);
-            backdrop-filter: blur(0px);
+        .btn-edit, .btn-delete {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            cursor: pointer;
+            transition: all var(--transition-fast);
         }
-        to {
+
+        .btn-edit {
+            background-color: rgba(76, 201, 240, 0.1);
+            color: var(--info);
+        }
+
+        .btn-edit:hover {
+            background-color: var(--info);
+            color: var(--white);
+        }
+
+        .btn-delete {
+            background-color: rgba(217, 4, 41, 0.1);
+            color: var(--danger);
+            border: none;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-delete:hover {
+            background-color: var(--danger);
+            color: var(--white);
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: var(--spacing-lg);
+        }
+
+        .pagination-btn {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--medium-gray);
+            background: var(--white);
+            color: var(--gray);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .pagination-btn:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .pagination-numbers {
+            display: flex;
+            align-items: center;
+            margin: 0 var(--spacing-md);
+        }
+
+        .pagination-number {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--medium-gray);
+            background: var(--white);
+            color: var(--gray);
+            border-radius: var(--radius-md);
+            margin: 0 var(--spacing-xs);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .pagination-number:hover {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .pagination-number.active {
+            background: var(--primary-color);
+            color: var(--white);
+            border-color: var(--primary-color);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             background-color: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(5px);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-normal);
+            overflow-y: auto;
+            padding: 20px;
         }
-    }
 
-    .modal-content {
-        background-color: rgba(255, 255, 255, 0.85);
-        backdrop-filter: blur(10px);
-        border-radius: var(--radius-lg);
-        width: 100%;
-        max-width: 500px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2),
-        0 0 0 1px rgba(255, 255, 255, 0.3) inset;
-        animation: modalFadeIn 0.4s ease;
-        border: 1px solid rgba(255, 255, 255, 0.18);
-        overflow: hidden;
-    }
+        .modal.active {
+            display: flex;
+            animation: modalBackdropFadeIn 0.3s ease forwards;
+        }
 
-    @keyframes modalFadeIn {
-        from {
+        @keyframes modalBackdropFadeIn {
+            from {
+                background-color: rgba(0, 0, 0, 0);
+                backdrop-filter: blur(0px);
+            }
+            to {
+                background-color: rgba(0, 0, 0, 0.5);
+                backdrop-filter: blur(5px);
+            }
+        }
+
+        .modal-content {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius-lg);
+            width: 500px;
+            max-width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2),
+            0 0 0 1px rgba(255, 255, 255, 0.3) inset;
+            animation: modalFadeIn 0.4s ease;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            overflow: hidden;
+            margin: auto;
+            position: relative;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: var(--spacing-lg) var(--spacing-xl);
+            border-bottom: 1px solid rgba(233, 236, 239, 0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(to right, rgba(114, 47, 55, 0.1), rgba(114, 47, 55, 0.05));
+        }
+
+        .modal-header h2 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin: 0;
+            color: var(--primary-dark);
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: var(--gray);
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .close-modal:hover {
+            color: var(--danger);
+            background-color: rgba(217, 4, 41, 0.1);
+            transform: rotate(90deg);
+        }
+
+        .modal-body {
+            padding: var(--spacing-xl);
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .form-row {
+            display: flex;
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .form-group {
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: var(--spacing-sm);
+            font-weight: 500;
+            color: var(--dark-gray);
+            font-size: 0.95rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid rgba(108, 117, 125, 0.2);
+            border-radius: var(--radius-md);
+            font-family: 'Baloo Bhaijaan 2', sans-serif;
+            font-size: 1rem;
+            transition: all var(--transition-normal);
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
+            background-color: rgba(255, 255, 255, 0.95);
+        }
+
+        select.form-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23666' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            padding-right: 35px;
+        }
+
+        .modal-footer {
+            padding: var(--spacing-md) var(--spacing-xl);
+            border-top: 1px solid rgba(233, 236, 239, 0.5);
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--spacing-md);
+            background: rgba(248, 249, 250, 0.5);
+        }
+
+        .btn-cancel, .btn-submit {
+            padding: 10px 20px;
+            border-radius: var(--radius-md);
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all var(--transition-normal);
+        }
+
+        .btn-cancel {
+            background-color: rgba(233, 236, 239, 0.8);
+            color: var(--dark-gray);
+            border: 1px solid rgba(108, 117, 125, 0.2);
+            backdrop-filter: blur(5px);
+        }
+
+        .btn-cancel:hover {
+            background-color: rgba(233, 236, 239, 1);
+            transform: translateY(-2px);
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: var(--white);
+            border: none;
+            box-shadow: 0 4px 10px rgba(114, 47, 55, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-submit::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: all 0.6s ease;
+        }
+
+        .btn-submit:hover {
+            background: linear-gradient(135deg, var(--primary-light), var(--primary-color));
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(114, 47, 55, 0.4);
+        }
+
+        .btn-submit:hover::before {
+            left: 100%;
+        }
+
+        /* Mechanic Delete Confirmation */
+        .mechanic-delete-info {
+            background-color: rgba(217, 4, 41, 0.05);
+            border-radius: var(--radius-md);
+            padding: var(--spacing-md);
+            margin-top: var(--spacing-md);
+        }
+
+        .btn-delete-confirm {
+            background: linear-gradient(135deg, #d90429, #ef233c);
+            color: var(--white);
+            border: none;
+            padding: 10px 20px;
+            border-radius: var(--radius-md);
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all var(--transition-normal);
+        }
+
+        .btn-delete-confirm:hover {
+            background: linear-gradient(135deg, #ef233c, #d90429);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(217, 4, 41, 0.3);
+        }
+
+        /* Notification styling */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1100;
+            max-width: 350px;
+            transform: translateX(120%);
             opacity: 0;
-            transform: translateY(-30px) scale(0.95);
+            transition: transform 0.3s ease, opacity 0.3s ease;
         }
-        to {
+
+        .notification.show {
+            transform: translateX(0);
             opacity: 1;
-            transform: translateY(0) scale(1);
         }
-    }
 
-    .modal-header {
-        padding: var(--spacing-lg) var(--spacing-xl);
-        border-bottom: 1px solid rgba(233, 236, 239, 0.5);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        background: linear-gradient(to right, rgba(114, 47, 55, 0.1), rgba(114, 47, 55, 0.05));
-    }
+        .notification.closing {
+            transform: translateX(120%);
+            opacity: 0;
+        }
 
-    .modal-header h2 {
-        font-size: 1.4rem;
-        font-weight: 600;
-        margin: 0;
-        color: var(--primary-dark);
-    }
+        .notification-icon {
+            margin-right: 12px;
+            font-size: 24px;
+        }
 
-    .close-modal {
-        background: none;
-        border: none;
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.2rem;
-        color: var(--gray);
-        cursor: pointer;
-        transition: all var(--transition-normal);
-        background-color: rgba(255, 255, 255, 0.2);
-    }
+        .notification.success .notification-icon {
+            color: var(--success);
+        }
 
-    .close-modal:hover {
-        color: var(--danger);
-        background-color: rgba(217, 4, 41, 0.1);
-        transform: rotate(90deg);
-    }
+        .notification.info .notification-icon {
+            color: var(--info);
+        }
 
-    .modal-body {
-        padding: var(--spacing-xl);
-    }
+        .notification.warning .notification-icon {
+            color: var(--warning);
+        }
 
-    .modal-footer {
-        padding: var(--spacing-md) var(--spacing-xl);
-        border-top: 1px solid rgba(233, 236, 239, 0.5);
-        display: flex;
-        justify-content: flex-end;
-        gap: var(--spacing-md);
-        background: rgba(248, 249, 250, 0.5);
-    }
+        .notification.error .notification-icon {
+            color: var(--danger);
+        }
 
-    /* Form Styles for Modal */
-    .form-group {
-        margin-bottom: var(--spacing-lg);
-    }
+        .notification-content {
+            flex: 1;
+        }
 
-    .form-group label {
-        display: block;
-        margin-bottom: var(--spacing-sm);
-        font-weight: 500;
-        color: var(--dark-gray);
-        font-size: 0.95rem;
-    }
+        .notification-content p {
+            margin: 0;
+            font-size: 14px;
+            color: var(--dark-gray);
+        }
 
-    .form-control {
-        width: 100%;
-        padding: 12px 15px;
-        border: 1px solid rgba(108, 117, 125, 0.2);
-        border-radius: var(--radius-md);
-        font-family: 'Baloo Bhaijaan 2', sans-serif;
-        font-size: 1rem;
-        transition: all var(--transition-normal);
-        background-color: rgba(255, 255, 255, 0.8);
-        backdrop-filter: blur(5px);
-    }
+        .notification-close {
+            background: none;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            margin-left: 12px;
+            transition: color 0.2s ease;
+        }
 
-    .form-control:focus {
-        outline: none;
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
-        background-color: rgba(255, 255, 255, 0.95);
-    }
+        .notification-close:hover {
+            color: var(--dark-gray);
+        }
 
-    select.form-control {
-        appearance: none;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23666' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: right 15px center;
-        padding-right: 35px;
-    }
+        /* Spinner/loading indicator */
+        .spinner-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            backdrop-filter: blur(3px);
+        }
 
-    .checkbox-group {
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-md);
-        background-color: rgba(255, 255, 255, 0.5);
-        padding: var(--spacing-sm) var(--spacing-md);
-        border-radius: var(--radius-md);
-        transition: all var(--transition-fast);
-    }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+        }
 
-    .checkbox-group:hover {
-        background-color: rgba(255, 255, 255, 0.8);
-    }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
 
-    .checkbox-group input[type="checkbox"] {
-        width: 18px;
-        height: 18px;
-        accent-color: var(--primary-color);
-    }
+        /* Responsive Styles */
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 80px;
+                padding: var(--spacing-md);
+            }
 
-    .btn-cancel, .btn-submit {
-        padding: 10px 20px;
-        border-radius: var(--radius-md);
-        font-size: 0.95rem;
-        font-weight: 500;
-        transition: all var(--transition-normal);
-    }
+            .sidebar-header h2,
+            .user-info,
+            .sidebar-nav span {
+                display: none;
+            }
 
-    .btn-cancel {
-        background-color: rgba(233, 236, 239, 0.8);
-        color: var(--dark-gray);
-        border: 1px solid rgba(108, 117, 125, 0.2);
-        backdrop-filter: blur(5px);
-    }
+            .sidebar-user {
+                justify-content: center;
+                padding: var(--spacing-sm);
+            }
 
-    .btn-cancel:hover {
-        background-color: rgba(233, 236, 239, 1);
-        transform: translateY(-2px);
-    }
+            .user-avatar img {
+                margin-right: 0;
+            }
 
-    .btn-submit {
-        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-        color: var(--white);
-        border: none;
-        box-shadow: 0 4px 10px rgba(114, 47, 55, 0.3);
-        position: relative;
-        overflow: hidden;
-    }
+            .sidebar-nav a {
+                justify-content: center;
+            }
 
-    .btn-submit::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-        transition: all 0.6s ease;
-    }
+            .sidebar-nav i {
+                margin-right: 0;
+            }
 
-    .btn-submit:hover {
-        background: linear-gradient(135deg, var(--primary-light), var(--primary-color));
-        transform: translateY(-2px);
-        box-shadow: 0 6px 15px rgba(114, 47, 55, 0.4);
-    }
+            .logout-btn span {
+                display: none;
+            }
 
-    .btn-submit:hover::before {
-        left: 100%;
-    }
-</style>
+            .main-content {
+                margin-left: 80px;
+            }
+
+            .form-row {
+                flex-direction: column;
+                gap: var(--spacing-md);
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .section-actions {
+                margin-top: var(--spacing-md);
+                width: 100%;
+            }
+
+            .mechanics-search {
+                width: 100%;
+                margin-bottom: var(--spacing-md);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .header-search {
+                width: 100%;
+                margin-bottom: var(--spacing-md);
+            }
+
+            .header-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .main-content {
+                padding: var(--spacing-md);
+            }
+
+            .section-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .section-actions {
+                margin-top: var(--spacing-sm);
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
 <body>
 <div class="app-container">
     <!-- Sidebar -->
@@ -1399,21 +956,21 @@
 
         <div class="sidebar-user">
             <div class="user-info">
-                <h3>John Doe</h3>
+                <h3 id="userNameDisplay">Service Advisor</h3>
                 <p>Service Advisor</p>
             </div>
         </div>
 
         <nav class="sidebar-nav">
             <ul>
-                <li><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
-                <li><a href="vehicle-list.html"><i class="fas fa-car-side"></i> <span>Vehicles Under Service</span></a></li>
-                <li class="active"><a href="mechanics.html"><i class="fas fa-users-cog"></i> <span>Mechanics</span></a></li>
+                <li><a href="/serviceAdvisor/dashboard"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+                <li><a href="/serviceAdvisor/vehicle-list"><i class="fas fa-car-side"></i> <span>Vehicles Under Service</span></a></li>
+                <li class="active"><a href="/serviceAdvisor/mechanics"><i class="fas fa-users-cog"></i> <span>Mechanics</span></a></li>
             </ul>
         </nav>
 
         <div class="sidebar-footer">
-            <a href="#" class="logout-btn">
+            <a href="/serviceAdvisor/logout" class="logout-btn">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Logout</span>
             </a>
@@ -1462,77 +1019,9 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr>
-                            <td>M001</td>
-                            <td>
-                                <div class="mechanic-info">
-                                    <div>
-                                        <p class="name">Robert Johnson</p>
-                                        <p class="joined">Joined: Jan 15, 2020</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <p><i class="fas fa-envelope"></i> robert@example.com</p>
-                                <p><i class="fas fa-phone"></i> (555) 123-4567</p>
-                            </td>
-                            <td>Engine Specialist</td>
-                            <td>8 years</td>
-                            <td><span class="status-badge active">Active</span></td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button class="btn-edit" data-id="M001"><i class="fas fa-edit"></i></button>
-                                    <button class="btn-delete" data-id="M001"><i class="fas fa-trash-alt"></i></button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>M002</td>
-                            <td>
-                                <div class="mechanic-info">
-                                    <div>
-                                        <p class="name">Sarah Williams</p>
-                                        <p class="joined">Joined: Mar 22, 2021</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <p><i class="fas fa-envelope"></i> sarah@example.com</p>
-                                <p><i class="fas fa-phone"></i> (555) 987-6543</p>
-                            </td>
-                            <td>Electrical Specialist</td>
-                            <td>5 years</td>
-                            <td><span class="status-badge active">Active</span></td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button class="btn-edit" data-id="M002"><i class="fas fa-edit"></i></button>
-                                    <button class="btn-delete" data-id="M002"><i class="fas fa-trash-alt"></i></button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>M003</td>
-                            <td>
-                                <div class="mechanic-info">
-                                    <div>
-                                        <p class="name">Michael Brown</p>
-                                        <p class="joined">Joined: Jun 10, 2019</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <p><i class="fas fa-envelope"></i> michael@example.com</p>
-                                <p><i class="fas fa-phone"></i> (555) 456-7890</p>
-                            </td>
-                            <td>General Mechanic</td>
-                            <td>12 years</td>
-                            <td><span class="status-badge active">Active</span></td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button class="btn-edit" data-id="M003"><i class="fas fa-edit"></i></button>
-                                    <button class="btn-delete" data-id="M003"><i class="fas fa-trash-alt"></i></button>
-                                </div>
-                            </td>
+                        <!-- Mechanics will be loaded dynamically via JS -->
+                        <tr id="loadingRow">
+                            <td colspan="7" style="text-align: center;">Loading mechanics...</td>
                         </tr>
                         </tbody>
                     </table>
@@ -1554,7 +1043,6 @@
             </div>
         </div>
     </div>
-</div>
 </div>
 
 <!-- Add Mechanic Modal -->
@@ -1603,9 +1091,22 @@
                     </select>
                 </div>
 
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="department">Department</label>
+                        <input type="text" id="department" class="form-control" placeholder="Enter department">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="experience">Years of Experience</label>
+                        <input type="number" id="experience" class="form-control" placeholder="Enter years of experience" min="0" max="50" required>
+                    </div>
+                </div>
+
                 <div class="form-group">
-                    <label for="experience">Years of Experience</label>
-                    <input type="number" id="experience" class="form-control" placeholder="Enter years of experience" min="0" max="50" required>
+                    <label for="password">Password (Optional)</label>
+                    <input type="password" id="password" class="form-control" placeholder="Leave blank to generate automatic password">
+                    <small class="form-text text-muted">If left blank, a secure password will be generated automatically.</small>
                 </div>
             </form>
         </div>
@@ -1662,18 +1163,30 @@
                     </select>
                 </div>
 
-                <div class="form-group">
-                    <label for="editExperience">Years of Experience</label>
-                    <input type="number" id="editExperience" class="form-control" min="0" max="50" required>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editDepartment">Department</label>
+                        <input type="text" id="editDepartment" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editExperience">Years of Experience</label>
+                        <input type="number" id="editExperience" class="form-control" min="0" max="50" required>
+                    </div>
                 </div>
 
                 <div class="form-group">
                     <label for="editStatus">Status</label>
                     <select id="editStatus" class="form-control" required>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                        <option value="on-leave">On Leave</option>
+                        <option value="true">Active</option>
+                        <option value="false">Inactive</option>
                     </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="editPassword">Reset Password (Optional)</label>
+                    <input type="password" id="editPassword" class="form-control" placeholder="Leave blank to keep current password">
+                    <small class="form-text text-muted">Only fill this if you want to reset the password.</small>
                 </div>
             </form>
         </div>
@@ -1705,301 +1218,79 @@
     </div>
 </div>
 
+<!-- Loading Spinner -->
+<div class="spinner-overlay" id="loadingSpinner" style="display: none;">
+    <div class="spinner"></div>
+</div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Modal handling
-        const addMechanicModal = document.getElementById('addMechanicModal');
-        const editModal = document.getElementById('editMechanicModal');
-        const deleteModal = document.getElementById('deleteMechanicModal');
+        // Set user name if available in the page model
+        const userNameElement = document.getElementById('userNameDisplay');
+        if (userNameElement && typeof userName !== 'undefined') {
+            userNameElement.textContent = userName;
+        }
 
-        // Open Add Mechanic Modal
-        const openAddMechanicBtn = document.getElementById('openAddMechanicModal');
-        const closeAddModalBtn = addMechanicModal.querySelector('.close-modal');
-        const cancelAddBtn = document.getElementById('cancelAdd');
-        const submitAddBtn = document.getElementById('submitAdd');
+        // API endpoints
+        const API_ENDPOINTS = {
+            getAllMechanics: '/serviceAdvisor/mechanics/api/all',
+            getMechanic: '/serviceAdvisor/mechanics/api/',
+            createMechanic: '/serviceAdvisor/mechanics/api',
+            updateMechanic: '/serviceAdvisor/mechanics/api/',
+            deleteMechanic: '/serviceAdvisor/mechanics/api/'
+        };
 
-        openAddMechanicBtn.addEventListener('click', function() {
-            addMechanicModal.classList.add('active');
-        });
+        // Current JWT token
+        let currentToken = '';
 
-        closeAddModalBtn.addEventListener('click', function() {
-            addMechanicModal.classList.remove('active');
-        });
-
-        cancelAddBtn.addEventListener('click', function() {
-            addMechanicModal.classList.remove('active');
-        });
-
-        // Add Mechanic Form Submission
-        submitAddBtn.addEventListener('click', function() {
-            const mechanicForm = document.getElementById('mechanicForm');
-
-            // Check form validity
-            if (!mechanicForm.checkValidity()) {
-                mechanicForm.reportValidity();
-                return;
+        // Get JWT token from URL parameter, session storage, or wherever it's stored
+        function getToken() {
+            // Try to get from URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const tokenParam = urlParams.get('token');
+            if (tokenParam) {
+                return tokenParam;
             }
 
-            // Get form values
-            const firstName = document.getElementById('firstName').value;
-            const lastName = document.getElementById('lastName').value;
-            const email = document.getElementById('email').value;
-            const phone = document.getElementById('phone').value;
-            const specialization = document.getElementById('specialization').value;
-            const experience = document.getElementById('experience').value;
+            // Try to get from session storage
+            const storedToken = sessionStorage.getItem('jwt-token');
+            if (storedToken) {
+                return storedToken;
+            }
 
-            // Generate a unique ID (in a real app, this would come from the backend)
-            const mechanicId = 'M' + Math.floor(1000 + Math.random() * 9000);
-
-            // Create a new row in the table
-            addMechanicToTable(mechanicId, firstName, lastName, email, phone, specialization, experience);
-
-            // Close modal
-            addMechanicModal.classList.remove('active');
-
-            // Show success message
-            showNotification('Mechanic added successfully!', 'success');
-
-            // Reset the form
-            mechanicForm.reset();
-        });
-
-        // Edit Mechanic
-        const editButtons = document.querySelectorAll('.btn-edit');
-        const closeEditModalBtn = editModal.querySelector('.close-modal');
-        const cancelEditBtn = document.getElementById('cancelEdit');
-        const saveEditBtn = document.getElementById('saveEdit');
-
-        editButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const mechanicId = this.getAttribute('data-id');
-                openEditModal(mechanicId);
-            });
-        });
-
-        closeEditModalBtn.addEventListener('click', closeEditModal);
-        cancelEditBtn.addEventListener('click', closeEditModal);
-
-        saveEditBtn.addEventListener('click', function() {
-            saveMechanicChanges();
-        });
-
-        // Delete Mechanic
-        const deleteButtons = document.querySelectorAll('.btn-delete');
-        const closeDeleteModalBtn = deleteModal.querySelector('.close-modal');
-        const cancelDeleteBtn = document.getElementById('cancelDelete');
-        const confirmDeleteBtn = document.getElementById('confirmDelete');
-
-        deleteButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const mechanicId = this.getAttribute('data-id');
-                openDeleteModal(mechanicId);
-            });
-        });
-
-        closeDeleteModalBtn.addEventListener('click', closeDeleteModal);
-        cancelDeleteBtn.addEventListener('click', closeDeleteModal);
-
-        confirmDeleteBtn.addEventListener('click', function() {
-            deleteMechanic();
-        });
-
-        // Search Functionality
-        const mechanicsSearch = document.getElementById('mechanicsSearch');
-        mechanicsSearch.addEventListener('input', function() {
-            searchMechanics(this.value);
-        });
-
-        // Functions
-        function addMechanicToTable(id, firstName, lastName, email, phone, specialization, experience) {
-            const tbody = document.querySelector('#mechanicsTable tbody');
-            const newRow = document.createElement('tr');
-
-            // Format the current date for "Joined" info
-            const today = new Date();
-            const joinedDate = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-
-            newRow.innerHTML = `
-                    <td>${id}</td>
-                    <td>
-                        <div class="mechanic-info">
-                            <div>
-                                <p class="name">${firstName} ${lastName}</p>
-                                <p class="joined">Joined: ${joinedDate}</p>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <p><i class="fas fa-envelope"></i> ${email}</p>
-                        <p><i class="fas fa-phone"></i> ${phone}</p>
-                    </td>
-                    <td>${specialization}</td>
-                    <td>${experience} years</td>
-                    <td><span class="status-badge active">Active</span></td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="btn-edit" data-id="${id}"><i class="fas fa-edit"></i></button>
-                            <button class="btn-delete" data-id="${id}"><i class="fas fa-trash-alt"></i></button>
-                        </div>
-                    </td>
-                `;
-
-            // Add event listeners to the new buttons
-            const newEditBtn = newRow.querySelector('.btn-edit');
-            const newDeleteBtn = newRow.querySelector('.btn-delete');
-
-            newEditBtn.addEventListener('click', function() {
-                openEditModal(id);
-            });
-
-            newDeleteBtn.addEventListener('click', function() {
-                openDeleteModal(id);
-            });
-
-            // Add the new row to the table
-            tbody.appendChild(newRow);
+            // If no token found, return empty string
+            return '';
         }
 
-        function openEditModal(mechanicId) {
-            // Find the mechanic data from the table
-            const row = document.querySelector(`button.btn-edit[data-id="${mechanicId}"]`).closest('tr');
-            const name = row.querySelector('.mechanic-info .name').textContent;
-            const nameParts = name.split(' ');
-            const firstName = nameParts[0];
-            const lastName = nameParts.slice(1).join(' ');
-            const email = row.querySelector('td:nth-child(3) p:nth-child(1)').textContent.replace(/.*\s/, '');
-            const phone = row.querySelector('td:nth-child(3) p:nth-child(2)').textContent.replace(/.*\s/, '');
-            const specialization = row.querySelector('td:nth-child(4)').textContent;
-            const experience = row.querySelector('td:nth-child(5)').textContent.replace(' years', '');
-            const status = row.querySelector('.status-badge').textContent.toLowerCase();
+        // Initialize token
+        currentToken = getToken();
 
-            // Populate the edit form
-            document.getElementById('editMechanicId').value = mechanicId;
-            document.getElementById('editFirstName').value = firstName;
-            document.getElementById('editLastName').value = lastName;
-            document.getElementById('editEmail').value = email;
-            document.getElementById('editPhone').value = phone;
-            document.getElementById('editSpecialization').value = specialization;
-            document.getElementById('editExperience').value = experience;
-            document.getElementById('editStatus').value = status;
-
-            // Show the modal
-            editModal.classList.add('active');
+        // Show loading spinner
+        function showSpinner() {
+            document.getElementById('loadingSpinner').style.display = 'flex';
         }
 
-        function closeEditModal() {
-            editModal.classList.remove('active');
+        // Hide loading spinner
+        function hideSpinner() {
+            document.getElementById('loadingSpinner').style.display = 'none';
         }
 
-        function saveMechanicChanges() {
-            const mechanicId = document.getElementById('editMechanicId').value;
-            const firstName = document.getElementById('editFirstName').value;
-            const lastName = document.getElementById('editLastName').value;
-            const email = document.getElementById('editEmail').value;
-            const phone = document.getElementById('editPhone').value;
-            const specialization = document.getElementById('editSpecialization').value;
-            const experience = document.getElementById('editExperience').value;
-            const status = document.getElementById('editStatus').value;
-
-            // Find the row to update
-            const row = document.querySelector(`button.btn-edit[data-id="${mechanicId}"]`).closest('tr');
-
-            // Update the row data
-            row.querySelector('.mechanic-info .name').textContent = `${firstName} ${lastName}`;
-            row.querySelector('td:nth-child(3) p:nth-child(1)').innerHTML = `<i class="fas fa-envelope"></i> ${email}`;
-            row.querySelector('td:nth-child(3) p:nth-child(2)').innerHTML = `<i class="fas fa-phone"></i> ${phone}`;
-            row.querySelector('td:nth-child(4)').textContent = specialization;
-            row.querySelector('td:nth-child(5)').textContent = `${experience} years`;
-
-            // Update status badge
-            const statusBadge = row.querySelector('.status-badge');
-            statusBadge.className = 'status-badge';
-            statusBadge.classList.add(status);
-            statusBadge.textContent = status.charAt(0).toUpperCase() + status.slice(1);
-
-            // Close the modal
-            closeEditModal();
-
-            // Show success message
-            showNotification('Mechanic updated successfully!', 'success');
-        }
-
-        function openDeleteModal(mechanicId) {
-            // Find the mechanic data from the table
-            const row = document.querySelector(`button.btn-delete[data-id="${mechanicId}"]`).closest('tr');
-            const name = row.querySelector('.mechanic-info .name').textContent;
-
-            // Populate the delete confirmation
-            document.getElementById('deleteMechanicName').textContent = name;
-            document.getElementById('deleteMechanicId').textContent = mechanicId;
-
-            // Store the mechanic ID for deletion
-            deleteModal.setAttribute('data-id', mechanicId);
-
-            // Show the modal
-            deleteModal.classList.add('active');
-        }
-
-        function closeDeleteModal() {
-            deleteModal.classList.remove('active');
-        }
-
-        function deleteMechanic() {
-            const mechanicId = deleteModal.getAttribute('data-id');
-
-            // Find the row to delete
-            const row = document.querySelector(`button.btn-delete[data-id="${mechanicId}"]`).closest('tr');
-
-            // Add fade-out animation
-            row.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-            row.style.opacity = '0';
-            row.style.transform = 'translateX(20px)';
-
-            // Remove the row after animation
-            setTimeout(() => {
-                row.remove();
-
-                // Show success message
-                showNotification('Mechanic deleted successfully!', 'info');
-            }, 500);
-
-            // Close the modal
-            closeDeleteModal();
-        }
-
-        function searchMechanics(query) {
-            query = query.toLowerCase();
-            const rows = document.querySelectorAll('#mechanicsTable tbody tr');
-
-            rows.forEach(row => {
-                const name = row.querySelector('.mechanic-info .name').textContent.toLowerCase();
-                const email = row.querySelector('td:nth-child(3) p:nth-child(1)').textContent.toLowerCase();
-                const phone = row.querySelector('td:nth-child(3) p:nth-child(2)').textContent.toLowerCase();
-                const specialization = row.querySelector('td:nth-child(4)').textContent.toLowerCase();
-
-                if (name.includes(query) || email.includes(query) || phone.includes(query) || specialization.includes(query)) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        }
-
+        // Show notification
         function showNotification(message, type) {
             // Create notification element
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
             notification.innerHTML = `
-                    <div class="notification-icon">
-                        <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'info' ? 'fa-info-circle' : 'fa-exclamation-circle'}"></i>
-                    </div>
-                    <div class="notification-content">
-                        <p>${message}</p>
-                    </div>
-                    <button class="notification-close">
-                        <i class="fas fa-times"></i>
-                    </button>
-                `;
+            <div class="notification-icon">
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'info' ? 'fa-info-circle' : 'fa-exclamation-circle'}"></i>
+            </div>
+            <div class="notification-content">
+                <p>${message}</p>
+            </div>
+            <button class="notification-close">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
 
             // Add to the DOM
             document.body.appendChild(notification);
@@ -2019,91 +1310,553 @@
 
             // Auto-remove after 5 seconds
             setTimeout(() => {
-                notification.classList.add('closing');
-                setTimeout(() => {
-                    notification.remove();
-                }, 300);
+                if (document.body.contains(notification)) {
+                    notification.classList.add('closing');
+                    setTimeout(() => {
+                        if (document.body.contains(notification)) {
+                            notification.remove();
+                        }
+                    }, 300);
+                }
             }, 5000);
         }
 
-        // Add notification styles if not already in CSS
-        if (!document.getElementById('notification-styles')) {
-            const style = document.createElement('style');
-            style.id = 'notification-styles';
-            style.textContent = `
-                    .notification {
-                        position: fixed;
-                        top: 20px;
-                        right: 20px;
-                        display: flex;
-                        align-items: center;
-                        background: white;
-                        border-radius: 8px;
-                        padding: 16px;
-                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-                        z-index: 1100;
-                        max-width: 350px;
-                        transform: translateX(120%);
-                        opacity: 0;
-                        transition: transform 0.3s ease, opacity 0.3s ease;
-                    }
+        // Format date to readable format
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
 
-                    .notification.show {
-                        transform: translateX(0);
-                        opacity: 1;
-                    }
+            const date = new Date(dateString);
+            if (isNaN(date.getTime())) return 'N/A';
 
-                    .notification.closing {
-                        transform: translateX(120%);
-                        opacity: 0;
-                    }
-
-                    .notification-icon {
-                        margin-right: 12px;
-                        font-size: 24px;
-                    }
-
-                    .notification.success .notification-icon {
-                        color: var(--success);
-                    }
-
-                    .notification.info .notification-icon {
-                        color: var(--info);
-                    }
-
-                    .notification.warning .notification-icon {
-                        color: var(--warning);
-                    }
-
-                    .notification.error .notification-icon {
-                        color: var(--danger);
-                    }
-
-                    .notification-content {
-                        flex: 1;
-                    }
-
-                    .notification-content p {
-                        margin: 0;
-                        font-size: 14px;
-                        color: var(--dark-gray);
-                    }
-
-                    .notification-close {
-                        background: none;
-                        border: none;
-                        color: var(--gray);
-                        cursor: pointer;
-                        margin-left: 12px;
-                        transition: color 0.2s ease;
-                    }
-
-                    .notification-close:hover {
-                        color: var(--dark-gray);
-                    }
-                `;
-            document.head.appendChild(style);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
         }
+
+        // Make API request with auth token
+        async function apiRequest(url, method = 'GET', data = null) {
+            const token = currentToken;
+            const options = {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            };
+
+            if (data && (method === 'POST' || method === 'PUT')) {
+                options.body = JSON.stringify(data);
+            }
+
+            try {
+                const response = await fetch(url, options);
+
+                // Check if unauthorized (token expired)
+                if (response.status === 401) {
+                    showNotification('Your session has expired. Please log in again.', 'error');
+                    setTimeout(() => {
+                        window.location.href = '/serviceAdvisor/login?error=session_expired';
+                    }, 2000);
+                    return null;
+                }
+
+                // For DELETE requests, we might not have JSON response
+                if (method === 'DELETE' && response.status === 204) {
+                    return { success: true };
+                }
+
+                // Try to parse JSON response
+                try {
+                    const data = await response.json();
+                    return data;
+                } catch (e) {
+                    // If not JSON, return the raw response
+                    return {
+                        success: response.ok,
+                        status: response.status
+                    };
+                }
+            } catch (error) {
+                console.error('API Request Failed:', error);
+                throw error;
+            }
+        }
+
+        // Load all mechanics
+        async function loadMechanics() {
+            try {
+                showSpinner();
+                const mechanics = await apiRequest(API_ENDPOINTS.getAllMechanics);
+
+                if (!mechanics) {
+                    return;
+                }
+
+                const tbody = document.querySelector('#mechanicsTable tbody');
+
+                // Clear loading row
+                tbody.innerHTML = '';
+
+                if (mechanics && mechanics.length > 0) {
+                    mechanics.forEach(mechanic => {
+                        addMechanicToTable(mechanic);
+                    });
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">No mechanics found.</td></tr>';
+                }
+            } catch (error) {
+                console.error('Failed to load mechanics:', error);
+                showNotification('Failed to load mechanics. Please try again.', 'error');
+
+                const tbody = document.querySelector('#mechanicsTable tbody');
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center;">Failed to load mechanics. Please try refreshing.</td></tr>';
+            } finally {
+                hideSpinner();
+            }
+        }
+
+        // Add mechanic to table
+        function addMechanicToTable(mechanic) {
+            const tbody = document.querySelector('#mechanicsTable tbody');
+            const newRow = document.createElement('tr');
+            newRow.setAttribute('data-id', mechanic.mechanicId);
+
+            // Format hire date
+            const hireDate = formatDate(mechanic.hireDate);
+
+            // Determine status
+            const statusClass = mechanic.active ? 'active' : 'inactive';
+            const statusText = mechanic.active ? 'Active' : 'Inactive';
+
+            newRow.innerHTML = `
+            <td>${mechanic.formattedId || 'MC-' + mechanic.mechanicId}</td>
+            <td>
+                <div class="mechanic-info">
+                    <div>
+                        <p class="name">${mechanic.firstName} ${mechanic.lastName}</p>
+                        <p class="joined">Joined: ${hireDate}</p>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <p><i class="fas fa-envelope"></i> ${mechanic.email}</p>
+                <p><i class="fas fa-phone"></i> ${mechanic.phoneNumber || 'N/A'}</p>
+            </td>
+            <td>${mechanic.specialization || 'N/A'}</td>
+            <td>${mechanic.experienceYears || '0'} years</td>
+            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn-edit" data-id="${mechanic.mechanicId}"><i class="fas fa-edit"></i></button>
+                    <button class="btn-delete" data-id="${mechanic.mechanicId}"><i class="fas fa-trash-alt"></i></button>
+                </div>
+            </td>
+        `;
+
+            // Add event listeners to the new buttons
+            const newEditBtn = newRow.querySelector('.btn-edit');
+            const newDeleteBtn = newRow.querySelector('.btn-delete');
+
+            newEditBtn.addEventListener('click', function() {
+                openEditModal(mechanic.mechanicId);
+            });
+
+            newDeleteBtn.addEventListener('click', function() {
+                openDeleteModal(mechanic.mechanicId);
+            });
+
+            // Add the new row to the table
+            tbody.appendChild(newRow);
+        }
+
+        // Search mechanics
+        function searchMechanics(query) {
+            query = query.toLowerCase();
+            const rows = document.querySelectorAll('#mechanicsTable tbody tr');
+
+            let anyVisible = false;
+
+            rows.forEach(row => {
+                // Skip the loading or no results row
+                if (row.cells.length === 1 && row.cells[0].colSpan === 7) {
+                    return;
+                }
+
+                const name = row.querySelector('.mechanic-info .name')?.textContent.toLowerCase() || '';
+                const email = row.querySelector('td:nth-child(3) p:nth-child(1)')?.textContent.toLowerCase() || '';
+                const phone = row.querySelector('td:nth-child(3) p:nth-child(2)')?.textContent.toLowerCase() || '';
+                const specialization = row.querySelector('td:nth-child(4)')?.textContent.toLowerCase() || '';
+
+                if (name.includes(query) ||
+                    email.includes(query) ||
+                    phone.includes(query) ||
+                    specialization.includes(query)) {
+                    row.style.display = '';
+                    anyVisible = true;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            // If no rows are visible after filtering, show a "no results" message
+            if (!anyVisible) {
+                const tbody = document.querySelector('#mechanicsTable tbody');
+
+                // Check if we already have a no results row
+                const noResultsRow = document.getElementById('noResultsRow');
+                if (!noResultsRow) {
+                    const newRow = document.createElement('tr');
+                    newRow.id = 'noResultsRow';
+                    newRow.innerHTML = `<td colspan="7" style="text-align: center;">No mechanics found matching "${query}"</td>`;
+                    tbody.appendChild(newRow);
+                } else {
+                    noResultsRow.style.display = '';
+                    noResultsRow.querySelector('td').textContent = `No mechanics found matching "${query}"`;
+                }
+            } else {
+                // Hide the no results row if it exists
+                const noResultsRow = document.getElementById('noResultsRow');
+                if (noResultsRow) {
+                    noResultsRow.style.display = 'none';
+                }
+            }
+        }
+
+        // Modal handling
+        const addMechanicModal = document.getElementById('addMechanicModal');
+        const editModal = document.getElementById('editMechanicModal');
+        const deleteModal = document.getElementById('deleteMechanicModal');
+
+        // Open Add Mechanic Modal
+        const openAddMechanicBtn = document.getElementById('openAddMechanicModal');
+        const closeAddModalBtn = addMechanicModal.querySelector('.close-modal');
+        const cancelAddBtn = document.getElementById('cancelAdd');
+        const submitAddBtn = document.getElementById('submitAdd');
+
+        openAddMechanicBtn.addEventListener('click', function() {
+            // Reset the form first
+            document.getElementById('mechanicForm').reset();
+            addMechanicModal.classList.add('active');
+        });
+
+        closeAddModalBtn.addEventListener('click', function() {
+            addMechanicModal.classList.remove('active');
+        });
+
+        cancelAddBtn.addEventListener('click', function() {
+            addMechanicModal.classList.remove('active');
+        });
+
+        // Add Mechanic Form Submission
+        submitAddBtn.addEventListener('click', async function() {
+            const mechanicForm = document.getElementById('mechanicForm');
+
+            // Check form validity
+            if (!mechanicForm.checkValidity()) {
+                mechanicForm.reportValidity();
+                return;
+            }
+
+            // Get form values
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const specialization = document.getElementById('specialization').value;
+            const department = document.getElementById('department').value;
+            const experience = document.getElementById('experience').value;
+            const password = document.getElementById('password').value;
+
+            // Create request object
+            const mechanicData = {
+                firstName: firstName,
+                lastName: lastName,
+                email: email,
+                phoneNumber: phone,
+                specialization: specialization,
+                department: department,
+                experienceYears: parseInt(experience),
+                password: password || undefined // Only send if provided
+            };
+
+            try {
+                showSpinner();
+
+                // Send API request
+                const response = await apiRequest(API_ENDPOINTS.createMechanic, 'POST', mechanicData);
+
+                if (!response) {
+                    return;
+                }
+
+                hideSpinner();
+
+                if (response.error) {
+                    showNotification('Error: ' + response.error, 'error');
+                    return;
+                }
+
+                // Close modal
+                addMechanicModal.classList.remove('active');
+
+                // Extract the created mechanic and password
+                const createdMechanic = response.mechanic;
+                const tempPassword = response.tempPassword;
+
+                // Add to table
+                addMechanicToTable(createdMechanic);
+
+                // Show success message with password if generated automatically
+                if (tempPassword && !password) {
+                    showNotification(`Mechanic added successfully! Temporary password: ${tempPassword}`, 'success');
+                } else {
+                    showNotification('Mechanic added successfully!', 'success');
+                }
+
+                // Reset the form
+                mechanicForm.reset();
+            } catch (error) {
+                hideSpinner();
+                console.error('Error creating mechanic:', error);
+                showNotification('Failed to create mechanic. Please try again.', 'error');
+            }
+        });
+
+        // Edit Mechanic
+        async function openEditModal(mechanicId) {
+            try {
+                showSpinner();
+
+                // Fetch mechanic details
+                const mechanic = await apiRequest(API_ENDPOINTS.getMechanic + mechanicId);
+
+                if (!mechanic) {
+                    return;
+                }
+
+                hideSpinner();
+
+                // Populate the edit form
+                document.getElementById('editMechanicId').value = mechanic.mechanicId;
+                document.getElementById('editFirstName').value = mechanic.firstName || '';
+                document.getElementById('editLastName').value = mechanic.lastName || '';
+                document.getElementById('editEmail').value = mechanic.email || '';
+                document.getElementById('editPhone').value = mechanic.phoneNumber || '';
+                document.getElementById('editSpecialization').value = mechanic.specialization || 'General Mechanic';
+                document.getElementById('editDepartment').value = mechanic.department || '';
+                document.getElementById('editExperience').value = mechanic.experienceYears || 0;
+                document.getElementById('editStatus').value = mechanic.active.toString();
+                document.getElementById('editPassword').value = ''; // Always empty for security
+
+                // Show the modal
+                editModal.classList.add('active');
+            } catch (error) {
+                hideSpinner();
+                console.error('Error fetching mechanic details:', error);
+                showNotification('Failed to fetch mechanic details. Please try again.', 'error');
+            }
+        }
+
+        function closeEditModal() {
+            editModal.classList.remove('active');
+        }
+
+        const closeEditModalBtn = editModal.querySelector('.close-modal');
+        const cancelEditBtn = document.getElementById('cancelEdit');
+        const saveEditBtn = document.getElementById('saveEdit');
+
+        closeEditModalBtn.addEventListener('click', closeEditModal);
+        cancelEditBtn.addEventListener('click', closeEditModal);
+
+        saveEditBtn.addEventListener('click', async function() {
+            const editForm = document.getElementById('editMechanicForm');
+
+            // Check form validity
+            if (!editForm.checkValidity()) {
+                editForm.reportValidity();
+                return;
+            }
+
+            const mechanicId = document.getElementById('editMechanicId').value;
+            const firstName = document.getElementById('editFirstName').value;
+            const lastName = document.getElementById('editLastName').value;
+            const email = document.getElementById('editEmail').value;
+            const phone = document.getElementById('editPhone').value;
+            const specialization = document.getElementById('editSpecialization').value;
+            const department = document.getElementById('editDepartment').value;
+            const experience = document.getElementById('editExperience').value;
+            const status = document.getElementById('editStatus').value === 'true';
+            const password = document.getElementById('editPassword').value;
+
+            // Create update object
+            const mechanicData = {
+                firstName: firstName,
+                lastName: lastName,
+                email: email,
+                phoneNumber: phone,
+                specialization: specialization,
+                department: department,
+                experienceYears: parseInt(experience),
+                active: status
+            };
+
+            // Only include password if provided
+            if (password) {
+                mechanicData.password = password;
+            }
+
+            try {
+                showSpinner();
+
+                // Send API request
+                const response = await apiRequest(API_ENDPOINTS.updateMechanic + mechanicId, 'PUT', mechanicData);
+
+                if (!response) {
+                    return;
+                }
+
+                hideSpinner();
+
+                if (response.error) {
+                    showNotification('Error: ' + response.error, 'error');
+                    return;
+                }
+
+                // Close modal
+                closeEditModal();
+
+                // Update the row in the table
+                const row = document.querySelector(`tr[data-id="${mechanicId}"]`);
+                if (row) {
+                    row.querySelector('.mechanic-info .name').textContent = `${firstName} ${lastName}`;
+                    row.querySelector('td:nth-child(3) p:nth-child(1)').innerHTML = `<i class="fas fa-envelope"></i> ${email}`;
+                    row.querySelector('td:nth-child(3) p:nth-child(2)').innerHTML = `<i class="fas fa-phone"></i> ${phone || 'N/A'}`;
+                    row.querySelector('td:nth-child(4)').textContent = specialization || 'N/A';
+                    row.querySelector('td:nth-child(5)').textContent = `${experience || '0'} years`;
+
+                    // Update status badge
+                    const statusBadge = row.querySelector('.status-badge');
+                    statusBadge.className = 'status-badge';
+                    statusBadge.classList.add(status ? 'active' : 'inactive');
+                    statusBadge.textContent = status ? 'Active' : 'Inactive';
+                }
+
+                // Show success message
+                showNotification('Mechanic updated successfully!', 'success');
+            } catch (error) {
+                hideSpinner();
+                console.error('Error updating mechanic:', error);
+                showNotification('Failed to update mechanic. Please try again.', 'error');
+            }
+        });
+
+        // Delete Mechanic
+        async function openDeleteModal(mechanicId) {
+            try {
+                // Find the mechanic data from the table
+                const row = document.querySelector(`tr[data-id="${mechanicId}"]`);
+                if (!row) {
+                    showNotification('Could not find mechanic details.', 'error');
+                    return;
+                }
+
+                const name = row.querySelector('.mechanic-info .name').textContent;
+                const formattedId = row.querySelector('td:nth-child(1)').textContent;
+
+                // Populate the delete confirmation
+                document.getElementById('deleteMechanicName').textContent = name;
+                document.getElementById('deleteMechanicId').textContent = formattedId;
+
+                // Store the mechanic ID for deletion
+                deleteModal.setAttribute('data-id', mechanicId);
+
+                // Show the modal
+                deleteModal.classList.add('active');
+            } catch (error) {
+                console.error('Error preparing delete modal:', error);
+                showNotification('Failed to prepare deletion dialog. Please try again.', 'error');
+            }
+        }
+
+        function closeDeleteModal() {
+            deleteModal.classList.remove('active');
+        }
+
+        const closeDeleteModalBtn = deleteModal.querySelector('.close-modal');
+        const cancelDeleteBtn = document.getElementById('cancelDelete');
+        const confirmDeleteBtn = document.getElementById('confirmDelete');
+
+        closeDeleteModalBtn.addEventListener('click', closeDeleteModal);
+        cancelDeleteBtn.addEventListener('click', closeDeleteModal);
+
+        confirmDeleteBtn.addEventListener('click', async function() {
+            const mechanicId = deleteModal.getAttribute('data-id');
+
+            try {
+                showSpinner();
+
+                // Send API request
+                const response = await apiRequest(API_ENDPOINTS.deleteMechanic + mechanicId, 'DELETE');
+
+                if (!response) {
+                    return;
+                }
+
+                hideSpinner();
+
+                if (response.error) {
+                    showNotification('Error: ' + response.error, 'error');
+                    return;
+                }
+
+                // Find the row to delete
+                const row = document.querySelector(`tr[data-id="${mechanicId}"]`);
+
+                // Add fade-out animation
+                if (row) {
+                    row.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                    row.style.opacity = '0';
+                    row.style.transform = 'translateX(20px)';
+
+                    // Remove the row after animation
+                    setTimeout(() => {
+                        if (row.parentNode) {
+                            row.remove();
+                        }
+
+                        // Check if there are no more rows and show a message
+                        const remainingRows = document.querySelectorAll('#mechanicsTable tbody tr').length;
+                        if (remainingRows === 0) {
+                            const tbody = document.querySelector('#mechanicsTable tbody');
+                            const emptyRow = document.createElement('tr');
+                            emptyRow.innerHTML = '<td colspan="7" style="text-align: center;">No mechanics available.</td>';
+                            tbody.appendChild(emptyRow);
+                        }
+                    }, 500);
+                }
+
+                // Close the modal
+                closeDeleteModal();
+
+                // Show success message
+                showNotification('Mechanic deleted successfully!', 'info');
+            } catch (error) {
+                hideSpinner();
+                console.error('Error deleting mechanic:', error);
+                showNotification('Failed to delete mechanic. Please try again.', 'error');
+            }
+        });
+
+        // Search functionality
+        const mechanicsSearch = document.getElementById('mechanicsSearch');
+        mechanicsSearch.addEventListener('input', function() {
+            searchMechanics(this.value);
+        });
+
+        // Load mechanics on page load
+        loadMechanics();
     });
 </script>
 </body>

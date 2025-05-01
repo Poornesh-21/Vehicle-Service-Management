@@ -28,75 +28,6 @@ public class MechanicService {
     private final EmailService emailService;
 
     /**
-     * Create a new mechanic
-     */
-    @Transactional
-    public MechanicResponse createMechanic(MechanicRequest request) {
-        log.info("Creating mechanic with email: {}", request.getEmail());
-
-        // Validate request
-        if (request.getEmail() == null || request.getFirstName() == null || request.getLastName() == null) {
-            throw new IllegalArgumentException("Email, first name, and last name are required");
-        }
-
-        // Check if email already exists
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("A user with this email already exists");
-        }
-
-        // Generate a password if not provided
-        if (request.getPassword() == null || request.getPassword().isEmpty()) {
-            request.setPassword(generateRandomPassword());
-        }
-
-        try {
-            // Create user first
-            User user = User.builder()
-                    .firstName(request.getFirstName())
-                    .lastName(request.getLastName())
-                    .email(request.getEmail())
-                    .phoneNumber(request.getPhoneNumber())
-                    .password(passwordEncoder.encode(request.getPassword()))
-                    .role(Role.mechanic)
-                    .isActive(true)
-                    .build();
-
-            user = userRepository.save(user);
-            log.debug("Created user entity with ID: {}", user.getUserId());
-
-            // Create mechanic profile
-            MechanicProfile profile = MechanicProfile.builder()
-                    .user(user)
-                    .department(request.getDepartment())
-                    .specialization(request.getSpecialization())
-                    .experienceYears(request.getExperienceYears())
-                    .hireDate(LocalDate.now())
-                    .build();
-
-            profile = mechanicRepository.save(profile);
-            log.debug("Created mechanic profile with ID: {}", profile.getMechanicId());
-
-            // Send email with login credentials if email service is available
-            try {
-                emailService.sendPasswordEmail(
-                        user.getEmail(),
-                        user.getFirstName() + " " + user.getLastName(),
-                        request.getPassword() // Use the plain text password from the request
-                );
-                log.info("Password email sent to new mechanic: {}", user.getEmail());
-            } catch (Exception e) {
-                log.error("Failed to send password email to {}: {}", user.getEmail(), e.getMessage(), e);
-                // Continue with the transaction even if email fails
-            }
-
-            return mapToResponse(profile);
-        } catch (Exception e) {
-            log.error("Error creating mechanic: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to create mechanic: " + e.getMessage(), e);
-        }
-    }
-
-    /**
      * Get all mechanics
      */
     public List<MechanicResponse> getAllMechanics() {
@@ -126,6 +57,74 @@ public class MechanicService {
         } catch (Exception e) {
             log.error("Error getting mechanic with ID {}: {}", id, e.getMessage(), e);
             throw new RuntimeException("Failed to get mechanic: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Create a new mechanic
+     */
+    @Transactional
+    public MechanicResponse createMechanic(MechanicRequest request) {
+        log.info("Creating mechanic with email: {}", request.getEmail());
+
+        // Validation checks
+        if (request.getEmail() == null || request.getFirstName() == null || request.getLastName() == null) {
+            throw new IllegalArgumentException("Email, first name, and last name are required");
+        }
+
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("A user with this email already exists");
+        }
+
+        if (request.getPassword() == null || request.getPassword().isEmpty()) {
+            request.setPassword(generateRandomPassword());
+        }
+
+        try {
+            // Create user first
+            User user = User.builder()
+                    .firstName(request.getFirstName())
+                    .lastName(request.getLastName())
+                    .email(request.getEmail())
+                    .phoneNumber(request.getPhoneNumber())
+                    .password(passwordEncoder.encode(request.getPassword()))
+                    .role(Role.mechanic)
+                    .isActive(true)
+                    .build();
+
+            // Save and FLUSH the user to ensure it's committed to the database
+            user = userRepository.saveAndFlush(user);
+            log.debug("Created and flushed user entity with ID: {}", user.getUserId());
+
+            // Create mechanic profile
+            MechanicProfile profile = MechanicProfile.builder()
+                    .user(user)
+                    .department(request.getDepartment())
+                    .specialization(request.getSpecialization())
+                    .experienceYears(request.getExperienceYears())
+                    .hireDate(LocalDate.now())
+                    .build();
+
+            profile = mechanicRepository.save(profile);
+            log.debug("Created mechanic profile with ID: {}", profile.getMechanicId());
+
+            // Email sending
+            try {
+                emailService.sendPasswordEmail(
+                        user.getEmail(),
+                        user.getFirstName() + " " + user.getLastName(),
+                        request.getPassword()
+                );
+                log.info("Password email sent to new mechanic: {}", user.getEmail());
+            } catch (Exception e) {
+                log.error("Failed to send password email to {}: {}", user.getEmail(), e.getMessage(), e);
+                // Continue with the transaction even if email fails
+            }
+
+            return mapToResponse(profile);
+        } catch (Exception e) {
+            log.error("Error creating mechanic: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to create mechanic: " + e.getMessage(), e);
         }
     }
 
@@ -207,31 +206,6 @@ public class MechanicService {
         }
     }
 
-    /**
-     * Map a mechanic profile entity to a response DTO
-     */
-    private MechanicResponse mapToResponse(MechanicProfile profile) {
-        User user = profile.getUser();
-
-        return MechanicResponse.builder()
-                .mechanicId(profile.getMechanicId())
-                .userId(user.getUserId())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .email(user.getEmail())
-                .phoneNumber(user.getPhoneNumber())
-                .department(profile.getDepartment())
-                .specialization(profile.getSpecialization())
-                .experienceYears(profile.getExperienceYears())
-                .hireDate(profile.getHireDate())
-                .formattedId(profile.getFormattedId())
-                .isActive(user.isActive())
-                .build();
-    }
-
-    /**
-     * Generate a random password for new mechanics
-     */
     private String generateRandomPassword() {
         final String letters = "ABCDEFGHJKLMNPQRSTUVWXYZ"; // Excluded I and O to avoid confusion
         final String numbers = "123456789"; // Excluded 0 to avoid confusion with O
@@ -251,5 +225,24 @@ public class MechanicService {
         }
 
         return password.toString();
+    }
+
+    private MechanicResponse mapToResponse(MechanicProfile profile) {
+        User user = profile.getUser();
+
+        return MechanicResponse.builder()
+                .mechanicId(profile.getMechanicId())
+                .userId(user.getUserId())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
+                .phoneNumber(user.getPhoneNumber())
+                .department(profile.getDepartment())
+                .specialization(profile.getSpecialization())
+                .experienceYears(profile.getExperienceYears())
+                .hireDate(profile.getHireDate())
+                .formattedId(profile.getFormattedId())
+                .isActive(user.isActive())
+                .build();
     }
 }

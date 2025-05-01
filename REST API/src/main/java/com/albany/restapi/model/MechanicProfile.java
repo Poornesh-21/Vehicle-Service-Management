@@ -21,7 +21,7 @@ public class MechanicProfile {
     private Integer mechanicId;
 
     @OneToOne
-    @JoinColumn(name = "userId") // Ensure this exactly matches the column name in the database
+    @JoinColumn(name = "user_id") // Ensure this exactly matches the column name in the database
     private User user;
 
     private String department;

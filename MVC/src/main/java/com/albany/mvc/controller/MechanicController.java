@@ -24,7 +24,9 @@ public class MechanicController {
 
     private final MechanicService mechanicService;
 
-    // Page rendering method
+    /**
+     * Page rendering method for the mechanics management page
+     */
     @GetMapping
     public String mechanicsPage(
             @RequestParam(required = false) String token,
@@ -58,7 +60,9 @@ public class MechanicController {
         return "serviceAdvisor/mechanics";
     }
 
-    // REST endpoint to get all mechanics
+    /**
+     * REST endpoint to get all mechanics
+     */
     @GetMapping("/api/all")
     @ResponseBody
     public ResponseEntity<List<MechanicDto>> getAllMechanics(
@@ -83,31 +87,10 @@ public class MechanicController {
         }
     }
 
-    // REST endpoint to get counts of mechanics by specialization
-    @GetMapping("/api/counts")
-    @ResponseBody
-    public ResponseEntity<Map<String, Long>> getMechanicCounts(
-            @RequestParam(required = false) String token,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            HttpServletRequest request) {
-
-        // Get token from various sources
-        String validToken = getValidToken(token, authHeader, request);
-
-        if (validToken == null) {
-            return ResponseEntity.status(401).body(Collections.emptyMap());
-        }
-
-        try {
-            Map<String, Long> counts = mechanicService.getMechanicCounts(validToken);
-            return ResponseEntity.ok(counts);
-        } catch (Exception e) {
-            log.error("Error fetching mechanic counts: {}", e.getMessage(), e);
-            return ResponseEntity.status(500).body(Collections.emptyMap());
-        }
-    }
-
-    @GetMapping("/{id}")
+    /**
+     * REST endpoint to get a single mechanic by ID
+     */
+    @GetMapping("/api/{id}")
     @ResponseBody
     public ResponseEntity<MechanicDto> getMechanic(
             @PathVariable Integer id,
@@ -135,7 +118,10 @@ public class MechanicController {
         }
     }
 
-    @PostMapping
+    /**
+     * REST endpoint to create a new mechanic
+     */
+    @PostMapping("/api")
     @ResponseBody
     public ResponseEntity<?> createMechanic(
             @RequestBody MechanicDto mechanicDto,
@@ -180,7 +166,10 @@ public class MechanicController {
         }
     }
 
-    @PutMapping("/{id}")
+    /**
+     * REST endpoint to update an existing mechanic
+     */
+    @PutMapping("/api/{id}")
     @ResponseBody
     public ResponseEntity<MechanicDto> updateMechanic(
             @PathVariable Integer id,
@@ -196,6 +185,9 @@ public class MechanicController {
         }
 
         try {
+            log.info("Updating mechanic with ID: {}", id);
+            mechanicDto.setMechanicId(id); // Ensure ID is set correctly
+
             MechanicDto updatedMechanic = mechanicService.updateMechanic(id, mechanicDto, validToken);
 
             if (updatedMechanic == null) {
@@ -209,7 +201,10 @@ public class MechanicController {
         }
     }
 
-    @DeleteMapping("/{id}")
+    /**
+     * REST endpoint to delete a mechanic
+     */
+    @DeleteMapping("/api/{id}")
     @ResponseBody
     public ResponseEntity<Void> deleteMechanic(
             @PathVariable Integer id,
@@ -224,6 +219,7 @@ public class MechanicController {
         }
 
         try {
+            log.info("Deleting mechanic with ID: {}", id);
             boolean deleted = mechanicService.deleteMechanic(id, validToken);
 
             if (!deleted) {
@@ -234,6 +230,32 @@ public class MechanicController {
         } catch (Exception e) {
             log.error("Error deleting mechanic: {}", e.getMessage(), e);
             return ResponseEntity.status(500).build();
+        }
+    }
+
+    /**
+     * REST endpoint to get counts of mechanics by specialization
+     */
+    @GetMapping("/api/counts")
+    @ResponseBody
+    public ResponseEntity<Map<String, Long>> getMechanicCounts(
+            @RequestParam(required = false) String token,
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            HttpServletRequest request) {
+
+        // Get token from various sources
+        String validToken = getValidToken(token, authHeader, request);
+
+        if (validToken == null) {
+            return ResponseEntity.status(401).body(Collections.emptyMap());
+        }
+
+        try {
+            Map<String, Long> counts = mechanicService.getMechanicCounts(validToken);
+            return ResponseEntity.ok(counts);
+        } catch (Exception e) {
+            log.error("Error fetching mechanic counts: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).body(Collections.emptyMap());
         }
     }
 

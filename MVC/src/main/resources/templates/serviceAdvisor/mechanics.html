@@ -1091,22 +1091,9 @@
                     </select>
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="department">Department</label>
-                        <input type="text" id="department" class="form-control" placeholder="Enter department">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="experience">Years of Experience</label>
-                        <input type="number" id="experience" class="form-control" placeholder="Enter years of experience" min="0" max="50" required>
-                    </div>
-                </div>
-
                 <div class="form-group">
-                    <label for="password">Password (Optional)</label>
-                    <input type="password" id="password" class="form-control" placeholder="Leave blank to generate automatic password">
-                    <small class="form-text text-muted">If left blank, a secure password will be generated automatically.</small>
+                    <label for="experience">Years of Experience</label>
+                    <input type="number" id="experience" class="form-control" placeholder="Enter years of experience" min="0" max="50" required>
                 </div>
             </form>
         </div>
@@ -1163,16 +1150,9 @@
                     </select>
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="editDepartment">Department</label>
-                        <input type="text" id="editDepartment" class="form-control">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="editExperience">Years of Experience</label>
-                        <input type="number" id="editExperience" class="form-control" min="0" max="50" required>
-                    </div>
+                <div class="form-group">
+                    <label for="editExperience">Years of Experience</label>
+                    <input type="number" id="editExperience" class="form-control" min="0" max="50" required>
                 </div>
 
                 <div class="form-group">
@@ -1181,12 +1161,6 @@
                         <option value="true">Active</option>
                         <option value="false">Inactive</option>
                     </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="editPassword">Reset Password (Optional)</label>
-                    <input type="password" id="editPassword" class="form-control" placeholder="Leave blank to keep current password">
-                    <small class="form-text text-muted">Only fill this if you want to reset the password.</small>
                 </div>
             </form>
         </div>
@@ -1565,9 +1539,7 @@
             const email = document.getElementById('email').value;
             const phone = document.getElementById('phone').value;
             const specialization = document.getElementById('specialization').value;
-            const department = document.getElementById('department').value;
             const experience = document.getElementById('experience').value;
-            const password = document.getElementById('password').value;
 
             // Create request object
             const mechanicData = {
@@ -1576,9 +1548,7 @@
                 email: email,
                 phoneNumber: phone,
                 specialization: specialization,
-                department: department,
-                experienceYears: parseInt(experience),
-                password: password || undefined // Only send if provided
+                experienceYears: parseInt(experience)
             };
 
             try {
@@ -1609,7 +1579,7 @@
                 addMechanicToTable(createdMechanic);
 
                 // Show success message with password if generated automatically
-                if (tempPassword && !password) {
+                if (tempPassword) {
                     showNotification(`Mechanic added successfully! Temporary password: ${tempPassword}`, 'success');
                 } else {
                     showNotification('Mechanic added successfully!', 'success');
@@ -1645,10 +1615,8 @@
                 document.getElementById('editEmail').value = mechanic.email || '';
                 document.getElementById('editPhone').value = mechanic.phoneNumber || '';
                 document.getElementById('editSpecialization').value = mechanic.specialization || 'General Mechanic';
-                document.getElementById('editDepartment').value = mechanic.department || '';
                 document.getElementById('editExperience').value = mechanic.experienceYears || 0;
                 document.getElementById('editStatus').value = mechanic.active.toString();
-                document.getElementById('editPassword').value = ''; // Always empty for security
 
                 // Show the modal
                 editModal.classList.add('active');
@@ -1685,10 +1653,8 @@
             const email = document.getElementById('editEmail').value;
             const phone = document.getElementById('editPhone').value;
             const specialization = document.getElementById('editSpecialization').value;
-            const department = document.getElementById('editDepartment').value;
             const experience = document.getElementById('editExperience').value;
             const status = document.getElementById('editStatus').value === 'true';
-            const password = document.getElementById('editPassword').value;
 
             // Create update object
             const mechanicData = {
@@ -1697,15 +1663,9 @@
                 email: email,
                 phoneNumber: phone,
                 specialization: specialization,
-                department: department,
                 experienceYears: parseInt(experience),
                 active: status
             };
-
-            // Only include password if provided
-            if (password) {
-                mechanicData.password = password;
-            }
 
             try {
                 showSpinner();

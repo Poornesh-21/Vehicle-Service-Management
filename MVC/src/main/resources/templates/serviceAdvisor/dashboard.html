@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1128,28 +1128,26 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="sidebar-header">
-            <!-- <img src="assets/logo.png" alt="Albany Service" class="logo"> -->
             <h2>Albany Service</h2>
         </div>
 
         <div class="sidebar-user">
-
             <div class="user-info">
-                <h3>John Smith</h3>
+                <h3 th:text="${userName}">John Smith</h3>
                 <p>Service Advisor</p>
             </div>
         </div>
 
         <nav class="sidebar-nav">
             <ul>
-                <li class="active"><a href="dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
-                <li><a href="vehicle-list.html"><i class="fas fa-car-side"></i> <span>Vehicles Under Service</span></a></li>
-                <li><a href="mechanics.html"><i class="fas fa-users-cog"></i> <span>Mechanics</span></a></li>
+                <li class="active"><a href="/serviceAdvisor/dashboard"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+                <li><a href="/serviceAdvisor/vehicles"><i class="fas fa-car-side"></i> <span>Vehicles Under Service</span></a></li>
+                <li><a href="/serviceAdvisor/mechanics"><i class="fas fa-users-cog"></i> <span>Mechanics</span></a></li>
             </ul>
         </nav>
 
         <div class="sidebar-footer">
-            <a href="#" class="logout-btn"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
+            <a href="/serviceAdvisor/logout" class="logout-btn"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
         </div>
     </div>
 
@@ -1157,28 +1155,14 @@
     <main class="main-content">
         <header class="main-header">
             <div class="header-actions">
-                <!-- <button class="notification-btn">
-                    <i class="fas fa-bell"></i>
-                    <span class="badge">3</span>
-                </button>
-                <button class="message-btn">
-                    <i class="fas fa-envelope"></i>
-                    <span class="badge">5</span>
-                </button> -->
-                <!-- <div class="user-dropdown">
-                    <button class="dropdown-toggle">
-                        <img src="assets/avatar.jpg" alt="User Avatar">
-                        <span>John Doe</span>
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
-                </div> -->
+                <!-- Header actions could go here -->
             </div>
         </header>
 
         <div class="dashboard-content">
             <div class="page-title">
                 <h1>Dashboard</h1>
-                <p>Welcome back, John! Here's what's happening today.</p>
+                <p>Welcome back, <span th:text="${userName}">John</span>! Here's what's happening today.</p>
             </div>
 
             <!-- New Assignments Section -->
@@ -1201,7 +1185,7 @@
                     <table class="data-table">
                         <thead>
                         <tr>
-                            <th>Vehicle ID</th>
+                            <th>Request ID</th>
                             <th>Customer</th>
                             <th>Vehicle Details</th>
                             <th>Service Type</th>
@@ -1211,54 +1195,9 @@
                         </tr>
                         </thead>
                         <tbody>
+                        <!-- Table rows will be dynamically populated via JavaScript -->
                         <tr>
-                            <td>VH-2023-001</td>
-                            <td>
-                                <div class="customer-info">
-                                    <!-- <img src="assets/customer1.jpg" alt="Customer"> -->
-                                    <div>
-                                        <p class="name">Michael Johnson</p>
-                                        <p class="email">michael@example.com</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <p class="vehicle-model">Toyota Camry</p>
-                                <p class="vehicle-details">2020 • TN 01 AB 1234</p>
-                            </td>
-                            <td>Regular Maintenance</td>
-                            <td>Oct 15, 2023</td>
-                            <!-- ... existing code ... -->
-                            <td><span class="status-badge new">New Assignment</span></td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button class="btn-assign" data-id="VH-2023-001">Assign</button>
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>VH-2023-002</td>
-                            <td>
-                                <div class="customer-info">
-                                    <!-- <img src="assets/customer2.jpg" alt="Customer"> -->
-                                    <div>
-                                        <p class="name">Sarah Williams</p>
-                                        <p class="email">sarah@example.com</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>
-                                <p class="vehicle-model">Honda Civic</p>
-                                <p class="vehicle-details">2021 • TN 02 CD 5678</p>
-                            </td>
-                            <td>Oil Change</td>
-                            <td>Oct 15, 2023</td>
-                            <td><span class="status-badge new">New Assignment</span></td>
-                            <td>
-                                <div class="action-buttons">
-                                    <button class="btn-assign" data-id="VH-2023-002">Assign</button>
-                                </div>
-                            </td>
+                            <td colspan="7" style="text-align: center;">Loading assignments...</td>
                         </tr>
                         </tbody>
                     </table>
@@ -1280,10 +1219,26 @@
                     </button>
                 </div>
             </div>
+
+            <!-- In-Progress Services Section -->
+            <div class="section-container">
+                <div class="section-header">
+                    <h2>In-Progress Services</h2>
+                    <div class="section-actions">
+                        <button class="refresh-btn" id="refresh-in-progress">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <div id="in-progress-services" class="cards-container">
+                    <!-- Service cards will be dynamically populated via JavaScript -->
+                    <div class="loading-placeholder">Loading in-progress services...</div>
+                </div>
+            </div>
         </div>
     </main>
 </div>
-
 
 <!-- Assign Technician Modal -->
 <div class="modal" id="assignModal">
@@ -1296,61 +1251,32 @@
             <p>Please assign mechanics to work on this service:</p>
 
             <div class="form-group">
-                <label>Primary Mechanic:</label>
+                <label for="primaryMechanic">Primary Mechanic:</label>
                 <select id="primaryMechanic" class="form-control">
                     <option value="">Select primary mechanic</option>
-                    <option value="tech1">James Wilson - Engine Specialist</option>
-                    <option value="tech2">Robert Garcia - Brake Specialist</option>
-                    <option value="tech3">Emily Chen - Electrical Systems</option>
-                    <option value="tech4">Daniel Martinez - General Maintenance</option>
-                    <option value="tech5">Sophia Lee - Transmission Specialist</option>
+                    <!-- Mechanic options will be loaded dynamically -->
                 </select>
             </div>
 
             <div class="form-group">
                 <label>Additional Mechanics:</label>
                 <div class="mechanic-checkboxes">
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="mechanic1" name="additional-mechanics" value="tech1">
-                        <label for="mechanic1">James Wilson - Engine Specialist</label>
-                    </div>
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="mechanic2" name="additional-mechanics" value="tech2">
-                        <label for="mechanic2">Robert Garcia - Brake Specialist</label>
-                    </div>
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="mechanic3" name="additional-mechanics" value="tech3">
-                        <label for="mechanic3">Emily Chen - Electrical Systems</label>
-                    </div>
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="mechanic4" name="additional-mechanics" value="tech4">
-                        <label for="mechanic4">Daniel Martinez - General Maintenance</label>
-                    </div>
-                    <div class="checkbox-group">
-                        <input type="checkbox" id="mechanic5" name="additional-mechanics" value="tech5">
-                        <label for="mechanic5">Sophia Lee - Transmission Specialist</label>
-                    </div>
+                    <!-- Mechanic checkboxes will be loaded dynamically -->
                 </div>
             </div>
 
-            <div class="section-divider">
-                <span>Service Details</span>
+            <div class="form-group">
+                <label for="estimatedDeliveryDate">Estimated Completion Date:</label>
+                <input type="date" id="estimatedDeliveryDate" class="form-control" min="">
             </div>
 
-            <div class="grid-2-columns">
-                <div class="form-group">
-                    <label for="estimatedDeliveryDate">Estimated Completion Date:</label>
-                    <input type="date" id="estimatedDeliveryDate" class="form-control" min="">
-                </div>
-
-                <div class="form-group">
-                    <label for="servicePriority">Service Priority:</label>
-                    <select id="servicePriority" class="form-control">
-                        <option value="normal">Normal</option>
-                        <option value="high">High Priority</option>
-                        <option value="urgent">Urgent</option>
-                    </select>
-                </div>
+            <div class="form-group">
+                <label for="servicePriority">Service Priority:</label>
+                <select id="servicePriority" class="form-control">
+                    <option value="normal">Normal</option>
+                    <option value="high">High Priority</option>
+                    <option value="urgent">Urgent</option>
+                </select>
             </div>
 
             <div class="form-group">
@@ -1365,14 +1291,89 @@
     </div>
 </div>
 
-<script src="dashboard.js"></script>
+<!-- View Service Details Modal -->
+<div class="modal" id="serviceDetailsModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Service Request Details</h2>
+            <button class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div id="service-details-content">
+                <!-- Service details will be dynamically populated -->
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel">Close</button>
+            <button class="btn-update-status">Update Status</button>
+        </div>
+    </div>
+</div>
 
-<script>
-    // Set minimum date for delivery date picker to today
+<!-- Status Update Modal -->
+<div class="modal" id="statusUpdateModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Update Service Status</h2>
+            <button class="close-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label for="serviceStatus">New Status:</label>
+                <select id="serviceStatus" class="form-control">
+                    <option value="Diagnosis">Diagnosis</option>
+                    <option value="Repair">Repair</option>
+                    <option value="Completed">Completed</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="statusNotes">Status Update Notes:</label>
+                <textarea id="statusNotes" class="form-control" rows="3" placeholder="Enter notes about this status update..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel">Cancel</button>
+            <button class="btn-save-status">Save Status</button>
+        </div>
+    </div>
+</div>
+
+<!-- Include our dashboard JavaScript -->
+<<script>
+    // Make sure to place this file at:
+    // MVC/src/main/resources/static/js/dashboard.js
+
+    /**
+     * Dashboard JavaScript for Service Advisor
+     */
+
     document.addEventListener('DOMContentLoaded', function() {
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('estimatedDeliveryDate').min = today;
+        // Initialize the dashboard
+        initDashboard();
 
+        // Set up event listeners
+        setupEventListeners();
+    });
+
+    /**
+     * Initialize dashboard by loading data
+     */
+    function initDashboard() {
+        // Load new assignments for the service advisor
+        loadNewAssignments();
+
+        // Set minimum date for delivery date picker to today
+        const today = new Date().toISOString().split('T')[0];
+        const dateInput = document.getElementById('estimatedDeliveryDate');
+        if (dateInput) {
+            dateInput.min = today;
+        }
+    }
+
+    /**
+     * Set up event listeners
+     */
+    function setupEventListeners() {
         // Assign button click handlers
         const assignButtons = document.querySelectorAll('.btn-assign');
         const assignModal = document.getElementById('assignModal');
@@ -1385,6 +1386,7 @@
         assignButtons.forEach(button => {
             button.addEventListener('click', function() {
                 currentVehicleId = this.getAttribute('data-id');
+                loadMechanicsForAssignment();
                 assignModal.classList.add('active');
             });
         });
@@ -1403,61 +1405,267 @@
             }
         });
 
-        // Handle form submission
+        // Handle form submission for mechanic assignment
         const submitButton = assignModal.querySelector('.btn-submit');
-        submitButton.addEventListener('click', function() {
-            const primaryMechanic = document.getElementById('primaryMechanic').value;
-            const deliveryDate = document.getElementById('estimatedDeliveryDate').value;
-            const priority = document.getElementById('servicePriority').value;
-            const serviceNotes = document.getElementById('serviceNotes').value;
+        if (submitButton) {
+            submitButton.addEventListener('click', function() {
+                submitMechanicAssignment(currentVehicleId);
+            });
+        }
 
-            // Get all selected additional mechanics
-            const additionalMechanics = [];
-            const mechanicCheckboxes = document.querySelectorAll('input[name="additional-mechanics"]:checked');
-            mechanicCheckboxes.forEach(checkbox => {
-                additionalMechanics.push(checkbox.value);
+        // Refresh button click handler
+        const refreshButton = document.querySelector('.refresh-btn');
+        if (refreshButton) {
+            refreshButton.addEventListener('click', function() {
+                loadNewAssignments();
+            });
+        }
+    }
+
+    /**
+     * Load new service assignments from the server
+     */
+    function loadNewAssignments() {
+        // Show loading state
+        const tableBody = document.querySelector('.data-table tbody');
+        if (tableBody) {
+            tableBody.innerHTML = '<tr><td colspan="7" class="text-center">Loading...</td></tr>';
+        }
+
+        // Fetch new assignments from the API
+        fetch('/serviceAdvisor/api/new-assignments')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                displayNewAssignments(data);
+            })
+            .catch(error => {
+                console.error('Error fetching new assignments:', error);
+                if (tableBody) {
+                    tableBody.innerHTML = '<tr><td colspan="7" class="text-center">Error loading assignments. Please try again.</td></tr>';
+                }
+            });
+    }
+
+    /**
+     * Display new assignments in the table
+     */
+    function displayNewAssignments(assignments) {
+        const tableBody = document.querySelector('.data-table tbody');
+        if (!tableBody) return;
+
+        // Clear the table
+        tableBody.innerHTML = '';
+
+        // If no assignments, show message
+        if (!assignments || assignments.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="7" class="text-center">No new vehicle assignments available.</td></tr>';
+            return;
+        }
+
+        // Add each assignment to the table
+        assignments.forEach(assignment => {
+            // Format the date
+            const assignedDate = new Date(assignment.createdAt || Date.now());
+            const formattedDate = assignedDate.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
             });
 
-            if (!primaryMechanic || !deliveryDate) {
-                alert('Please select a primary mechanic and set an estimated completion date.');
-                return;
+            // Create row HTML
+            const row = document.createElement('tr');
+            row.innerHTML = `
+            <td>REQ-${assignment.requestId}</td>
+            <td>
+                <div class="customer-info">
+                    <div>
+                        <p class="name">${assignment.customerName || 'N/A'}</p>
+                        <p class="email">${assignment.customerEmail || 'N/A'}</p>
+                    </div>
+                </div>
+            </td>
+            <td>
+                <p class="vehicle-model">${assignment.vehicleBrand || ''} ${assignment.vehicleModel || 'Unknown'}</p>
+                <p class="vehicle-details">${assignment.vehicleYear || ''} • ${assignment.registrationNumber || 'No Reg'}</p>
+            </td>
+            <td>${assignment.serviceType || 'General Service'}</td>
+            <td>${formattedDate}</td>
+            <td><span class="status-badge new">New Assignment</span></td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn-assign" data-id="${assignment.requestId}">Assign</button>
+                </div>
+            </td>
+        `;
+
+            // Add to table
+            tableBody.appendChild(row);
+
+            // Add event listener to this new assign button
+            const assignButton = row.querySelector('.btn-assign');
+            if (assignButton) {
+                assignButton.addEventListener('click', function() {
+                    currentVehicleId = this.getAttribute('data-id');
+                    loadMechanicsForAssignment();
+                    document.getElementById('assignModal').classList.add('active');
+                });
             }
-
-            // Here you would typically send this data to your backend
-            console.log('Assigning vehicle', currentVehicleId, 'to primary mechanic:', primaryMechanic);
-            console.log('Additional mechanics:', additionalMechanics);
-            console.log('Estimated completion date:', deliveryDate);
-            console.log('Service priority:', priority);
-            console.log('Service notes:', serviceNotes);
-
-            // Find the row to remove
-            const row = document.querySelector(`button[data-id="${currentVehicleId}"]`).closest('tr');
-
-            // Remove the row from the table with a fade-out effect
-            row.style.transition = 'opacity 0.5s ease';
-            row.style.opacity = '0';
-
-            setTimeout(() => {
-                row.remove();
-
-                // Show success message
-                alert(`Service for vehicle ${currentVehicleId} has been successfully assigned.`);
-
-                // Check if there are no more rows and show a message
-                const remainingRows = document.querySelectorAll('.data-table tbody tr').length;
-                if (remainingRows === 0) {
-                    const tbody = document.querySelector('.data-table tbody');
-                    const emptyRow = document.createElement('tr');
-                    emptyRow.innerHTML = '<td colspan="7" style="text-align: center; padding: 20px;">No new vehicle assignments available.</td>';
-                    tbody.appendChild(emptyRow);
-                }
-            }, 500);
-
-            // Close the modal
-            assignModal.classList.remove('active');
         });
-    });
-</script>
+    }
 
+    /**
+     * Load mechanics for assignment
+     */
+    function loadMechanicsForAssignment() {
+        // Fetch mechanics from the API
+        fetch('/serviceAdvisor/api/mechanics-for-assignment')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(mechanics => {
+                populateMechanicsDropdown(mechanics);
+            })
+            .catch(error => {
+                console.error('Error fetching mechanics:', error);
+                // Show error in the modal
+                alert('Error loading mechanics. Please try again.');
+            });
+    }
+
+    /**
+     * Populate mechanics dropdown and checkboxes
+     */
+    function populateMechanicsDropdown(mechanics) {
+        // Populate primary mechanic dropdown
+        const primaryMechanicSelect = document.getElementById('primaryMechanic');
+        if (!primaryMechanicSelect) return;
+
+        // Clear existing options except the first one
+        primaryMechanicSelect.innerHTML = '<option value="">Select primary mechanic</option>';
+
+        // Add mechanic options
+        mechanics.forEach(mechanic => {
+            if (mechanic.isActive) {
+                const option = document.createElement('option');
+                option.value = mechanic.mechanicId;
+                option.textContent = `${mechanic.firstName} ${mechanic.lastName} - ${mechanic.specialization || 'General'}`;
+                primaryMechanicSelect.appendChild(option);
+            }
+        });
+
+        // Populate additional mechanics checkboxes
+        const checkboxContainer = document.querySelector('.mechanic-checkboxes');
+        if (!checkboxContainer) return;
+
+        // Clear existing checkboxes
+        checkboxContainer.innerHTML = '';
+
+        // Add mechanic checkboxes
+        mechanics.forEach(mechanic => {
+            if (mechanic.isActive) {
+                const checkboxGroup = document.createElement('div');
+                checkboxGroup.className = 'checkbox-group';
+
+                checkboxGroup.innerHTML = `
+                <input type="checkbox" id="mechanic${mechanic.mechanicId}" name="additional-mechanics" value="${mechanic.mechanicId}">
+                <label for="mechanic${mechanic.mechanicId}">${mechanic.firstName} ${mechanic.lastName} - ${mechanic.specialization || 'General'}</label>
+            `;
+
+                checkboxContainer.appendChild(checkboxGroup);
+            }
+        });
+    }
+
+    /**
+     * Submit mechanic assignment
+     */
+    function submitMechanicAssignment(serviceRequestId) {
+        // Get form values
+        const primaryMechanic = document.getElementById('primaryMechanic').value;
+        const estimatedCompletionDate = document.getElementById('estimatedDeliveryDate').value;
+        const priority = document.getElementById('servicePriority').value;
+        const serviceNotes = document.getElementById('serviceNotes').value;
+
+        // Validate required fields
+        if (!primaryMechanic) {
+            alert('Please select a primary mechanic');
+            return;
+        }
+
+        if (!estimatedCompletionDate) {
+            alert('Please select an estimated completion date');
+            return;
+        }
+
+        // Get additional mechanics
+        const additionalMechanics = [];
+        document.querySelectorAll('input[name="additional-mechanics"]:checked').forEach(checkbox => {
+            additionalMechanics.push(checkbox.value);
+        });
+
+        // Prepare assignment data
+        const assignmentData = {
+            primaryMechanic: primaryMechanic,
+            additionalMechanics: additionalMechanics,
+            estimatedCompletionDate: estimatedCompletionDate,
+            priority: priority,
+            serviceNotes: serviceNotes
+        };
+
+        // Submit assignment to the server
+        fetch(`/serviceAdvisor/api/assign-service/${serviceRequestId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(assignmentData)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    return response.json().then(err => { throw new Error(err.error || 'Failed to assign service') });
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Close the modal
+                document.getElementById('assignModal').classList.remove('active');
+
+                // Find the row to remove
+                const row = document.querySelector(`button[data-id="${serviceRequestId}"]`).closest('tr');
+
+                // Remove the row with animation
+                row.style.transition = 'opacity 0.5s ease';
+                row.style.opacity = '0';
+
+                setTimeout(() => {
+                    row.remove();
+
+                    // Show success message
+                    alert(`Service request #${serviceRequestId} has been successfully assigned.`);
+
+                    // Check if there are no more rows and show a message
+                    const remainingRows = document.querySelectorAll('.data-table tbody tr').length;
+                    if (remainingRows === 0) {
+                        const tbody = document.querySelector('.data-table tbody');
+                        const emptyRow = document.createElement('tr');
+                        emptyRow.innerHTML = '<td colspan="7" style="text-align: center; padding: 20px;">No new vehicle assignments available.</td>';
+                        tbody.appendChild(emptyRow);
+                    }
+                }, 500);
+            })
+            .catch(error => {
+                console.error('Error assigning service:', error);
+                alert('Error assigning service: ' + error.message);
+            });
+    }
+</script>
 </body>
 </html>

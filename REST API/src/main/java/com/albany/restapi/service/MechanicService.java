@@ -25,7 +25,6 @@ public class MechanicService {
     private final MechanicProfileRepository mechanicRepository;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final EmailService emailService;
 
     /**
      * Get all mechanics
@@ -76,8 +75,9 @@ public class MechanicService {
             throw new IllegalArgumentException("A user with this email already exists");
         }
 
+        // Make sure password is provided
         if (request.getPassword() == null || request.getPassword().isEmpty()) {
-            request.setPassword(generateRandomPassword());
+            throw new IllegalArgumentException("Password is required");
         }
 
         try {
@@ -107,19 +107,6 @@ public class MechanicService {
 
             profile = mechanicRepository.save(profile);
             log.debug("Created mechanic profile with ID: {}", profile.getMechanicId());
-
-            // Email sending
-            try {
-                emailService.sendPasswordEmail(
-                        user.getEmail(),
-                        user.getFirstName() + " " + user.getLastName(),
-                        request.getPassword()
-                );
-                log.info("Password email sent to new mechanic: {}", user.getEmail());
-            } catch (Exception e) {
-                log.error("Failed to send password email to {}: {}", user.getEmail(), e.getMessage(), e);
-                // Continue with the transaction even if email fails
-            }
 
             return mapToResponse(profile);
         } catch (Exception e) {
@@ -154,19 +141,6 @@ public class MechanicService {
             // Update password only if provided
             if (request.getPassword() != null && !request.getPassword().isEmpty()) {
                 user.setPassword(passwordEncoder.encode(request.getPassword()));
-
-                // Send email with new password
-                try {
-                    emailService.sendPasswordEmail(
-                            user.getEmail(),
-                            user.getFirstName() + " " + user.getLastName(),
-                            request.getPassword()
-                    );
-                    log.info("Password reset email sent to mechanic: {}", user.getEmail());
-                } catch (Exception e) {
-                    log.error("Failed to send password reset email to {}: {}", user.getEmail(), e.getMessage(), e);
-                    // Continue with the update even if email fails
-                }
             }
 
             userRepository.save(user);
@@ -204,27 +178,6 @@ public class MechanicService {
             log.error("Error deleting mechanic with ID {}: {}", id, e.getMessage(), e);
             throw new RuntimeException("Failed to delete mechanic: " + e.getMessage(), e);
         }
-    }
-
-    private String generateRandomPassword() {
-        final String letters = "ABCDEFGHJKLMNPQRSTUVWXYZ"; // Excluded I and O to avoid confusion
-        final String numbers = "123456789"; // Excluded 0 to avoid confusion with O
-
-        StringBuilder password = new StringBuilder("MECH2025-");
-
-        // Add 3 random letters
-        for (int i = 0; i < 3; i++) {
-            int index = (int) (Math.random() * letters.length());
-            password.append(letters.charAt(index));
-        }
-
-        // Add 3 random numbers
-        for (int i = 0; i < 3; i++) {
-            int index = (int) (Math.random() * numbers.length());
-            password.append(numbers.charAt(index));
-        }
-
-        return password.toString();
     }
 
     private MechanicResponse mapToResponse(MechanicProfile profile) {

@@ -138,11 +138,7 @@ public class MechanicController {
         try {
             log.info("Creating mechanic: {}", mechanicDto.getEmail());
 
-            // Ensure the mechanic has a password
-            if (mechanicDto.getPassword() == null || mechanicDto.getPassword().isEmpty()) {
-                mechanicDto.setPassword(generateRandomPassword());
-            }
-
+            // Remove password generation functionality
             MechanicDto createdMechanic = mechanicService.createMechanic(mechanicDto, validToken);
 
             if (createdMechanic == null) {
@@ -151,10 +147,9 @@ public class MechanicController {
                 return ResponseEntity.badRequest().body(error);
             }
 
-            // Add the password to the response so the client can display it
+            // Return only the mechanic object without password
             Map<String, Object> response = new HashMap<>();
             response.put("mechanic", createdMechanic);
-            response.put("tempPassword", mechanicDto.getPassword());
 
             log.info("Successfully created mechanic with ID: {}", createdMechanic.getMechanicId());
             return ResponseEntity.ok(response);
@@ -297,29 +292,5 @@ public class MechanicController {
      */
     private String getValidToken(String tokenParam, HttpServletRequest request) {
         return getValidToken(tokenParam, null, request);
-    }
-
-    /**
-     * Generate a random password for new mechanics
-     */
-    private String generateRandomPassword() {
-        final String letters = "ABCDEFGHJKLMNPQRSTUVWXYZ"; // Excluded I and O to avoid confusion
-        final String numbers = "123456789"; // Excluded 0 to avoid confusion with O
-
-        StringBuilder password = new StringBuilder("MECH2025-");
-
-        // Add 3 random letters
-        for (int i = 0; i < 3; i++) {
-            int index = (int) (Math.random() * letters.length());
-            password.append(letters.charAt(index));
-        }
-
-        // Add 3 random numbers
-        for (int i = 0; i < 3; i++) {
-            int index = (int) (Math.random() * numbers.length());
-            password.append(numbers.charAt(index));
-        }
-
-        return password.toString();
     }
 }

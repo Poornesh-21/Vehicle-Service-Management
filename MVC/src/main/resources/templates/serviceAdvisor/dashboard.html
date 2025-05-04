@@ -1339,10 +1339,8 @@
 </div>
 
 <!-- Include our dashboard JavaScript -->
-<<script>
-    // Make sure to place this file at:
-    // MVC/src/main/resources/static/js/dashboard.js
-
+<!-- Replace the script tag at the bottom of the dashboard.html file with this one -->
+<script>
     /**
      * Dashboard JavaScript for Service Advisor
      */
@@ -1361,6 +1359,9 @@
     function initDashboard() {
         // Load new assignments for the service advisor
         loadNewAssignments();
+
+        // Load in-progress services
+        loadInProgressServices();
 
         // Set minimum date for delivery date picker to today
         const today = new Date().toISOString().split('T')[0];
@@ -1394,14 +1395,17 @@
         // Close modals when close button or cancel is clicked
         closeModalButtons.forEach(button => {
             button.addEventListener('click', function() {
-                assignModal.classList.remove('active');
+                const modal = this.closest('.modal');
+                if (modal) {
+                    modal.classList.remove('active');
+                }
             });
         });
 
         // Close modal when clicking outside of it
         window.addEventListener('click', function(event) {
-            if (event.target === assignModal) {
-                assignModal.classList.remove('active');
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
             }
         });
 
@@ -1413,11 +1417,18 @@
             });
         }
 
-        // Refresh button click handler
-        const refreshButton = document.querySelector('.refresh-btn');
-        if (refreshButton) {
-            refreshButton.addEventListener('click', function() {
+        // Refresh button click handlers
+        const refreshNewButton = document.querySelector('.refresh-btn');
+        if (refreshNewButton) {
+            refreshNewButton.addEventListener('click', function() {
                 loadNewAssignments();
+            });
+        }
+
+        const refreshInProgressButton = document.getElementById('refresh-in-progress');
+        if (refreshInProgressButton) {
+            refreshInProgressButton.addEventListener('click', function() {
+                loadInProgressServices();
             });
         }
     }
@@ -1447,6 +1458,35 @@
                 console.error('Error fetching new assignments:', error);
                 if (tableBody) {
                     tableBody.innerHTML = '<tr><td colspan="7" class="text-center">Error loading assignments. Please try again.</td></tr>';
+                }
+            });
+    }
+
+    /**
+     * Load in-progress services
+     */
+    function loadInProgressServices() {
+        // Show loading state
+        const servicesContainer = document.getElementById('in-progress-services');
+        if (servicesContainer) {
+            servicesContainer.innerHTML = '<div class="loading-placeholder">Loading in-progress services...</div>';
+        }
+
+        // Fetch in-progress services from the API
+        fetch('/serviceAdvisor/api/assigned-services')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok: ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                displayInProgressServices(data);
+            })
+            .catch(error => {
+                console.error('Error fetching in-progress services:', error);
+                if (servicesContainer) {
+                    servicesContainer.innerHTML = '<div class="error-message">Error loading services. Please try again.</div>';
                 }
             });
     }
@@ -1516,6 +1556,248 @@
                 });
             }
         });
+    }
+
+    /**
+     * Display in-progress services as cards
+     */
+    function displayInProgressServices(services) {
+        const servicesContainer = document.getElementById('in-progress-services');
+        if (!servicesContainer) return;
+
+        // Clear the container
+        servicesContainer.innerHTML = '';
+
+        // If no services, show message
+        if (!services || services.length === 0) {
+            servicesContainer.innerHTML = '<div class="empty-message">No in-progress services available.</div>';
+            return;
+        }
+
+        // Add each service as a card
+        services.forEach(service => {
+            // Calculate progress percentage based on status
+            let progressPercentage = 0;
+            switch (service.status) {
+                case 'Diagnosis':
+                    progressPercentage = 25;
+                    break;
+                case 'Repair':
+                    progressPercentage = 75;
+                    break;
+                case 'Completed':
+                    progressPercentage = 100;
+                    break;
+                default:
+                    progressPercentage = 10;
+            }
+
+            // Format dates
+            const startDate = service.startDate ? new Date(service.startDate).toLocaleDateString() : 'N/A';
+            const estimatedDate = service.estimatedCompletionDate ?
+                new Date(service.estimatedCompletionDate).toLocaleDateString() : 'Not set';
+
+            // Create card HTML
+            const card = document.createElement('div');
+            card.className = 'service-card';
+            card.innerHTML = `
+                <div class="service-card-header">
+                    <div class="vehicle-info">
+                        <h3>${service.vehicleName || 'Unknown Vehicle'}</h3>
+                        <p>${service.registrationNumber || 'No Registration'}</p>
+                    </div>
+                    <span class="status-badge ${service.status.toLowerCase()}">${service.status}</span>
+                </div>
+                <div class="service-card-body">
+                    <div class="service-details">
+                        <div class="detail-item">
+                            <span class="label">Customer:</span>
+                            <span class="value">${service.customerName || 'N/A'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Service Type:</span>
+                            <span class="value">${service.serviceType || 'General Service'}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Start Date:</span>
+                            <span class="value">${startDate}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="label">Est. Completion:</span>
+                            <span class="value">${estimatedDate}</span>
+                        </div>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-label">
+                            <span>Progress</span>
+                            <span>${progressPercentage}%</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress" style="width: ${progressPercentage}%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="service-card-footer">
+                    <button class="btn-view-details" data-id="${service.requestId}">View Details</button>
+                    <button class="btn-update" data-id="${service.requestId}">Update Status</button>
+                </div>
+            `;
+
+            // Add to container
+            servicesContainer.appendChild(card);
+
+            // Add event listeners for buttons
+            const viewButton = card.querySelector('.btn-view-details');
+            if (viewButton) {
+                viewButton.addEventListener('click', function() {
+                    openServiceDetailsModal(service.requestId);
+                });
+            }
+
+            const updateButton = card.querySelector('.btn-update');
+            if (updateButton) {
+                updateButton.addEventListener('click', function() {
+                    openStatusUpdateModal(service.requestId, service.status);
+                });
+            }
+        });
+    }
+
+    /**
+     * Open service details modal
+     */
+    function openServiceDetailsModal(requestId) {
+        const modal = document.getElementById('serviceDetailsModal');
+        const content = document.getElementById('service-details-content');
+
+        // Show loading state
+        content.innerHTML = '<p>Loading service details...</p>';
+        modal.classList.add('active');
+
+        // Fetch service details
+        fetch(`/serviceAdvisor/api/service-details/${requestId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(service => {
+                // Populate modal with service details
+                content.innerHTML = `
+                    <div class="service-detail-item">
+                        <h3>Vehicle Information</h3>
+                        <p><strong>Make/Model:</strong> ${service.vehicleName || 'N/A'}</p>
+                        <p><strong>Registration:</strong> ${service.registrationNumber || 'N/A'}</p>
+                        <p><strong>Year:</strong> ${service.vehicleYear || 'N/A'}</p>
+                        <p><strong>Category:</strong> ${service.category || 'N/A'}</p>
+                    </div>
+                    <div class="service-detail-item">
+                        <h3>Customer Information</h3>
+                        <p><strong>Name:</strong> ${service.customerName || 'N/A'}</p>
+                        <p><strong>Email:</strong> ${service.customerEmail || 'N/A'}</p>
+                        <p><strong>Membership:</strong> ${service.membershipStatus || 'Standard'}</p>
+                    </div>
+                    <div class="service-detail-item">
+                        <h3>Service Information</h3>
+                        <p><strong>Type:</strong> ${service.serviceType || 'General Service'}</p>
+                        <p><strong>Status:</strong> ${service.status || 'N/A'}</p>
+                        <p><strong>Start Date:</strong> ${service.startDate ? new Date(service.startDate).toLocaleDateString() : 'N/A'}</p>
+                        <p><strong>Est. Completion:</strong> ${service.estimatedCompletionDate ? new Date(service.estimatedCompletionDate).toLocaleDateString() : 'Not set'}</p>
+                    </div>
+                    <div class="service-detail-item">
+                        <h3>Description</h3>
+                        <p>${service.additionalDescription || 'No additional description provided.'}</p>
+                    </div>
+                `;
+            })
+            .catch(error => {
+                console.error('Error fetching service details:', error);
+                content.innerHTML = '<p>Error loading service details. Please try again.</p>';
+            });
+    }
+
+    /**
+     * Open status update modal
+     */
+    function openStatusUpdateModal(requestId, currentStatus) {
+        const modal = document.getElementById('statusUpdateModal');
+        const statusSelect = document.getElementById('serviceStatus');
+
+        // Set current status
+        if (statusSelect) {
+            for (let i = 0; i < statusSelect.options.length; i++) {
+                if (statusSelect.options[i].value === currentStatus) {
+                    statusSelect.selectedIndex = i;
+                    break;
+                }
+            }
+        }
+
+        // Store request ID for later
+        modal.setAttribute('data-request-id', requestId);
+
+        // Show modal
+        modal.classList.add('active');
+
+        // Add event listener for save button
+        const saveButton = modal.querySelector('.btn-save-status');
+        if (saveButton) {
+            // Remove any existing event listeners
+            const newSaveButton = saveButton.cloneNode(true);
+            saveButton.parentNode.replaceChild(newSaveButton, saveButton);
+
+            // Add new event listener
+            newSaveButton.addEventListener('click', function() {
+                updateServiceStatus(requestId);
+            });
+        }
+    }
+
+    /**
+     * Update service status
+     */
+    function updateServiceStatus(requestId) {
+        const modal = document.getElementById('statusUpdateModal');
+        const statusSelect = document.getElementById('serviceStatus');
+        const statusNotes = document.getElementById('statusNotes');
+
+        if (!statusSelect) return;
+
+        const newStatus = statusSelect.value;
+        const notes = statusNotes ? statusNotes.value : '';
+
+        // Send status update to server
+        fetch(`/serviceAdvisor/api/update-status/${requestId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                status: newStatus,
+                notes: notes
+            })
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Close modal
+                modal.classList.remove('active');
+
+                // Refresh in-progress services
+                loadInProgressServices();
+
+                // Show success message
+                alert(`Service status updated to ${newStatus} successfully!`);
+            })
+            .catch(error => {
+                console.error('Error updating service status:', error);
+                alert('Error updating service status. Please try again.');
+            });
     }
 
     /**
@@ -1650,6 +1932,9 @@
 
                     // Show success message
                     alert(`Service request #${serviceRequestId} has been successfully assigned.`);
+
+                    // Refresh in-progress services to show the newly assigned service
+                    loadInProgressServices();
 
                     // Check if there are no more rows and show a message
                     const remainingRows = document.querySelectorAll('.data-table tbody tr').length;

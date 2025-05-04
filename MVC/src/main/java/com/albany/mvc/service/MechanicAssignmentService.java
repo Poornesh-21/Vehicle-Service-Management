@@ -53,6 +53,36 @@ public class MechanicAssignmentService {
     }
 
     /**
+     * Get assigned service requests (in progress)
+     */
+    public List<Map<String, Object>> getAssignedRequests(String token) {
+        try {
+            HttpHeaders headers = createAuthHeaders(token);
+            HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<String> response = restTemplate.exchange(
+                    apiBaseUrl + "/service-assignments/assigned",
+                    HttpMethod.GET,
+                    entity,
+                    String.class
+            );
+
+            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                return objectMapper.readValue(
+                        response.getBody(),
+                        new TypeReference<List<Map<String, Object>>>() {}
+                );
+            } else {
+                log.warn("Unexpected response status: {}", response.getStatusCode());
+                return Collections.emptyList();
+            }
+        } catch (Exception e) {
+            log.error("Error fetching assigned requests: {}", e.getMessage(), e);
+            return Collections.emptyList();
+        }
+    }
+
+    /**
      * Get all mechanics (for assignment dropdown)
      */
     public List<Map<String, Object>> getAllMechanics(String token) {
@@ -93,28 +123,28 @@ public class MechanicAssignmentService {
             // Create assignment DTO from front-end data
             Map<String, Object> assignmentDTO = new HashMap<>();
             assignmentDTO.put("serviceRequestId", serviceRequestId);
-            
+
             // Add primary mechanic ID
             if (assignmentData.containsKey("primaryMechanic")) {
                 assignmentDTO.put("primaryMechanicId", assignmentData.get("primaryMechanic"));
             }
-            
+
             // Add additional mechanic IDs
             if (assignmentData.containsKey("additionalMechanics")) {
                 assignmentDTO.put("additionalMechanicIds", assignmentData.get("additionalMechanics"));
             }
-            
+
             // Add estimated completion date
             if (assignmentData.containsKey("estimatedCompletionDate")) {
                 String dateStr = (String) assignmentData.get("estimatedCompletionDate");
                 assignmentDTO.put("estimatedCompletionDate", dateStr);
             }
-            
+
             // Add priority
             if (assignmentData.containsKey("priority")) {
                 assignmentDTO.put("priority", assignmentData.get("priority"));
             }
-            
+
             // Add service notes
             if (assignmentData.containsKey("serviceNotes")) {
                 assignmentDTO.put("serviceNotes", assignmentData.get("serviceNotes"));
@@ -141,36 +171,6 @@ public class MechanicAssignmentService {
         } catch (Exception e) {
             log.error("Error assigning mechanics to service: {}", e.getMessage(), e);
             return Collections.singletonMap("error", e.getMessage());
-        }
-    }
-
-    /**
-     * Get assigned service requests (in progress)
-     */
-    public List<Map<String, Object>> getAssignedRequests(String token) {
-        try {
-            HttpHeaders headers = createAuthHeaders(token);
-            HttpEntity<Void> entity = new HttpEntity<>(headers);
-
-            ResponseEntity<String> response = restTemplate.exchange(
-                    apiBaseUrl + "/service-assignments/assigned",
-                    HttpMethod.GET,
-                    entity,
-                    String.class
-            );
-
-            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-                return objectMapper.readValue(
-                        response.getBody(),
-                        new TypeReference<List<Map<String, Object>>>() {}
-                );
-            } else {
-                log.warn("Unexpected response status: {}", response.getStatusCode());
-                return Collections.emptyList();
-            }
-        } catch (Exception e) {
-            log.error("Error fetching assigned requests: {}", e.getMessage(), e);
-            return Collections.emptyList();
         }
     }
 

@@ -1,6 +1,8 @@
 package com.albany.mvc.controller;
 
+import com.albany.mvc.dto.ServiceRequestDto;
 import com.albany.mvc.service.MechanicAssignmentService;
+import com.albany.mvc.service.ServiceRequestService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +13,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +24,7 @@ import java.util.Map;
 public class ServiceAdvisorDashboardController {
 
     private final MechanicAssignmentService assignmentService;
+    private final ServiceRequestService serviceRequestService;
 
     /**
      * Dashboard page rendering
@@ -83,11 +87,11 @@ public class ServiceAdvisorDashboardController {
     }
 
     /**
-     * REST endpoint to get all mechanics for assignment
+     * REST endpoint to get assigned services (in progress)
      */
-    @GetMapping("/api/mechanics-for-assignment")
+    @GetMapping("/api/assigned-services")
     @ResponseBody
-    public ResponseEntity<List<Map<String, Object>>> getMechanicsForAssignment(
+    public ResponseEntity<List<Map<String, Object>>> getAssignedServices(
             @RequestParam(required = false) String token,
             @RequestHeader(value = "Authorization", required = false) String authHeader,
             HttpServletRequest request) {
@@ -99,11 +103,81 @@ public class ServiceAdvisorDashboardController {
         }
 
         try {
-            List<Map<String, Object>> mechanics = assignmentService.getAllMechanics(validToken);
-            return ResponseEntity.ok(mechanics);
+            List<Map<String, Object>> assignedServices = assignmentService.getAssignedRequests(validToken);
+            return ResponseEntity.ok(assignedServices);
         } catch (Exception e) {
-            log.error("Error fetching mechanics: {}", e.getMessage(), e);
+            log.error("Error fetching assigned services: {}", e.getMessage(), e);
             return ResponseEntity.status(500).body(Collections.emptyList());
+        }
+    }
+
+    /**
+     * REST endpoint to get service details
+     */
+    @GetMapping("/api/service-details/{requestId}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> getServiceDetails(
+            @PathVariable Integer requestId,
+            @RequestParam(required = false) String token,
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            HttpServletRequest request) {
+
+        String validToken = getValidToken(token, authHeader, request);
+
+        if (validToken == null) {
+            return ResponseEntity.status(401).body(Collections.emptyMap());
+        }
+
+        try {
+            Map<String, Object> serviceDetails = serviceRequestService.getServiceRequestById(requestId, validToken);
+            if (serviceDetails.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(serviceDetails);
+        } catch (Exception e) {
+            log.error("Error fetching service details: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).body(Collections.singletonMap("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * REST endpoint to update service status
+     */
+    @PutMapping("/api/update-status/{requestId}")
+    @ResponseBody
+    public ResponseEntity<?> updateServiceStatus(
+            @PathVariable Integer requestId,
+            @RequestBody Map<String, String> statusUpdate,
+            @RequestParam(required = false) String token,
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            HttpServletRequest request) {
+
+        String validToken = getValidToken(token, authHeader, request);
+
+        if (validToken == null) {
+            return ResponseEntity.status(401).build();
+        }
+
+        try {
+            String status = statusUpdate.get("status");
+            if (status == null || status.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Status is required"));
+            }
+
+            Map<String, Object> result = new HashMap<>();
+            ServiceRequestDto updatedRequest = serviceRequestService.updateServiceRequestStatus(requestId, status, validToken);
+
+            if (updatedRequest != null) {
+                result.put("success", true);
+                result.put("message", "Status updated successfully");
+                result.put("request", updatedRequest);
+                return ResponseEntity.ok(result);
+            } else {
+                return ResponseEntity.status(500).body(Map.of("error", "Failed to update status"));
+            }
+        } catch (Exception e) {
+            log.error("Error updating service status: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
         }
     }
 
@@ -127,15 +201,40 @@ public class ServiceAdvisorDashboardController {
 
         try {
             Map<String, Object> result = assignmentService.assignMechanicsToService(requestId, assignmentData, validToken);
-            
+
             if (result.containsKey("error")) {
                 return ResponseEntity.badRequest().body(result);
             }
-            
+
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             log.error("Error assigning service: {}", e.getMessage(), e);
-            return ResponseEntity.status(500).body(Collections.singletonMap("error", e.getMessage()));
+            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * REST endpoint to get mechanics for assignment
+     */
+    @GetMapping("/api/mechanics-for-assignment")
+    @ResponseBody
+    public ResponseEntity<List<Map<String, Object>>> getMechanicsForAssignment(
+            @RequestParam(required = false) String token,
+            @RequestHeader(value = "Authorization", required = false) String authHeader,
+            HttpServletRequest request) {
+
+        String validToken = getValidToken(token, authHeader, request);
+
+        if (validToken == null) {
+            return ResponseEntity.status(401).body(Collections.emptyList());
+        }
+
+        try {
+            List<Map<String, Object>> mechanics = assignmentService.getAllMechanics(validToken);
+            return ResponseEntity.ok(mechanics);
+        } catch (Exception e) {
+            log.error("Error fetching mechanics: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).body(Collections.emptyList());
         }
     }
 

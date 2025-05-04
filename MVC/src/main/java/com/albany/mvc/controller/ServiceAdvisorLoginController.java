@@ -123,37 +123,7 @@ public class ServiceAdvisorLoginController {
         }
     }
 
-    @GetMapping("/dashboard")
-    public String dashboard(
-            @RequestParam(required = false) String token,
-            Model model,
-            HttpServletRequest request) {
-        log.info("Accessing service advisor dashboard");
-
-        // Get token from various sources
-        String validToken = getValidToken(token, request);
-
-        if (validToken == null) {
-            log.warn("No valid token found, redirecting to login");
-            return "redirect:/serviceAdvisor/login?error=session_expired";
-        }
-
-        // Add user information to the model
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            String firstName = (String) session.getAttribute("firstName");
-            String lastName = (String) session.getAttribute("lastName");
-            if (firstName != null && lastName != null) {
-                model.addAttribute("userName", firstName + " " + lastName);
-            } else {
-                model.addAttribute("userName", "Service Advisor");
-            }
-        } else {
-            model.addAttribute("userName", "Service Advisor");
-        }
-
-        return "serviceAdvisor/dashboard";
-    }
+    // Removed the dashboard method to avoid the conflict with ServiceAdvisorDashboardController
 
     @GetMapping("/logout")
     public String logout(HttpServletRequest request, HttpServletResponse response) {
@@ -161,23 +131,23 @@ public class ServiceAdvisorLoginController {
         if (session != null) {
             session.invalidate();
         }
-        
+
         log.info("Service Advisor logged out successfully");
         return "redirect:/serviceAdvisor/login?logout=true";
     }
 
     /**
-     * Gets a valid token from various sources
+     * Gets a valid token from various sources (helper method, not an endpoint)
      */
     private String getValidToken(String tokenParam, HttpServletRequest request) {
         // If token is provided in parameter, use it
         if (tokenParam != null && !tokenParam.isEmpty()) {
             log.debug("Token parameter provided");
-            
+
             // Store token in session for future requests
             HttpSession session = request.getSession();
             session.setAttribute("jwt-token", tokenParam);
-            
+
             return tokenParam;
         }
 
@@ -195,12 +165,12 @@ public class ServiceAdvisorLoginController {
         String authHeader = request.getHeader("Authorization");
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String headerToken = authHeader.substring(7);
-            
+
             // Store in session for future requests
             if (session != null) {
                 session.setAttribute("jwt-token", headerToken);
             }
-            
+
             log.debug("Using token from Authorization header");
             return headerToken;
         }

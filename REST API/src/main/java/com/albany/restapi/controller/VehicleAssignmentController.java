@@ -44,28 +44,28 @@ public class VehicleAssignmentController {
     public ResponseEntity<ServiceRequestDTO> assignMechanicsToServiceRequest(
             @RequestBody MechanicAssignmentDTO assignmentDTO,
             Authentication authentication) {
-        
+
         log.info("Assigning mechanics to service request ID: {}", assignmentDTO.getServiceRequestId());
-        
+
         ServiceRequestDTO updatedRequest = assignmentService.assignMechanicsToServiceRequest(
-                assignmentDTO, 
+                assignmentDTO,
                 authentication.getName()
         );
-        
+
         return ResponseEntity.ok(updatedRequest);
     }
 
     /**
-     * Get all service requests that have been assigned to mechanics
+     * Get all service requests that have been assigned to mechanics (in progress)
      */
     @GetMapping("/assigned")
     @PreAuthorize("hasAnyRole('ADMIN', 'admin', 'SERVICE_ADVISOR', 'serviceAdvisor')")
-    public ResponseEntity<List<VehicleInServiceDTO>> getAssignedRequests(Authentication authentication) {
+    public ResponseEntity<List<VehicleInServiceDTO>> getAssignedRequests() {
         log.info("Fetching assigned service requests");
         List<VehicleInServiceDTO> assignedRequests = assignmentService.getAssignedRequests();
         return ResponseEntity.ok(assignedRequests);
     }
-    
+
     /**
      * Update the status of a service request
      */
@@ -74,13 +74,24 @@ public class VehicleAssignmentController {
     public ResponseEntity<ServiceRequestDTO> updateServiceStatus(
             @PathVariable Integer requestId,
             @RequestBody Map<String, String> statusUpdate) {
-        
+
         String statusStr = statusUpdate.get("status");
         ServiceRequest.Status status = ServiceRequest.Status.valueOf(statusStr);
-        
+
         log.info("Updating service request {} to status: {}", requestId, status);
         ServiceRequestDTO updatedRequest = serviceRequestService.updateServiceRequestStatus(requestId, status);
-        
+
         return ResponseEntity.ok(updatedRequest);
+    }
+
+    /**
+     * Get details of a specific service request
+     */
+    @GetMapping("/{requestId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'admin', 'SERVICE_ADVISOR', 'serviceAdvisor')")
+    public ResponseEntity<ServiceRequestDTO> getServiceRequestDetails(@PathVariable Integer requestId) {
+        log.info("Fetching details for service request ID: {}", requestId);
+        ServiceRequestDTO requestDetails = serviceRequestService.getServiceRequestById(requestId);
+        return ResponseEntity.ok(requestDetails);
     }
 }

@@ -63,12 +63,21 @@ public class MechanicController {
                 return ResponseEntity.badRequest().body(Map.of("error", "Email, first name, and last name are required"));
             }
 
+            // Store the original password (if any) before sending to service
+            String originalPassword = request.getPassword();
+
+            // Create the mechanic - the service will generate a password if none is provided
             MechanicResponse newMechanic = mechanicService.createMechanic(request);
 
-            // Create response with temp password
+            // Create response with the generated password
             Map<String, Object> response = new HashMap<>();
             response.put("mechanic", newMechanic);
-            response.put("tempPassword", request.getPassword());
+
+            // If password was generated, it will be in the request object
+            if (request.getPassword() != null &&
+                    (originalPassword == null || !originalPassword.equals(request.getPassword()))) {
+                response.put("tempPassword", request.getPassword());
+            }
 
             log.info("Successfully created mechanic with ID: {}", newMechanic.getMechanicId());
             return ResponseEntity.ok(response);

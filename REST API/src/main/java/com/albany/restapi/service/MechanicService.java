@@ -75,9 +75,11 @@ public class MechanicService {
             throw new IllegalArgumentException("A user with this email already exists");
         }
 
-        // Make sure password is provided
-        if (request.getPassword() == null || request.getPassword().isEmpty()) {
-            throw new IllegalArgumentException("Password is required");
+        // Generate a password if none is provided
+        String password = request.getPassword();
+        if (password == null || password.isEmpty()) {
+            password = generateRandomPassword();
+            log.debug("Generated random password for new mechanic");
         }
 
         try {
@@ -87,7 +89,7 @@ public class MechanicService {
                     .lastName(request.getLastName())
                     .email(request.getEmail())
                     .phoneNumber(request.getPhoneNumber())
-                    .password(passwordEncoder.encode(request.getPassword()))
+                    .password(passwordEncoder.encode(password))
                     .role(Role.mechanic)
                     .isActive(true)
                     .build();
@@ -107,6 +109,9 @@ public class MechanicService {
 
             profile = mechanicRepository.save(profile);
             log.debug("Created mechanic profile with ID: {}", profile.getMechanicId());
+
+            // Store the generated password in the request object so it can be returned to the client
+            request.setPassword(password);
 
             return mapToResponse(profile);
         } catch (Exception e) {
@@ -197,5 +202,29 @@ public class MechanicService {
                 .formattedId(profile.getFormattedId())
                 .isActive(user.isActive())
                 .build();
+    }
+
+    /**
+     * Generate a random password for mechanics
+     */
+    private String generateRandomPassword() {
+        final String letters = "ABCDEFGHJKLMNPQRSTUVWXYZ"; // Excluded I and O to avoid confusion
+        final String numbers = "123456789"; // Excluded 0 to avoid confusion with O
+
+        StringBuilder password = new StringBuilder("MC2025-");
+
+        // Add 3 random letters
+        for (int i = 0; i < 3; i++) {
+            int index = (int) (Math.random() * letters.length());
+            password.append(letters.charAt(index));
+        }
+
+        // Add 3 random numbers
+        for (int i = 0; i < 3; i++) {
+            int index = (int) (Math.random() * numbers.length());
+            password.append(numbers.charAt(index));
+        }
+
+        return password.toString();
     }
 }

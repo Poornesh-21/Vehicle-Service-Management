@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -129,15 +130,48 @@ public class ServiceAdvisorDashboardController {
         }
 
         try {
-            Map<String, Object> serviceDetails = serviceRequestService.getServiceRequestById(requestId, validToken);
-            if (serviceDetails.isEmpty()) {
+            // Get the DTO from the service
+            ServiceRequestDto serviceDto = serviceRequestService.getServiceRequestById(requestId, validToken);
+
+            if (serviceDto == null) {
                 return ResponseEntity.notFound().build();
             }
+
+            // Convert the DTO to a Map explicitly
+            Map<String, Object> serviceDetails = convertDtoToMap(serviceDto);
+
             return ResponseEntity.ok(serviceDetails);
         } catch (Exception e) {
             log.error("Error fetching service details: {}", e.getMessage(), e);
             return ResponseEntity.status(500).body(Collections.singletonMap("error", e.getMessage()));
         }
+    }
+
+    /**
+     * Helper method to convert ServiceRequestDto to Map<String, Object>
+     */
+    private Map<String, Object> convertDtoToMap(ServiceRequestDto dto) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("requestId", dto.getRequestId());
+        map.put("vehicleId", dto.getVehicleId());
+        map.put("vehicleBrand", dto.getVehicleBrand());
+        map.put("vehicleModel", dto.getVehicleModel());
+        map.put("registrationNumber", dto.getRegistrationNumber());
+        map.put("serviceType", dto.getServiceType());
+        map.put("deliveryDate", dto.getDeliveryDate());
+        map.put("additionalDescription", dto.getAdditionalDescription());
+        map.put("adminId", dto.getAdminId());
+        map.put("serviceAdvisorId", dto.getServiceAdvisorId());
+        map.put("serviceAdvisorName", dto.getServiceAdvisorName());
+        map.put("status", dto.getStatus());
+        map.put("customerName", dto.getCustomerName());
+        map.put("customerId", dto.getCustomerId());
+        map.put("membershipStatus", dto.getMembershipStatus());
+        map.put("customerEmail", dto.getCustomerEmail());
+        map.put("vehicleCategory", dto.getVehicleCategory());
+        map.put("vehicleName", dto.getVehicleName());
+
+        return map;
     }
 
     /**
@@ -164,17 +198,20 @@ public class ServiceAdvisorDashboardController {
                 return ResponseEntity.badRequest().body(Map.of("error", "Status is required"));
             }
 
-            Map<String, Object> result = new HashMap<>();
+            // Get the DTO from the service
             ServiceRequestDto updatedRequest = serviceRequestService.updateServiceRequestStatus(requestId, status, validToken);
 
-            if (updatedRequest != null) {
-                result.put("success", true);
-                result.put("message", "Status updated successfully");
-                result.put("request", updatedRequest);
-                return ResponseEntity.ok(result);
-            } else {
+            if (updatedRequest == null) {
                 return ResponseEntity.status(500).body(Map.of("error", "Failed to update status"));
             }
+
+            // Convert the DTO to a Map
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("message", "Status updated successfully");
+            result.put("request", convertDtoToMap(updatedRequest));
+
+            return ResponseEntity.ok(result);
         } catch (Exception e) {
             log.error("Error updating service status: {}", e.getMessage(), e);
             return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));

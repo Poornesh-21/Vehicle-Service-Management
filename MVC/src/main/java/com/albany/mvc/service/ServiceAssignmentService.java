@@ -14,7 +14,7 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class MechanicAssignmentService {
+public class ServiceAssignmentService {
 
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
@@ -83,39 +83,9 @@ public class MechanicAssignmentService {
     }
 
     /**
-     * Get all mechanics (for assignment dropdown)
+     * Assign a service to an advisor
      */
-    public List<Map<String, Object>> getAllMechanics(String token) {
-        try {
-            HttpHeaders headers = createAuthHeaders(token);
-            HttpEntity<Void> entity = new HttpEntity<>(headers);
-
-            ResponseEntity<String> response = restTemplate.exchange(
-                    apiBaseUrl + "/mechanics",
-                    HttpMethod.GET,
-                    entity,
-                    String.class
-            );
-
-            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-                return objectMapper.readValue(
-                        response.getBody(),
-                        new TypeReference<List<Map<String, Object>>>() {}
-                );
-            } else {
-                log.warn("Unexpected response status: {}", response.getStatusCode());
-                return Collections.emptyList();
-            }
-        } catch (Exception e) {
-            log.error("Error fetching mechanics: {}", e.getMessage(), e);
-            return Collections.emptyList();
-        }
-    }
-
-    /**
-     * Assign mechanics to a service request
-     */
-    public Map<String, Object> assignMechanicsToService(Integer serviceRequestId, Map<String, Object> assignmentData, String token) {
+    public Map<String, Object> assignService(Integer serviceRequestId, Map<String, Object> assignmentData, String token) {
         try {
             HttpHeaders headers = createAuthHeaders(token);
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -123,16 +93,6 @@ public class MechanicAssignmentService {
             // Create assignment DTO from front-end data
             Map<String, Object> assignmentDTO = new HashMap<>();
             assignmentDTO.put("serviceRequestId", serviceRequestId);
-
-            // Add primary mechanic ID
-            if (assignmentData.containsKey("primaryMechanic")) {
-                assignmentDTO.put("primaryMechanicId", assignmentData.get("primaryMechanic"));
-            }
-
-            // Add additional mechanic IDs
-            if (assignmentData.containsKey("additionalMechanics")) {
-                assignmentDTO.put("additionalMechanicIds", assignmentData.get("additionalMechanics"));
-            }
 
             // Add estimated completion date
             if (assignmentData.containsKey("estimatedCompletionDate")) {
@@ -169,7 +129,7 @@ public class MechanicAssignmentService {
                 return Collections.singletonMap("error", "Unexpected response status: " + response.getStatusCode());
             }
         } catch (Exception e) {
-            log.error("Error assigning mechanics to service: {}", e.getMessage(), e);
+            log.error("Error assigning service: {}", e.getMessage(), e);
             return Collections.singletonMap("error", e.getMessage());
         }
     }

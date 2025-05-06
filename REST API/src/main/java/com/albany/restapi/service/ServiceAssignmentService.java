@@ -1,6 +1,6 @@
 package com.albany.restapi.service;
 
-import com.albany.restapi.dto.MechanicAssignmentDTO;
+import com.albany.restapi.dto.ServiceAssignmentDTO;
 import com.albany.restapi.dto.ServiceRequestDTO;
 import com.albany.restapi.dto.VehicleInServiceDTO;
 import com.albany.restapi.model.*;
@@ -19,10 +19,9 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class MechanicAssignmentService {
+public class ServiceAssignmentService {
 
     private final ServiceRequestRepository serviceRequestRepository;
-    private final MechanicProfileRepository mechanicRepository;
     private final UserRepository userRepository;
     private final ServiceRequestService serviceRequestService;
     private final ServiceTrackingRepository serviceTrackingRepository;
@@ -32,7 +31,7 @@ public class MechanicAssignmentService {
      * Get new service requests that need assignment
      */
     public List<ServiceRequestDTO> getNewServiceRequests() {
-        // Get service requests with status "Received" that have no mechanics assigned
+        // Get service requests with status "Received" that have no advisors assigned
         List<ServiceRequest> requests = serviceRequestRepository.findByStatus(ServiceRequest.Status.Received);
 
         // For this demo, we'll consider all "Received" requests as needing assignment
@@ -42,11 +41,11 @@ public class MechanicAssignmentService {
     }
 
     /**
-     * Assign mechanics to a service request
+     * Assign a service request to an advisor
      */
     @Transactional
-    public ServiceRequestDTO assignMechanicsToServiceRequest(
-            MechanicAssignmentDTO assignmentDTO,
+    public ServiceRequestDTO assignServiceRequest(
+            ServiceAssignmentDTO assignmentDTO,
             String serviceAdvisorEmail) {
 
         try {
@@ -84,9 +83,10 @@ public class MechanicAssignmentService {
             // Create service tracking entry for this assignment
             ServiceTracking tracking = new ServiceTracking();
             tracking.setRequestId(request.getRequestId());
-            tracking.setWorkDescription("Service assigned to mechanics. " +
+            tracking.setWorkDescription("Service assigned to advisor. " +
                     (assignmentDTO.getServiceNotes() != null ? "Notes: " + assignmentDTO.getServiceNotes() : ""));
             tracking.setStatus(ServiceRequest.Status.Diagnosis);
+            tracking.setServiceAdvisor(advisor);
 
             // Save tracking entry
             serviceTrackingRepository.save(tracking);
@@ -95,13 +95,13 @@ public class MechanicAssignmentService {
             return mapToServiceRequestDTO(request);
 
         } catch (Exception e) {
-            log.error("Error assigning mechanics to service request: {}", e.getMessage(), e);
-            throw new RuntimeException("Failed to assign mechanics: " + e.getMessage(), e);
+            log.error("Error assigning service request: {}", e.getMessage(), e);
+            throw new RuntimeException("Failed to assign service: " + e.getMessage(), e);
         }
     }
 
     /**
-     * Get all service requests that have been assigned to mechanics (in progress)
+     * Get all service requests that have been assigned to service advisors (in progress)
      */
     public List<VehicleInServiceDTO> getAssignedRequests() {
         // Get service requests with status "Diagnosis" or "Repair"
@@ -120,7 +120,6 @@ public class MechanicAssignmentService {
 
     /**
      * Map a ServiceRequest entity to ServiceRequestDTO
-     * This is our own implementation to avoid using the private method in ServiceRequestService
      */
     private ServiceRequestDTO mapToServiceRequestDTO(ServiceRequest serviceRequest) {
         ServiceRequestDTO dto = new ServiceRequestDTO();

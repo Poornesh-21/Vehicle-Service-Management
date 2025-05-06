@@ -39,6 +39,10 @@ public class ServiceTracking {
     @Column(updatable = false)
     private LocalDateTime updatedAt;
     
+    @ManyToOne
+    @JoinColumn(name = "service_advisor_id")
+    private ServiceAdvisorProfile serviceAdvisor;
+    
     @PrePersist
     protected void onCreate() {
         updatedAt = LocalDateTime.now();

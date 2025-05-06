@@ -1,10 +1,10 @@
 package com.albany.restapi.controller;
 
-import com.albany.restapi.dto.MechanicAssignmentDTO;
+import com.albany.restapi.dto.ServiceAssignmentDTO;
 import com.albany.restapi.dto.ServiceRequestDTO;
 import com.albany.restapi.dto.VehicleInServiceDTO;
 import com.albany.restapi.model.ServiceRequest;
-import com.albany.restapi.service.MechanicAssignmentService;
+import com.albany.restapi.service.ServiceAssignmentService;
 import com.albany.restapi.service.ServiceRequestService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +22,7 @@ import java.util.Map;
 @Slf4j
 public class VehicleAssignmentController {
 
-    private final MechanicAssignmentService assignmentService;
+    private final ServiceAssignmentService assignmentService;
     private final ServiceRequestService serviceRequestService;
 
     /**
@@ -37,17 +37,17 @@ public class VehicleAssignmentController {
     }
 
     /**
-     * Assign mechanics to a service request
+     * Assign a service request to an advisor
      */
     @PostMapping("/assign")
     @PreAuthorize("hasAnyRole('ADMIN', 'admin', 'SERVICE_ADVISOR', 'serviceAdvisor')")
-    public ResponseEntity<ServiceRequestDTO> assignMechanicsToServiceRequest(
-            @RequestBody MechanicAssignmentDTO assignmentDTO,
+    public ResponseEntity<ServiceRequestDTO> assignServiceToAdvisor(
+            @RequestBody ServiceAssignmentDTO assignmentDTO,
             Authentication authentication) {
 
-        log.info("Assigning mechanics to service request ID: {}", assignmentDTO.getServiceRequestId());
+        log.info("Assigning service request ID: {}", assignmentDTO.getServiceRequestId());
 
-        ServiceRequestDTO updatedRequest = assignmentService.assignMechanicsToServiceRequest(
+        ServiceRequestDTO updatedRequest = assignmentService.assignServiceRequest(
                 assignmentDTO,
                 authentication.getName()
         );
@@ -56,7 +56,7 @@ public class VehicleAssignmentController {
     }
 
     /**
-     * Get all service requests that have been assigned to mechanics (in progress)
+     * Get all service requests that have been assigned to service advisors (in progress)
      */
     @GetMapping("/assigned")
     @PreAuthorize("hasAnyRole('ADMIN', 'admin', 'SERVICE_ADVISOR', 'serviceAdvisor')")

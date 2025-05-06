@@ -1,7 +1,7 @@
 package com.albany.mvc.controller;
 
 import com.albany.mvc.dto.ServiceRequestDto;
-import com.albany.mvc.service.MechanicAssignmentService;
+import com.albany.mvc.service.ServiceAssignmentService;
 import com.albany.mvc.service.ServiceRequestService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -12,7 +12,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -24,7 +23,7 @@ import java.util.Map;
 @Slf4j
 public class ServiceAdvisorDashboardController {
 
-    private final MechanicAssignmentService assignmentService;
+    private final ServiceAssignmentService assignmentService;
     private final ServiceRequestService serviceRequestService;
 
     /**
@@ -219,7 +218,7 @@ public class ServiceAdvisorDashboardController {
     }
 
     /**
-     * REST endpoint to assign mechanics to a service
+     * REST endpoint to assign a service
      */
     @PostMapping("/api/assign-service/{requestId}")
     @ResponseBody
@@ -237,7 +236,7 @@ public class ServiceAdvisorDashboardController {
         }
 
         try {
-            Map<String, Object> result = assignmentService.assignMechanicsToService(requestId, assignmentData, validToken);
+            Map<String, Object> result = assignmentService.assignService(requestId, assignmentData, validToken);
 
             if (result.containsKey("error")) {
                 return ResponseEntity.badRequest().body(result);
@@ -247,31 +246,6 @@ public class ServiceAdvisorDashboardController {
         } catch (Exception e) {
             log.error("Error assigning service: {}", e.getMessage(), e);
             return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
-        }
-    }
-
-    /**
-     * REST endpoint to get mechanics for assignment
-     */
-    @GetMapping("/api/mechanics-for-assignment")
-    @ResponseBody
-    public ResponseEntity<List<Map<String, Object>>> getMechanicsForAssignment(
-            @RequestParam(required = false) String token,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            HttpServletRequest request) {
-
-        String validToken = getValidToken(token, authHeader, request);
-
-        if (validToken == null) {
-            return ResponseEntity.status(401).body(Collections.emptyList());
-        }
-
-        try {
-            List<Map<String, Object>> mechanics = assignmentService.getAllMechanics(validToken);
-            return ResponseEntity.ok(mechanics);
-        } catch (Exception e) {
-            log.error("Error fetching mechanics: {}", e.getMessage(), e);
-            return ResponseEntity.status(500).body(Collections.emptyList());
         }
     }
 

@@ -127,6 +127,7 @@ public class ServiceRequestService {
 
     /**
      * Assign a service advisor to a service request
+     * FIXED: No longer changes status to Diagnosis automatically
      */
     @Transactional
     public ServiceRequestDTO assignServiceAdvisor(Integer requestId, Integer advisorId) {
@@ -150,11 +151,8 @@ public class ServiceRequestService {
             // Assign advisor
             serviceRequest.setServiceAdvisor(advisor);
 
-            // Change status to Diagnosis when advisor is assigned if the status is still Received
-            if (serviceRequest.getStatus() == ServiceRequest.Status.Received) {
-                serviceRequest.setStatus(ServiceRequest.Status.Diagnosis);
-                log.debug("Updated status to Diagnosis");
-            }
+            // FIXED: Removed the code that changed status to Diagnosis
+            // Now the status remains as "Received" so it shows up in New Assignments for the service advisor
 
             // Save and return
             ServiceRequest updatedRequest = serviceRequestRepository.save(serviceRequest);
@@ -273,9 +271,6 @@ public class ServiceRequestService {
     /**
      * Convert service request entity to DTO
      */
-    // Add this method to the ServiceRequestService class in the REST API
-// This ensures the membership status is correctly set in the ServiceRequestDTO
-
     private ServiceRequestDTO convertToDTO(ServiceRequest serviceRequest) {
         ServiceRequestDTO dto = new ServiceRequestDTO();
 

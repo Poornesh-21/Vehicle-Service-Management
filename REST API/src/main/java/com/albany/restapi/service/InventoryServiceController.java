@@ -18,7 +18,7 @@ import java.util.Map;
 @RequestMapping("/api/inventory")
 @RequiredArgsConstructor
 @Slf4j
-public class InventoryController {
+public class InventoryServiceController {
 
     private final InventoryService inventoryService;
 

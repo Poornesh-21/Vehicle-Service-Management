@@ -2,7 +2,7 @@ package com.albany.restapi.controller;
 
 import com.albany.restapi.dto.InventoryItemDTO;
 import com.albany.restapi.dto.MaterialUsageDTO;
-import com.albany.restapi.service.InventoryController;
+import com.albany.restapi.service.InventoryServiceController;
 import com.albany.restapi.service.InventoryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,10 +24,10 @@ import java.util.Map;
 public class AdminInventoryController {
 
     private final InventoryService inventoryService;
-    private final InventoryController inventoryController;
+    private final InventoryServiceController inventoryController;
 
     // Delegate to the main inventory controller to avoid code duplication
-    
+
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'admin')")
     public ResponseEntity<List<InventoryItemDTO>> getAllInventoryItems() {

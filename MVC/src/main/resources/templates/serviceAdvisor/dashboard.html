@@ -2123,17 +2123,15 @@
     // Service Advisor Dashboard JavaScript
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize data structures
-        window.inventoryPrices = {
-            'oil-filter': 15.99,
-            'air-filter': 24.99,
-            'brake-pads': 89.99,
-            'engine-oil': 12.99,
-            'wiper-blades': 19.99,
-            'spark-plugs': 8.99
-        };
-
+        window.inventoryPrices = {};
         window.inventoryItems = [];
         window.laborCharges = [];
+        window.currentRequestId = null;
+
+        // Load initial data from server
+        fetchAssignedVehicles();
+        // Set up refresh interval (every 5 minutes)
+        setInterval(fetchAssignedVehicles, 300000);
 
         // Initialize event listeners
         initializeEventListeners();
@@ -2269,7 +2267,16 @@
         const saveServiceItemsBtn = document.getElementById('saveServiceItemsBtn');
         if (saveServiceItemsBtn) {
             saveServiceItemsBtn.addEventListener('click', function() {
-                saveServiceItems();
+                const activeTab = document.querySelector('.tab.active');
+                const tabName = activeTab.getAttribute('data-tab');
+
+                if (tabName === 'service-items') {
+                    saveServiceItems();
+                } else if (tabName === 'generate-bill') {
+                    generateBill();
+                } else if (tabName === 'update-status') {
+                    updateServiceStatus();
+                }
             });
         }
 
@@ -2277,7 +2284,7 @@
         const saveBillBtn = document.getElementById('saveBillBtn');
         if (saveBillBtn) {
             saveBillBtn.addEventListener('click', function() {
-                saveBill();
+                saveServiceItems();
             });
         }
 
@@ -2373,10 +2380,106 @@
         }
     }
 
+    // Fetch assigned vehicles from the server
+    function fetchAssignedVehicles() {
+        fetch('/serviceAdvisor/api/assigned-vehicles')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch assigned vehicles');
+                }
+                return response.json();
+            })
+            .then(data => {
+                updateVehiclesTable(data);
+            })
+            .catch(error => {
+                console.error('Error fetching assigned vehicles:', error);
+                showNotification('Error loading assigned vehicles: ' + error.message, 'error');
+            });
+    }
+
+    // Update the vehicles table with data from server
+    function updateVehiclesTable(vehicles) {
+        const tableBody = document.getElementById('vehiclesTableBody');
+        if (!tableBody) return;
+
+        // Clear existing rows
+        tableBody.innerHTML = '';
+
+        if (vehicles.length === 0) {
+            // No vehicles found - show empty state
+            const emptyRow = document.createElement('tr');
+            emptyRow.innerHTML = `
+            <td colspan="6" class="empty-state">
+                <i class="fas fa-car-alt"></i>
+                <h3>No vehicles assigned</h3>
+                <p>You don't have any vehicles assigned to you at the moment.</p>
+            </td>
+        `;
+            tableBody.appendChild(emptyRow);
+            return;
+        }
+
+        // Add rows for each vehicle
+        vehicles.forEach((vehicle, index) => {
+            const row = document.createElement('tr');
+            row.setAttribute('data-id', vehicle.requestId);
+            row.onclick = function() {
+                openVehicleDetails(vehicle.requestId);
+            };
+
+            // Format date
+            const requestDate = new Date(vehicle.startDate);
+            const formattedDate = requestDate.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            });
+
+            // Status badge class
+            let statusClass = 'new';
+            if (vehicle.status === 'Diagnosis' || vehicle.status === 'Repair') {
+                statusClass = 'in-progress';
+            } else if (vehicle.status === 'Completed') {
+                statusClass = 'completed';
+            }
+
+            row.innerHTML = `
+            <td>
+                <div class="vehicle-details">
+                    <div class="vehicle-model">${vehicle.vehicleName}</div>
+                    <div class="vehicle-info">Registration: ${vehicle.registrationNumber}</div>
+                </div>
+            </td>
+            <td>
+                <div class="customer-details">
+                    <div class="customer-name">${vehicle.customerName}</div>
+                    <div class="customer-info">${vehicle.customerEmail}</div>
+                </div>
+            </td>
+            <td>${vehicle.serviceType || 'General Service'}</td>
+            <td>${formattedDate}</td>
+            <td>
+                <span class="status-badge ${statusClass}">
+                    <i class="fas fa-circle"></i> ${vehicle.status}
+                </span>
+            </td>
+            <td class="action-cell">
+                <button class="action-btn" onclick="openVehicleDetails(${vehicle.requestId}); event.stopPropagation();">
+                    <i class="fas fa-eye"></i> View
+                </button>
+            </td>
+        `;
+
+            tableBody.appendChild(row);
+        });
+    }
+
     // Open vehicle details modal
-    function openVehicleDetails(vehicleId) {
-        // Here you would fetch vehicle details and service items
-        // For demo, we're just showing the modal with example data
+    function openVehicleDetails(requestId) {
+        window.currentRequestId = requestId;
+
+        // Show the modal first
         document.getElementById('vehicleDetailsModal').classList.add('show');
 
         // Reset tab to details tab
@@ -2390,6 +2493,267 @@
 
         // Update footer buttons
         updateModalFooterButtons();
+
+        // Fetch vehicle details from server
+        fetch(`/serviceAdvisor/api/service-details/${requestId}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch service details');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Load vehicle details
+                loadVehicleDetails(data);
+
+                // Load current bill data
+                loadCurrentBill(data.currentBill);
+
+                // Load service history
+                loadServiceHistory(data.serviceHistory);
+
+                // Load and populate inventory items dropdown
+                fetchInventoryItems();
+            })
+            .catch(error => {
+                console.error('Error fetching vehicle details:', error);
+                showNotification('Error loading service details: ' + error.message, 'error');
+            });
+    }
+
+    // Load vehicle details into the UI
+    function loadVehicleDetails(data) {
+        // Vehicle Information
+        document.querySelector('.detail-card:nth-of-type(1) .detail-value:nth-of-type(1)').textContent =
+            `${data.vehicleBrand} ${data.vehicleModel}`;
+        document.querySelector('.detail-card:nth-of-type(1) .detail-value:nth-of-type(2)').textContent =
+            data.registrationNumber;
+        document.querySelector('.detail-card:nth-of-type(1) .detail-value:nth-of-type(3)').textContent =
+            data.vehicleYear;
+        document.querySelector('.detail-card:nth-of-type(1) .detail-value:nth-of-type(4)').textContent =
+            data.vehicleType;
+
+        // Customer Information
+        document.querySelector('.detail-card:nth-of-type(2) .detail-value:nth-of-type(1)').textContent =
+            data.customerName;
+        document.querySelector('.detail-card:nth-of-type(2) .detail-value:nth-of-type(2)').textContent =
+            data.customerEmail;
+        document.querySelector('.detail-card:nth-of-type(2) .detail-value:nth-of-type(3)').textContent =
+            data.customerPhone || 'N/A';
+
+        // Service Request Details
+        document.querySelector('.detail-card:nth-of-type(3) .detail-value:nth-of-type(1)').textContent =
+            data.serviceType;
+
+        const requestDate = new Date(data.requestDate);
+        document.querySelector('.detail-card:nth-of-type(3) .detail-value:nth-of-type(2)').textContent =
+            requestDate.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            });
+
+        // Status badge
+        const statusBadgeContainer = document.querySelector('.detail-card:nth-of-type(3) .detail-value:nth-of-type(3)');
+        let statusClass = 'new';
+        if (data.status === 'Diagnosis' || data.status === 'Repair') {
+            statusClass = 'in-progress';
+        } else if (data.status === 'Completed') {
+            statusClass = 'completed';
+        }
+
+        statusBadgeContainer.innerHTML = `
+        <span class="status-badge ${statusClass}">
+            <i class="fas fa-circle"></i> ${data.status}
+        </span>
+    `;
+
+        // Description
+        document.querySelector('.detail-card:nth-of-type(3) .detail-value:nth-of-type(4)').textContent =
+            data.additionalDescription || 'No additional description provided.';
+
+        // Update vehicle summary in other tabs
+        const vehicleSummaryElements = document.querySelectorAll('.vehicle-summary .vehicle-info-summary h4');
+        vehicleSummaryElements.forEach(element => {
+            element.textContent = `${data.vehicleBrand} ${data.vehicleModel} (${data.registrationNumber})`;
+        });
+
+        const customerElements = document.querySelectorAll('.vehicle-summary .vehicle-info-summary p');
+        customerElements.forEach(element => {
+            element.textContent = `Customer: ${data.customerName}`;
+        });
+
+        // Update status badges in other tabs
+        const statusDisplayElements = document.querySelectorAll('.vehicle-summary .status-display');
+        statusDisplayElements.forEach(element => {
+            element.innerHTML = `
+            <span class="status-badge ${statusClass}" id="currentStatusBadge">
+                <i class="fas fa-circle"></i> ${data.status}
+            </span>
+        `;
+        });
+
+        // Update status dropdown
+        const statusSelect = document.getElementById('statusSelect');
+        if (statusSelect) {
+            // Set current status as value
+            for (let i = 0; i < statusSelect.options.length; i++) {
+                if (statusSelect.options[i].value.toLowerCase() === data.status.toLowerCase()) {
+                    statusSelect.selectedIndex = i;
+                    break;
+                }
+            }
+        }
+    }
+
+    // Load service history
+    function loadServiceHistory(history) {
+        const historyContainer = document.querySelector('.status-history');
+        if (!historyContainer) return;
+
+        historyContainer.innerHTML = '';
+
+        if (!history || history.length === 0) {
+            historyContainer.innerHTML = '<div class="empty-state">No status history available</div>';
+            return;
+        }
+
+        // Sort history by timestamp (newest first)
+        history.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+        history.forEach(item => {
+            const timestamp = new Date(item.timestamp);
+            const formattedDate = timestamp.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
+
+            // Status badge class
+            let statusClass = 'new';
+            if (item.status === 'Diagnosis' || item.status === 'Repair') {
+                statusClass = 'in-progress';
+            } else if (item.status === 'Completed') {
+                statusClass = 'completed';
+            }
+
+            const historyItem = document.createElement('div');
+            historyItem.className = 'status-history-item';
+            historyItem.innerHTML = `
+            <div class="status-history-badge ${statusClass}">${item.status}</div>
+            <div class="status-history-details">
+                <div class="status-history-date">${formattedDate}</div>
+                <div class="status-history-user">Updated by: ${item.updatedBy}</div>
+                <div class="status-history-notes">${item.workDescription || 'No notes provided'}</div>
+            </div>
+        `;
+
+            historyContainer.appendChild(historyItem);
+        });
+    }
+
+    // Load current bill data
+    function loadCurrentBill(billData) {
+        if (!billData) return;
+
+        // Clear existing data
+        window.inventoryItems = [];
+        window.laborCharges = [];
+
+        // Load materials
+        if (billData.materials && billData.materials.length > 0) {
+            billData.materials.forEach(item => {
+                window.inventoryItems.push({
+                    key: item.itemId,
+                    name: item.name,
+                    price: item.unitPrice,
+                    quantity: item.quantity
+                });
+            });
+        }
+
+        // Load labor charges
+        if (billData.laborCharges && billData.laborCharges.length > 0) {
+            billData.laborCharges.forEach(charge => {
+                window.laborCharges.push({
+                    description: charge.description,
+                    hours: charge.hours,
+                    rate: charge.ratePerHour
+                });
+            });
+        }
+
+        // Render items and charges
+        renderInventoryItems();
+        renderLaborCharges();
+
+        // Update bill summary
+        document.getElementById('partsSubtotal').textContent = `${billData.partsSubtotal ? billData.partsSubtotal.toFixed(2) : '0.00'}`;
+        document.getElementById('laborSubtotal').textContent = `${billData.laborSubtotal ? billData.laborSubtotal.toFixed(2) : '0.00'}`;
+        document.getElementById('subtotalAmount').textContent = `${billData.subtotal ? billData.subtotal.toFixed(2) : '0.00'}`;
+        document.getElementById('taxAmount').textContent = `${billData.tax ? billData.tax.toFixed(2) : '0.00'}`;
+        document.getElementById('totalAmount').textContent = `${billData.total ? billData.total.toFixed(2) : '0.00'}`;
+
+        // Update service notes
+        const serviceNotesTextarea = document.getElementById('serviceNotes');
+        if (serviceNotesTextarea && billData.notes) {
+            serviceNotesTextarea.value = billData.notes;
+        }
+    }
+
+    // Fetch inventory items for dropdown
+    function fetchInventoryItems() {
+        fetch('/serviceAdvisor/api/inventory-items')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to fetch inventory items');
+                }
+                return response.json();
+            })
+            .then(data => {
+                populateInventoryDropdown(data);
+            })
+            .catch(error => {
+                console.error('Error fetching inventory items:', error);
+                // Fallback to dummy data if API not implemented yet
+                const dummyData = [
+                    { itemId: 'oil-filter', name: 'Oil Filter', currentStock: 50, unitPrice: 15.99 },
+                    { itemId: 'air-filter', name: 'Air Filter', currentStock: 30, unitPrice: 24.99 },
+                    { itemId: 'brake-pads', name: 'Brake Pads', currentStock: 20, unitPrice: 89.99 },
+                    { itemId: 'engine-oil', name: 'Engine Oil (1L)', currentStock: 100, unitPrice: 12.99 },
+                    { itemId: 'wiper-blades', name: 'Wiper Blades', currentStock: 40, unitPrice: 19.99 },
+                    { itemId: 'spark-plugs', name: 'Spark Plugs', currentStock: 80, unitPrice: 8.99 }
+                ];
+                populateInventoryDropdown(dummyData);
+            });
+    }
+
+    // Populate inventory dropdown
+    function populateInventoryDropdown(items) {
+        const inventorySelect = document.getElementById('inventoryItemSelect');
+        if (!inventorySelect) return;
+
+        // Clear existing options except first one
+        while (inventorySelect.options.length > 1) {
+            inventorySelect.remove(1);
+        }
+
+        // Update inventory prices map
+        window.inventoryPrices = {};
+
+        // Add options
+        items.forEach(item => {
+            const option = document.createElement('option');
+            option.value = item.itemId;
+            option.textContent = `${item.name} - $${item.unitPrice.toFixed(2)} (${item.currentStock} in stock)`;
+            inventorySelect.appendChild(option);
+
+            // Store price in inventory prices map
+            window.inventoryPrices[item.itemId] = item.unitPrice;
+        });
     }
 
     // Filter vehicles by status
@@ -2425,15 +2789,11 @@
 
     // Add inventory item
     function addInventoryItem(itemKey, quantity = 1) {
-        const inventoryName = {
-            'oil-filter': 'Oil Filter',
-            'air-filter': 'Air Filter',
-            'brake-pads': 'Brake Pads (Set)',
-            'engine-oil': 'Engine Oil (1L)',
-            'wiper-blades': 'Wiper Blades',
-            'spark-plugs': 'Spark Plugs'
-        };
+        // Check if item ID exists
+        if (!itemKey) return;
 
+        // Find item name by making a dummy request to the server or use local map
+        const itemName = itemKey; // This would be replaced by actual item name from server
         const price = window.inventoryPrices[itemKey] || 0;
 
         // Check if item already exists in the inventory items array
@@ -2446,7 +2806,7 @@
             // Add new item
             window.inventoryItems.push({
                 key: itemKey,
-                name: inventoryName[itemKey],
+                name: itemName,
                 price: price,
                 quantity: quantity
             });
@@ -2463,27 +2823,38 @@
 
         inventoryItemsList.innerHTML = '';
 
+        if (window.inventoryItems.length === 0) {
+            const emptyRow = document.createElement('tr');
+            emptyRow.innerHTML = `
+            <td colspan="5" style="text-align: center; padding: 20px;">
+                No inventory items added yet.
+            </td>
+        `;
+            inventoryItemsList.appendChild(emptyRow);
+            return;
+        }
+
         window.inventoryItems.forEach((item, index) => {
             const row = document.createElement('tr');
             const total = item.price * item.quantity;
 
             row.innerHTML = `
-                <td>${item.name}</td>
-                <td>$${item.price.toFixed(2)}</td>
-                <td>
-                    <div class="quantity-control">
-                        <button class="quantity-btn" onclick="decrementInventoryQuantity(${index})">-</button>
-                        <input type="number" class="quantity-input" value="${item.quantity}" min="1" data-index="${index}" onchange="updateInventoryQuantity(this)">
-                        <button class="quantity-btn" onclick="incrementInventoryQuantity(${index})">+</button>
-                    </div>
-                </td>
-                <td>$${total.toFixed(2)}</td>
-                <td style="text-align: center;">
-                    <button class="btn-remove" onclick="removeInventoryItem(${index})">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </td>
-            `;
+            <td>${item.name}</td>
+            <td>$${item.price.toFixed(2)}</td>
+            <td>
+                <div class="quantity-control">
+                    <button class="quantity-btn" onclick="decrementInventoryQuantity(${index})">-</button>
+                    <input type="number" class="quantity-input" value="${item.quantity}" min="1" data-index="${index}" onchange="updateInventoryQuantity(this)">
+                    <button class="quantity-btn" onclick="incrementInventoryQuantity(${index})">+</button>
+                </div>
+            </td>
+            <td>$${total.toFixed(2)}</td>
+            <td style="text-align: center;">
+                <button class="btn-remove" onclick="removeInventoryItem(${index})">
+                    <i class="fas fa-times"></i>
+                </button>
+            </td>
+        `;
 
             inventoryItemsList.appendChild(row);
         });
@@ -2555,17 +2926,17 @@
             const total = charge.hours * charge.rate;
 
             laborItem.innerHTML = `
-                <div class="labor-details">
-                    <div class="labor-title">${charge.description}</div>
-                    <div class="labor-subtitle">${charge.hours} hours @ $${charge.rate.toFixed(2)}/hr</div>
-                </div>
-                <div class="labor-price">$${total.toFixed(2)}</div>
-                <div class="labor-actions">
-                    <button class="btn-remove" onclick="removeLaborCharge(${index})">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            `;
+            <div class="labor-details">
+                <div class="labor-title">${charge.description}</div>
+                <div class="labor-subtitle">${charge.hours} hours @ $${charge.rate.toFixed(2)}/hr</div>
+            </div>
+            <div class="labor-price">$${total.toFixed(2)}</div>
+            <div class="labor-actions">
+                <button class="btn-remove" onclick="removeLaborCharge(${index})">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
 
             laborChargesList.appendChild(laborItem);
         });
@@ -2594,7 +2965,7 @@
 
         // Calculate totals
         const subtotal = partsSubtotal + laborSubtotal;
-        const tax = subtotal * 0.07;
+        const tax = subtotal * 0.07; // 7% tax
         const total = subtotal + tax;
 
         // Update the display
@@ -2619,11 +2990,11 @@
             const total = item.price * item.quantity;
 
             row.innerHTML = `
-                <td>${item.name} (Parts)</td>
-                <td>${item.quantity}</td>
-                <td>${item.price.toFixed(2)}</td>
-                <td>${total.toFixed(2)}</td>
-            `;
+            <td>${item.name} (Parts)</td>
+            <td>${item.quantity}</td>
+            <td>${item.price.toFixed(2)}</td>
+            <td>${total.toFixed(2)}</td>
+        `;
 
             billItemsList.appendChild(row);
         });
@@ -2634,14 +3005,25 @@
             const total = charge.hours * charge.rate;
 
             row.innerHTML = `
-                <td>${charge.description} (Labor)</td>
-                <td>${charge.hours} hrs</td>
-                <td>${charge.rate.toFixed(2)}/hr</td>
-                <td>${total.toFixed(2)}</td>
-            `;
+            <td>${charge.description} (Labor)</td>
+            <td>${charge.hours} hrs</td>
+            <td>${charge.rate.toFixed(2)}/hr</td>
+            <td>${total.toFixed(2)}</td>
+        `;
 
             billItemsList.appendChild(row);
         });
+
+        // If no items, show message
+        if (window.inventoryItems.length === 0 && window.laborCharges.length === 0) {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+            <td colspan="4" style="text-align: center; padding: 20px;">
+                No service items added yet.
+            </td>
+        `;
+            billItemsList.appendChild(row);
+        }
 
         // Calculate totals
         let subtotal = 0;
@@ -2660,53 +3042,6 @@
         document.getElementById('billSubtotal').textContent = `${subtotal.toFixed(2)}`;
         document.getElementById('billTax').textContent = `${tax.toFixed(2)}`;
         document.getElementById('billTotal').textContent = `${total.toFixed(2)}`;
-    }
-
-    // Save service items
-    function saveServiceItems() {
-        // Here you would save the service items to the server
-        // For demo purposes, we'll just show a success notification
-        showNotification('Service items saved successfully!');
-    }
-
-    // Save bill
-    function saveBill() {
-        // Here you would save the bill to the server
-        // For demo purposes, we'll just show a success notification
-        showNotification('Bill saved successfully!');
-    }
-
-    // Download bill PDF
-    function downloadBillPdf() {
-        // Here you would generate and download a PDF of the bill
-        // For demo purposes, we'll just show a success notification
-        showNotification('Bill PDF downloaded successfully!');
-    }
-
-    // Send bill to admin
-    function sendBillToAdmin() {
-        // Here you would send the bill to admin for processing
-        // For demo purposes, we'll just show a success notification
-        showNotification('Bill has been sent to admin for processing!');
-    }
-
-    // Mark service as complete
-    function markServiceComplete() {
-        // Here you would update the service status to complete
-        // For demo purposes, we'll just show a notification
-        showNotification('Service marked as complete!');
-        document.getElementById('vehicleDetailsModal').classList.remove('show');
-
-        // Update the status badge in the table for demo
-        const firstRow = document.querySelector('#vehiclesTableBody tr');
-        if (firstRow) {
-            const statusCell = firstRow.querySelector('td:nth-child(5)');
-            statusCell.innerHTML = `
-                <span class="status-badge completed">
-                    <i class="fas fa-circle"></i> Completed
-                </span>
-            `;
-        }
     }
 
     // Initialize status update events
@@ -2734,7 +3069,14 @@
             currentStatusBadge.classList.remove('new', 'in-progress', 'completed', 'diagnosis', 'pending-parts', 'repair', 'quality-check');
 
             // Add the selected status class
-            currentStatusBadge.classList.add(status);
+            let statusClass = 'new';
+            if (status === 'Diagnosis' || status === 'Repair') {
+                statusClass = 'in-progress';
+            } else if (status === 'Completed') {
+                statusClass = 'completed';
+            }
+
+            currentStatusBadge.classList.add(statusClass);
 
             // Update the status text
             let statusText = status.replace(/-/g, ' ');
@@ -2749,36 +3091,51 @@
         const notes = document.getElementById('statusNotes').value;
         const notifyCustomer = document.getElementById('notifyCustomer').checked;
 
-        // Add to status history
-        addStatusHistoryItem(status, notes);
+        // Prepare data for API call
+        const statusData = {
+            status: status,
+            notes: notes,
+            notifyCustomer: notifyCustomer
+        };
 
-        // Here you would send the status update to the server
-        // For demo, just show a notification
-        showNotification(`Service status updated to ${status.replace(/-/g, ' ')}!`);
+        // Send to server
+        fetch(`/serviceAdvisor/api/service/${window.currentRequestId}/status`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(statusData)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to update status');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Add to status history
+                addStatusHistoryItem(status, notes);
 
-        // If notify customer is checked, show additional notification
-        if (notifyCustomer) {
-            setTimeout(() => {
-                showNotification('Status update notification sent to customer');
-            }, 3000);
-        }
+                // Show success notification
+                showNotification(`Service status updated to ${status}!`);
 
-        // Update the status in the main table (for demo)
-        const firstRow = document.querySelector('#vehiclesTableBody tr');
-        if (firstRow) {
-            const statusCell = firstRow.querySelector('td:nth-child(5)');
-            let statusText = status.replace(/-/g, ' ');
-            statusText = statusText.charAt(0).toUpperCase() + statusText.slice(1);
+                // If notify customer is checked, show additional notification
+                if (notifyCustomer) {
+                    setTimeout(() => {
+                        showNotification('Status update notification sent to customer');
+                    }, 3000);
+                }
 
-            statusCell.innerHTML = `
-                <span class="status-badge ${status}">
-                    <i class="fas fa-circle"></i> ${statusText}
-                </span>
-            `;
-        }
+                // Update the status in the main table
+                updateStatusInTable(window.currentRequestId, status);
 
-        // Clear the notes field
-        document.getElementById('statusNotes').value = '';
+                // Clear the notes field
+                document.getElementById('statusNotes').value = '';
+            })
+            .catch(error => {
+                console.error('Error updating service status:', error);
+                showNotification('Error updating status: ' + error.message, 'error');
+            });
     }
 
     // Add status history item
@@ -2799,24 +3156,241 @@
         let statusText = status.replace(/-/g, ' ');
         statusText = statusText.charAt(0).toUpperCase() + statusText.slice(1);
 
+        let statusClass = 'new';
+        if (status === 'Diagnosis' || status === 'Repair') {
+            statusClass = 'in-progress';
+        } else if (status === 'Completed') {
+            statusClass = 'completed';
+        }
+
         const historyItem = document.createElement('div');
         historyItem.className = 'status-history-item';
         historyItem.innerHTML = `
-            <div class="status-history-badge ${status}">${statusText}</div>
-            <div class="status-history-details">
-                <div class="status-history-date">${formattedDate}</div>
-                <div class="status-history-user">Updated by: Service Advisor</div>
-                <div class="status-history-notes">${notes || 'No notes provided'}</div>
-            </div>
-        `;
+        <div class="status-history-badge ${statusClass}">${statusText}</div>
+        <div class="status-history-details">
+            <div class="status-history-date">${formattedDate}</div>
+            <div class="status-history-user">Updated by: Service Advisor</div>
+            <div class="status-history-notes">${notes || 'No notes provided'}</div>
+        </div>
+    `;
 
         // Insert new history item at the top
         statusHistory.insertBefore(historyItem, statusHistory.firstChild);
     }
 
+    // Update status in the table
+    function updateStatusInTable(requestId, status) {
+        const row = document.querySelector(`#vehiclesTableBody tr[data-id="${requestId}"]`);
+        if (row) {
+            const statusCell = row.querySelector('td:nth-child(5)');
+            if (statusCell) {
+                let statusClass = 'new';
+                if (status === 'Diagnosis' || status === 'Repair') {
+                    statusClass = 'in-progress';
+                } else if (status === 'Completed') {
+                    statusClass = 'completed';
+                }
+
+                statusCell.innerHTML = `
+                <span class="status-badge ${statusClass}">
+                    <i class="fas fa-circle"></i> ${status}
+                </span>
+            `;
+            }
+        }
+    }
+
+    // Save service items
+    function saveServiceItems() {
+        // Only proceed if we have items to save
+        if (window.inventoryItems.length === 0 && window.laborCharges.length === 0) {
+            showNotification('No service items to save', 'info');
+            return;
+        }
+
+        // Save inventory items
+        if (window.inventoryItems.length > 0) {
+            // Format inventory items for API
+            const items = window.inventoryItems.map(item => {
+                return {
+                    itemId: item.key,
+                    name: item.name,
+                    quantity: item.quantity,
+                    unitPrice: item.price
+                };
+            });
+
+            // Send to server
+            fetch(`/serviceAdvisor/api/service/${window.currentRequestId}/inventory-items`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ items: items })
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to save inventory items');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Process response - update bill data
+                    loadCurrentBill(data);
+
+                    // Show success notification
+                    showNotification('Inventory items saved successfully!');
+                })
+                .catch(error => {
+                    console.error('Error saving inventory items:', error);
+                    showNotification('Error saving inventory items: ' + error.message, 'error');
+                });
+        }
+
+        // Save labor charges
+        if (window.laborCharges.length > 0) {
+            // Format labor charges for API
+            const charges = window.laborCharges.map(charge => {
+                return {
+                    description: charge.description,
+                    hours: charge.hours,
+                    ratePerHour: charge.rate,
+                    total: charge.hours * charge.rate
+                };
+            });
+
+            // Send to server
+            fetch(`/serviceAdvisor/api/service/${window.currentRequestId}/labor-charges`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(charges)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to save labor charges');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Process response - update bill data if not already updated by inventory items
+                    if (window.inventoryItems.length === 0) {
+                        loadCurrentBill(data);
+                    }
+
+                    // Show success notification if not already shown
+                    if (window.inventoryItems.length === 0) {
+                        showNotification('Labor charges saved successfully!');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error saving labor charges:', error);
+                    showNotification('Error saving labor charges: ' + error.message, 'error');
+                });
+        }
+
+        // Save service notes
+        const serviceNotes = document.getElementById('serviceNotes').value;
+        if (serviceNotes) {
+            // This would be part of the bill generation or a separate API call
+        }
+    }
+
+    // Generate bill
+    function generateBill() {
+        // Get service notes
+        const serviceNotes = document.getElementById('serviceNotes').value;
+
+        // Prepare bill request data
+        const billRequest = {
+            materials: window.inventoryItems.map(item => {
+                return {
+                    itemId: item.key,
+                    name: item.name,
+                    quantity: item.quantity,
+                    unitPrice: item.price,
+                    total: item.price * item.quantity
+                };
+            }),
+            laborCharges: window.laborCharges.map(charge => {
+                return {
+                    description: charge.description,
+                    hours: charge.hours,
+                    ratePerHour: charge.rate,
+                    total: charge.hours * charge.rate
+                };
+            }),
+            materialsTotal: window.inventoryItems.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+            laborTotal: window.laborCharges.reduce((sum, charge) => sum + (charge.hours * charge.rate), 0),
+            subtotal: window.inventoryItems.reduce((sum, item) => sum + (item.price * item.quantity), 0) +
+                window.laborCharges.reduce((sum, charge) => sum + (charge.hours * charge.rate), 0),
+            notes: serviceNotes,
+            sendEmail: true
+        };
+
+        // Calculate tax and grand total
+        billRequest.gst = billRequest.subtotal * 0.07;
+        billRequest.grandTotal = billRequest.subtotal + billRequest.gst;
+
+        // Send to server
+        fetch(`/serviceAdvisor/api/service/${window.currentRequestId}/generate-bill`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(billRequest)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to generate bill');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Show success notification
+                showNotification('Bill generated successfully!');
+
+                // If email was sent, show notification
+                if (data.emailSent) {
+                    setTimeout(() => {
+                        showNotification('Bill email sent to customer');
+                    }, 3000);
+                }
+            })
+            .catch(error => {
+                console.error('Error generating bill:', error);
+                showNotification('Error generating bill: ' + error.message, 'error');
+            });
+    }
+
+    // Download bill PDF
+    function downloadBillPdf() {
+        // Here you would generate and download a PDF of the bill
+        // For demo purposes, we'll just show a success notification
+        showNotification('Bill PDF downloaded successfully!');
+    }
+
+    // Send bill to admin
+    function sendBillToAdmin() {
+        // Here you would send the bill to admin for processing
+        // For demo purposes, we'll just show a success notification
+        showNotification('Bill has been sent to admin for processing!');
+    }
+
+    // Mark service as complete
+    function markServiceComplete() {
+        updateServiceStatus('Completed', 'Service marked as complete by service advisor.', true);
+    }
+
     // Show notification
-    function showNotification(message) {
+    function showNotification(message, type = 'success') {
         const notification = document.getElementById('successNotification');
+
+        // Update notification class based on type
+        notification.className = 'notification'; // Reset classes
+        notification.classList.add(type);
+
         document.getElementById('notificationMessage').textContent = message;
         notification.classList.add('show');
 

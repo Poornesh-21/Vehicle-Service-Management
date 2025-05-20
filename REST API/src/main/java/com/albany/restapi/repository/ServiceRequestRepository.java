@@ -14,4 +14,20 @@ public interface ServiceRequestRepository extends JpaRepository<ServiceRequest, 
     
     @Query("SELECT COUNT(sr) FROM ServiceRequest sr WHERE sr.serviceAdvisor.advisorId = :advisorId AND sr.status <> 'Completed'")
     long countActiveServicesByAdvisorId(@Param("advisorId") Integer advisorId);
+    
+    /**
+     * Find service requests by status
+     */
+    List<ServiceRequest> findByStatus(ServiceRequest.Status status);
+    
+    /**
+     * Find service requests that are not completed
+     */
+    @Query("SELECT sr FROM ServiceRequest sr WHERE sr.status <> 'Completed'")
+    List<ServiceRequest> findAllUnderService();
+    
+    /**
+     * Find service requests that are completed
+     */
+    List<ServiceRequest> findByStatusOrderByUpdatedAtDesc(ServiceRequest.Status status);
 }

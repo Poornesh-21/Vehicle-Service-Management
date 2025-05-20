@@ -19,10 +19,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Controller for service advisor management - handles both page rendering
- * and API operations for service advisors.
- */
 @Controller
 @RequestMapping("/admin")
 public class AdminServiceAdvisorController {
@@ -57,14 +53,10 @@ public class AdminServiceAdvisorController {
             model.addAttribute("success", success);
         }
 
-        return "admin/serviceAdvisors";
+        return "admin/serviceAdvisor";
     }
 
-    /* API ENDPOINTS */
 
-    /**
-     * Fetches all service advisors from the REST API
-     */
     @GetMapping("/service-advisors/api/advisors")
     @ResponseBody
     public ResponseEntity<List<ServiceAdvisorDTO>> getAllServiceAdvisors(

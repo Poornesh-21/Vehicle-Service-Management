@@ -18,10 +18,13 @@ public class WebConfig implements WebMvcConfigurer {
     public void addViewControllers(ViewControllerRegistry registry) {
         registry.addViewController("/admin/login").setViewName("admin/login");
 
+        // Add redirect from /service-advisors to /admin/service-advisors
+        registry.addRedirectViewController("/service-advisors", "/admin/service-advisors");
+
         registry.addRedirectViewController("/", "/admin/login");
         registry.addRedirectViewController("/login", "/admin/login");
     }
-    
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/CSS/**").addResourceLocations("classpath:/static/CSS/");
@@ -32,17 +35,18 @@ public class WebConfig implements WebMvcConfigurer {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(AbstractHttpConfigurer::disable)
+                .csrf(AbstractHttpConfigurer::disable)
 
-            .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/CSS/**", "/Javascript/**", "/assets/**").permitAll()
-                .requestMatchers("/admin/login").permitAll()
+                .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/CSS/**", "/Javascript/**", "/assets/**").permitAll()
+                        .requestMatchers("/admin/login").permitAll()
+                        .requestMatchers("/service-advisors").permitAll() // Allow access to the redirect path
 
-                .anyRequest().permitAll()
-            )
+                        .anyRequest().permitAll()
+                )
 
-            .formLogin(AbstractHttpConfigurer::disable);
-            
+                .formLogin(AbstractHttpConfigurer::disable);
+
         return http.build();
     }
 }

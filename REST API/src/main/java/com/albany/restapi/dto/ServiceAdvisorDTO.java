@@ -23,4 +23,5 @@ public class ServiceAdvisorDTO {
     private String formattedId;
     private int workloadPercentage;
     private int activeServices;
+    private String password; // Added for password resets and new account creation
 }

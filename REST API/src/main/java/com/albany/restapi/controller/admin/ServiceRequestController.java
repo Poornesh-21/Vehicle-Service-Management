@@ -54,15 +54,29 @@ public class ServiceRequestController {
     }
 
     /**
-     * Create a new service request
+     * Create a new service request with improved error handling
      */
     @PostMapping("/api")
     public ResponseEntity<?> createServiceRequest(@RequestBody ServiceRequestDTO requestDTO) {
         try {
+            logger.info("Creating service request: {}", requestDTO);
+            
+            // Basic validation
+            if (requestDTO.getVehicleRegistration() == null 
+                    && (requestDTO.getRegistrationNumber() != null)) {
+                // Map registrationNumber to vehicleRegistration for compatibility
+                requestDTO.setVehicleRegistration(requestDTO.getRegistrationNumber());
+            }
+            
             ServiceRequestDTO newRequest = serviceRequestService.createServiceRequest(requestDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(newRequest);
         } catch (EntityNotFoundException e) {
+            logger.error("Entity not found: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("error", e.getMessage()));
+        } catch (ServiceRequestExceptions.ValidationException e) {
+            logger.error("Validation error: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("error", e.getMessage()));
         } catch (Exception e) {
             logger.error("Error creating service request", e);

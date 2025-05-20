@@ -42,13 +42,13 @@ public class ServiceRequest {
     @Column(nullable = false)
     private String vehicleType;
     
-    @Column(nullable = false)
+    @Column(nullable = false, name = "vehicle_brand")
     private String vehicleBrand;
     
     @Column(nullable = false)
     private String vehicleModel;
     
-    @Column(nullable = false)
+    @Column(nullable = false, name = "vehicle_registration")
     private String vehicleRegistration;
     
     private Integer vehicleYear;
@@ -72,6 +72,26 @@ public class ServiceRequest {
         }
         if (updatedAt == null) {
             updatedAt = LocalDateTime.now();
+        }
+        
+        // Ensure vehicleRegistration is not null
+        if (vehicleRegistration == null) {
+            vehicleRegistration = "Unknown";
+        }
+        
+        // Ensure vehicleBrand is not null
+        if (vehicleBrand == null) {
+            vehicleBrand = "Unknown";
+        }
+        
+        // Ensure vehicleModel is not null
+        if (vehicleModel == null) {
+            vehicleModel = "Unknown";
+        }
+        
+        // Ensure vehicleType is not null
+        if (vehicleType == null) {
+            vehicleType = "Car";
         }
     }
     

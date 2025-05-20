@@ -784,17 +784,13 @@ function createEnhancedServiceRequest(vehicleId) {
     }
 
     // Create service request with complete vehicle information
-    // The key change is explicitly providing vehicleBrand in exactly the format expected by backend
+    // Fixed: Use vehicleRegistration instead of registrationNumber to match backend model
     const serviceRequest = {
         vehicleId: vehicleId,
-        // This is the critical field that was missing - add vehicle_brand (not camelCase)
-        vehicle_brand: selectedVehicleData.brand || "Unknown Brand",
-        // Still keep the camelCase version for other parts of the system
         vehicleBrand: selectedVehicleData.brand || "Unknown Brand",
         vehicleModel: selectedVehicleData.model || "Unknown Model",
-        registrationNumber: selectedVehicleData.registrationNumber || "Unknown",
-        vehicleCategory: selectedVehicleData.category || "Car",
-        // Other form fields
+        vehicleRegistration: selectedVehicleData.registrationNumber || "Unknown", // THIS IS THE FIX
+        vehicleType: selectedVehicleData.category || "Car",
         serviceType: document.getElementById('serviceType').value,
         deliveryDate: document.getElementById('deliveryDate').value,
         additionalDescription: document.getElementById('description').value || "",
@@ -874,7 +870,6 @@ function createServiceRequestWithVehicle(vehicleId) {
     const token = getToken();
     showSpinner();
 
-    // CHANGE THIS LINE - Use correct endpoint
     fetch(`/admin/api/vehicles/${vehicleId}${token ? `?token=${token}` : ''}`, {
         method: 'GET',
         headers: {
@@ -895,12 +890,10 @@ function createServiceRequestWithVehicle(vehicleId) {
             // Now create the service request with complete vehicle data
             const serviceRequest = {
                 vehicleId: vehicleId,
-                // Add both snake_case and camelCase versions for compatibility
-                vehicle_brand: vehicleData.brand || "Unknown Brand", // Critical field needed by database
                 vehicleBrand: vehicleData.brand || "Unknown Brand",
                 vehicleModel: vehicleData.model || "Unknown Model",
-                registrationNumber: vehicleData.registrationNumber || "Unknown",
-                vehicleCategory: vehicleData.category || "Car",
+                vehicleRegistration: vehicleData.registrationNumber || "Unknown", // FIXED: use vehicleRegistration not registrationNumber
+                vehicleType: vehicleData.category || "Car",
                 serviceType: document.getElementById('serviceType').value,
                 deliveryDate: document.getElementById('deliveryDate').value,
                 additionalDescription: document.getElementById('description').value || "",
@@ -916,7 +909,6 @@ function createServiceRequestWithVehicle(vehicleId) {
                 return;
             }
 
-            // CHANGE THIS LINE - Match endpoint with our controller
             return fetch(`/admin/service-requests/api${token ? `?token=${token}` : ''}`, {
                 method: 'POST',
                 headers: {

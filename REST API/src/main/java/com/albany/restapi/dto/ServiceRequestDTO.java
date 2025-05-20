@@ -1,6 +1,5 @@
 package com.albany.restapi.dto;
 
-import com.albany.restapi.model.ServiceRequest;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -23,7 +22,7 @@ public class ServiceRequestDTO {
     private String vehicleType;
     private String vehicleBrand;
     private String vehicleModel;
-    private String vehicleRegistration;
+    private String vehicleRegistration; // This name must match the database column name
     private Integer vehicleYear;
     private String serviceType;
     private String serviceDescription;
@@ -43,4 +42,17 @@ public class ServiceRequestDTO {
     // Formatted dates for UI display
     private String formattedDeliveryDate;
     private String formattedCreatedDate;
+    
+    // Legacy field for backward compatibility with frontend
+    private String registrationNumber; 
+    
+    // Getter for registrationNumber that actually returns vehicleRegistration
+    public String getRegistrationNumber() {
+        return this.vehicleRegistration;
+    }
+    
+    // Setter for registrationNumber that sets vehicleRegistration
+    public void setRegistrationNumber(String registrationNumber) {
+        this.vehicleRegistration = registrationNumber;
+    }
 }

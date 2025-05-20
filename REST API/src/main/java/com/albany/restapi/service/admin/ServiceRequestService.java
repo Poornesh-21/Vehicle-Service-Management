@@ -7,6 +7,8 @@ import com.albany.restapi.model.*;
 import com.albany.restapi.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,14 +21,14 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ServiceRequestService {
+    private static final Logger logger = LoggerFactory.getLogger(ServiceRequestService.class);
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("MMM d, yyyy");
 
     private final ServiceRequestRepository serviceRequestRepository;
     private final ServiceAdvisorRepository serviceAdvisorRepository;
     private final UserRepository userRepository;
     private final MaterialUsageRepository materialUsageRepository;
     private final VehicleRepository vehicleRepository;
-
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("MMM d, yyyy");
 
     /**
      * Get all service requests
@@ -47,15 +49,44 @@ public class ServiceRequestService {
     }
 
     /**
-     * Create a new service request
+     * Create a new service request with improved validation
      */
     @Transactional
     public ServiceRequestDTO createServiceRequest(ServiceRequestDTO requestDTO) {
+        logger.debug("Creating service request: {}", requestDTO);
+
         // Validate vehicle exists if vehicle ID is provided
         Vehicle vehicle = null;
         if (requestDTO.getVehicleId() != null) {
             vehicle = vehicleRepository.findById(requestDTO.getVehicleId())
                     .orElseThrow(() -> new EntityNotFoundException("Vehicle not found with id: " + requestDTO.getVehicleId()));
+
+            // If vehicle registration is null, try to get it from the vehicle entity
+            if (requestDTO.getVehicleRegistration() == null && vehicle.getRegistrationNumber() != null) {
+                logger.debug("Setting vehicleRegistration from vehicle entity: {}", vehicle.getRegistrationNumber());
+                requestDTO.setVehicleRegistration(vehicle.getRegistrationNumber());
+            }
+        }
+
+        // Check for null registration and provide a default if needed
+        if (requestDTO.getVehicleRegistration() == null) {
+            logger.warn("Vehicle registration is null, using 'Unknown' as default");
+            requestDTO.setVehicleRegistration("Unknown");
+        }
+
+        // Ensure vehicle brand is set
+        if (requestDTO.getVehicleBrand() == null || requestDTO.getVehicleBrand().isEmpty()) {
+            requestDTO.setVehicleBrand("Unknown");
+        }
+
+        // Ensure vehicle model is set
+        if (requestDTO.getVehicleModel() == null || requestDTO.getVehicleModel().isEmpty()) {
+            requestDTO.setVehicleModel("Unknown Model");
+        }
+
+        // Ensure vehicle type is set
+        if (requestDTO.getVehicleType() == null || requestDTO.getVehicleType().isEmpty()) {
+            requestDTO.setVehicleType("Car");
         }
 
         // Set initial status to Received if not specified
@@ -63,11 +94,15 @@ public class ServiceRequestService {
             requestDTO.setStatus("Received");
         }
 
-        // Build service request entity
+        // Determine user ID from vehicle if not provided
+        Long userId = requestDTO.getUserId();
+        if (userId == null && vehicle != null && vehicle.getCustomer() != null && vehicle.getCustomer().getUser() != null) {
+            userId = vehicle.getCustomer().getUser().getUserId().longValue();
+        }
+
+        // Build service request entity with all required fields
         ServiceRequest serviceRequest = ServiceRequest.builder()
-                .userId(requestDTO.getUserId() != null ? requestDTO.getUserId() :
-                        (vehicle != null && vehicle.getCustomer() != null && vehicle.getCustomer().getUser() != null ?
-                                vehicle.getCustomer().getUser().getUserId().longValue() : null))
+                .userId(userId)
                 .vehicle(vehicle)
                 .vehicleType(requestDTO.getVehicleType())
                 .vehicleBrand(requestDTO.getVehicleBrand())
@@ -81,6 +116,7 @@ public class ServiceRequestService {
                 .status(ServiceRequest.Status.valueOf(requestDTO.getStatus()))
                 .build();
 
+        logger.debug("Saving service request: {}", serviceRequest);
         ServiceRequest savedRequest = serviceRequestRepository.save(serviceRequest);
         return mapToDTO(savedRequest);
     }
@@ -115,6 +151,7 @@ public class ServiceRequestService {
                 existingRequest.setStatus(ServiceRequest.Status.valueOf(requestDTO.getStatus()));
             } catch (IllegalArgumentException e) {
                 // Ignore invalid status values
+                logger.warn("Invalid status value: {}", requestDTO.getStatus());
             }
         }
 
@@ -251,6 +288,7 @@ public class ServiceRequestService {
             }
         } catch (Exception e) {
             // Silently ignore exceptions when getting customer info
+            logger.warn("Error retrieving customer info for user ID: {}", request.getUserId(), e);
         }
 
         // Get materials used for this service request if available
@@ -278,6 +316,7 @@ public class ServiceRequestService {
             dto.setMaterials(materials);
         } catch (Exception e) {
             // Silently ignore exceptions when getting materials
+            logger.warn("Error retrieving materials for request ID: {}", request.getRequestId(), e);
         }
 
         return dto;

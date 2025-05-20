@@ -598,7 +598,7 @@ function loadVehiclesForCustomer(customerId) {
         return;
     }
 
-    // Keep original endpoint: /admin/api/customers/{customerId}/vehicles
+    // CHANGE THIS LINE - Fix the endpoint to match what we implemented
     fetch(`/admin/api/customers/${customerId}/vehicles${token ? `?token=${token}` : ''}`, {
         method: 'GET',
         headers: {
@@ -640,6 +640,7 @@ function loadVehiclesForCustomer(customerId) {
             resetVehicleDropdown('Error loading vehicles. Please try again.');
         });
 }
+
 
 function resetVehicleDropdown(message = 'Select Customer First') {
     const dropdown = document.getElementById('vehicleId');
@@ -685,8 +686,8 @@ function saveNewVehicle(callback) {
         return;
     }
 
-    // Fixed: Using the correct endpoint pattern
-    fetch(`/admin/customers/${customerId}/vehicles`, {
+    // CHANGE THIS LINE - Fix the endpoint to match what we implemented
+    fetch(`/admin/api/customers/${customerId}/vehicles`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -734,7 +735,6 @@ function saveNewVehicle(callback) {
         });
 }
 
-// Function to fetch vehicle details when a vehicle is selected
 function fetchVehicleDetails(vehicleId) {
     const token = getToken();
     if (!token) {
@@ -744,6 +744,7 @@ function fetchVehicleDetails(vehicleId) {
 
     showSpinner();
 
+    // CHANGE THIS LINE - Fix the endpoint to match what we implemented
     fetch(`/admin/api/vehicles/${vehicleId}${token ? `?token=${token}` : ''}`, {
         method: 'GET',
         headers: {
@@ -772,6 +773,7 @@ function fetchVehicleDetails(vehicleId) {
             showToast('Failed to fetch vehicle details: ' + error.message, 'error');
         });
 }
+
 
 function createEnhancedServiceRequest(vehicleId) {
     if (!selectedVehicleData) {
@@ -867,12 +869,12 @@ function createEnhancedServiceRequest(vehicleId) {
         });
 }
 
-// Modified function to create service request with vehicle
 function createServiceRequestWithVehicle(vehicleId) {
     // For newly created vehicles, we need to get the vehicle details first
     const token = getToken();
     showSpinner();
 
+    // CHANGE THIS LINE - Use correct endpoint
     fetch(`/admin/api/vehicles/${vehicleId}${token ? `?token=${token}` : ''}`, {
         method: 'GET',
         headers: {
@@ -914,6 +916,7 @@ function createServiceRequestWithVehicle(vehicleId) {
                 return;
             }
 
+            // CHANGE THIS LINE - Match endpoint with our controller
             return fetch(`/admin/service-requests/api${token ? `?token=${token}` : ''}`, {
                 method: 'POST',
                 headers: {

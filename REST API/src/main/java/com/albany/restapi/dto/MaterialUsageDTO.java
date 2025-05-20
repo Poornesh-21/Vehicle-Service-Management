@@ -15,7 +15,12 @@ import java.time.LocalDateTime;
 public class MaterialUsageDTO {
     private Integer materialUsageId;
     private String requestReference;
+    private String name;
     private LocalDateTime usedAt;
     private BigDecimal quantity;
+    private BigDecimal unitPrice;
     private String serviceAdvisorName;
+    
+    // Computed fields
+    private BigDecimal totalCost;
 }

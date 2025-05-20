@@ -19,7 +19,19 @@ document.addEventListener('DOMContentLoaded', function() {
         mobileMenuToggle.addEventListener('click', () => sidebar.classList.toggle('active'));
     }
 
-    // Initialize Auth
+    // Initialize Auth - Get token from URL params first, then from storage
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlToken = urlParams.get('token');
+
+    // Store token from URL if available (and remove from URL)
+    if (urlToken) {
+        localStorage.setItem("jwt-token", urlToken);
+        // Remove token from URL to prevent exposing it
+        const url = new URL(window.location);
+        url.searchParams.delete('token');
+        window.history.replaceState({}, document.title, url);
+    }
+
     const token = getToken();
     if (!token) {
         window.location.href = '/admin/login?error=session_expired';
@@ -88,6 +100,27 @@ document.addEventListener('DOMContentLoaded', function() {
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + getToken()
         };
+    }
+
+    // Handle unauthorized responses
+    function handleResponse(response) {
+        if (response.status === 401 || response.status === 403) {
+            // Token expired or invalid
+            localStorage.removeItem("jwt-token");
+            sessionStorage.removeItem("jwt-token");
+            window.location.href = '/admin/login?error=session_expired';
+            throw new Error('Authentication failed');
+        }
+
+        if (!response.ok) {
+            return response.json().then(data => {
+                throw new Error(data.message || `Server responded with status: ${response.status}`);
+            }).catch(() => {
+                throw new Error(`Server responded with status: ${response.status}`);
+            });
+        }
+
+        return response.json();
     }
 
     // Navigation Setup
@@ -183,10 +216,7 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'GET',
             headers: getAuthHeaders()
         })
-            .then(response => {
-                if (!response.ok) throw new Error(`Server responded with status: ${response.status}`);
-                return response.json();
-            })
+            .then(handleResponse)
             .then(customer => {
                 populateCustomerDetails(customer);
                 hideSpinner();
@@ -194,7 +224,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 hideSpinner();
-                showToast('Error', 'Failed to load customer details. Please try again.', 'error');
+                showToast('Error', error.message || 'Failed to load customer details. Please try again.', 'error');
             });
     }
 
@@ -228,18 +258,18 @@ document.addEventListener('DOMContentLoaded', function() {
     function validateCustomerForm(formId, singleFieldId = null) {
         try {
             const prefix = formId === 'editCustomerForm' ? 'edit' : '';
-            const capitalize = str => str.charAt(0).toUpperCase() + str.slice(1);
 
+            // Define field IDs exactly as they appear in the HTML
             const fieldIds = {
-                firstName: prefix + capitalize('firstName'),
-                lastName: prefix + capitalize('lastName'),
-                email: prefix + capitalize('email'),
-                phone: prefix + capitalize('phone'),
-                street: prefix + capitalize('street'),
-                city: prefix + capitalize('city'),
-                state: prefix + capitalize('state'),
-                postalCode: prefix + capitalize('postalCode'),
-                membershipStatus: prefix + capitalize('membershipStatus')
+                firstName: prefix + 'firstName',
+                lastName: prefix + 'lastName',
+                email: prefix + 'email',
+                phone: prefix + 'phone',
+                street: prefix + 'street',
+                city: prefix + 'city',
+                state: prefix + 'state',
+                postalCode: prefix + 'postalCode',
+                membershipStatus: prefix + 'membershipStatus'
             };
 
             const errorIds = {};
@@ -289,7 +319,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     pattern: /^[A-Za-z]+$/,
                     messages: {
                         required: "First name is required",
-                        length: "First name must be between 2 and 50 characters",
+                        length: "First name must be between 1 and 50 characters",
                         pattern: "First name must contain only alphabetic characters"
                     }
                 },
@@ -300,7 +330,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     pattern: /^[A-Za-z]+$/,
                     messages: {
                         required: "Last name is required",
-                        length: "Last name must be between 2 and 50 characters",
+                        length: "Last name must be between 1 and 50 characters",
                         pattern: "Last name must contain only alphabetic characters"
                     }
                 },
@@ -316,10 +346,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 phone: {
                     required: true,
-                    pattern: /^[6-9]\d{9}$/,
+                    pattern: /^(\+?\d{1,3}[-\s]?)?\d{9,12}$/,
                     messages: {
                         required: "Phone number is required",
-                        pattern: "Phone number must be a valid 10-digit Indian mobile number starting with 6-9"
+                        pattern: "Please enter a valid phone number. International format is accepted."
                     }
                 },
                 street: {
@@ -368,7 +398,11 @@ document.addEventListener('DOMContentLoaded', function() {
             fieldsToValidate.forEach(field => {
                 if (!field) return;
 
-                const value = document.getElementById(fieldIds[field]).value.trim();
+                // Check if the field element exists before trying to access its value
+                const fieldElement = document.getElementById(fieldIds[field]);
+                if (!fieldElement) return;
+
+                const value = fieldElement.value.trim();
                 const rule = rules[field];
 
                 // Skip validation if the field is optional and empty
@@ -420,12 +454,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function setupFieldValidation(formId) {
         const prefix = formId === 'editCustomerForm' ? 'edit' : '';
-        const capitalize = str => str.charAt(0).toUpperCase() + str.slice(1);
 
         const fieldIds = [
             'firstName', 'lastName', 'email', 'phone',
             'street', 'city', 'state', 'postalCode', 'membershipStatus'
-        ].map(field => prefix + capitalize(field));
+        ].map(field => prefix + field);
 
         fieldIds.forEach(fieldId => {
             const field = document.getElementById(fieldId);
@@ -459,62 +492,79 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Save Customer Button
+    // Updated Save Customer Button handler with improved error handling
     if (saveCustomerBtn) {
         saveCustomerBtn.addEventListener('click', function() {
             this.classList.add('processing');
             this.disabled = true;
 
-            const form = document.getElementById('addCustomerForm');
+            try {
+                const form = document.getElementById('addCustomerForm');
 
-            if (!validateCustomerForm('addCustomerForm')) {
-                this.classList.remove('processing');
-                this.disabled = false;
-                return;
-            }
-
-            showSpinner();
-
-            const formData = {
-                firstName: document.getElementById('firstName').value.trim(),
-                lastName: document.getElementById('lastName').value.trim(),
-                email: document.getElementById('email').value.trim(),
-                phoneNumber: document.getElementById('phone').value.trim(),
-                street: document.getElementById('street').value.trim(),
-                city: document.getElementById('city').value.trim(),
-                state: document.getElementById('state').value.trim(),
-                postalCode: document.getElementById('postalCode').value.trim(),
-                membershipStatus: document.getElementById('membershipStatus').value,
-                isActive: true
-            };
-
-            fetch(API_BASE, {
-                method: 'POST',
-                headers: getAuthHeaders(),
-                body: JSON.stringify(formData)
-            })
-                .then(response => {
-                    if (!response.ok) throw new Error('Network response was not ok');
-                    return response.json();
-                })
-                .then(data => {
-                    hideSpinner();
-
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('addCustomerModal'));
-                    modal.hide();
-
-                    showConfirmation('Customer Added', 'The customer has been successfully added to the system.');
-
-                    form.reset();
-
-                    setTimeout(() => window.location.reload(), 800);
-                })
-                .catch(error => {
-                    hideSpinner();
+                if (!validateCustomerForm('addCustomerForm')) {
                     this.classList.remove('processing');
                     this.disabled = false;
-                    showToast('Error', 'Failed to add customer. Please try again.', 'error');
-                });
+                    return;
+                }
+
+                showSpinner();
+
+                const formData = {
+                    firstName: document.getElementById('firstName').value.trim(),
+                    lastName: document.getElementById('lastName').value.trim(),
+                    email: document.getElementById('email').value.trim(),
+                    phoneNumber: document.getElementById('phone').value.trim(),
+                    street: document.getElementById('street').value.trim(),
+                    city: document.getElementById('city').value.trim(),
+                    state: document.getElementById('state').value.trim(),
+                    postalCode: document.getElementById('postalCode').value.trim(),
+                    membershipStatus: document.getElementById('membershipStatus').value,
+                    isActive: true  // Always set to true for new customers
+                };
+
+                fetch(API_BASE, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify(formData)
+                })
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.json().then(data => {
+                                throw new Error(data.message || `Error creating customer: ${response.status}`);
+                            }).catch(e => {
+                                // If JSON parsing fails, handle the text response
+                                return response.text().then(text => {
+                                    throw new Error(text || `Error creating customer: ${response.status}`);
+                                });
+                            });
+                        }
+
+                        return response.json();
+                    })
+                    .then(data => {
+                        hideSpinner();
+
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('addCustomerModal'));
+                        if (modal) modal.hide();
+
+                        showConfirmation('Customer Added', 'The customer has been successfully added to the system.');
+
+                        form.reset();
+
+                        setTimeout(() => window.location.reload(), 800);
+                    })
+                    .catch(error => {
+                        hideSpinner();
+                        this.classList.remove('processing');
+                        this.disabled = false;
+                        showToast('Error', error.message || 'Failed to add customer. Please try again.', 'error');
+                    });
+            } catch (e) {
+                hideSpinner();
+                this.classList.remove('processing');
+                this.disabled = false;
+                showToast('Error', 'An unexpected error occurred. Please try again.', 'error');
+            }
         });
     }
 
@@ -528,10 +578,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 method: 'GET',
                 headers: getAuthHeaders()
             })
-                .then(response => {
-                    if (!response.ok) throw new Error(`Server responded with status: ${response.status}`);
-                    return response.json();
-                })
+                .then(handleResponse)
                 .then(customer => {
                     hideSpinner();
 
@@ -553,11 +600,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.getElementById('editLastName').value = customer.lastName;
                     document.getElementById('editEmail').value = customer.email;
                     document.getElementById('editPhone').value = customer.phoneNumber;
-                    document.getElementById('editStreet').value = customer.street;
-                    document.getElementById('editCity').value = customer.city;
-                    document.getElementById('editState').value = customer.state;
-                    document.getElementById('editPostalCode').value = customer.postalCode;
-                    document.getElementById('editMembershipStatus').value = customer.membershipStatus;
+                    document.getElementById('editStreet').value = customer.street || '';
+                    document.getElementById('editCity').value = customer.city || '';
+                    document.getElementById('editState').value = customer.state || '';
+                    document.getElementById('editPostalCode').value = customer.postalCode || '';
+                    document.getElementById('editMembershipStatus').value = customer.membershipStatus || 'Standard';
 
                     new bootstrap.Modal(document.getElementById('editCustomerModal')).show();
 
@@ -565,7 +612,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
                 .catch(error => {
                     hideSpinner();
-                    showToast('Error', 'Failed to load customer details for editing. Please try again.', 'error');
+                    showToast('Error', error.message || 'Failed to load customer details for editing. Please try again.', 'error');
                 });
         });
     }
@@ -598,10 +645,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 headers: getAuthHeaders(),
                 body: JSON.stringify(formData)
             })
-                .then(response => {
-                    if (!response.ok) throw new Error(`Server responded with status: ${response.status}`);
-                    return response.json();
-                })
+                .then(handleResponse)
                 .then(data => {
                     hideSpinner();
 
@@ -614,7 +658,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
                 .catch(error => {
                     hideSpinner();
-                    showToast('Error', 'Failed to update customer. Please try again.', 'error');
+                    showToast('Error', error.message || 'Failed to update customer. Please try again.', 'error');
                 });
         });
     }
@@ -635,16 +679,7 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'GET',
             headers: getAuthHeaders()
         })
-            .then(response => {
-                if (!response.ok) {
-                    if (response.status === 401) {
-                        window.location.href = '/admin/login?error=session_expired';
-                        throw new Error('Session expired');
-                    }
-                    throw new Error(`Server responded with status: ${response.status}`);
-                }
-                return response.json();
-            })
+            .then(handleResponse)
             .then(customers => {
                 hideSpinner();
                 if (customers && customers.length > 0) {
@@ -653,20 +688,23 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 hideSpinner();
-                if (error.message !== 'Session expired') {
-                    showToast('Error', 'Failed to load customers. Please refresh and try again.', 'error');
+                if (error.message !== 'Authentication failed') {
+                    showToast('Error', error.message || 'Failed to load customers. Please refresh and try again.', 'error');
                 }
             });
     }
 
     function populateCustomersTable(customers) {
         const tableBody = document.querySelector('.customers-table tbody');
+        if (!tableBody) return;
 
-        tableBody.querySelectorAll('tr:not(.empty-row)').forEach(row => row.remove());
+        // Clear existing rows except any "empty" rows
+        const emptyRow = tableBody.querySelector('tr[colspan="6"]');
+        tableBody.innerHTML = '';
 
-        const emptyRow = tableBody.querySelector('.empty-row');
-        if (emptyRow) {
-            emptyRow.style.display = customers.length > 0 ? 'none' : '';
+        if (customers.length === 0 && emptyRow) {
+            tableBody.appendChild(emptyRow);
+            return;
         }
 
         customers.forEach(customer => {
@@ -677,6 +715,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const initials = getInitials(customer.firstName, customer.lastName);
             const membershipClass = customer.membershipStatus === 'Premium' ? 'premium' : 'standard';
             const membershipIcon = customer.membershipStatus === 'Premium' ? 'fas fa-crown' : 'fas fa-user';
+            const formattedDate = customer.lastServiceDate
+                ? new Date(customer.lastServiceDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                : 'No service yet';
 
             row.innerHTML = `
                 <td>
@@ -704,10 +745,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td>
                     <span class="last-service">
                         <i class="fas fa-calendar-day"></i>
-                        <span>${customer.lastServiceDate
-                ? new Date(customer.lastServiceDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                : 'No service yet'
-            }</span>
+                        <span>${formattedDate}</span>
                     </span>
                 </td>
             `;
@@ -718,8 +756,24 @@ document.addEventListener('DOMContentLoaded', function() {
                 fetchAndShowCustomerDetails(customer.customerId);
             });
         });
+
+        // If no customers, add empty state row
+        if (customers.length === 0) {
+            const emptyRow = document.createElement('tr');
+            emptyRow.innerHTML = `
+                <td colspan="6" class="text-center py-4">
+                    <div class="no-data-message">
+                        <i class="fas fa-users fa-3x mb-3 text-muted"></i>
+                        <h4>No customers found</h4>
+                        <p class="text-muted">Add your first customer to get started</p>
+                    </div>
+                </td>
+            `;
+            tableBody.appendChild(emptyRow);
+        }
     }
 
+    // Start the application
     if (window.location.pathname.includes('/admin/customers')) {
         if (document.querySelectorAll('.customer-row').length === 0) {
             loadCustomers();

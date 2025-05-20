@@ -19,5 +19,5 @@ public class CustomerDTO {
     private Integer totalServices;
     private LocalDate lastServiceDate;
     private String formattedLastServiceDate;
-    private boolean isActive;
+    private boolean isActive = true;
 }

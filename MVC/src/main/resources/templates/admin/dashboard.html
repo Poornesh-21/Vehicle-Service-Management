@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Albany</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="/CSS/admin/dashboard.css" rel="stylesheet">
+</head>
+<body>
+<div class="app-container">
+    <button class="mobile-menu-toggle" id="mobileMenuToggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>Albany</h2>
+        </div>
+
+        <div class="sidebar-content">
+            <div class="nav-section">
+                <div class="nav-section-title">Main</div>
+                <ul class="sidebar-menu">
+                    <li class="sidebar-menu-item">
+                        <a th:href="@{/admin/dashboard}" class="sidebar-menu-link active">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+
+                    <li class="sidebar-menu-item">
+                        <a th:href="@{/admin/service-requests}" class="sidebar-menu-link">
+                            <i class="fas fa-clipboard-list"></i>
+                            <span>Service Requests</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a th:href="@{/admin/vehicles}" class="sidebar-menu-link">
+                            <i class="fas fa-car"></i>
+                            <span>Under Services</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a th:href="@{/admin/completed-services}" class="sidebar-menu-link ">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Completed Services</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Management</div>
+                <ul class="sidebar-menu">
+
+
+                    <li class="sidebar-menu-item">
+                        <a th:href="@{/admin/customers}" class="sidebar-menu-link">
+                            <i class="fas fa-users"></i>
+                            <span>Customers</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a th:href="@{/admin/service-advisors}" class="sidebar-menu-link">
+                            <i class="fas fa-user-tie"></i>
+                            <span>Service Advisors</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a th:href="@{/admin/inventory}" class="sidebar-menu-link">
+                            <i class="fas fa-boxes"></i>
+                            <span>Inventory</span>
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-name">Arthur Morgan</div>
+                <div class="user-role">Administrator</div>
+            </div>
+            <button class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </aside>
+
+
+    <main class="main-content">
+
+        <header class="page-header">
+            <div class="header-left">
+                <h1>Albany Dashboard</h1>
+                <div class="current-date">
+                    <i class="far fa-calendar-alt"></i>
+                    <span id="current-date">Loading date...</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Error alert if API issues -->
+        <div th:if="${apiError}" class="alert alert-danger" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <span th:text="${apiError}">API Error</span>
+        </div>
+
+        <!-- Stats Overview -->
+        <section class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <div class="stat-icon-inner">
+                        <i class="fas fa-car-side"></i>
+
+                    </div>
+                </div>
+                <h3 class="stat-title">Vehicles Due</h3>
+                <div class="stat-value" th:text="${dashboardStats?.vehiclesDue ?: '0'}">12</div>
+                <div class="stat-info">
+                    <div class="stat-trend up">
+                        <i class="fas fa-arrow-up"></i> 8.3%
+                    </div>
+                    <div class="stat-period">vs last week</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <div class="stat-icon-inner">
+                        <i class="fas fa-wrench"></i>
+                    </div>
+                </div>
+                <h3 class="stat-title">In Progress</h3>
+                <div class="stat-value" th:text="${dashboardStats?.vehiclesInProgress ?: '0'}">8</div>
+                <div class="stat-info">
+                    <div class="stat-trend up">
+                        <i class="fas fa-arrow-up"></i> 12.5%
+                    </div>
+                    <div class="stat-period">vs last week</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <div class="stat-icon-inner">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+                <h3 class="stat-title">Completed</h3>
+                <div class="stat-value" th:text="${dashboardStats?.vehiclesCompleted ?: '0'}">5</div>
+                <div class="stat-info">
+                    <div class="stat-trend down">
+                        <i class="fas fa-arrow-down"></i> 4.2%
+                    </div>
+                    <div class="stat-period">vs last week</div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <div class="stat-icon-inner">
+                        <i class="fas fa-rupee-sign"></i>
+                    </div>
+                </div>
+                <h3 class="stat-title">Revenue</h3>
+                <div class="stat-value" th:text="${'₹' + (dashboardStats?.totalRevenue ?: '0')}">₹3,84,000</div>
+                <div class="stat-info">
+                    <div class="stat-trend up">
+                        <i class="fas fa-arrow-up"></i> 15.2%
+                    </div>
+                    <div class="stat-period">vs last week</div>
+                </div>
+            </div>
+        </section>
+
+
+        <section class="table-section">
+            <div class="table-header">
+                <h3 class="table-title">
+                    <i class="fas fa-car-side"></i>
+                    Vehicles Due for Service
+                </h3>
+                <div class="table-actions">
+                    <div class="search-box">
+                        <input type="text" class="search-input" placeholder="Search vehicles...">
+                        <i class="fas fa-search search-icon"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="premium-table" id="dueTable">
+                    <thead>
+                    <tr>
+                        <th>Vehicle</th>
+                        <th>Customer</th>
+                        <th>Status</th>
+                        <th>Due Date</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="vehicle, iterStat : ${dashboardStats?.vehiclesDueList}"
+                        th:class="${iterStat.index < 5 ? 'active-page' : ''}"
+                        th:data-page="${iterStat.count <= 5 ? 1 : (iterStat.count / 5) + 1}">
+                        <td>
+                            <div class="vehicle-info">
+                                <div class="vehicle-icon">
+                                    <i th:class="${vehicle.category == 'Bike' ? 'fas fa-motorcycle' : 'fas fa-car-side'}"></i>
+                                </div>
+                                <div class="vehicle-details">
+                                    <h5 th:text="${vehicle.vehicleName}">Vehicle Name</h5>
+                                    <p th:text="'Reg: ' + ${vehicle.registrationNumber}">Reg: Number</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="person-info">
+                                <div class="person-details">
+                                    <h5 th:text="${vehicle.customerName}">Customer Name</h5>
+                                    <p th:text="${vehicle.customerEmail}">customer@example.com</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status-badge status-pending">
+                                <i class="fas fa-clock"></i>
+                                <span th:text="${vehicle.status}">Pending</span>
+                            </span>
+                        </td>
+                        <td th:text="${#temporals.format(vehicle.dueDate, 'MMM dd, yyyy')}">Date</td>
+                        <td class="table-actions-cell">
+                            <button class="btn-assign"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#singleAssignModal"
+                                    th:data-vehicle-name="${vehicle.vehicleName}"
+                                    th:data-vehicle-reg="${vehicle.registrationNumber}"
+                                    th:data-customer-name="${vehicle.customerName}">
+                                <i class="fas fa-user-plus"></i>
+                                Assign
+                            </button>
+                        </td>
+                    </tr>
+                    <!-- If no data, show empty state -->
+                    <tr th:if="${#lists.isEmpty(dashboardStats?.vehiclesDueList)}">
+                        <td colspan="5" class="text-center py-4">
+                            <div class="no-data-message">
+                                <i class="fas fa-car fa-3x mb-3 text-muted"></i>
+                                <h5>No vehicles due for service</h5>
+                                <p class="text-muted">All vehicles are currently serviced or no pending service requests.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination for Due Table -->
+            <div class="pagination-container">
+                <ul class="premium-pagination" id="dueTablePagination">
+                    <li class="page-item">
+                        <button class="page-link disabled" id="duePrevBtn">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                    </li>
+                    <li class="page-item">
+                        <button class="page-link active" data-page="1">1</button>
+                    </li>
+                    <li class="page-item">
+                        <button class="page-link" data-page="2">2</button>
+                    </li>
+                    <li class="page-item">
+                        <button class="page-link" id="dueNextBtn">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Vehicles In Service -->
+        <section class="table-section">
+            <div class="table-header">
+                <h3 class="table-title">
+                    <i class="fas fa-wrench"></i>
+                    Vehicles Under Service
+                </h3>
+                <div class="table-actions">
+                    <div class="search-box">
+                        <input type="text" class="search-input" placeholder="Search vehicles...">
+                        <i class="fas fa-search search-icon"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="premium-table" id="serviceTable">
+                    <thead>
+                    <tr>
+                        <th>Vehicle</th>
+                        <th>Service Advisor</th>
+                        <th>Status</th>
+                        <th>Start Date</th>
+                        <th>Est. Completion</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="vehicle, iterStat : ${dashboardStats?.vehiclesInServiceList}"
+                        th:class="${iterStat.index < 5 ? 'active-page' : ''}"
+                        th:data-page="${iterStat.count <= 5 ? 1 : (iterStat.count / 5) + 1}">
+                        <td>
+                            <div class="vehicle-info">
+                                <div class="vehicle-icon">
+                                    <i th:class="${vehicle.category == 'Bike' ? 'fas fa-motorcycle' : 'fas fa-car-side'}"></i>
+                                </div>
+                                <div class="vehicle-details">
+                                    <h5 th:text="${vehicle.vehicleName}">Vehicle Name</h5>
+                                    <p th:text="'Reg: ' + ${vehicle.registrationNumber}">Reg: Number</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="person-info">
+                                <div class="person-details">
+                                    <h5 th:text="${vehicle.serviceAdvisorName}">Advisor Name</h5>
+                                    <p th:text="'ID: ' + ${vehicle.serviceAdvisorId}">ID: SA-1023</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status-badge status-progress">
+                                <i class="fas fa-spinner"></i>
+                                <span th:text="${vehicle.status}">In Progress</span>
+                            </span>
+                        </td>
+                        <td th:text="${#temporals.format(vehicle.startDate, 'MMM dd, yyyy')}">Mar 24, 2025</td>
+                        <td th:text="${#temporals.format(vehicle.estimatedCompletionDate, 'MMM dd, yyyy')}">Mar 27, 2025</td>
+                        <td class="table-actions-cell">
+                            <button class="btn-premium sm primary"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#vehicleServiceDetailsModal">
+                                <i class="fas fa-eye"></i>
+                                Details
+                            </button>
+                        </td>
+                    </tr>
+                    <!-- If no data, show empty state -->
+                    <tr th:if="${#lists.isEmpty(dashboardStats?.vehiclesInServiceList)}">
+                        <td colspan="6" class="text-center py-4">
+                            <div class="no-data-message">
+                                <i class="fas fa-wrench fa-3x mb-3 text-muted"></i>
+                                <h5>No vehicles currently in service</h5>
+                                <p class="text-muted">There are no vehicles currently being serviced.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination for Service Table -->
+            <div class="pagination-container">
+                <ul class="premium-pagination" id="serviceTablePagination">
+                    <li class="page-item">
+                        <button class="page-link disabled" id="servicePrevBtn">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                    </li>
+                    <li class="page-item">
+                        <button class="page-link active" data-page="1">1</button>
+                    </li>
+                    <li class="page-item">
+                        <button class="page-link" data-page="2">2</button>
+                    </li>
+                    <li class="page-item">
+                        <button class="page-link" id="serviceNextBtn">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Invoice Modal -->
+        <div class="modal fade premium-modal" id="invoiceDetailsModal" tabindex="-1" aria-labelledby="invoiceDetailsModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="invoiceDetailsModalLabel">
+                            <i class="fas fa-file-invoice"></i>
+                            Service Invoice
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- Invoice Header -->
+                        <div class="d-flex justify-content-between align-items-start mb-4">
+                            <div>
+                                <h4 class="fw-bold text-wine mb-1">Albany Vehicle Service</h4>
+                                <p class="mb-1">123 Albany Road, New Delhi</p>
+                                <p class="mb-1">Phone: +91 98765 43210</p>
+                                <p>Email: info@albanyservice.com</p>
+                            </div>
+                            <div class="text-end">
+                                <h1 class="display-6 fw-bold text-wine mb-2">INVOICE</h1>
+                                <p class="mb-1"><strong>Invoice #:</strong> <span id="invoiceNumber">INV-001</span></p>
+                                <p class="mb-1"><strong>Date:</strong> <span id="invoiceDate">April 18, 2025</span></p>
+                                <p><strong>Status:</strong> <span id="invoiceStatus" class="badge bg-success">Paid</span></p>
+                            </div>
+                        </div>
+
+                        <hr class="border-2 border-secondary mb-4">
+
+                        <!-- Customer & Vehicle Details -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="card shadow-sm h-100">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0"><i class="fas fa-user me-2"></i>Customer Details</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="mb-2"><strong>Name:</strong> <span id="customerName">Rahul Sharma</span></p>
+                                        <p class="mb-2"><strong>Email:</strong> <span id="customerEmail">rahul.sharma@example.com</span></p>
+                                        <p class="mb-2"><strong>Phone:</strong> <span id="customerPhone">+91 98765 43210</span></p>
+                                        <p class="mb-0"><strong>Membership:</strong> <span id="customerMembership" class="badge bg-warning">Premium</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card shadow-sm h-100">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0"><i class="fas fa-car me-2"></i>Vehicle Details</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <p class="mb-2"><strong>Vehicle:</strong> <span id="vehicleName">Maruti Swift</span></p>
+                                        <p class="mb-2"><strong>Registration:</strong> <span id="vehicleReg">DL01AB1234</span></p>
+                                        <p class="mb-2"><strong>Category:</strong> <span id="vehicleCategory">Car</span></p>
+                                        <p class="mb-0"><strong>Service Type:</strong> <span id="serviceType">Regular Maintenance</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Service Details -->
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="fas fa-tools me-2"></i>Service Details</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <p class="mb-2"><strong>Service Advisor:</strong> <span id="serviceAdvisor">Vikram Mehta</span></p>
+                                        <p class="mb-2"><strong>Service Date:</strong> <span id="serviceDate">April 15, 2025</span></p>
+                                        <p class="mb-0"><strong>Completion Date:</strong> <span id="completionDate">April 17, 2025</span></p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p class="mb-2"><strong>Service ID:</strong> <span id="serviceId">SRV-1001</span></p>
+                                        <p class="mb-2"><strong>Service Status:</strong> <span id="serviceStatus" class="badge bg-success">Completed</span></p>
+                                        <p class="mb-0"><strong>Labor Hours:</strong> <span id="laborHours">3.5 hours</span></p>
+                                    </div>
+                                </div>
+                                <div class="mb-0">
+                                    <p class="mb-2"><strong>Description:</strong></p>
+                                    <p id="serviceDescription" class="mb-0">Regular maintenance service including oil change, filter replacement, brake inspection, and fluid top-up. Additional work included alignment correction and wiper blade replacement.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Parts Used Table -->
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="fas fa-cogs me-2"></i>Parts & Materials Used</h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-striped mb-0">
+                                        <thead class="table-light">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Item Description</th>
+                                            <th class="text-center">Quantity</th>
+                                            <th class="text-end">Unit Price</th>
+                                            <th class="text-end">Total</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="partsTableBody">
+                                        <!-- Parts data will be populated here via JavaScript -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Labor & Additional Charges -->
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="fas fa-user-cog me-2"></i>Labor & Additional Charges</h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-striped mb-0">
+                                        <thead class="table-light">
+                                        <tr>
+                                            <th>Description</th>
+                                            <th class="text-center">Hours/Quantity</th>
+                                            <th class="text-end">Rate</th>
+                                            <th class="text-end">Total</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody id="laborTableBody">
+                                        <!-- Labor data will be populated here via JavaScript -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Invoice Summary -->
+                        <div class="card shadow-sm mb-4 bg-light">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-7">
+                                        <div class="mb-3">
+                                            <h6 class="mb-2">Payment Information:</h6>
+                                            <p class="mb-1"><strong>Payment Method:</strong> <span id="paymentMethod">UPI</span></p>
+                                            <p class="mb-1"><strong>Transaction ID:</strong> <span id="transactionId">TXN123456789</span></p>
+                                            <p class="mb-0"><strong>Payment Date:</strong> <span id="paymentDate">April 17, 2025</span></p>
+                                        </div>
+
+                                        <div>
+                                            <h6 class="mb-2">Terms & Conditions:</h6>
+                                            <ul class="small mb-0">
+                                                <li>All parts carry a 6-month warranty from the date of service.</li>
+                                                <li>Labor warranty is valid for 30 days from service completion.</li>
+                                                <li>Please bring this invoice for any warranty claims.</li>
+                                                <li>Thank you for choosing Albany Vehicle Service!</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <div class="bg-white p-3 rounded shadow-sm">
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <span>Subtotal:</span>
+                                                <span id="subtotal">₹8,500.00</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <span>Labor Charges:</span>
+                                                <span id="laborTotal">₹2,100.00</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <span>Discount:</span>
+                                                <span id="discount" class="text-danger">-₹850.00</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between mb-2">
+                                                <span>GST (18%):</span>
+                                                <span id="taxAmount">₹1,755.00</span>
+                                            </div>
+                                            <hr>
+                                            <div class="d-flex justify-content-between fw-bold">
+                                                <span>Total Amount:</span>
+                                                <span id="totalAmount" class="text-wine fs-5">₹11,505.00</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Notes Section -->
+                        <div class="card shadow-sm mb-2">
+                            <div class="card-body">
+                                <h6 class="mb-2">Additional Notes:</h6>
+                                <p id="additionalNotes" class="mb-0">Vehicle is in good condition. Recommend checking brake pads in the next 3 months. Next service due in 6 months or 5,000 km, whichever comes first.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <div>
+                            <button type="button" class="btn-premium secondary me-2" id="emailInvoiceBtn">
+                                <i class="fas fa-envelope me-2"></i>Email to Customer
+                            </button>
+                            <button type="button" class="btn-premium secondary" id="printInvoiceBtn">
+                                <i class="fas fa-print me-2"></i>Print Invoice
+                            </button>
+                        </div>
+                        <div>
+                            <button type="button" class="btn-premium secondary me-2" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn-premium primary" id="downloadInvoiceBtn">
+                                <i class="fas fa-download me-2"></i>Download PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Email Invoice Confirmation Modal -->
+        <div class="modal fade" id="emailConfirmationModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-light">
+                        <h5 class="modal-title">
+                            <i class="fas fa-envelope me-2"></i>Send Invoice Email
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="emailRecipient" class="form-label">Recipient Email</label>
+                            <input type="email" class="form-control" id="emailRecipient" value="rahul.sharma@example.com">
+                        </div>
+                        <div class="mb-3">
+                            <label for="emailSubject" class="form-label">Subject</label>
+                            <input type="text" class="form-control" id="emailSubject" value="Your Albany Vehicle Service Invoice #INV-001">
+                        </div>
+                        <div class="mb-3">
+                            <label for="emailMessage" class="form-label">Message</label>
+                            <textarea class="form-control" id="emailMessage" rows="4">Dear Rahul Sharma,
+
+Please find attached your invoice for the recent service of your Maruti Swift (DL01AB1234).
+
+Thank you for choosing Albany Vehicle Service. We appreciate your business!
+
+Best regards,
+Albany Vehicle Service Team</textarea>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="attachPdfCheckbox" checked>
+                            <label class="form-check-label" for="attachPdfCheckbox">
+                                Attach invoice as PDF
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="sendEmailBtn">
+                            <i class="fas fa-paper-plane me-2"></i>Send Email
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Invoice Sent Success Modal -->
+        <div class="modal fade" id="emailSuccessModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-body text-center py-4">
+                        <div class="mb-3">
+                            <i class="fas fa-check-circle text-success fa-5x"></i>
+                        </div>
+                        <h4 class="mb-3">Invoice Sent Successfully!</h4>
+                        <p class="mb-0">The invoice has been emailed to <span id="successEmailAddress">rahul.sharma@example.com</span></p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-success" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Completed Services - Added search functionality -->
+        <section>
+            <div class="service-cards-header">
+                <h3 class="service-cards-title">
+                    <i class="fas fa-check-circle"></i>
+                    Completed Vehicles
+                </h3>
+                <div class="search-box">
+                    <input type="text" class="search-input" id="completedServiceSearch" placeholder="Search completed services...">
+                    <i class="fas fa-search search-icon"></i>
+                </div>
+            </div>
+
+            <div class="service-cards-grid" id="completedServicesGrid">
+                <div th:each="service, iterStat : ${dashboardStats?.completedServicesList}"
+                     th:class="${'service-card' + (iterStat.index < 3 ? ' active-page' : '')}"
+                     th:data-page="${iterStat.count <= 3 ? 1 : (iterStat.count / 3) + 1}">
+                    <div class="service-card-header">
+                        <h4 class="service-card-title">
+                            <i th:class="${service.vehicleName.contains('Bike') || service.vehicleName.contains('motorcycle') ? 'fas fa-motorcycle' : 'fas fa-car-side'}"></i>
+                            <span th:text="${service.vehicleName}">Vehicle Name</span>
+                        </h4>
+                        <div class="service-status">
+                            <div class="status-indicator completed"></div>
+                            <div class="status-text completed">Completed</div>
+                        </div>
+                    </div>
+                    <div class="service-card-body">
+                        <div class="service-meta">
+                            <div class="service-meta-item">
+                                <div class="service-meta-label">Registration</div>
+                                <div class="service-meta-value" th:text="${service.registrationNumber}">DL07KL1234</div>
+                            </div>
+                            <div class="service-meta-item">
+                                <div class="service-meta-label">Completed Date</div>
+                                <div class="service-meta-value" th:text="${#temporals.format(service.completedDate, 'MMM dd, yyyy')}">Mar 24, 2025</div>
+                            </div>
+                            <div class="service-meta-item">
+                                <div class="service-meta-label">Customer</div>
+                                <div class="service-meta-value" th:text="${service.customerName}">Amit Verma</div>
+                            </div>
+                            <div class="service-meta-item">
+                                <div class="service-meta-label">Service Advisor</div>
+                                <div class="service-meta-value" th:text="${service.serviceAdvisorName}">Deepak Sharma</div>
+                            </div>
+                        </div>
+                        <div class="price" th:text="${'Total Cost: ₹' + service.totalCost}">Total Cost: ₹42,550</div>
+                    </div>
+                    <div class="service-card-footer">
+                        <button class="btn-premium sm secondary view-service-details-btn"
+                                th:data-service-id="${service.serviceId}"
+                                data-bs-toggle="modal"
+                                data-bs-target="#completedServiceDetailsModal">
+                            <i class="fas fa-eye"></i>
+                            View Details
+                        </button>
+                        <button class="btn-premium sm primary generate-invoice-btn"
+                                th:data-service-id="${service.serviceId}"
+                                th:data-has-invoice="${service.hasInvoice}"
+                                data-bs-toggle="modal"
+                                data-bs-target="#generateInvoiceModal">
+                            <i class="fas fa-file-invoice"></i>
+                            Generate Invoice
+                        </button>
+                    </div>
+                </div>
+                <!-- If no data, show empty state -->
+                <div th:if="${#lists.isEmpty(dashboardStats?.completedServicesList)}" class="text-center py-5">
+                    <i class="fas fa-check-circle fa-3x text-muted mb-3"></i>
+                    <h5>No completed services found</h5>
+                    <p class="text-muted">There are no completed service requests available.</p>
+                </div>
+            </div>
+
+            <!-- Fancy Pagination for Completed Services -->
+            <div class="fancy-pagination-container">
+                <div class="fancy-pagination" id="completedServicesPagination">
+                    <button class="fancy-page-link nav-link disabled" id="completedPrevBtn">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="fancy-page-link active" data-page="1">1</button>
+                    <button class="fancy-page-link" data-page="2">2</button>
+                    <button class="fancy-page-link" data-page="3">3</button>
+                    <button class="fancy-page-link nav-link" id="completedNextBtn">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <p class="footer-text">
+                    &copy; 2025 <span class="footer-brand">Albany</span>. All Rights Reserved.
+                </p>
+            </div>
+        </footer>
+    </main>
+</div>
+
+<!-- MODALS -->
+
+<!-- Redesigned Single Assign Advisor Modal -->
+<div class="modal fade premium-modal" id="singleAssignModal" tabindex="-1" aria-labelledby="singleAssignModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="singleAssignModalLabel">
+                    <i class="fas fa-user-plus"></i>
+                    Assign Service Advisor
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form>
+                <div class="modal-body">
+                    <div class="mb-4 p-3 bg-light rounded-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="vehicle-icon">
+                                <i class="fas fa-car"></i>
+                            </div>
+                            <div>
+                                <h4 class="mb-1 vehicle-name">Maruti Swift</h4>
+                                <div class="d-flex flex-wrap gap-3">
+                                    <p class="mb-0"><strong>Registration:</strong> <span class="vehicle-reg">DL01AB1234</span></p>
+                                    <p class="mb-0"><strong>Customer:</strong> <span class="customer-name">Rahul Sharma</span></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="modal-section">
+                        <div class="modal-section-title">
+                            <i class="fas fa-user-tie"></i> Available Service Advisors
+                        </div>
+
+                        <div class="advisor-card selected" onclick="selectAdvisor(this)">
+                            <div class="advisor-avatar">VM</div>
+                            <div class="advisor-info">
+                                <div class="advisor-name">Vikram Mehta</div>
+                                <div class="advisor-meta">
+                                    <div class="advisor-stat">
+                                        <i class="fas fa-id-badge"></i> SA-1023
+                                    </div>
+                                    <div class="advisor-stat">
+                                        <i class="fas fa-star text-warning"></i> 4.8/5 Rating
+                                    </div>
+                                </div>
+                                <div class="advisor-services">
+                                    <i class="fas fa-car"></i> 4 services in progress
+                                </div>
+                                <div class="advisor-workload mt-2">
+                                    <div class="progress">
+                                        <div class="progress-bar bg-warning" role="progressbar" style="width: 65%;" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    <div class="workload-text">
+                                        <i class="fas fa-info-circle"></i> Current workload: 65%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="advisor-card" onclick="selectAdvisor(this)">
+                            <div class="advisor-avatar">DS</div>
+                            <div class="advisor-info">
+                                <div class="advisor-name">Deepak Sharma</div>
+                                <div class="advisor-meta">
+                                    <div class="advisor-stat">
+                                        <i class="fas fa-id-badge"></i> SA-1045
+                                    </div>
+                                    <div class="advisor-stat">
+                                        <i class="fas fa-star text-warning"></i> 4.6/5 Rating
+                                    </div>
+                                </div>
+                                <div class="advisor-services">
+                                    <i class="fas fa-car"></i> 3 services in progress
+                                </div>
+                                <div class="advisor-workload mt-2">
+                                    <div class="progress">
+                                        <div class="progress-bar bg-info" role="progressbar" style="width: 45%;" aria-valuenow="45" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    <div class="workload-text">
+                                        <i class="fas fa-info-circle"></i> Current workload: 45%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="advisor-card" onclick="selectAdvisor(this)">
+                            <div class="advisor-avatar">SK</div>
+                            <div class="advisor-info">
+                                <div class="advisor-name">Sunita Kumar</div>
+                                <div class="advisor-meta">
+                                    <div class="advisor-stat">
+                                        <i class="fas fa-id-badge"></i> SA-1087
+                                    </div>
+                                    <div class="advisor-stat">
+                                        <i class="fas fa-star text-warning"></i> 4.9/5 Rating
+                                    </div>
+                                </div>
+                                <div class="advisor-services">
+                                    <i class="fas fa-car"></i> 1 service in progress
+                                </div>
+                                <div class="advisor-workload mt-2">
+                                    <div class="progress">
+                                        <div class="progress-bar bg-success" role="progressbar" style="width: 20%;" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
+                                    </div>
+                                    <div class="workload-text">
+                                        <i class="fas fa-info-circle"></i> Current workload: 20%
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-premium secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn-premium primary" id="confirmSingleAssignBtn">
+                        <i class="fas fa-check"></i>
+                        Confirm Assignment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+
+<script src="/Javascript/admin/dashboard.js"></script>
+</body>
+</html>

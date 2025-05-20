@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Albany Motors - Service Requests</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts - Baloo Bhaijaan 2 -->
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="/css/admin/serviceRequests.css" rel="stylesheet">
+</head>
+<body>
+<!-- Albany Spinner Overlay -->
+<div class="spinner-overlay" id="spinnerOverlay">
+    <div class="spinner-container">
+        <div class="albany-spinner">
+            <div class="spinner-letter">A</div>
+            <div class="spinner-circle"></div>
+            <div class="spinner-circle"></div>
+        </div>
+        <div class="spinner-text">Loading...</div>
+    </div>
+</div>
+
+<!-- Mobile Menu Toggle Button -->
+<button class="mobile-menu-toggle" id="mobileMenuToggle">
+    <i class="fas fa-bars"></i>
+</button>
+
+<div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h2>Albany</h2>
+        </div>
+
+        <div class="sidebar-content">
+            <div class="nav-section">
+                <div class="nav-section-title">Main</div>
+                <ul class="sidebar-menu">
+                    <li class="sidebar-menu-item">
+                        <a th:href="@{/admin/dashboard}" class="sidebar-menu-link">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+
+                    <li class="sidebar-menu-item">
+                        <a th:href="@{/admin/service-requests}" class="sidebar-menu-link active">
+                            <i class="fas fa-clipboard-list"></i>
+                            <span>Service Requests</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a th:href="@{/admin/vehicles}" class="sidebar-menu-link">
+                            <i class="fas fa-car"></i>
+                            <span>Under Services</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a th:href="@{/admin/completed-services}" class="sidebar-menu-link ">
+                            <i class="fas fa-check-circle"></i>
+                            <span>Completed Services</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="nav-section">
+                <div class="nav-section-title">Management</div>
+                <ul class="sidebar-menu">
+
+
+                    <li class="sidebar-menu-item">
+                        <a th:href="@{/admin/customers}" class="sidebar-menu-link">
+                            <i class="fas fa-users"></i>
+                            <span>Customers</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a th:href="@{/admin/service-advisors}" class="sidebar-menu-link">
+                            <i class="fas fa-user-tie"></i>
+                            <span>Service Advisors</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a th:href="@{/admin/inventory}" class="sidebar-menu-link">
+                            <i class="fas fa-boxes"></i>
+                            <span>Inventory</span>
+                        </a>
+                    </li>
+
+                </ul>
+            </div>
+        </div>
+
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-name">Arthur Morgan</div>
+                <div class="user-role">Administrator</div>
+            </div>
+            <button class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Page Header -->
+        <header class="page-header">
+            <div class="header-left">
+                <h1>Service Requests</h1>
+                <div class="header-subtitle">
+                    <i class="fas fa-clipboard-list"></i>
+                    Manage service requests and assign service advisors
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn-premium primary" data-bs-toggle="modal" data-bs-target="#addServiceRequestModal">
+                    <i class="fas fa-plus"></i>
+                    Add Service Request
+                </button>
+            </div>
+        </header>
+
+        <!-- Search Box -->
+        <div class="search-box">
+            <input type="text" class="search-input" id="searchInput" placeholder="Search by request ID, customer name, registration number...">
+            <i class="fas fa-search search-icon"></i>
+        </div>
+
+        <!-- Service Requests Table -->
+        <section class="table-section">
+            <div class="table-header">
+                <h3 class="table-title">
+                    <i class="fas fa-clipboard-list"></i>
+                    All Service Requests
+                </h3>
+                <div class="table-actions">
+                    <div class="search-box-sm">
+                        <input type="text" class="search-input-sm" placeholder="Filter items...">
+                        <i class="fas fa-search search-icon-sm"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="premium-table" id="serviceRequestsTable">
+                    <thead>
+                    <tr>
+                        <th>Request ID</th>
+                        <th>Vehicle</th>
+                        <th>Customer</th>
+                        <th>Membership</th>
+                        <th>Service Type</th>
+                        <th>Status</th>
+                        <th>Delivery Date</th>
+                        <th>Advisor</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody id="serviceRequestsTableBody">
+                    <!-- Will be populated dynamically via JavaScript -->
+                    <tr id="loading-row">
+                        <td colspan="9" class="text-center py-4">
+                            <div class="spinner-border text-wine" role="status"></div>
+                            <p class="mt-2">Loading service requests...</p>
+                        </td>
+                    </tr>
+                    <tr id="empty-row" style="display: none;">
+                        <td colspan="9" class="text-center py-4">
+                            <div class="my-5">
+                                <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                                <h5>No service requests found</h5>
+                                <p class="text-muted">Create your first service request to get started</p>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination-container">
+                <ul class="pagination" id="pagination">
+                    <li class="page-item disabled">
+                        <a class="page-link" href="#" id="prevBtn" aria-label="Previous">
+                            <i class="fas fa-chevron-left"></i>
+                        </a>
+                    </li>
+                    <li class="page-item active"><a class="page-link" href="#" data-page="1">1</a></li>
+                    <li class="page-item"><a class="page-link" href="#" data-page="2">2</a></li>
+                    <li class="page-item"><a class="page-link" href="#" data-page="3">3</a></li>
+                    <li class="page-item">
+                        <a class="page-link" href="#" id="nextBtn" aria-label="Next">
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-content">
+                <p class="footer-text">
+                    &copy; 2025 <span class="footer-brand">Albany</span>. All Rights Reserved.
+                </p>
+            </div>
+        </footer>
+    </main>
+</div>
+
+<!-- Add Service Request Modal -->
+<div class="modal fade modal-premium" id="addServiceRequestModal" tabindex="-1" aria-labelledby="addServiceRequestModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addServiceRequestModalLabel">
+                    <i class="fas fa-plus-circle"></i>
+                    Add New Service Request
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addServiceRequestForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="customerId">Customer <span class="text-danger">*</span></label>
+                            <select class="form-select" id="customerId" name="customerId" required>
+                                <option value="">Select Customer</option>
+                                <!-- Will be populated dynamically -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="vehicleId">Vehicle <span class="text-danger">*</span></label>
+                            <div class="d-flex gap-2">
+                                <select class="form-select" id="vehicleId" name="vehicleId" required disabled>
+                                    <option value="">Select Vehicle</option>
+                                    <!-- Will be populated based on selected customer -->
+                                </select>
+                                <button type="button" class="btn-premium secondary" id="addNewVehicleBtn" disabled>
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="newVehicleForm" style="display: none;" class="mt-3 p-3 border rounded bg-light">
+                        <h5 class="mb-3"><i class="fas fa-car-side me-2"></i>Add New Vehicle</h5>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label" for="vehicleBrand">Brand <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="vehicleBrand" name="vehicleBrand" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="vehicleModel">Model <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="vehicleModel" name="vehicleModel" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label" for="vehicleRegNumber">Registration Number <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="vehicleRegNumber" name="vehicleRegNumber" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="vehicleCategory">Category <span class="text-danger">*</span></label>
+                                <select class="form-select" id="vehicleCategory" name="vehicleCategory" required>
+                                    <option value="">Select Category</option>
+                                    <option value="Car">Car</option>
+                                    <option value="Bike">Bike</option>
+                                    <option value="Truck">Truck</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label" for="vehicleYear">Year <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="vehicleYear" name="vehicleYear" min="1900" max="2099" required>
+                            </div>
+                        </div>
+                        <div class="text-end mt-3">
+                            <button type="button" class="btn-premium secondary" id="cancelNewVehicleBtn">
+                                <i class="fas fa-times"></i> Cancel
+                            </button>
+                            <button type="button" class="btn-premium primary" id="saveNewVehicleBtn">
+                                <i class="fas fa-save"></i> Save Vehicle
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="serviceType">Service Type <span class="text-danger">*</span></label>
+                            <select class="form-select" id="serviceType" name="serviceType" required>
+                                <option value="">Select Service Type</option>
+                                <option value="General Service">General Service</option>
+                                <option value="Oil Change">Oil Change</option>
+                                <option value="Brake Service">Brake Service</option>
+                                <option value="Engine Repair">Engine Repair</option>
+                                <option value="Transmission Service">Transmission Service</option>
+                                <option value="Wheel Alignment">Wheel Alignment</option>
+                                <option value="Battery Replacement">Battery Replacement</option>
+                                <option value="Air Conditioning">Air Conditioning</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="deliveryDate">Expected Delivery Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="deliveryDate" name="deliveryDate" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="description">Additional Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="4" placeholder="Please describe the issue or service required in detail"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-premium secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn-premium primary" id="saveServiceRequestBtn">
+                    <i class="fas fa-save"></i>
+                    Save Service Request
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Assign Service Advisor Modal -->
+<div class="modal fade modal-premium" id="assignAdvisorModal" tabindex="-1" aria-labelledby="assignAdvisorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="assignAdvisorModalLabel">
+                    <i class="fas fa-user-plus"></i>
+                    Assign Service Advisor
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-4 p-3 bg-light rounded-3">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="vehicle-icon">
+                            <i class="fas fa-car"></i>
+                        </div>
+                        <div>
+                            <h4 class="mb-1" id="assignVehicleName">Vehicle Name</h4>
+                            <div class="d-flex flex-wrap gap-3">
+                                <p class="mb-0"><strong>Registration:</strong> <span id="assignVehicleReg">RB02XY1234</span></p>
+                                <p class="mb-0"><strong>Customer:</strong> <span id="assignCustomerName">Customer Name</span></p>
+                                <p class="mb-0"><strong>Request ID:</strong> <span id="assignRequestId">REQ-1001</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h5 class="mb-3">Select Service Advisor</h5>
+                <div id="advisorsList">
+                    <!-- Will be populated dynamically -->
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-wine" role="status"></div>
+                        <p class="mt-2">Loading service advisors...</p>
+                    </div>
+                </div>
+
+                <input type="hidden" id="selectedRequestId">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-premium secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn-premium primary" id="confirmAssignBtn">
+                    <i class="fas fa-check-circle"></i>
+                    Confirm Assignment
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Service Request Details Modal -->
+<div class="modal fade modal-premium" id="viewServiceRequestModal" tabindex="-1" aria-labelledby="viewServiceRequestModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewServiceRequestModalLabel">
+                    <i class="fas fa-clipboard-list"></i>
+                    Service Request Details
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="service-detail-row">
+                    <div class="service-detail-col">
+                        <div class="detail-label">Request ID</div>
+                        <div class="detail-value" id="viewRequestId">REQ-1001</div>
+                    </div>
+                    <div class="service-detail-col">
+                        <div class="detail-label">Status</div>
+                        <div class="detail-value" id="viewStatus">
+                            <span class="status-badge status-received">
+                                <i class="fas fa-clock"></i> Received
+                            </span>
+                        </div>
+                    </div>
+                    <div class="service-detail-col">
+                        <div class="detail-label">Created Date</div>
+                        <div class="detail-value" id="viewCreatedDate">April 8, 2025</div>
+                    </div>
+                </div>
+
+                <div class="service-detail-row">
+                    <div class="service-detail-col">
+                        <div class="detail-label">Vehicle</div>
+                        <div class="detail-value" id="viewVehicleName">Honda City</div>
+                    </div>
+                    <div class="service-detail-col">
+                        <div class="detail-label">Registration Number</div>
+                        <div class="detail-value" id="viewRegistrationNumber">MH02AB1234</div>
+                    </div>
+                    <div class="service-detail-col">
+                        <div class="detail-label">Vehicle Category</div>
+                        <div class="detail-value" id="viewVehicleCategory">Car</div>
+                    </div>
+                </div>
+
+                <div class="service-detail-row">
+                    <div class="service-detail-col">
+                        <div class="detail-label">Customer</div>
+                        <div class="detail-value" id="viewCustomerName">Rajesh Kumar</div>
+                    </div>
+                    <div class="service-detail-col">
+                        <div class="detail-label">Contact</div>
+                        <div class="detail-value" id="viewCustomerContact">+91 98765 43210</div>
+                    </div>
+                    <div class="service-detail-col">
+                        <div class="detail-label">Membership</div>
+                        <div class="detail-value" id="viewMembership">Premium</div>
+                    </div>
+                </div>
+
+                <div class="service-detail-row">
+                    <div class="service-detail-col">
+                        <div class="detail-label">Service Type</div>
+                        <div class="detail-value" id="viewServiceType">General Service</div>
+                    </div>
+                    <div class="service-detail-col">
+                        <div class="detail-label">Expected Delivery</div>
+                        <div class="detail-value" id="viewDeliveryDate">April 15, 2025</div>
+                    </div>
+                    <div class="service-detail-col">
+                        <div class="detail-label">Service Advisor</div>
+                        <div class="detail-value" id="viewServiceAdvisor">Not Assigned</div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="detail-label">Additional Description</div>
+                    <div class="detail-value" id="viewDescription">
+                        <p>Vehicle is showing check engine light and making unusual noise when accelerating.</p>
+                    </div>
+                </div>
+
+                <div id="materialsSection" style="display: none;">
+                    <h5 class="mt-4 mb-3">Materials Used</h5>
+                    <table class="materials-table" id="materialsTable">
+                        <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Quantity</th>
+                            <th>Unit Price</th>
+                            <th>Total</th>
+                        </tr>
+                        </thead>
+                        <tbody id="materialsTableBody">
+                        <!-- Will be populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-premium secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn-premium primary" id="editServiceRequestBtn">
+                    <i class="fas fa-edit"></i>
+                    Edit
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade success-modal" id="successModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="success-icon-container">
+                    <div class="success-icon-wrapper">
+                        <div class="success-icon">
+                            <i class="fas fa-check"></i>
+                        </div>
+                    </div>
+                </div>
+                <h3 class="success-title" id="successTitle">Success!</h3>
+                <p class="success-message" id="successMessage">Operation completed successfully.</p>
+                <button type="button" class="continue-btn" data-bs-dismiss="modal">
+                    <i class="fas fa-check-circle"></i>
+                    Continue
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- jQuery and Bootstrap JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="/js/admin/serviceRequests.js"></script>
+</body>
+</html>

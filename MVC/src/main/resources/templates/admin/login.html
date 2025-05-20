@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Albany</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="/CSS/admin/login.css" rel="stylesheet" />
+
+</head>
+<body>
+<div class="admin-container">
+    <div class="login-card">
+        <!-- Left Panel - Visual -->
+        <div class="panel-visual">
+            <div class="brand-corner">
+                <p>ALBANY</p>
+            </div>
+
+            <div class="floating-shapes">
+                <div class="shape shape-1"></div>
+                <div class="shape shape-2"></div>
+                <div class="shape shape-3"></div>
+            </div>
+
+            <div class="visual-content">
+                <span class="visual-badge">ADMINISTRATOR PORTAL</span>
+                <h1 class="visual-heading">
+                    Complete Control
+                    <span>of Your Services</span>
+                </h1>
+                <p class="visual-text">
+                    Access your comprehensive administrative dashboard to manage service operations,
+                    handle customer requests, and optimize your business workflows with ease.
+                </p>
+
+                <div class="key-features">
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="feature-text">Real-time Analytics Dashboard</div>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-user-shield"></i>
+                        </div>
+                        <div class="feature-text">User & Access Management</div>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                        <div class="feature-text">Service Request Tracking</div>
+                    </div>
+
+                    <div class="feature-item">
+                        <div class="feature-icon">
+                            <i class="fas fa-file-invoice-dollar"></i>
+                        </div>
+                        <div class="feature-text">Financial Reports & Invoicing</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel - Login Form -->
+        <div class="panel-login">
+            <div class="login-container">
+                <div class="login-header">
+                    <span class="access-badge">SECURE ACCESS</span>
+                    <h2 class="login-title">Administrator Login</h2>
+                    <p class="login-subtitle">
+                        Enter your credentials to access the system dashboard and management tools.
+                    </p>
+                    <div class="form-divider"></div>
+                </div>
+
+                <div class="alert" id="loginAlert">
+                    <i class="fas fa-exclamation-circle alert-icon"></i>
+                    <span id="alertMessage">Invalid email or password. Please try again.</span>
+                </div>
+
+                <form action="/admin/login" method="post" id="loginForm">
+                    <div class="form-group">
+                        <input type="email" class="form-control" id="email" name="email" placeholder="Email address" required autocomplete="off" />
+                        <i class="input-icon fas fa-envelope"></i>
+                    </div>
+
+                    <div class="form-group">
+                        <input type="password" class="form-control" id="password" name="password" placeholder="Password" required />
+                        <i class="input-icon fas fa-lock"></i>
+                        <span class="password-toggle" id="togglePassword">
+            <i class="fas fa-eye" id="eyeIcon"></i>
+        </span>
+                    </div>
+
+                    <div class="form-options">
+                        <div class="remember-me">
+                            <input type="checkbox" class="remember-checkbox" id="rememberMe" name="rememberMe" />
+                            <label for="rememberMe" class="remember-label">Remember me</label>
+                        </div>
+
+                        <a href="#" class="forgot-link">Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="btn-login">
+        <span class="btn-text">
+            <span>Sign in to Dashboard</span>
+            <i class="fas fa-arrow-right"></i>
+        </span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="/Javascript/admin/login.js"></script>
+</body>
+</html>

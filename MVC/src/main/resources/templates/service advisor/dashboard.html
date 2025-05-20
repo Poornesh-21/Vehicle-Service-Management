@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Advisor Dashboard | Albany Service</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="/css/serviceAdvisor/dashboard.css" rel="stylesheet">
+</head>
+<body>
+<div class="app-container">
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">Albany</div>
+        </div>
+
+        <div class="sidebar-user">
+            <div class="user-avatar">
+                <span th:text="${#strings.substring(userName, 0, 1)}">J</span>
+            </div>
+            <div class="user-info">
+                <h3 th:text="${userName}">John Smith</h3>
+                <p>Service Advisor</p>
+            </div>
+        </div>
+
+        <div class="sidebar-nav">
+            <div class="nav-section">
+                <div class="nav-section-title">Main</div>
+                <ul>
+                    <li class="active"><a href="/serviceAdvisor/dashboard"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+                </ul>
+            </div>
+
+
+        </div>
+
+        <div class="sidebar-footer">
+            <a href="/serviceAdvisor/logout" class="logout-btn"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="main-header">
+            <div>
+                <h1 class="header-title">Service Dashboard</h1>
+                <p class="header-subtitle">Manage vehicle service assignments and service records</p>
+            </div>
+            <div class="header-actions">
+                <div class="date-display">
+                    <i class="far fa-calendar-alt"></i>
+                    <span th:text="${#dates.format(#dates.createNow(), 'EEEE, MMMM d, yyyy')}">Wednesday, May 7, 2025</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="dashboard-content">
+            <!-- Vehicle Assignments Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-car"></i> Assigned Vehicles
+                    </h2>
+                    <div class="card-actions">
+                        <button class="filter-button" id="filterButton">
+                            <i class="fas fa-filter"></i> Filter
+                            <i class="fas fa-chevron-down" style="font-size: 0.8rem;"></i>
+                        </button>
+                        <div class="filter-menu" id="filterMenu">
+                            <div class="filter-option active" data-filter="all">
+                                <i class="fas fa-list-ul"></i> All Vehicles
+                            </div>
+                            <div class="filter-option" data-filter="new">
+                                <i class="fas fa-bolt"></i> New Assignments
+                            </div>
+                            <div class="filter-option" data-filter="in-progress">
+                                <i class="fas fa-sync-alt"></i> In Progress
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="search-filter">
+                        <div class="search-box">
+                            <input type="text" class="search-input" placeholder="Search vehicles, customers, or registration..." id="searchInput">
+                            <i class="fas fa-search search-icon"></i>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="vehicles-table">
+                            <thead>
+                            <tr>
+                                <th>Vehicle</th>
+                                <th>Customer</th>
+                                <th>Service Type</th>
+                                <th>Requested</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                            </thead>
+                            <tbody id="vehiclesTableBody">
+                            <!-- Example row 1 -->
+                            <tr onclick="openVehicleDetails(1)">
+                                <td>
+                                    <div class="vehicle-details">
+                                        <div class="vehicle-model">Honda Civic (2020)</div>
+                                        <div class="vehicle-info">Registration: ABC-1234</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="customer-details">
+                                        <div class="customer-name">John Smith</div>
+                                        <div class="customer-info">john.smith@example.com</div>
+                                    </div>
+                                </td>
+                                <td>General Service</td>
+                                <td>May 5, 2025</td>
+                                <td>
+                                    <span class="status-badge new">
+                                        <i class="fas fa-circle"></i> New
+                                    </span>
+                                </td>
+                                <td class="action-cell">
+                                    <button class="action-btn" onclick="openVehicleDetails(1); event.stopPropagation();">
+                                        <i class="fas fa-eye"></i> View
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <!-- Example row 2 -->
+                            <tr onclick="openVehicleDetails(2)">
+                                <td>
+                                    <div class="vehicle-details">
+                                        <div class="vehicle-model">Toyota Camry (2019)</div>
+                                        <div class="vehicle-info">Registration: XYZ-5678</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="customer-details">
+                                        <div class="customer-name">Sarah Johnson</div>
+                                        <div class="customer-info">sarah.j@example.com</div>
+                                    </div>
+                                </td>
+                                <td>Oil Change, Wheel Alignment</td>
+                                <td>May 3, 2025</td>
+                                <td>
+                                    <span class="status-badge in-progress">
+                                        <i class="fas fa-circle"></i> In Progress
+                                    </span>
+                                </td>
+                                <td class="action-cell">
+                                    <button class="action-btn" onclick="openVehicleDetails(2); event.stopPropagation();">
+                                        <i class="fas fa-eye"></i> View
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <!-- Example row 3 -->
+                            <tr onclick="openVehicleDetails(3)">
+                                <td>
+                                    <div class="vehicle-details">
+                                        <div class="vehicle-model">Ford Mustang (2018)</div>
+                                        <div class="vehicle-info">Registration: DEF-9012</div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="customer-details">
+                                        <div class="customer-name">Michael Brown</div>
+                                        <div class="customer-info">michael.b@example.com</div>
+                                    </div>
+                                </td>
+                                <td>Engine Check, Brake Service</td>
+                                <td>May 1, 2025</td>
+                                <td>
+                                    <span class="status-badge in-progress">
+                                        <i class="fas fa-circle"></i> In Progress
+                                    </span>
+                                </td>
+                                <td class="action-cell">
+                                    <button class="action-btn" onclick="openVehicleDetails(3); event.stopPropagation();">
+                                        <i class="fas fa-eye"></i> View
+                                    </button>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div class="pagination">
+                        <div class="page-item disabled">
+                            <a class="page-link" href="#" aria-label="Previous">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        </div>
+                        <div class="page-item active"><a class="page-link" href="#">1</a></div>
+                        <div class="page-item"><a class="page-link" href="#">2</a></div>
+                        <div class="page-item"><a class="page-link" href="#">3</a></div>
+                        <div class="page-item">
+                            <a class="page-link" href="#" aria-label="Next">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Vehicle Details Modal -->
+<div class="modal-backdrop" id="vehicleDetailsModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title"><i class="fas fa-car"></i> Vehicle Service Details</h3>
+            <button class="modal-close" id="closeVehicleDetailsModal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="tabs">
+                <div class="tab active" data-tab="details">Vehicle Details</div>
+                <div class="tab" data-tab="service-items">Service Items</div>
+                <div class="tab" data-tab="update-status">Update Status</div>
+                <div class="tab" data-tab="generate-invoice">Generate Invoice</div>
+            </div>
+
+            <!-- Vehicle Details Tab -->
+            <div class="tab-content active" id="details-tab">
+                <div class="row">
+                    <div class="detail-card">
+                        <div class="detail-card-header">
+                            Vehicle Information
+                        </div>
+                        <div class="detail-card-body">
+                            <div class="detail-row">
+                                <div class="detail-label">Make/Model:</div>
+                                <div class="detail-value">Honda Civic</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Registration:</div>
+                                <div class="detail-value">ABC-1234</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Year:</div>
+                                <div class="detail-value">2020</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Type:</div>
+                                <div class="detail-value">Sedan</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-card">
+                        <div class="detail-card-header">
+                            Customer Information
+                        </div>
+                        <div class="detail-card-body">
+                            <div class="detail-row">
+                                <div class="detail-label">Name:</div>
+                                <div class="detail-value">John Smith</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Email:</div>
+                                <div class="detail-value">john.smith@example.com</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Phone:</div>
+                                <div class="detail-value">(555) 123-4567</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-card">
+                        <div class="detail-card-header">
+                            Service Request Details
+                        </div>
+                        <div class="detail-card-body">
+                            <div class="detail-row">
+                                <div class="detail-label">Service Type:</div>
+                                <div class="detail-value">General Service</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Request Date:</div>
+                                <div class="detail-value">May 5, 2025</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Status:</div>
+                                <div class="detail-value">
+                                    <span class="status-badge new">
+                                        <i class="fas fa-circle"></i> New
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Description:</div>
+                                <div class="detail-value">Customer requested regular maintenance service. Vehicle is making a slight noise when braking.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Service Items Tab -->
+            <div class="tab-content" id="service-items-tab">
+                <div class="vehicle-summary">
+                    <div class="vehicle-info-summary">
+                        <h4>Honda Civic (ABC-1234)</h4>
+                        <p>Customer: John Smith</p>
+                    </div>
+                    <div class="status-display">
+                        <span class="status-badge new">
+                            <i class="fas fa-circle"></i> New
+                        </span>
+                    </div>
+                </div>
+
+                <div class="service-columns">
+                    <div class="service-column left-column">
+                        <!-- Inventory Items Section -->
+                        <div class="add-service-form">
+                            <h4 class="section-title">Add Inventory Items</h4>
+                            <div class="form-row">
+                                <div class="form-col">
+                                    <div class="form-group">
+                                        <label class="form-label" for="inventoryItemSelect">Select Inventory Item:</label>
+                                        <select class="form-control" id="inventoryItemSelect">
+                                            <option value="">-- Select an item --</option>
+                                            <option value="oil-filter">Oil Filter</option>
+                                            <option value="air-filter">Air Filter</option>
+                                            <option value="brake-pads">Brake Pads</option>
+                                            <option value="engine-oil">Engine Oil (1L)</option>
+                                            <option value="wiper-blades">Wiper Blades</option>
+                                            <option value="spark-plugs">Spark Plugs</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-col" style="max-width: 120px;">
+                                    <div class="form-group">
+                                        <label class="form-label" for="itemQuantity">Quantity:</label>
+                                        <input type="number" class="form-control" id="itemQuantity" value="1" min="1">
+                                    </div>
+                                </div>
+                                <div class="form-col" style="max-width: 120px; display: flex; align-items: flex-end;">
+                                    <button class="btn btn-primary" id="addItemBtn" style="width: 100%;">
+                                        <i class="fas fa-plus"></i> Add
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Service Items List -->
+                        <div id="inventoryItemsContainer">
+                            <h4 class="section-title">Inventory Items</h4>
+                            <table class="service-items-table" id="inventoryItemsTable">
+                                <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th>Unit Price</th>
+                                    <th>Quantity</th>
+                                    <th>Total</th>
+                                    <th></th>
+                                </tr>
+                                </thead>
+                                <tbody id="inventoryItemsList">
+                                <!-- Will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Labor Charges Section - MODIFIED: Removed description field -->
+                        <div class="labor-section">
+                            <h4 class="section-title">Labor Charges</h4>
+                            <div class="labor-form">
+                                <div class="form-group" style="flex: 1;">
+                                    <label class="form-label" for="laborHours">Hours:</label>
+                                    <input type="number" class="form-control" id="laborHours" value="1" min="0.5" step="0.5">
+                                </div>
+                                <div class="form-group" style="flex: 1;">
+                                    <label class="form-label" for="laborRate">Rate (₹/hr):</label>
+                                    <input type="number" class="form-control" id="laborRate" value="65" min="1">
+                                </div>
+                                <button class="btn btn-primary" id="addLaborBtn">
+                                    <i class="fas fa-plus"></i> Add
+                                </button>
+                            </div>
+                            <div class="labor-list" id="laborChargesList">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="service-column right-column">
+                        <h4 class="section-title">Service Invoice Summary</h4>
+                        <div class="invoice-summary">
+                            <div class="invoice-row">
+                                <span>Parts Subtotal:</span>
+                                <span id="partsSubtotal">₹0.00</span>
+                            </div>
+                            <div class="invoice-row">
+                                <span>Labor Subtotal:</span>
+                                <span id="laborSubtotal">₹0.00</span>
+                            </div>
+                            <div class="invoice-row">
+                                <span>Subtotal:</span>
+                                <span id="subtotalAmount">₹0.00</span>
+                            </div>
+                            <div class="invoice-row">
+                                <span>Tax (7%):</span>
+                                <span id="taxAmount">₹0.00</span>
+                            </div>
+                            <div class="invoice-total">
+                                <span>Total:</span>
+                                <span id="totalAmount">₹0.00</span>
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 20px; display: flex; gap: 10px;">
+                            <button class="btn btn-success" style="flex: 1;" id="saveInvoiceBtn">
+                                <i class="fas fa-save"></i> Save Invoice
+                            </button>
+                            <button class="btn btn-primary" style="flex: 1;" id="previewInvoiceBtn">
+                                <i class="fas fa-file-invoice"></i> Preview Invoice
+                            </button>
+                        </div>
+
+                        <div style="margin-top: 30px;">
+                            <h4 class="section-title">Additional Notes</h4>
+                            <div class="form-group">
+                                <textarea class="form-control" id="serviceNotes" rows="4" placeholder="Add any additional notes about the service..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Update Status Tab - MODIFIED: Simplified with just status selection -->
+            <div class="tab-content" id="update-status-tab">
+                <div class="vehicle-summary">
+                    <div class="vehicle-info-summary">
+                        <h4>Honda Civic (ABC-1234)</h4>
+                        <p>Customer: John Smith</p>
+                    </div>
+                    <div class="status-display">
+                        <span class="status-badge new" id="currentStatusBadge">
+                            <i class="fas fa-circle"></i> New
+                        </span>
+                    </div>
+                </div>
+
+                <div class="detail-card">
+                    <div class="detail-card-header">
+                        Update Service Status
+                    </div>
+                    <div class="detail-card-body">
+                        <div class="form-group">
+                            <label class="form-label" for="statusSelect">New Status:</label>
+                            <select class="form-control" id="statusSelect">
+                                <option value="Diagnosis">Diagnosis</option>
+                                <option value="Repair">Repair</option>
+                                <option value="Completed">Completed</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Generate Invoice Tab -->
+            <div class="tab-content" id="generate-invoice-tab">
+                <div class="invoice-preview">
+                    <div class="invoice-header">
+                        <div class="invoice-company">Albany Automotive Services</div>
+                        <div class="invoice-title">Service Invoice</div>
+                    </div>
+
+                    <div class="invoice-info">
+                        <div class="invoice-customer">
+                            <div class="invoice-section-title">Customer Information</div>
+                            <div class="invoice-detail"><span>Name:</span> John Smith</div>
+                            <div class="invoice-detail"><span>Email:</span> john.smith@example.com</div>
+                            <div class="invoice-detail"><span>Phone:</span> (555) 123-4567</div>
+                        </div>
+
+                        <div class="invoice-service">
+                            <div class="invoice-section-title">Service Information</div>
+                            <div class="invoice-detail"><span>Vehicle:</span> Honda Civic (2020)</div>
+                            <div class="invoice-detail"><span>Registration:</span> ABC-1234</div>
+                            <div class="invoice-detail"><span>Invoice Date:</span> May 7, 2025</div>
+                            <div class="invoice-detail"><span>Invoice #:</span> INV-2025-0034</div>
+                        </div>
+                    </div>
+
+                    <div class="invoice-items">
+                        <div class="invoice-section-title">Service Items</div>
+                        <table class="invoice-table">
+                            <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th>Quantity</th>
+                                <th>Unit Price</th>
+                                <th>Amount</th>
+                            </tr>
+                            </thead>
+                            <tbody id="invoiceItemsList">
+                            <!-- Will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="invoice-totals">
+                        <div class="invoice-subtotal">
+                            <span>Subtotal:</span>
+                            <span id="invoiceSubtotal">₹0.00</span>
+                        </div>
+                        <div class="invoice-tax">
+                            <span>Tax (7%):</span>
+                            <span id="invoiceTax">₹0.00</span>
+                        </div>
+                        <div class="invoice-grand-total">
+                            <span>Total:</span>
+                            <span id="invoiceTotal">₹0.00</span>
+                        </div>
+                    </div>
+
+                    <div class="invoice-footer">
+                        Thank you for choosing Albany Automotive Services for your vehicle maintenance needs.
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" id="closeDetailsBtn">Close</button>
+            <button class="btn btn-success" id="markCompleteBtn">Mark as Complete</button>
+        </div>
+    </div>
+</div>
+
+<div class="notification success" id="successNotification">
+    <i class="fas fa-check-circle"></i>
+    <span id="notificationMessage">Operation completed successfully!</span>
+</div>
+<script src="/js/admin/dashboard.js"></script>
+</body>
+</html>

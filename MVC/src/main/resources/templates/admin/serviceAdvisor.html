@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Albany Motors - Service Advisor Management</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+  <!-- Google Fonts - Baloo Bhaijaan 2 -->
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="/css/admin/serviceadvisor.css" rel="stylesheet">
+</head>
+<body>
+<!-- Creative Albany Spinner Overlay -->
+<div class="spinner-overlay" id="spinnerOverlay">
+  <div class="spinner-container">
+    <div class="albany-spinner">
+      <div class="spinner-letter">A</div>
+      <div class="spinner-circle"></div>
+      <div class="spinner-circle"></div>
+    </div>
+    <div class="spinner-text">Loading...</div>
+  </div>
+</div>
+
+<!-- Mobile Menu Toggle Button (for small screens) -->
+<button class="mobile-menu-toggle" id="mobileMenuToggle">
+  <i class="fas fa-bars"></i>
+</button>
+
+<div class="app-container">
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h2>Albany</h2>
+    </div>
+
+    <div class="sidebar-content">
+      <div class="nav-section">
+        <div class="nav-section-title">Main</div>
+        <ul class="sidebar-menu">
+          <li class="sidebar-menu-item">
+            <a th:href="@{/admin/dashboard}" class="sidebar-menu-link">
+              <i class="fas fa-tachometer-alt"></i>
+              <span>Dashboard</span>
+            </a>
+          </li>
+
+          <li class="sidebar-menu-item">
+            <a th:href="@{/admin/service-requests}" class="sidebar-menu-link">
+              <i class="fas fa-clipboard-list"></i>
+              <span>Service Requests</span>
+            </a>
+          </li>
+          <li class="sidebar-menu-item">
+            <a th:href="@{/admin/vehicles}" class="sidebar-menu-link">
+              <i class="fas fa-car"></i>
+              <span>Under Services</span>
+            </a>
+          </li>
+          <li class="sidebar-menu-item">
+            <a th:href="@{/admin/completed-services}" class="sidebar-menu-link ">
+              <i class="fas fa-check-circle"></i>
+              <span>Completed Services</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">Management</div>
+        <ul class="sidebar-menu">
+
+
+          <li class="sidebar-menu-item">
+            <a th:href="@{/admin/customers}" class="sidebar-menu-link">
+              <i class="fas fa-users"></i>
+              <span>Customers</span>
+            </a>
+          </li>
+          <li class="sidebar-menu-item">
+            <a th:href="@{/admin/service-advisors}" class="sidebar-menu-link active">
+              <i class="fas fa-user-tie"></i>
+              <span>Service Advisors</span>
+            </a>
+          </li>
+          <li class="sidebar-menu-item">
+            <a th:href="@{/admin/inventory}" class="sidebar-menu-link">
+              <i class="fas fa-boxes"></i>
+              <span>Inventory</span>
+            </a>
+          </li>
+
+        </ul>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-name">Arthur Morgan</div>
+        <div class="user-role">Administrator</div>
+      </div>
+      <button class="logout-btn">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main class="main-content">
+    <!-- Page Header -->
+    <header class="page-header">
+      <div class="header-left">
+        <h1>Service Advisor Management</h1>
+        <div class="header-subtitle">
+          <i class="fas fa-user-tie"></i>
+          Manage service advisors, assign workload, and track performance
+        </div>
+      </div>
+
+      <div class="action-buttons">
+        <button class="btn-premium primary" id="addAdvisorBtn">
+          <i class="fas fa-user-plus"></i>
+          Add New Service Advisor
+        </button>
+      </div>
+    </header>
+
+    <!-- Search Box -->
+    <div class="search-box">
+      <input type="text" class="search-input" id="advisorSearch" placeholder="Search for service advisors by name, email, or ID...">
+      <i class="fas fa-search search-icon"></i>
+    </div>
+
+    <!-- Filters Section -->
+    <section class="filters-section">
+      <div class="filter-pills">
+        <div class="filter-pill active">All Advisors</div>
+        <div class="filter-pill">High Workload</div>
+        <div class="filter-pill">Available</div>
+      </div>
+
+      <div class="dropdown sort-dropdown">
+        <button class="dropdown-toggle" type="button" id="sortDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="fas fa-sort"></i>
+          Sort by: Name
+        </button>
+        <ul class="dropdown-menu" aria-labelledby="sortDropdown">
+          <li><a class="dropdown-item active" href="#">Name</a></li>
+          <li><a class="dropdown-item" href="#">Department</a></li>
+          <li><a class="dropdown-item" href="#">Workload</a></li>
+          <li><a class="dropdown-item" href="#">Hire Date</a></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Service Advisors Grid -->
+    <section class="advisors-grid-container">
+      <div class="advisors-grid" id="advisorsGrid">
+        <!-- Grid items will be populated here -->
+      </div>
+    </section>
+
+    <!-- Pagination -->
+    <nav class="pagination-container">
+      <ul class="pagination" id="pagination">
+        <li class="page-item disabled">
+          <a class="page-link" href="#" id="prevBtn" aria-label="Previous">
+            <i class="fas fa-chevron-left"></i>
+          </a>
+        </li>
+        <li class="page-item active"><a class="page-link" href="#">1</a></li>
+        <li class="page-item"><a class="page-link" href="#">2</a></li>
+        <li class="page-item"><a class="page-link" href="#">3</a></li>
+        <li class="page-item">
+          <a class="page-link" href="#" id="nextBtn" aria-label="Next">
+            <i class="fas fa-chevron-right"></i>
+          </a>
+        </li>
+      </ul>
+    </nav>
+  </main>
+</div>
+
+<!-- Service Advisor Details Modal -->
+<div class="modal fade premium-modal" id="advisorDetailsModal" tabindex="-1" aria-labelledby="advisorDetailsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="advisorDetailsModalLabel">
+          <i class="fas fa-user-tie"></i>
+          <span>Service Advisor Details</span>
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="profile-tabs">
+        <div class="profile-tab active" data-tab="info">Personal Info</div>
+        <div class="profile-tab" data-tab="workload">Workload</div>
+      </div>
+
+      <div class="modal-body">
+        <!-- Personal Info Tab -->
+        <div class="tab-content active" id="info-tab">
+          <div class="modal-body-inner">
+            <!-- Service Advisor Profile -->
+            <div class="advisor-profile">
+              <div class="profile-section">
+                <div class="profile-avatar" id="viewAdvisorInitials">MS</div>
+                <div class="profile-detail">
+                  <div class="profile-label">Full Name</div>
+                  <div class="profile-value" id="viewAdvisorName">Mike Smith</div>
+                </div>
+                <div class="profile-detail">
+                  <div class="profile-label">Email</div>
+                  <div class="profile-value" id="viewAdvisorEmail">mike.smith@example.com</div>
+                </div>
+                <div class="profile-detail">
+                  <div class="profile-label">Phone</div>
+                  <div class="profile-value" id="viewAdvisorPhone">+91 98765 43210</div>
+                </div>
+              </div>
+
+              <div class="profile-section">
+                <div class="profile-detail">
+                  <div class="profile-label">ID</div>
+                  <div class="profile-value" id="viewAdvisorId">SA-001</div>
+                </div>
+                <div class="profile-detail">
+                  <div class="profile-label">Department</div>
+                  <div class="profile-value" id="viewAdvisorDepartment">Mechanical Services</div>
+                </div>
+                <div class="profile-detail">
+                  <div class="profile-label">Hire Date</div>
+                  <div class="profile-value" id="viewAdvisorHireDate">March 15, 2023</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Workload Tab -->
+        <div class="tab-content" id="workload-tab">
+          <div class="modal-body-inner">
+            <div class="workload-overview">
+              <div class="workload-card">
+                <div class="workload-header">
+                  <div class="workload-title">Current Workload</div>
+                  <div class="workload-value" id="viewAdvisorWorkloadValue">65%</div>
+                </div>
+                <div class="workload-container">
+                  <div class="workload-progress medium" id="viewAdvisorWorkloadBar" style="width: 65%;"></div>
+                </div>
+                <div class="workload-text" id="viewAdvisorWorkloadText">Moderate workload - can take on more services</div>
+              </div>
+            </div>
+
+            <h4 class="section-title">
+              <i class="fas fa-clipboard-list"></i>
+              Active Service Requests
+            </h4>
+
+            <table class="active-services-table">
+              <thead>
+              <tr>
+                <th>Service ID</th>
+                <th>Vehicle</th>
+                <th>Customer</th>
+                <th>Service Type</th>
+                <th>Status</th>
+              </tr>
+              </thead>
+              <tbody id="activeServicesTableBody">
+              <!-- Will be populated with active services -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="premium-btn secondary" data-bs-dismiss="modal">Close</button>
+        <button type="button" class="premium-btn primary" id="editAdvisorFromDetailsBtn">Edit Service Advisor</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Service Advisor Modal -->
+<div class="modal fade premium-modal" id="addAdvisorModal" tabindex="-1" aria-labelledby="addAdvisorModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addAdvisorModalLabel">
+          <i class="fas fa-user-plus"></i>
+          Add New Service Advisor
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-body-inner">
+          <form id="addAdvisorForm">
+            <div class="form-section">
+              <h4 class="section-title">
+                <i class="fas fa-user"></i>
+                Personal Information
+              </h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="firstName" class="form-label">First Name *</label>
+                  <input type="text" class="form-control" id="firstName" name="firstName" required>
+                  <div class="error-message" id="firstName-error"></div>
+                </div>
+                <div class="form-group">
+                  <label for="lastName" class="form-label">Last Name *</label>
+                  <input type="text" class="form-control" id="lastName" name="lastName" required>
+                  <div class="error-message" id="lastName-error"></div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="email" class="form-label">Email Address *</label>
+                  <input type="email" class="form-control" id="email" name="email" required>
+                  <div class="error-message" id="email-error"></div>
+                </div>
+                <div class="form-group">
+                  <label for="phone" class="form-label">Phone Number *</label>
+                  <input type="tel" class="form-control" id="phone" name="phoneNumber" required>
+                  <div class="error-message" id="phone-error"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h4 class="section-title">
+                <i class="fas fa-briefcase"></i>
+                Professional Information
+              </h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="department" class="form-label">Department *</label>
+                  <select class="form-select" id="department" name="department" required>
+                    <option value="">Select Department</option>
+                    <option value="Mechanical Services">Mechanical Services</option>
+                    <option value="Electrical Services">Electrical Services</option>
+                    <option value="Body Shop">Body Shop</option>
+                    <option value="Diagnostics">Diagnostics</option>
+                    <option value="Customer Service">Customer Service</option>
+                  </select>
+                  <div class="error-message" id="department-error"></div>
+                </div>
+              </div>
+              <div class="alert alert-info mt-3">
+                <i class="fas fa-info-circle me-2"></i>
+                <span>A temporary password will be automatically generated and sent to the service advisor's email for their first login.</span>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="premium-btn secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="premium-btn primary" id="saveAdvisorBtn">Add Service Advisor</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Service Advisor Modal -->
+<div class="modal fade premium-modal" id="editAdvisorModal" tabindex="-1" aria-labelledby="editAdvisorModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editAdvisorModalLabel">
+          <i class="fas fa-user-edit"></i>
+          Edit Service Advisor
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-body-inner">
+          <form id="editAdvisorForm">
+            <input type="hidden" id="editAdvisorId" name="advisorId">
+            <input type="hidden" id="editUserId" name="userId">
+
+            <div class="form-section">
+              <h4 class="section-title">
+                <i class="fas fa-user"></i>
+                Personal Information
+              </h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="editFirstName" class="form-label">First Name *</label>
+                  <input type="text" class="form-control" id="editFirstName" name="firstName" required>
+                  <div class="error-message" id="editFirstName-error"></div>
+                </div>
+                <div class="form-group">
+                  <label for="editLastName" class="form-label">Last Name *</label>
+                  <input type="text" class="form-control" id="editLastName" name="lastName" required>
+                  <div class="error-message" id="editLastName-error"></div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="editEmail" class="form-label">Email Address *</label>
+                  <input type="email" class="form-control" id="editEmail" name="email" required>
+                  <div class="error-message" id="editEmail-error"></div>
+                </div>
+                <div class="form-group">
+                  <label for="editPhone" class="form-label">Phone Number *</label>
+                  <input type="tel" class="form-control" id="editPhone" name="phoneNumber" required>
+                  <div class="error-message" id="editPhone-error"></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <h4 class="section-title">
+                <i class="fas fa-briefcase"></i>
+                Professional Information
+              </h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="editDepartment" class="form-label">Department *</label>
+                  <select class="form-select" id="editDepartment" name="department" required>
+                    <option value="">Select Department</option>
+                    <option value="Mechanical Services">Mechanical Services</option>
+                    <option value="Electrical Services">Electrical Services</option>
+                    <option value="Body Shop">Body Shop</option>
+                    <option value="Diagnostics">Diagnostics</option>
+                    <option value="Customer Service">Customer Service</option>
+                  </select>
+                  <div class="error-message" id="editDepartment-error"></div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="editPassword" class="form-label">Reset Password</label>
+                <div class="input-group">
+                  <input type="password" class="form-control" id="editPassword" name="password" placeholder="Leave blank to keep current password">
+                  <button class="btn btn-outline-secondary" type="button" id="resetPasswordBtn">Reset</button>
+                </div>
+                <small class="form-text text-muted">Click "Reset" to generate a new password that will be sent to the advisor's email.</small>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="premium-btn secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="premium-btn primary" id="updateAdvisorBtn">Update Service Advisor</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Success Confirmation Modal -->
+<div class="modal fade confirmation-modal" id="successModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-body">
+        <div class="confirmation-icon">
+          <i class="fas fa-check"></i>
+        </div>
+        <h3 class="confirmation-title" id="confirmationTitle">Success!</h3>
+        <p class="confirmation-message" id="confirmationMessage">The operation was completed successfully.</p>
+        <button type="button" class="confirmation-btn" data-bs-dismiss="modal">Continue</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- jQuery and Bootstrap JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script src="/js/admin/serviceAdvisor.js"></script>
+</body>
+</html>

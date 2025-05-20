@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Advisor Login - Albany</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts - Baloo Bhaijaan 2 -->
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="/css/admin/login.css" rel="stylesheet">
+</head>
+<body>
+<div class="login-container">
+    <div class="image-side">
+        <div class="image-container"></div>
+        <div class="image-overlay"></div>
+        <div class="brand-content">
+            <div class="brand-logo">
+                <i class="fas fa-car-alt"></i>
+            </div>
+            <h1 class="brand-name">ALBANY</h1>
+            <p class="brand-tagline">Premium Automotive Services</p>
+        </div>
+    </div>
+
+    <div class="login-side">
+        <div class="login-header">
+            <span class="advisor-badge">SERVICE ADVISOR</span>
+            <h2 class="login-title">Welcome Back</h2>
+            <p class="login-subtitle">Sign in to access your service dashboard and manage vehicle service requests.</p>
+        </div>
+
+        <form id="loginForm" class="glass-card">
+            <div class="form-floating position-relative">
+                <input type="email" class="form-control" id="email" placeholder="Email Address" required>
+                <label for="email">Email Address</label>
+            </div>
+
+            <div class="form-floating position-relative">
+                <input type="password" class="form-control" id="password" placeholder="Password" required>
+                <label for="password">Password</label>
+                <span class="password-toggle" id="togglePassword">
+                        <i class="fas fa-eye" id="eyeIcon"></i>
+                    </span>
+            </div>
+
+            <div class="form-options">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="rememberMe">
+                    <label class="form-check-label" for="rememberMe">
+                        Remember me
+                    </label>
+                </div>
+
+                <a href="#" class="forgot-link">Forgot password?</a>
+            </div>
+
+            <button type="submit" class="btn btn-login w-100">Sign In</button>
+
+            <!-- New Google sign-in button
+            <div class="or-divider">
+               <span>OR</span>
+           </div>
+
+           <button type="button" class="btn btn-google w-100">
+               <i class="fab fa-google"></i> Continue with Google
+           </button> -->
+
+            <div class="login-footer">
+                <p>Need help? Contact <a href="mailto:support@albany.com">Technical Support</a></p>
+            </div>
+        </form>
+    </div>
+</div>
+</div>
+
+
+<div class="modal fade" id="changePasswordModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="changePasswordModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-modal">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="changePasswordModalLabel">Change Your Password</h5>
+            </div>
+            <div class="modal-body">
+                <div class="password-change-icon">
+                    <i class="fas fa-key"></i>
+                </div>
+                <p class="password-change-message">This appears to be your first login. Please change your temporary password to continue.</p>
+
+                <form id="changePasswordForm">
+                    <!-- Add hidden field for current/temporary password -->
+                    <input type="hidden" id="currentPassword" name="currentPassword">
+
+                    <div class="form-floating position-relative mb-3">
+                        <input type="password" class="form-control" id="newPassword" placeholder="New Password" required>
+                        <label for="newPassword">New Password</label>
+                        <span class="password-toggle" id="toggleNewPassword">
+                            <i class="fas fa-eye" id="newEyeIcon"></i>
+                        </span>
+                    </div>
+
+                    <div class="form-floating position-relative mb-3">
+                        <input type="password" class="form-control" id="confirmPassword" placeholder="Confirm Password" required>
+                        <label for="confirmPassword">Confirm Password</label>
+                        <span class="password-toggle" id="toggleConfirmPassword">
+                            <i class="fas fa-eye" id="confirmEyeIcon"></i>
+                        </span>
+                    </div>
+
+                    <div class="password-strength-meter mb-3">
+                        <div class="strength-label d-flex justify-content-between">
+                            <span>Password Strength:</span>
+                            <span id="strengthText">Weak</span>
+                        </div>
+                        <div class="strength-bar">
+                            <div class="strength-progress" id="strengthProgress"></div>
+                        </div>
+                    </div>
+
+                    <div class="password-requirements mb-3">
+                        <p class="requirements-title">Password must contain:</p>
+                        <ul class="requirements-list">
+                            <li id="length"><i class="fas fa-times-circle"></i> At least 8 characters</li>
+                            <li id="uppercase"><i class="fas fa-times-circle"></i> At least 1 uppercase letter</li>
+                            <li id="lowercase"><i class="fas fa-times-circle"></i> At least 1 lowercase letter</li>
+                            <li id="number"><i class="fas fa-times-circle"></i> At least 1 number</li>
+                            <li id="special"><i class="fas fa-times-circle"></i> At least 1 special character</li>
+                        </ul>
+                    </div>
+
+                    <div class="alert alert-danger d-none" id="passwordMismatch">
+                        Passwords do not match!
+                    </div>
+
+                    <button type="submit" class="btn btn-login w-100">Set New Password</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap Bundle with Popper -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+<!-- Custom JS -->
+<script src="/js/serviceAdvisor/login.js"></script>
+</body>
+</html>

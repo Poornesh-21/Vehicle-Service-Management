@@ -1,0 +1,546 @@
+:root {
+    --dutch-white: #EFFBBB;
+    --dutch-white-light: #f5ffd4;
+    --wine: #722F37;
+    --wine-light: #8a3943;
+    --wine-dark: #5e262e;
+    --white: #ffffff;
+    --light-bg: #f8f9fa;
+    --light-gray: #e9ecef;
+    --dark-gray: #495057;
+    --success: #66bb6a;
+    --warning: #ffca28;
+    --danger: #ef5350;
+    --radius-md: 0.5rem;
+    --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+body, html {
+    font-family: 'Baloo Bhaijaan 2', sans-serif;
+    background-color: #f8f9fa;
+    color: var(--dark-gray);
+}
+
+.app-container {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    width: 280px;
+    background: linear-gradient(145deg, var(--wine) 0%, var(--wine-dark) 100%);
+    color: var(--white);
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+}
+
+.sidebar-header {
+    padding: 1.75rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-header h2 {
+    font-weight: 700;
+    color: var(--white);
+    font-size: 1.75rem;
+    margin-bottom: 0;
+}
+
+.sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem 0;
+}
+
+.sidebar-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-menu-item {
+    padding: 0.25rem 0.75rem;
+}
+
+.sidebar-menu-link {
+    display: flex;
+    align-items: center;
+    padding: 0.85rem 1rem;
+    color: rgba(255, 255, 255, 0.95);
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    transition: all 0.3s ease;
+}
+
+.sidebar-menu-link:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-menu-link.active {
+    background-color: var(--dutch-white-light);
+    color: var(--wine);
+    font-weight: 600;
+}
+
+.sidebar-menu-link i {
+    width: 1.5rem;
+    margin-right: 0.75rem;
+    text-align: center;
+}
+
+.sidebar-footer {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.user-role {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.logout-btn {
+    padding: 0.5rem 1rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: var(--radius-md);
+    color: var(--white);
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.logout-btn:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.logout-btn i {
+    margin-right: 0.5rem;
+}
+
+/* Main Content Styles */
+.main-content {
+    flex: 1;
+    margin-left: 280px;
+    padding: 2rem;
+}
+
+.page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+}
+
+.header-left h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--wine);
+    margin-bottom: 0.5rem;
+}
+
+.header-subtitle {
+    font-size: 1rem;
+    color: var(--dark-gray);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.table-section {
+    background-color: var(--white);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    margin-bottom: 2rem;
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--light-gray);
+}
+
+.table-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--wine);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.premium-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+.premium-table thead th {
+    background-color: var(--light-bg);
+    color: var(--dark-gray);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 1.25rem 1rem;
+    border-bottom: 1px solid var(--light-gray);
+    text-align: left;
+}
+
+.premium-table tbody td {
+    padding: 1.25rem 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--light-gray);
+    font-size: 0.95rem;
+}
+
+.premium-table tbody tr {
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+}
+
+.premium-table tbody tr:hover {
+    background-color: rgba(114, 47, 55, 0.05);
+}
+
+/* Status Badge */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 2rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    line-height: 1;
+}
+
+.status-completed {
+    background-color: rgba(102, 187, 106, 0.15);
+    color: #00701a;
+}
+
+.status-pending {
+    background-color: rgba(255, 202, 40, 0.15);
+    color: #d68000;
+}
+
+.status-paid {
+    background-color: rgba(102, 187, 106, 0.15);
+    color: #00701a;
+}
+
+/* Vehicle Info Cell Styles */
+.vehicle-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.vehicle-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    background-color: var(--dutch-white-light);
+    color: var(--wine);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.vehicle-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.vehicle-details h5 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    color: var(--wine);
+}
+
+.vehicle-details p {
+    font-size: 0.8rem;
+    color: var(--dark-gray);
+    margin: 0;
+}
+
+/* Membership Badge */
+.membership-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.membership-standard {
+    background-color: rgba(66, 165, 245, 0.15);
+    color: #0069c0;
+}
+
+.membership-premium {
+    background: linear-gradient(to right, rgba(212, 175, 55, 0.2), rgba(212, 175, 55, 0.3));
+    color: #b8860b;
+}
+
+/* Table Action Buttons */
+.table-actions-cell {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: flex-end;
+}
+
+.btn-table-action {
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--white);
+    color: var(--wine);
+    border: 1px solid var(--light-gray);
+    border-radius: 50%;
+    font-size: 0.85rem;
+    transition: all 0.3s ease;
+}
+
+.btn-table-action:hover {
+    background-color: var(--light-bg);
+    border-color: var(--wine-light);
+}
+
+/* Modal Styles */
+.modal-premium .modal-content {
+    border: none;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.modal-premium .modal-header {
+    background: linear-gradient(145deg, var(--wine) 0%, var(--wine-dark) 100%);
+    color: white;
+    border-bottom: none;
+    padding: 1.75rem 2rem;
+}
+
+.modal-premium .modal-title {
+    font-weight: 700;
+    font-size: 1.35rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.modal-premium .modal-body {
+    padding: 2rem;
+}
+
+.modal-premium .modal-footer {
+    padding: 1.5rem 2rem;
+    border-top: 1px solid var(--light-gray);
+    background-color: rgba(248, 249, 250, 0.5);
+}
+
+/* Service Details */
+.service-detail-row {
+    display: flex;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--light-gray);
+}
+
+.service-detail-col {
+    flex: 1;
+    padding-right: 1.5rem;
+}
+
+.detail-label {
+    font-size: 0.85rem;
+    color: var(--dark-gray);
+    margin-bottom: 0.35rem;
+}
+
+.detail-value {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--dark-gray);
+}
+
+/* Materials Table */
+.materials-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-top: 1.5rem;
+    background-color: var(--light-bg);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.materials-table th {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--dark-gray);
+    padding: 0.75rem 1rem;
+    text-align: left;
+    background-color: var(--light-bg);
+    border-bottom: 1px solid var(--light-gray);
+}
+
+.materials-table td {
+    font-size: 0.9rem;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--light-gray);
+}
+
+/* Invoice Summary */
+.invoice-summary {
+    background-color: var(--light-bg);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    margin-top: 2rem;
+}
+
+.invoice-summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.invoice-summary-row:last-child {
+    margin-bottom: 0;
+    padding-top: 0.75rem;
+    border-top: 1px dashed var(--light-gray);
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.premium-discount-row {
+    color: var(--success);
+}
+
+/* Buttons */
+.btn-premium {
+    padding: 0.75rem 1.5rem;
+    border-radius: 30px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+}
+
+.btn-premium.primary {
+    background: linear-gradient(145deg, var(--wine) 0%, var(--wine-dark) 100%);
+    color: white;
+}
+
+.btn-premium.secondary {
+    background-color: var(--white);
+    color: var(--wine);
+    border: 1px solid var(--light-gray);
+}
+
+/* Workflow Steps */
+.workflow-steps {
+    display: flex;
+    justify-content: space-between;
+    margin: 2rem 0;
+    position: relative;
+}
+
+.workflow-steps::before {
+    content: '';
+    position: absolute;
+    top: 24px;
+    left: 30px;
+    right: 30px;
+    height: 2px;
+    background-color: var(--light-gray);
+    z-index: 1;
+}
+
+.workflow-step {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex: 1;
+}
+
+.step-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: var(--light-bg);
+    border: 2px solid var(--light-gray);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.75rem;
+    color: var(--dark-gray);
+    font-size: 1.25rem;
+}
+
+.step-text {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--dark-gray);
+    text-align: center;
+}
+
+.workflow-step.active .step-icon {
+    background-color: var(--wine);
+    border-color: var(--wine);
+    color: white;
+    box-shadow: 0 0 0 5px rgba(114, 47, 55, 0.2);
+}
+
+.workflow-step.active .step-text {
+    color: var(--wine);
+    font-weight: 600;
+}
+
+.workflow-step.completed .step-icon {
+    background-color: var(--success);
+    border-color: var(--success);
+    color: white;
+}
+
+.workflow-step.completed .step-text {
+    color: var(--success);
+}

@@ -51,7 +51,7 @@ function addConnectionIndicator() {
         `;
 
         const headerTitle = header.querySelector('.header-title');
-        if (headerTitle) {
+        if (headerTitle && headerTitle.parentNode === header) {
             header.insertBefore(statusIndicator, headerTitle.nextSibling);
         } else {
             header.appendChild(statusIndicator);
@@ -74,7 +74,7 @@ function checkApiConnection() {
         headers['Authorization'] = `Bearer ${token}`;
     }
 
-    fetch('/serviceAdvisor/api/assigned-vehicles', {
+    fetch('/serviceAdvisor/api/dashboard/service-requests', {
         method: 'HEAD',
         headers: headers
     })
@@ -309,7 +309,7 @@ function fetchAssignedVehicles() {
         `;
     }
 
-    fetch('/serviceAdvisor/api/assigned-vehicles', {
+    fetch('/serviceAdvisor/api/dashboard/service-requests', {
         method: 'GET',
         headers: headers
     })
@@ -405,16 +405,16 @@ function updateVehiclesTable(vehicles) {
         };
 
         let formattedDate = 'N/A';
-        if (vehicle.startDate) {
+        if (vehicle.startDate || vehicle.createdAt) {
             try {
-                const requestDate = new Date(vehicle.startDate);
+                const requestDate = new Date(vehicle.startDate || vehicle.createdAt);
                 formattedDate = requestDate.toLocaleDateString('en-US', {
                     month: 'short',
                     day: 'numeric',
                     year: 'numeric'
                 });
             } catch (e) {
-                formattedDate = vehicle.startDate;
+                formattedDate = vehicle.startDate || vehicle.createdAt;
             }
         }
 
@@ -444,7 +444,7 @@ function updateVehiclesTable(vehicles) {
         const vehicleName = vehicle.vehicleName ||
             `${vehicle.vehicleBrand || ''} ${vehicle.vehicleModel || ''}`.trim() ||
             'Unknown Vehicle';
-        const registrationNumber = vehicle.registrationNumber || 'No Registration';
+        const registrationNumber = vehicle.registrationNumber || vehicle.vehicleRegistration || 'No Registration';
         const customerName = vehicle.customerName || 'Unknown Customer';
         const customerEmail = vehicle.customerEmail || 'No Email';
         const serviceType = vehicle.serviceType || 'General Service';
@@ -512,7 +512,7 @@ function openVehicleDetails(requestId) {
         headers['Authorization'] = `Bearer ${token}`;
     }
 
-    fetch(`/serviceAdvisor/api/service-details/${requestId}`, {
+    fetch(`/serviceAdvisor/api/dashboard/service-requests/${requestId}`, {
         method: 'GET',
         headers: headers
     })
@@ -528,8 +528,8 @@ function openVehicleDetails(requestId) {
 
             loadVehicleDetails(data);
 
-            if (data.currentBill) {
-                loadCurrentBill(data.currentBill);
+            if (data.currentBill || data.materials) {
+                loadCurrentBill(data);
             }
 
             fetchInventoryItems();
@@ -565,7 +565,7 @@ function loadVehicleDetails(data) {
         if (vehicleCard) {
             const makeModel = `${data.vehicleBrand || ''} ${data.vehicleModel || ''}`.trim();
             setDetailValueFixed(vehicleCard, 1, makeModel || 'Not specified');
-            setDetailValueFixed(vehicleCard, 2, data.registrationNumber || 'Not specified');
+            setDetailValueFixed(vehicleCard, 2, data.vehicleRegistration || data.registrationNumber || 'Not specified');
             setDetailValueFixed(vehicleCard, 3, data.vehicleYear || 'Not specified');
             setDetailValueFixed(vehicleCard, 4, data.vehicleType || 'Not specified');
         }
@@ -582,16 +582,16 @@ function loadVehicleDetails(data) {
             setDetailValueFixed(serviceCard, 1, data.serviceType || 'General Service');
 
             let formattedDate = 'Not specified';
-            if (data.requestDate) {
+            if (data.requestDate || data.createdAt) {
                 try {
-                    const requestDate = new Date(data.requestDate);
+                    const requestDate = new Date(data.requestDate || data.createdAt);
                     formattedDate = requestDate.toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',
                         year: 'numeric'
                     });
                 } catch (e) {
-                    formattedDate = data.requestDate;
+                    formattedDate = data.requestDate || data.createdAt;
                 }
             }
             setDetailValueFixed(serviceCard, 2, formattedDate);
@@ -612,7 +612,7 @@ function loadVehicleDetails(data) {
         }
 
         const vehicleSummaryElements = document.querySelectorAll('.vehicle-summary .vehicle-info-summary h4');
-        const vehicleInfo = `${data.vehicleBrand || ''} ${data.vehicleModel || ''} (${data.registrationNumber || 'Unknown'})`.trim();
+        const vehicleInfo = `${data.vehicleBrand || ''} ${data.vehicleModel || ''} (${data.vehicleRegistration || data.registrationNumber || 'Unknown'})`.trim();
         vehicleSummaryElements.forEach(element => {
             element.textContent = vehicleInfo;
         });
@@ -769,60 +769,42 @@ function getStatusClass(status) {
     }
 }
 
-function loadCurrentBill(billData) {
-    if (!billData) {
-        return;
+function loadCurrentBill(data) {
+    window.inventoryItems = [];
+    window.laborCharges = [];
+
+    if (data.materials && Array.isArray(data.materials)) {
+        data.materials.forEach(item => {
+            if (item && (item.itemId || item.name)) {
+                window.inventoryItems.push({
+                    key: item.itemId || ('item-' + window.inventoryItems.length),
+                    name: item.name || `Item ${item.itemId || window.inventoryItems.length}`,
+                    price: parseFloat(item.unitPrice) || 0,
+                    quantity: parseInt(item.quantity) || 1
+                });
+            }
+        });
     }
 
-    try {
-        window.inventoryItems = [];
-        window.laborCharges = [];
+    if (data.laborCharges && Array.isArray(data.laborCharges)) {
+        data.laborCharges.forEach(charge => {
+            if (charge) {
+                window.laborCharges.push({
+                    description: charge.description || 'Labor charge',
+                    hours: parseFloat(charge.hours) || 0,
+                    rate: parseFloat(charge.ratePerHour || charge.rate) || 0
+                });
+            }
+        });
+    }
 
-        if (billData.materials && Array.isArray(billData.materials)) {
-            billData.materials.forEach(item => {
-                if (item && item.itemId) {
-                    window.inventoryItems.push({
-                        key: item.itemId,
-                        name: item.name || `Item ${item.itemId}`,
-                        price: parseFloat(item.unitPrice) || 0,
-                        quantity: parseInt(item.quantity) || 1
-                    });
-                }
-            });
-        }
+    renderInventoryItems();
+    renderLaborCharges();
+    updateBillSummary();
 
-        if (billData.laborCharges && Array.isArray(billData.laborCharges)) {
-            billData.laborCharges.forEach(charge => {
-                if (charge) {
-                    window.laborCharges.push({
-                        description: charge.description || 'Labor charge',
-                        hours: parseFloat(charge.hours) || 0,
-                        rate: parseFloat(charge.ratePerHour) || 0
-                    });
-                }
-            });
-        }
-
-        renderInventoryItems();
-        renderLaborCharges();
-
-        const formatCurrency = (value) => {
-            const num = parseFloat(value) || 0;
-            return `₹${num.toFixed(2)}`;
-        };
-
-        document.getElementById('partsSubtotal').textContent = formatCurrency(billData.partsSubtotal);
-        document.getElementById('laborSubtotal').textContent = formatCurrency(billData.laborSubtotal);
-        document.getElementById('subtotalAmount').textContent = formatCurrency(billData.subtotal);
-        document.getElementById('taxAmount').textContent = formatCurrency(billData.tax);
-        document.getElementById('totalAmount').textContent = formatCurrency(billData.total);
-
-        const serviceNotesTextarea = document.getElementById('serviceNotes');
-        if (serviceNotesTextarea && billData.notes) {
-            serviceNotesTextarea.value = billData.notes;
-        }
-    } catch (error) {
-        showNotification('Error loading bill information', 'error');
+    const serviceNotesTextarea = document.getElementById('serviceNotes');
+    if (serviceNotesTextarea && data.notes) {
+        serviceNotesTextarea.value = data.notes;
     }
 }
 
@@ -1439,11 +1421,10 @@ function updateServiceStatus() {
 
     const statusData = {
         status: status,
-        notes: document.getElementById('serviceNotes')?.value || "",
-        notifyCustomer: false
+        notes: document.getElementById('serviceNotes')?.value || ""
     };
 
-    return fetch(`/serviceAdvisor/api/service/${window.currentRequestId}/status`, {
+    return fetch(`/serviceAdvisor/api/dashboard/service-requests/${window.currentRequestId}/status`, {
         method: 'PUT',
         headers: headers,
         body: JSON.stringify(statusData)
@@ -1490,7 +1471,7 @@ function updateAllStatusBadges(status) {
         badge.innerHTML = `<i class="fas fa-circle"></i> ${status}`;
     });
 
-    const detailStatus = document.querySelector('.detail-card:nth-of-type(3) .detail-value:nth-of-type(3) .status-badge');
+    const detailStatus = document.querySelector('.detail-card:nth-of-type(3) .detail-row:nth-child(3) .detail-value .status-badge');
     if (detailStatus) {
         detailStatus.classList.remove('new', 'in-progress', 'completed');
         detailStatus.classList.add(statusClass);
@@ -1545,7 +1526,7 @@ function saveServiceItems() {
             };
         });
 
-        const laborPromise = fetch(`/serviceAdvisor/api/service/${window.currentRequestId}/labor-charges`, {
+        const laborPromise = fetch(`/serviceAdvisor/api/dashboard/service-requests/${window.currentRequestId}/labor-charges`, {
             method: 'POST',
             headers: headers,
             body: JSON.stringify(charges)
@@ -1577,7 +1558,7 @@ function saveServiceItems() {
             replaceExisting: true
         };
 
-        const inventoryPromise = fetch(`/serviceAdvisor/api/service/${window.currentRequestId}/inventory-items`, {
+        const inventoryPromise = fetch(`/serviceAdvisor/api/dashboard/service-requests/${window.currentRequestId}/inventory-items`, {
             method: 'POST',
             headers: headers,
             body: JSON.stringify(materialsRequest)
@@ -1611,95 +1592,6 @@ function saveServiceItems() {
         });
 }
 
-function generateBill() {
-    const serviceNotes = document.getElementById('serviceNotes').value;
-
-    const validation = validateInventoryQuantities();
-    if (!validation.isValid) {
-        showNotification(validation.message, 'error');
-        return;
-    }
-
-    showNotification('Generating bill...', 'info');
-
-    const saveButton = document.getElementById('saveServiceItemsBtn');
-    if (saveButton) saveButton.disabled = true;
-
-    const formatter = new Intl.NumberFormat('en-IN', {
-        style: 'currency',
-        currency: 'INR',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    });
-
-    const billRequest = {
-        materials: window.inventoryItems.map(item => {
-            return {
-                itemId: Number(item.key),
-                name: item.name,
-                quantity: Number(item.quantity),
-                unitPrice: Number(item.price),
-                total: Number(item.price * item.quantity)
-            };
-        }),
-        laborCharges: window.laborCharges.map(charge => {
-            return {
-                description: charge.description || 'Labor Charge',
-                hours: Number(charge.hours),
-                ratePerHour: Number(charge.rate),
-                total: Number(charge.hours * charge.rate)
-            };
-        }),
-        materialsTotal: Number(window.inventoryItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)),
-        laborTotal: Number(window.laborCharges.reduce((sum, charge) => sum + (charge.hours * charge.rate), 0)),
-        subtotal: Number(
-            window.inventoryItems.reduce((sum, item) => sum + (item.price * item.quantity), 0) +
-            window.laborCharges.reduce((sum, charge) => sum + (charge.hours * charge.rate), 0)
-        ),
-        notes: serviceNotes,
-        sendEmail: true
-    };
-
-    billRequest.gst = Number(billRequest.subtotal * 0.07);
-    billRequest.grandTotal = Number(billRequest.subtotal + billRequest.gst);
-
-    const token = getAuthToken();
-    const headers = createAuthHeaders();
-
-    fetch(`/serviceAdvisor/api/service/${window.currentRequestId}/generate-bill`, {
-        method: 'POST',
-        headers: headers,
-        body: JSON.stringify(billRequest)
-    })
-        .then(response => {
-            if (!response.ok) {
-                return response.text().then(text => {
-                    throw new Error(`Failed to generate bill: ${response.status} - ${text}`);
-                });
-            }
-            return response.json();
-        })
-        .then(data => {
-            showNotification('Bill generated successfully!');
-
-            if (data.emailSent) {
-                setTimeout(() => {
-                    showNotification('Bill email sent to customer');
-                }, 3000);
-            }
-
-            if (saveButton) saveButton.disabled = false;
-
-            updateBillPreview();
-            fetchInventoryItems();
-        })
-        .catch(error => {
-            showNotification('Error generating bill: ' + error.message, 'error');
-
-            if (saveButton) saveButton.disabled = false;
-        });
-}
-
 function markServiceComplete() {
     const requestId = window.currentRequestId;
     if (!requestId) {
@@ -1717,10 +1609,10 @@ function markServiceComplete() {
 
     const data = {
         status: "Completed",
-        notes: "Service completed by " + document.querySelector('.user-info h3').textContent
+        notes: document.getElementById('serviceNotes')?.value || "Service completed"
     };
 
-    fetch(`/serviceAdvisor/api/service/${requestId}/status`, {
+    fetch(`/serviceAdvisor/api/dashboard/service-requests/${requestId}/status`, {
         method: 'PUT',
         headers: headers,
         body: JSON.stringify(data)
@@ -1816,6 +1708,5 @@ window.updateInventoryQuantity = updateInventoryQuantity;
 window.removeInventoryItem = removeInventoryItem;
 window.removeLaborCharge = removeLaborCharge;
 window.handleTabClick = handleTabClick;
-window.sendBillToAdmin = sendBillToAdmin;
 window.updateBillPreview = updateBillPreview;
 window.updateInvoiceInfoFields = updateInvoiceInfoFields;

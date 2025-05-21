@@ -316,7 +316,6 @@ function fetchAssignedVehicles() {
 
     if (token) {
         headers['Authorization'] = `Bearer ${token}`;
-        sessionStorage.setItem('jwt-token', token);
     }
 
     const tableBody = document.getElementById('vehiclesTableBody');
@@ -331,9 +330,7 @@ function fetchAssignedVehicles() {
         `;
     }
 
-    // FIXED: Match the exact endpoint from ServiceAdvisorDashboardController
-    const apiBaseUrl = window.getApiBaseUrl();
-    fetch(`${apiBaseUrl}/serviceAdvisor/api/dashboard/service-requests`, {
+    fetch('/serviceAdvisor/api/dashboard/service-requests', {
         method: 'GET',
         headers: headers
     })
@@ -345,21 +342,14 @@ function fetchAssignedVehicles() {
         })
         .then(data => {
             if (Array.isArray(data)) {
-                window.fetchRetries = 0;
                 updateVehiclesTable(data);
             } else {
                 throw new Error('Invalid data format: expected an array');
             }
         })
         .catch(error => {
-            if (window.fetchRetries < window.MAX_RETRIES) {
-                window.fetchRetries++;
-                setTimeout(fetchAssignedVehicles, 1000);
-                showNotification(`Retrying to load data (${window.fetchRetries}/${window.MAX_RETRIES})...`, 'info');
-            } else {
-                showNotification('Error loading assigned vehicles: ' + error.message, 'error');
-                loadDummyData();
-            }
+            showNotification('Error loading assigned vehicles: ' + error.message, 'error');
+            loadDummyData();
         });
 }
 
@@ -531,13 +521,11 @@ function openVehicleDetails(requestId) {
     updateModalFooterButtons();
 
     const token = getAuthToken();
-    const headers = {};
-    if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-    }
+    const headers = {
+        'Authorization': token ? `Bearer ${token}` : ''
+    };
 
-    const apiBaseUrl = window.getApiBaseUrl();
-    fetch(`${apiBaseUrl}/serviceAdvisor/api/dashboard/service-requests/${requestId}`, {
+    fetch(`/serviceAdvisor/api/dashboard/service-requests/${requestId}`, {
         method: 'GET',
         headers: headers
     })
@@ -553,7 +541,7 @@ function openVehicleDetails(requestId) {
 
             loadVehicleDetails(data);
 
-            if (data.currentBill || data.materials) {
+            if (data.materials && data.materials.length > 0) {
                 loadCurrentBill(data);
             }
 
@@ -576,6 +564,7 @@ function openVehicleDetails(requestId) {
             }
         });
 }
+
 
 function loadVehicleDetails(data) {
     if (!data) {
@@ -836,7 +825,15 @@ function loadCurrentBill(data) {
 
 function fetchInventoryItems() {
     const token = getAuthToken();
-    const headers = createAuthHeaders();
+    const headers = {
+        'Content-Type': 'application/json'
+    };
+
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    console.log("Starting inventory fetch with token:", token ? "Present" : "Missing");
 
     const inventorySelect = document.getElementById('inventoryItemSelect');
     if (inventorySelect) {
@@ -851,78 +848,109 @@ function fetchInventoryItems() {
         inventorySelect.selectedIndex = 1;
     }
 
-    // FIXED: Match the inventory items endpoint
-    const apiBaseUrl = window.getApiBaseUrl();
-    return fetch(`${apiBaseUrl}/admin/api/inventory/items`, {
+    // Use the consolidated endpoint
+    const url = '/serviceAdvisor/api/dashboard/inventory-items';
+    console.log("Fetching inventory from:", url);
+
+    fetch(url, {
         method: 'GET',
         headers: headers
     })
         .then(response => {
             if (!response.ok) {
+                console.error(`Fetch error: ${response.status} ${response.statusText}`);
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
             return response.json();
         })
         .then(data => {
+            console.log("Inventory data received:", data);
             populateInventoryDropdown(data);
-            return data;
+            showNotification('Inventory items loaded successfully', 'success');
         })
         .catch(error => {
-            showNotification('Error loading inventory items. Please try again.', 'error');
-
-            if (inventorySelect) {
-                while (inventorySelect.options.length > 1) {
-                    inventorySelect.remove(1);
-                }
-
-                const errorOption = document.createElement('option');
-                errorOption.disabled = true;
-                errorOption.textContent = 'Error loading items. Please try again.';
-                inventorySelect.appendChild(errorOption);
-            }
-
-            setTimeout(() => {
-                retryFetchInventoryItems();
-            }, 3000);
-
-            throw error;
+            console.error('Error fetching inventory items:', error);
+            showNotification('Error loading inventory items. Using sample data...', 'warning');
+            populateDummyInventoryData();
         });
 }
 
+// Improved retry function
 function retryFetchInventoryItems() {
     const token = getAuthToken();
-    const headers = createAuthHeaders();
+    const headers = {
+        'Content-Type': 'application/json'
+    };
 
-    // FIXED: Using correct inventory items endpoint
-    fetch('/admin/api/inventory/items', {
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    console.log('Retrying inventory fetch with headers:', headers);
+
+    // Try the alternate path with admin API
+    const url = '/admin/inventory/api/items';
+    console.log("Trying alternate inventory path:", url);
+
+    fetch(url, {
         method: 'GET',
         headers: headers
     })
         .then(response => {
             if (!response.ok) {
+                console.error(`Retry fetch error: ${response.status} ${response.statusText}`);
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
             return response.json();
         })
         .then(data => {
+            console.log("Alternate inventory data received:", data);
             populateInventoryDropdown(data);
-            showNotification('Inventory items loaded successfully', 'info');
+            showNotification('Inventory items loaded successfully', 'success');
         })
         .catch(error => {
-            // Silent error handling
+            console.error('Retry failed:', error);
+            showNotification('Failed to load inventory items. Using sample data.', 'warning');
+
+            // Add dummy data for testing if needed
+            populateDummyInventoryData();
         });
 }
 
+// Add the missing populateDummyInventoryData function
+function populateDummyInventoryData() {
+    console.warn('Using dummy inventory data as fallback');
+
+    const dummyItems = [
+        { itemId: 1, name: "Engine Oil", unitPrice: 350, currentStock: 20, category: "Fluids" },
+        { itemId: 2, name: "Oil Filter", unitPrice: 180, currentStock: 15, category: "Filters" },
+        { itemId: 3, name: "Air Filter", unitPrice: 250, currentStock: 12, category: "Filters" },
+        { itemId: 4, name: "Brake Pads", unitPrice: 750, currentStock: 8, category: "Brakes" },
+        { itemId: 5, name: "Windshield Wiper", unitPrice: 320, currentStock: 18, category: "Exterior" }
+    ];
+
+    populateInventoryDropdown(dummyItems);
+    showNotification('Using sample inventory data', 'warning');
+}
+
+// Enhanced dropdown population with detailed logging
 function populateInventoryDropdown(items) {
     const inventorySelect = document.getElementById('inventoryItemSelect');
-    if (!inventorySelect) return;
+    if (!inventorySelect) {
+        console.error('Inventory select element not found');
+        return;
+    }
 
+    // Clear existing options except the first one
     while (inventorySelect.options.length > 1) {
         inventorySelect.remove(1);
     }
 
+    // Reset global storage
     window.inventoryPrices = {};
     window.inventoryData = {};
+
+    console.log('Populating inventory dropdown with items:', items);
 
     if (!items || !Array.isArray(items) || items.length === 0) {
         const noItemsOption = document.createElement('option');
@@ -932,6 +960,7 @@ function populateInventoryDropdown(items) {
         return;
     }
 
+    // Add all items to dropdown, handling stock appropriately
     items.forEach(item => {
         if (!item.currentStock || parseFloat(item.currentStock) <= 0) {
             return;
@@ -949,8 +978,10 @@ function populateInventoryDropdown(items) {
         option.textContent = `${item.name} - ${formattedPrice} (${item.currentStock} in stock)`;
         inventorySelect.appendChild(option);
 
+        // Store price for later use
         window.inventoryPrices[item.itemId] = parseFloat(item.unitPrice);
 
+        // Store complete item data
         window.inventoryData[item.itemId] = {
             name: item.name,
             price: parseFloat(item.unitPrice),
@@ -959,8 +990,11 @@ function populateInventoryDropdown(items) {
         };
     });
 
+    // Reset selection to first item
     inventorySelect.selectedIndex = 0;
+    console.log('Inventory data populated:', window.inventoryData);
 }
+
 
 function addInventoryItem(itemId, quantity = 1) {
     if (!itemId) {
@@ -1433,30 +1467,27 @@ function updateStatusPreview(status) {
     }
 }
 
-function updateServiceStatus() {
-    const statusSelect = document.getElementById('statusSelect');
-
-    if (!statusSelect) {
-        return;
+function updateServiceStatus(status) {
+    if (!window.currentRequestId) {
+        return Promise.reject(new Error('No service request selected'));
     }
 
-    const status = statusSelect.value;
-    showNotification('Updating status...', 'info');
-
-    const saveButton = document.getElementById('saveServiceItemsBtn');
-    if (saveButton) saveButton.disabled = true;
+    console.log(`Updating status to ${status}`);
 
     const token = getAuthToken();
-    const headers = createAuthHeaders();
+    const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': token ? `Bearer ${token}` : ''
+    };
 
     const statusData = {
         status: status,
         notes: document.getElementById('serviceNotes')?.value || ""
     };
 
-    // FIXED: Using exact endpoint path from controller
-    const apiBaseUrl = window.getApiBaseUrl();
-    return fetch(`${apiBaseUrl}/serviceAdvisor/api/dashboard/service-requests/${window.currentRequestId}/status`, {
+    const url = `/serviceAdvisor/api/dashboard/service-requests/${window.currentRequestId}/status`;
+
+    return fetch(url, {
         method: 'PUT',
         headers: headers,
         body: JSON.stringify(statusData)
@@ -1468,23 +1499,16 @@ function updateServiceStatus() {
             return response.json();
         })
         .then(data => {
-            showNotification(`Service status updated to ${status}!`);
+            console.log('Status updated successfully:', data);
 
-            if (saveButton) saveButton.disabled = false;
-
-            updateStatusInTable(window.currentRequestId, status);
+            // Update UI
             updateAllStatusBadges(status);
+            updateStatusInTable(window.currentRequestId, status);
 
             return data;
-        })
-        .catch(error => {
-            showNotification('Error updating status: ' + error.message, 'error');
-
-            if (saveButton) saveButton.disabled = false;
-
-            throw error;
         });
 }
+
 
 function updateAllStatusBadges(status) {
     let statusClass = getStatusClass(status);
@@ -1535,7 +1559,7 @@ function updateStatusInTable(requestId, status) {
 function saveServiceItems() {
     if (window.inventoryItems.length === 0 && window.laborCharges.length === 0) {
         showNotification('No service items to save', 'info');
-        return;
+        return Promise.resolve(false);
     }
 
     showNotification('Saving service items...', 'info');
@@ -1544,60 +1568,117 @@ function saveServiceItems() {
     if (saveButton) saveButton.disabled = true;
 
     const token = getAuthToken();
-    const headers = createAuthHeaders();
-    const apiBaseUrl = window.getApiBaseUrl();
-
-    // First, let's try to update the status with any notes
-    const statusData = {
-        status: document.getElementById('statusSelect')?.value || "Diagnosis",
-        notes: document.getElementById('serviceNotes')?.value || ""
+    const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': token ? `Bearer ${token}` : ''
     };
 
-    // Use separate promise array for service items
     const promises = [];
 
-    // Update the status/notes first
-    const statusPromise = fetch(`${apiBaseUrl}/serviceAdvisor/api/dashboard/service-requests/${window.currentRequestId}/status`, {
-        method: 'PUT',
-        headers: headers,
-        body: JSON.stringify(statusData)
-    })
-        .then(response => {
-            if (!response.ok) {
-                return response.text().then(text => {
-                    console.warn(`Warning: Failed to update status: ${response.status} - ${text}`);
-                    return null; // Continue with other operations
-                });
-            }
-            return response.json();
-        })
-        .catch(error => {
-            console.warn("Error updating status:", error);
-            return null; // Continue with other operations
+    // Save inventory items if any
+    if (window.inventoryItems.length > 0) {
+        const items = window.inventoryItems.map(item => {
+            return {
+                itemId: Number(item.key),
+                name: item.name,
+                quantity: Number(item.quantity),
+                unitPrice: Number(item.price)
+            };
         });
 
-    promises.push(statusPromise)
-.then(response => {
-        if (!response.ok) {
-            return response.text().then(text => {
-                throw new Error(`Failed to save service items: ${response.status} - ${text}`);
-            });
-        }
-        return response.json();
-    })
-        .then(result => {
-            showNotification('Service items saved successfully!', 'success');
+        const materialsRequest = {
+            items: items,
+            replaceExisting: true
+        };
 
+        console.log('Sending inventory items:', materialsRequest);
+
+        const materialsUrl = `/serviceAdvisor/api/dashboard/service-requests/${window.currentRequestId}/inventory-items`;
+
+        const inventoryPromise = fetch(materialsUrl, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(materialsRequest)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    console.error(`Error saving inventory items: ${response.status}`);
+                    throw new Error(`Failed to save inventory items: ${response.status}`);
+                }
+                return response.json();
+            });
+
+        promises.push(inventoryPromise);
+    }
+
+    // Save labor charges if any
+    if (window.laborCharges.length > 0) {
+        const charges = window.laborCharges.map(charge => {
+            return {
+                description: charge.description || 'Labor Charge',
+                hours: parseFloat(charge.hours) || 0,
+                rate: parseFloat(charge.rate) || 0
+            };
+        });
+
+        console.log('Sending labor charges:', charges);
+
+        const laborUrl = `/serviceAdvisor/api/dashboard/service-requests/${window.currentRequestId}/labor-charges`;
+
+        const laborPromise = fetch(laborUrl, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(charges)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    console.error(`Error saving labor charges: ${response.status}`);
+                    throw new Error(`Failed to save labor charges: ${response.status}`);
+                }
+                return response.json();
+            });
+
+        promises.push(laborPromise);
+    }
+
+    return Promise.allSettled(promises)
+        .then(results => {
             if (saveButton) saveButton.disabled = false;
 
-            setTimeout(() => {
-                openVehicleDetails(window.currentRequestId);
-            }, 1000);
+            // Check if any promises succeeded
+            const anySuccess = results.some(result => result.status === 'fulfilled');
+
+            if (anySuccess) {
+                showNotification(`Service items saved successfully!`, 'success');
+
+                // Also update the status to "In Progress" if not already
+                updateServiceStatus('Diagnosis').catch(err => {
+                    console.log("Status update failed but items were saved:", err);
+                });
+
+                // Refresh the service request data
+                setTimeout(() => {
+                    openVehicleDetails(window.currentRequestId);
+                }, 1000);
+
+                return true;
+            } else {
+                // All promises failed
+                const errors = results
+                    .filter(r => r.status === 'rejected')
+                    .map(r => r.reason.message)
+                    .join('; ');
+
+                showNotification(`Error saving service items: ${errors}`, 'error');
+                return false;
+            }
         })
         .catch(error => {
+            console.error('Unexpected error during save:', error);
             showNotification('Error: ' + error.message, 'error');
 
             if (saveButton) saveButton.disabled = false;
+            return false;
         });
 }
 
@@ -1608,42 +1689,24 @@ function markServiceComplete() {
         return;
     }
 
-    showNotification('Marking service as completed...', 'info');
+    // First save all service items
+    saveServiceItems().then(saved => {
+        // Now update the status to completed
+        updateServiceStatus('Completed')
+            .then(() => {
+                showNotification('Service marked as completed!', 'success');
 
-    const token = getAuthToken();
-    const headers = createAuthHeaders();
-    const apiBaseUrl = window.getApiBaseUrl();
-
-    const data = {
-        status: "Completed",
-        notes: document.getElementById('serviceNotes')?.value || "Service completed"
-    };
-
-    // FIXED: Using the correct status endpoint for completing service
-    fetch(`${apiBaseUrl}/serviceAdvisor/api/dashboard/service-requests/${requestId}/status`, {
-        method: 'PUT',
-        headers: headers,
-        body: JSON.stringify(data)
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`Failed to update status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(result => {
-            showNotification('Service marked as completed!', 'success');
-
-            updateAllStatusBadges("Completed");
-
-            setTimeout(() => {
-                document.getElementById('vehicleDetailsModal').classList.remove('show');
-                fetchAssignedVehicles();
-            }, 1500);
-        })
-        .catch(error => {
-            showNotification('Error: ' + error.message, 'error');
-        });
+                // Close the modal and refresh the list
+                setTimeout(() => {
+                    document.getElementById('vehicleDetailsModal').classList.remove('show');
+                    fetchAssignedVehicles();
+                }, 1500);
+            })
+            .catch(error => {
+                console.error('Error completing service:', error);
+                showNotification('Error marking service as complete: ' + error.message, 'error');
+            });
+    });
 }
 
 function filterVehicles(filter) {
@@ -1719,3 +1782,8 @@ window.removeLaborCharge = removeLaborCharge;
 window.handleTabClick = handleTabClick;
 window.updateBillPreview = updateBillPreview;
 window.updateInvoiceInfoFields = updateInvoiceInfoFields;
+window.fetchInventoryItems = fetchInventoryItems;
+window.saveServiceItems = saveServiceItems;
+window.updateServiceStatus = updateServiceStatus;
+window.markServiceComplete = markServiceComplete;
+window.fetchAssignedVehicles = fetchAssignedVehicles;

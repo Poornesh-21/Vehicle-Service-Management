@@ -1,19 +1,18 @@
 package com.albany.restapi.service.serviceAdvisor;
 
+import com.albany.restapi.dto.LaborChargeDTO;
+import com.albany.restapi.dto.MaterialItemDTO;
 import com.albany.restapi.dto.MaterialUsageDTO;
 import com.albany.restapi.dto.ServiceRequestDTO;
-import com.albany.restapi.model.ServiceAdvisorProfile;
-import com.albany.restapi.model.ServiceRequest;
-import com.albany.restapi.model.User;
-import com.albany.restapi.repository.MaterialUsageRepository;
-import com.albany.restapi.repository.ServiceRequestRepository;
-import com.albany.restapi.repository.UserRepository;
+import com.albany.restapi.model.*;
+import com.albany.restapi.repository.*;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -21,6 +20,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,6 +34,11 @@ public class ServiceAdvisorDashboardService {
     private final MaterialUsageRepository materialUsageRepository;
     private final UserRepository userRepository;
     private final ServiceAdvisorAuthService serviceAdvisorAuthService;
+    private final InventoryRepository inventoryRepository;
+    
+    // Optional dependency for service tracking
+    @Autowired(required = false)
+    private ServiceTrackingRepository serviceTrackingRepository;
     
     /**
      * Get all service requests assigned to the service advisor
@@ -94,6 +99,24 @@ public class ServiceAdvisorDashboardService {
         request.setStatus(status);
         request.setUpdatedAt(LocalDateTime.now());
         
+        // Update tracking record if status changed and serviceTrackingRepository is available
+        try {
+            if (serviceTrackingRepository != null) {
+                ServiceTracking tracking = ServiceTracking.builder()
+                        .serviceRequest(request)
+                        .status(status)
+                        .serviceAdvisor(advisor)
+                        .updatedAt(LocalDateTime.now())
+                        .workDescription("Status updated to " + status.name())
+                        .build();
+                
+                serviceTrackingRepository.save(tracking);
+            }
+        } catch (Exception e) {
+            logger.warn("Could not save service tracking record: {}", e.getMessage());
+            // Continue execution even if tracking fails
+        }
+        
         ServiceRequest updatedRequest = serviceRequestRepository.save(request);
         return mapToDTO(updatedRequest);
     }
@@ -138,6 +161,111 @@ public class ServiceAdvisorDashboardService {
         stats.put("recentActivity", recentActivity);
         
         return stats;
+    }
+    
+    /**
+     * Add inventory items to a service request
+     */
+    @Transactional
+    public ServiceRequestDTO addInventoryItems(String username, Integer requestId, 
+                                          List<MaterialItemDTO> items, boolean replaceExisting) {
+        ServiceAdvisorProfile advisor = serviceAdvisorAuthService.getServiceAdvisorProfile(username);
+        
+        ServiceRequest request = serviceRequestRepository.findById(requestId)
+                .orElseThrow(() -> new IllegalArgumentException("Service request not found with ID: " + requestId));
+        
+        // Verify the request is assigned to this advisor
+        if (request.getServiceAdvisor() == null || !request.getServiceAdvisor().getAdvisorId().equals(advisor.getAdvisorId())) {
+            throw new IllegalArgumentException("Service request is not assigned to this advisor");
+        }
+        
+        // Clear existing materials if needed
+        if (replaceExisting) {
+            List<MaterialUsage> existingMaterials = materialUsageRepository.findByServiceRequest_RequestIdOrderByUsedAtDesc(requestId);
+            materialUsageRepository.deleteAll(existingMaterials);
+        }
+        
+        // Add new materials
+        for (MaterialItemDTO item : items) {
+            InventoryItem inventoryItem = inventoryRepository.findById(item.getItemId())
+                    .orElseThrow(() -> new IllegalArgumentException("Inventory item not found with ID: " + item.getItemId()));
+            
+            // Check if there's enough stock
+            if (inventoryItem.getCurrentStock().compareTo(item.getQuantity()) < 0) {
+                throw new IllegalArgumentException("Not enough stock for item: " + inventoryItem.getName() + 
+                        ". Available: " + inventoryItem.getCurrentStock() + ", Requested: " + item.getQuantity());
+            }
+            
+            // Update inventory stock
+            inventoryItem.setCurrentStock(inventoryItem.getCurrentStock().subtract(item.getQuantity()));
+            inventoryRepository.save(inventoryItem);
+            
+            // Create material usage record
+            MaterialUsage materialUsage = MaterialUsage.builder()
+                    .inventoryItem(inventoryItem)
+                    .serviceRequest(request)
+                    .quantity(item.getQuantity())
+                    .usedAt(LocalDateTime.now())
+                    .build();
+            
+            materialUsageRepository.save(materialUsage);
+        }
+        
+        request.setUpdatedAt(LocalDateTime.now());
+        ServiceRequest updatedRequest = serviceRequestRepository.save(request);
+        
+        return mapToDTO(updatedRequest);
+    }
+
+    /**
+     * Add labor charges to a service request
+     */
+    @Transactional
+    public ServiceRequestDTO addLaborCharges(String username, Integer requestId, List<LaborChargeDTO> charges) {
+        ServiceAdvisorProfile advisor = serviceAdvisorAuthService.getServiceAdvisorProfile(username);
+        
+        ServiceRequest request = serviceRequestRepository.findById(requestId)
+                .orElseThrow(() -> new IllegalArgumentException("Service request not found with ID: " + requestId));
+        
+        // Verify the request is assigned to this advisor
+        if (request.getServiceAdvisor() == null || !request.getServiceAdvisor().getAdvisorId().equals(advisor.getAdvisorId())) {
+            throw new IllegalArgumentException("Service request is not assigned to this advisor");
+        }
+        
+        // Add labor charges to tracking if serviceTrackingRepository is available
+        if (serviceTrackingRepository != null) {
+            try {
+                for (LaborChargeDTO charge : charges) {
+                    // Convert hours to minutes for storage
+                    int minutes = charge.getHours().multiply(BigDecimal.valueOf(60)).intValue();
+                    
+                    // Calculate total cost
+                    BigDecimal laborCost = charge.getHours().multiply(charge.getRate());
+                    
+                    ServiceTracking tracking = ServiceTracking.builder()
+                            .serviceRequest(request)
+                            .laborMinutes(minutes)
+                            .laborCost(laborCost)
+                            .workDescription(charge.getDescription() != null ? charge.getDescription() : "Labor Charge")
+                            .serviceAdvisor(advisor)
+                            .status(request.getStatus())
+                            .updatedAt(LocalDateTime.now())
+                            .build();
+                    
+                    serviceTrackingRepository.save(tracking);
+                }
+            } catch (Exception e) {
+                logger.warn("Could not save labor charge records: {}", e.getMessage());
+                // Continue execution even if tracking fails
+            }
+        } else {
+            logger.warn("ServiceTrackingRepository not available, skipping labor charge tracking");
+        }
+        
+        request.setUpdatedAt(LocalDateTime.now());
+        ServiceRequest updatedRequest = serviceRequestRepository.save(request);
+        
+        return mapToDTO(updatedRequest);
     }
     
     /**

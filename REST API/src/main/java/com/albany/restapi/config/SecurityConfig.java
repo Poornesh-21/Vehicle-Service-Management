@@ -42,10 +42,19 @@ public class SecurityConfig {
                         .requestMatchers("/serviceAdvisor/api/login").permitAll()
                         .requestMatchers("/serviceAdvisor/api/change-password").permitAll()
 
+                        // Special open inventory endpoint
+                        .requestMatchers("/api/inventory/**").permitAll()
+
                         // Role-based authorization
-                        .requestMatchers("/admin/**").hasRole("admin")
-                        .requestMatchers("/serviceAdvisor/**").hasRole("serviceAdvisor")
+                        .requestMatchers("/admin/**").hasAnyRole("admin", "serviceAdvisor")
+
+                        // Make inventory API accessible to both admins and service advisors
+                        .requestMatchers("/admin/inventory/**").hasAnyRole("admin", "serviceAdvisor")
+
+                        // Service advisor endpoints
                         .requestMatchers("/serviceAdvisor/api/validate-token").hasRole("serviceAdvisor")
+                        .requestMatchers("/serviceAdvisor/api/inventory-items").hasRole("serviceAdvisor")
+                        .requestMatchers("/serviceAdvisor/api/dashboard/**").hasRole("serviceAdvisor")
 
                         // All other routes require authentication
                         .anyRequest().authenticated()

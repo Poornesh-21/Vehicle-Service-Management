@@ -16,13 +16,15 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
+        // Admin routes
         registry.addViewController("/admin/login").setViewName("admin/login");
-
-        // Add redirect from /service-advisors to /admin/service-advisors
         registry.addRedirectViewController("/service-advisors", "/admin/service-advisors");
-
         registry.addRedirectViewController("/", "/admin/login");
         registry.addRedirectViewController("/login", "/admin/login");
+
+        // Service Advisor routes
+        registry.addViewController("/serviceAdvisor/login").setViewName("service advisor/login");
+        registry.addRedirectViewController("/serviceAdvisor", "/serviceAdvisor/login");
     }
 
     @Override
@@ -30,6 +32,10 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addResourceHandler("/CSS/**").addResourceLocations("classpath:/static/CSS/");
         registry.addResourceHandler("/Javascript/**").addResourceLocations("classpath:/static/Javascript/");
         registry.addResourceHandler("/assets/**").addResourceLocations("classpath:/static/assets/");
+
+        // Add explicit entries for Service Advisor resources
+        registry.addResourceHandler("/css/**").addResourceLocations("classpath:/static/css/");
+        registry.addResourceHandler("/js/**").addResourceLocations("classpath:/static/js/");
     }
 
     @Bean
@@ -38,10 +44,16 @@ public class WebConfig implements WebMvcConfigurer {
                 .csrf(AbstractHttpConfigurer::disable)
 
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/CSS/**", "/Javascript/**", "/assets/**").permitAll()
-                        .requestMatchers("/admin/login").permitAll()
-                        .requestMatchers("/service-advisors").permitAll() // Allow access to the redirect path
+                        // Static resources
+                        .requestMatchers("/CSS/**", "/Javascript/**", "/assets/**", "/css/**", "/js/**").permitAll()
 
+                        // Login pages
+                        .requestMatchers("/admin/login").permitAll()
+                        .requestMatchers("/serviceAdvisor/login").permitAll()
+                        .requestMatchers("/service-advisors").permitAll() // For redirects
+                        .requestMatchers("/serviceAdvisor").permitAll() // For redirects
+
+                        // Allow all other requests (will be secured by the REST API)
                         .anyRequest().permitAll()
                 )
 

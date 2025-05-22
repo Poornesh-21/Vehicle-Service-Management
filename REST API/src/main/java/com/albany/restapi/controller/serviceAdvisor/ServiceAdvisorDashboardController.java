@@ -1,6 +1,5 @@
 package com.albany.restapi.controller.serviceAdvisor;
 
-import com.albany.restapi.controller.admin.ServiceAdvisorController;
 import com.albany.restapi.dto.*;
 import com.albany.restapi.model.*;
 import com.albany.restapi.repository.*;
@@ -29,7 +28,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ServiceAdvisorDashboardController {
 
-    private static final Logger logger = LoggerFactory.getLogger(ServiceAdvisorController.class);
+    private static final Logger logger = LoggerFactory.getLogger(com.albany.restapi.controller.admin.ServiceAdvisorController.class);
 
     // Repositories
     private final ServiceRequestRepository serviceRequestRepository;

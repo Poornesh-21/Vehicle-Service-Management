@@ -1,7 +1,5 @@
 package com.albany.mvc.controller.serviceAdvisor;
 
-import com.albany.mvc.dto.AuthRequest;
-import com.albany.mvc.dto.AuthResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,7 +12,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 @Controller

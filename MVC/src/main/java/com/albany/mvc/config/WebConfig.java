@@ -47,13 +47,11 @@ public class WebConfig implements WebMvcConfigurer {
                         // Static resources
                         .requestMatchers("/CSS/**", "/Javascript/**", "/assets/**", "/css/**", "/js/**").permitAll()
 
-                        // Login pages
                         .requestMatchers("/admin/login").permitAll()
                         .requestMatchers("/serviceAdvisor/login").permitAll()
                         .requestMatchers("/service-advisors").permitAll() // For redirects
                         .requestMatchers("/serviceAdvisor").permitAll() // For redirects
 
-                        // Allow all other requests (will be secured by the REST API)
                         .anyRequest().permitAll()
                 )
 

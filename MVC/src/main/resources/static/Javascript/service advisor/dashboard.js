@@ -1,7 +1,3 @@
-/**
- * Service Advisor Dashboard JavaScript
- * Optimized and fixed endpoint mismatches to properly communicate with the backend
- */
 
 document.addEventListener('DOMContentLoaded', function() {
     window.inventoryPrices = {};
@@ -10,26 +6,6 @@ document.addEventListener('DOMContentLoaded', function() {
     window.laborCharges = [];
     window.currentRequestId = null;
     window.currentInvoiceNumber = null;
-    window.fetchRetries = 0;
-    window.MAX_RETRIES = 3;
-
-    // Create a more flexible URL helper function to switch between environments
-    window.getApiBaseUrl = function() {
-        // Check if we're running in a development environment
-        const host = window.location.hostname;
-        const port = window.location.port;
-
-        // For development on localhost, we might use different ports
-        if (host === 'localhost') {
-            if (port === '8081') {
-                // MVC app running on 8081, REST API on 8080
-                return 'http://localhost:8080';
-            }
-        }
-
-        // Default to same origin for production
-        return window.location.origin;
-    };
 
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
@@ -39,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     addRefreshButton();
     fetchAssignedVehicles();
-    const refreshInterval = setInterval(fetchAssignedVehicles, 300000); // Refresh every 5 minutes
+    const refreshInterval = setInterval(fetchAssignedVehicles, 300000);
     initializeEventListeners();
     initializeStatusEvents();
     updateModalFooterButtons();
@@ -76,7 +52,7 @@ function addConnectionIndicator() {
         `;
 
         const headerTitle = header.querySelector('.header-title');
-        if (headerTitle && headerTitle.parentNode === header) {
+        if (headerTitle) {
             header.insertBefore(statusIndicator, headerTitle.nextSibling);
         } else {
             header.appendChild(statusIndicator);
@@ -99,9 +75,9 @@ function checkApiConnection() {
         headers['Authorization'] = `Bearer ${token}`;
     }
 
-    // Just check if the dashboard itself is reachable
-    fetch('/serviceAdvisor/dashboard', {
-        method: 'HEAD'
+    fetch('/serviceAdvisor/api/assigned-vehicles', {
+        method: 'HEAD',
+        headers: headers
     })
         .then(response => {
             if (response.ok) {
@@ -310,12 +286,16 @@ function createAuthHeaders() {
     return headers;
 }
 
+let fetchRetries = 0;
+const MAX_RETRIES = 3;
+
 function fetchAssignedVehicles() {
     const token = getAuthToken();
     const headers = {};
 
     if (token) {
         headers['Authorization'] = `Bearer ${token}`;
+        sessionStorage.setItem('jwt-token', token);
     }
 
     const tableBody = document.getElementById('vehiclesTableBody');
@@ -330,7 +310,7 @@ function fetchAssignedVehicles() {
         `;
     }
 
-    fetch('/serviceAdvisor/api/dashboard/service-requests', {
+    fetch('/serviceAdvisor/api/assigned-vehicles', {
         method: 'GET',
         headers: headers
     })
@@ -342,14 +322,21 @@ function fetchAssignedVehicles() {
         })
         .then(data => {
             if (Array.isArray(data)) {
+                fetchRetries = 0;
                 updateVehiclesTable(data);
             } else {
                 throw new Error('Invalid data format: expected an array');
             }
         })
         .catch(error => {
-            showNotification('Error loading assigned vehicles: ' + error.message, 'error');
-            loadDummyData();
+            if (fetchRetries < MAX_RETRIES) {
+                fetchRetries++;
+                setTimeout(fetchAssignedVehicles, 1000);
+                showNotification(`Retrying to load data (${fetchRetries}/${MAX_RETRIES})...`, 'info');
+            } else {
+                showNotification('Error loading assigned vehicles: ' + error.message, 'error');
+                loadDummyData();
+            }
         });
 }
 
@@ -419,16 +406,16 @@ function updateVehiclesTable(vehicles) {
         };
 
         let formattedDate = 'N/A';
-        if (vehicle.startDate || vehicle.createdAt) {
+        if (vehicle.startDate) {
             try {
-                const requestDate = new Date(vehicle.startDate || vehicle.createdAt);
+                const requestDate = new Date(vehicle.startDate);
                 formattedDate = requestDate.toLocaleDateString('en-US', {
                     month: 'short',
                     day: 'numeric',
                     year: 'numeric'
                 });
             } catch (e) {
-                formattedDate = vehicle.startDate || vehicle.createdAt;
+                formattedDate = vehicle.startDate;
             }
         }
 
@@ -458,7 +445,7 @@ function updateVehiclesTable(vehicles) {
         const vehicleName = vehicle.vehicleName ||
             `${vehicle.vehicleBrand || ''} ${vehicle.vehicleModel || ''}`.trim() ||
             'Unknown Vehicle';
-        const registrationNumber = vehicle.registrationNumber || vehicle.vehicleRegistration || 'No Registration';
+        const registrationNumber = vehicle.registrationNumber || 'No Registration';
         const customerName = vehicle.customerName || 'Unknown Customer';
         const customerEmail = vehicle.customerEmail || 'No Email';
         const serviceType = vehicle.serviceType || 'General Service';
@@ -521,11 +508,12 @@ function openVehicleDetails(requestId) {
     updateModalFooterButtons();
 
     const token = getAuthToken();
-    const headers = {
-        'Authorization': token ? `Bearer ${token}` : ''
-    };
+    const headers = {};
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
 
-    fetch(`/serviceAdvisor/api/dashboard/service-requests/${requestId}`, {
+    fetch(`/serviceAdvisor/api/service-details/${requestId}`, {
         method: 'GET',
         headers: headers
     })
@@ -541,8 +529,18 @@ function openVehicleDetails(requestId) {
 
             loadVehicleDetails(data);
 
-            if (data.materials && data.materials.length > 0) {
-                loadCurrentBill(data);
+            if (data.currentBill) {
+                loadCurrentBill(data.currentBill);
+            }
+
+            // Initialize status history with the current status
+            if (data.status) {
+                window.statusHistory = [{
+                    status: data.status,
+                    updatedBy: data.serviceAdvisor || 'Service Advisor',
+                    updatedAt: data.lastStatusUpdate || new Date().toISOString()
+                }];
+                updateStatusHistory();
             }
 
             fetchInventoryItems();
@@ -565,7 +563,6 @@ function openVehicleDetails(requestId) {
         });
 }
 
-
 function loadVehicleDetails(data) {
     if (!data) {
         showNotification('Error: No data received from server', 'error');
@@ -579,7 +576,7 @@ function loadVehicleDetails(data) {
         if (vehicleCard) {
             const makeModel = `${data.vehicleBrand || ''} ${data.vehicleModel || ''}`.trim();
             setDetailValueFixed(vehicleCard, 1, makeModel || 'Not specified');
-            setDetailValueFixed(vehicleCard, 2, data.vehicleRegistration || data.registrationNumber || 'Not specified');
+            setDetailValueFixed(vehicleCard, 2, data.registrationNumber || 'Not specified');
             setDetailValueFixed(vehicleCard, 3, data.vehicleYear || 'Not specified');
             setDetailValueFixed(vehicleCard, 4, data.vehicleType || 'Not specified');
         }
@@ -596,16 +593,16 @@ function loadVehicleDetails(data) {
             setDetailValueFixed(serviceCard, 1, data.serviceType || 'General Service');
 
             let formattedDate = 'Not specified';
-            if (data.requestDate || data.createdAt) {
+            if (data.requestDate) {
                 try {
-                    const requestDate = new Date(data.requestDate || data.createdAt);
+                    const requestDate = new Date(data.requestDate);
                     formattedDate = requestDate.toLocaleDateString('en-US', {
                         month: 'short',
                         day: 'numeric',
                         year: 'numeric'
                     });
                 } catch (e) {
-                    formattedDate = data.requestDate || data.createdAt;
+                    formattedDate = data.requestDate;
                 }
             }
             setDetailValueFixed(serviceCard, 2, formattedDate);
@@ -626,7 +623,7 @@ function loadVehicleDetails(data) {
         }
 
         const vehicleSummaryElements = document.querySelectorAll('.vehicle-summary .vehicle-info-summary h4');
-        const vehicleInfo = `${data.vehicleBrand || ''} ${data.vehicleModel || ''} (${data.vehicleRegistration || data.registrationNumber || 'Unknown'})`.trim();
+        const vehicleInfo = `${data.vehicleBrand || ''} ${data.vehicleModel || ''} (${data.registrationNumber || 'Unknown'})`.trim();
         vehicleSummaryElements.forEach(element => {
             element.textContent = vehicleInfo;
         });
@@ -674,7 +671,6 @@ function setDetailValueFixed(cardElement, index, value) {
             }
         }
     } catch (error) {
-        // Silent error handling
     }
 }
 
@@ -777,63 +773,81 @@ function getStatusClass(status) {
     const statusLower = status.toLowerCase();
     if (statusLower === 'completed') {
         return 'completed';
-    } else if (statusLower === 'diagnosis' || statusLower === 'repair') {
+    } else if (statusLower === 'repair') {
+        return 'repair';
+    } else if (statusLower === 'inspection') {
+        return 'inspection';
+    } else if (statusLower === 'billing') {
+        return 'billing';
+    } else if (statusLower === 'feedback') {
+        return 'feedback';
+    } else if (statusLower === 'diagnosis') {
         return 'in-progress';
     } else {
         return 'new';
     }
 }
 
-function loadCurrentBill(data) {
-    window.inventoryItems = [];
-    window.laborCharges = [];
-
-    if (data.materials && Array.isArray(data.materials)) {
-        data.materials.forEach(item => {
-            if (item && (item.itemId || item.name)) {
-                window.inventoryItems.push({
-                    key: item.itemId || ('item-' + window.inventoryItems.length),
-                    name: item.name || `Item ${item.itemId || window.inventoryItems.length}`,
-                    price: parseFloat(item.unitPrice) || 0,
-                    quantity: parseInt(item.quantity) || 1
-                });
-            }
-        });
+function loadCurrentBill(billData) {
+    if (!billData) {
+        return;
     }
 
-    if (data.laborCharges && Array.isArray(data.laborCharges)) {
-        data.laborCharges.forEach(charge => {
-            if (charge) {
-                window.laborCharges.push({
-                    description: charge.description || 'Labor charge',
-                    hours: parseFloat(charge.hours) || 0,
-                    rate: parseFloat(charge.ratePerHour || charge.rate) || 0
-                });
-            }
-        });
-    }
+    try {
+        window.inventoryItems = [];
+        window.laborCharges = [];
 
-    renderInventoryItems();
-    renderLaborCharges();
-    updateBillSummary();
+        if (billData.materials && Array.isArray(billData.materials)) {
+            billData.materials.forEach(item => {
+                if (item && item.itemId) {
+                    window.inventoryItems.push({
+                        key: item.itemId,
+                        name: item.name || `Item ${item.itemId}`,
+                        price: parseFloat(item.unitPrice) || 0,
+                        quantity: parseInt(item.quantity) || 1
+                    });
+                }
+            });
+        }
 
-    const serviceNotesTextarea = document.getElementById('serviceNotes');
-    if (serviceNotesTextarea && data.notes) {
-        serviceNotesTextarea.value = data.notes;
+        if (billData.laborCharges && Array.isArray(billData.laborCharges)) {
+            billData.laborCharges.forEach(charge => {
+                if (charge) {
+                    window.laborCharges.push({
+                        description: charge.description || 'Labor charge',
+                        hours: parseFloat(charge.hours) || 0,
+                        rate: parseFloat(charge.ratePerHour) || 0
+                    });
+                }
+            });
+        }
+
+        renderInventoryItems();
+        renderLaborCharges();
+
+        const formatCurrency = (value) => {
+            const num = parseFloat(value) || 0;
+            return `₹${num.toFixed(2)}`;
+        };
+
+        document.getElementById('partsSubtotal').textContent = formatCurrency(billData.partsSubtotal);
+        document.getElementById('laborSubtotal').textContent = formatCurrency(billData.laborSubtotal);
+        document.getElementById('subtotalAmount').textContent = formatCurrency(billData.subtotal);
+        document.getElementById('taxAmount').textContent = formatCurrency(billData.tax);
+        document.getElementById('totalAmount').textContent = formatCurrency(billData.total);
+
+        const serviceNotesTextarea = document.getElementById('serviceNotes');
+        if (serviceNotesTextarea && billData.notes) {
+            serviceNotesTextarea.value = billData.notes;
+        }
+    } catch (error) {
+        showNotification('Error loading bill information', 'error');
     }
 }
 
 function fetchInventoryItems() {
     const token = getAuthToken();
-    const headers = {
-        'Content-Type': 'application/json'
-    };
-
-    if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    console.log("Starting inventory fetch with token:", token ? "Present" : "Missing");
+    const headers = createAuthHeaders();
 
     const inventorySelect = document.getElementById('inventoryItemSelect');
     if (inventorySelect) {
@@ -848,109 +862,74 @@ function fetchInventoryItems() {
         inventorySelect.selectedIndex = 1;
     }
 
-    // Use the consolidated endpoint
-    const url = '/serviceAdvisor/api/dashboard/inventory-items';
-    console.log("Fetching inventory from:", url);
-
-    fetch(url, {
+    return fetch('/serviceAdvisor/api/inventory-items', {
         method: 'GET',
         headers: headers
     })
         .then(response => {
             if (!response.ok) {
-                console.error(`Fetch error: ${response.status} ${response.statusText}`);
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
             return response.json();
         })
         .then(data => {
-            console.log("Inventory data received:", data);
             populateInventoryDropdown(data);
-            showNotification('Inventory items loaded successfully', 'success');
+            return data;
         })
         .catch(error => {
-            console.error('Error fetching inventory items:', error);
-            showNotification('Error loading inventory items. Using sample data...', 'warning');
-            populateDummyInventoryData();
+            showNotification('Error loading inventory items. Please try again.', 'error');
+
+            if (inventorySelect) {
+                while (inventorySelect.options.length > 1) {
+                    inventorySelect.remove(1);
+                }
+
+                const errorOption = document.createElement('option');
+                errorOption.disabled = true;
+                errorOption.textContent = 'Error loading items. Please try again.';
+                inventorySelect.appendChild(errorOption);
+            }
+
+            setTimeout(() => {
+                retryFetchInventoryItems();
+            }, 3000);
+
+            throw error;
         });
 }
 
-// Improved retry function
 function retryFetchInventoryItems() {
     const token = getAuthToken();
-    const headers = {
-        'Content-Type': 'application/json'
-    };
+    const headers = createAuthHeaders();
 
-    if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    console.log('Retrying inventory fetch with headers:', headers);
-
-    // Try the alternate path with admin API
-    const url = '/admin/inventory/api/items';
-    console.log("Trying alternate inventory path:", url);
-
-    fetch(url, {
+    fetch('/serviceAdvisor/api/inventory-items', {
         method: 'GET',
         headers: headers
     })
         .then(response => {
             if (!response.ok) {
-                console.error(`Retry fetch error: ${response.status} ${response.statusText}`);
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
             return response.json();
         })
         .then(data => {
-            console.log("Alternate inventory data received:", data);
             populateInventoryDropdown(data);
-            showNotification('Inventory items loaded successfully', 'success');
+            showNotification('Inventory items loaded successfully', 'info');
         })
         .catch(error => {
-            console.error('Retry failed:', error);
-            showNotification('Failed to load inventory items. Using sample data.', 'warning');
-
-            // Add dummy data for testing if needed
-            populateDummyInventoryData();
         });
 }
 
-// Add the missing populateDummyInventoryData function
-function populateDummyInventoryData() {
-    console.warn('Using dummy inventory data as fallback');
-
-    const dummyItems = [
-        { itemId: 1, name: "Engine Oil", unitPrice: 350, currentStock: 20, category: "Fluids" },
-        { itemId: 2, name: "Oil Filter", unitPrice: 180, currentStock: 15, category: "Filters" },
-        { itemId: 3, name: "Air Filter", unitPrice: 250, currentStock: 12, category: "Filters" },
-        { itemId: 4, name: "Brake Pads", unitPrice: 750, currentStock: 8, category: "Brakes" },
-        { itemId: 5, name: "Windshield Wiper", unitPrice: 320, currentStock: 18, category: "Exterior" }
-    ];
-
-    populateInventoryDropdown(dummyItems);
-    showNotification('Using sample inventory data', 'warning');
-}
-
-// Enhanced dropdown population with detailed logging
 function populateInventoryDropdown(items) {
     const inventorySelect = document.getElementById('inventoryItemSelect');
-    if (!inventorySelect) {
-        console.error('Inventory select element not found');
-        return;
-    }
+    if (!inventorySelect) return;
 
-    // Clear existing options except the first one
     while (inventorySelect.options.length > 1) {
         inventorySelect.remove(1);
     }
 
-    // Reset global storage
     window.inventoryPrices = {};
     window.inventoryData = {};
-
-    console.log('Populating inventory dropdown with items:', items);
 
     if (!items || !Array.isArray(items) || items.length === 0) {
         const noItemsOption = document.createElement('option');
@@ -960,7 +939,6 @@ function populateInventoryDropdown(items) {
         return;
     }
 
-    // Add all items to dropdown, handling stock appropriately
     items.forEach(item => {
         if (!item.currentStock || parseFloat(item.currentStock) <= 0) {
             return;
@@ -978,10 +956,8 @@ function populateInventoryDropdown(items) {
         option.textContent = `${item.name} - ${formattedPrice} (${item.currentStock} in stock)`;
         inventorySelect.appendChild(option);
 
-        // Store price for later use
         window.inventoryPrices[item.itemId] = parseFloat(item.unitPrice);
 
-        // Store complete item data
         window.inventoryData[item.itemId] = {
             name: item.name,
             price: parseFloat(item.unitPrice),
@@ -990,11 +966,8 @@ function populateInventoryDropdown(items) {
         };
     });
 
-    // Reset selection to first item
     inventorySelect.selectedIndex = 0;
-    console.log('Inventory data populated:', window.inventoryData);
 }
-
 
 function addInventoryItem(itemId, quantity = 1) {
     if (!itemId) {
@@ -1102,35 +1075,6 @@ function renderInventoryItems() {
     });
 }
 
-function validateInventoryQuantities() {
-    let isValid = true;
-    const errorMessages = [];
-
-    if (!window.inventoryData) {
-        return { isValid: false, message: 'Inventory data not available. Please refresh the page.' };
-    }
-
-    window.inventoryItems.forEach(item => {
-        const itemId = Number(item.key);
-        const quantity = Number(item.quantity);
-
-        if (!window.inventoryData[itemId]) {
-            return;
-        }
-
-        const availableStock = window.inventoryData[itemId].stock;
-
-        if (quantity > availableStock) {
-            isValid = false;
-            errorMessages.push(`Not enough stock for ${item.name}. Available: ${availableStock}, Requested: ${quantity}`);
-        }
-    });
-
-    return {
-        isValid,
-        message: errorMessages.length > 0 ? errorMessages.join('\n') : ''
-    };
-}
 
 function incrementInventoryQuantity(index) {
     if (!window.inventoryItems[index]) return;
@@ -1445,6 +1389,13 @@ function initializeStatusEvents() {
             updateStatusPreview(this.value);
         });
     }
+
+    const updateStatusBtn = document.getElementById('updateStatusBtn');
+    if (updateStatusBtn) {
+        updateStatusBtn.addEventListener('click', function() {
+            updateServiceStatus();
+        });
+    }
 }
 
 function updateStatusPreview(status) {
@@ -1467,27 +1418,46 @@ function updateStatusPreview(status) {
     }
 }
 
-function updateServiceStatus(status) {
-    if (!window.currentRequestId) {
-        return Promise.reject(new Error('No service request selected'));
+function updateServiceStatus() {
+    const statusSelect = document.getElementById('statusSelect');
+
+    if (!statusSelect) {
+        return;
     }
 
-    console.log(`Updating status to ${status}`);
+    const status = statusSelect.value;
+    showNotification('Updating status...', 'info');
+
+    const saveButton = document.getElementById('saveServiceItemsBtn');
+    if (saveButton) saveButton.disabled = true;
 
     const token = getAuthToken();
-    const headers = {
-        'Content-Type': 'application/json',
-        'Authorization': token ? `Bearer ${token}` : ''
-    };
+    const headers = createAuthHeaders();
+
+    // Get service advisor name (in a real app, this would come from the user session)
+    const serviceAdvisorName = document.querySelector('.user-info h3')?.textContent || 'Service Advisor';
 
     const statusData = {
         status: status,
-        notes: document.getElementById('serviceNotes')?.value || ""
+        notes: document.getElementById('serviceNotes')?.value || "",
+        notifyCustomer: false,
+        updatedBy: serviceAdvisorName,
+        updatedAt: new Date().toISOString()
     };
 
-    const url = `/serviceAdvisor/api/dashboard/service-requests/${window.currentRequestId}/status`;
+    // In a real app, this would be an API call
+    // For demo purposes, we'll simulate the API call
+    if (window.statusHistory === undefined) {
+        window.statusHistory = [];
+    }
 
-    return fetch(url, {
+    // Add the new status to the history
+    window.statusHistory.push(statusData);
+
+    // Update the status history display
+    updateStatusHistory();
+
+    return fetch(`/serviceAdvisor/api/service/${window.currentRequestId}/status`, {
         method: 'PUT',
         headers: headers,
         body: JSON.stringify(statusData)
@@ -1499,52 +1469,195 @@ function updateServiceStatus(status) {
             return response.json();
         })
         .then(data => {
-            console.log('Status updated successfully:', data);
+            showNotification(`Service status updated to ${status}!`);
 
-            // Update UI
-            updateAllStatusBadges(status);
+            if (saveButton) saveButton.disabled = false;
+
             updateStatusInTable(window.currentRequestId, status);
+            updateAllStatusBadges(status);
 
             return data;
+        })
+        .catch(error => {
+            showNotification('Error updating status: ' + error.message, 'error');
+
+            if (saveButton) saveButton.disabled = false;
+
+            throw error;
         });
 }
-
 
 function updateAllStatusBadges(status) {
     let statusClass = getStatusClass(status);
 
     const currentStatusBadge = document.getElementById('currentStatusBadge');
     if (currentStatusBadge) {
-        currentStatusBadge.classList.remove('new', 'in-progress', 'completed');
-        currentStatusBadge.classList.add(statusClass);
+        currentStatusBadge.classList.remove('new', 'in-progress', 'completed', 'repair', 'inspection', 'billing', 'feedback');
+        currentStatusBadge.classList.add(statusClass.toLowerCase());
         currentStatusBadge.innerHTML = `<i class="fas fa-circle"></i> ${status}`;
     }
 
     const statusDisplays = document.querySelectorAll('.status-display .status-badge');
     statusDisplays.forEach(badge => {
-        badge.classList.remove('new', 'in-progress', 'completed');
-        badge.classList.add(statusClass);
+        badge.classList.remove('new', 'in-progress', 'completed', 'repair', 'inspection', 'billing', 'feedback');
+        badge.classList.add(statusClass.toLowerCase());
         badge.innerHTML = `<i class="fas fa-circle"></i> ${status}`;
     });
 
-    const detailStatus = document.querySelector('.detail-card:nth-of-type(3) .detail-row:nth-child(3) .detail-value .status-badge');
+    const detailStatus = document.querySelector('.detail-card:nth-of-type(3) .detail-value:nth-of-type(3) .status-badge');
     if (detailStatus) {
-        detailStatus.classList.remove('new', 'in-progress', 'completed');
-        detailStatus.classList.add(statusClass);
+        detailStatus.classList.remove('new', 'in-progress', 'completed', 'repair', 'inspection', 'billing', 'feedback');
+        detailStatus.classList.add(statusClass.toLowerCase());
         detailStatus.innerHTML = `<i class="fas fa-circle"></i> ${status}`;
     }
 }
 
+function updateStatusHistory() {
+    const statusHistoryContainer = document.getElementById('statusHistory');
+    if (!statusHistoryContainer) return;
+
+    // Clear existing history items
+    statusHistoryContainer.innerHTML = '';
+
+    // If there's no status history yet, initialize with a "New" status
+    if (!window.statusHistory || window.statusHistory.length === 0) {
+        const initialStatus = {
+            status: 'New',
+            updatedBy: 'System',
+            updatedAt: new Date().toISOString()
+        };
+        window.statusHistory = [initialStatus];
+    }
+
+    // Define the standard service flow
+    const serviceFlow = [
+        { status: 'New', label: 'New' },
+        { status: 'Diagnosis', label: 'Diagnosis' },
+        { status: 'Repair', label: 'Repair' },
+        { status: 'Inspection', label: 'Inspection' },
+        { status: 'Billing', label: 'Billing' },
+        { status: 'Feedback', label: 'Feedback' },
+        { status: 'Completed', label: 'Completed' }
+    ];
+
+    // Get the current status (most recent in history)
+    const currentStatus = window.statusHistory[window.statusHistory.length - 1].status;
+
+    // Find the index of the current status in the service flow
+    const currentStatusIndex = serviceFlow.findIndex(step => step.status === currentStatus);
+
+    // Create the timeline
+    const timelineContainer = document.createElement('div');
+    timelineContainer.className = 'status-timeline-graph';
+    statusHistoryContainer.appendChild(timelineContainer);
+
+    // Add each step to the timeline
+    serviceFlow.forEach((step, index) => {
+        // Determine the status of this step
+        let stepStatus = 'upcoming';
+        if (index < currentStatusIndex) {
+            stepStatus = 'completed';
+        } else if (index === currentStatusIndex) {
+            stepStatus = 'in-progress';
+        }
+
+        // Find if this step exists in the history
+        const historyEntry = window.statusHistory.find(entry => entry.status === step.status);
+
+        // Format date if this step has been reached
+        let dateInfo = '';
+        if (historyEntry) {
+            const date = new Date(historyEntry.updatedAt);
+            const formattedDate = date.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric'
+            });
+            const formattedTime = date.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            dateInfo = `${formattedDate} ${formattedTime}`;
+        }
+
+        // Create the step element
+        const stepElement = document.createElement('div');
+        stepElement.className = `timeline-step ${stepStatus}`;
+        stepElement.innerHTML = `
+            <div class="timeline-step-connector ${index === 0 ? 'first' : ''}"></div>
+            <div class="timeline-step-badge">
+                <i class="fas ${stepStatus === 'completed' ? 'fa-check' : stepStatus === 'in-progress' ? 'fa-sync' : 'fa-clock'}"></i>
+            </div>
+            <div class="timeline-step-content">
+                <div class="timeline-step-title">${step.label}</div>
+                ${dateInfo ? `<div class="timeline-step-date">${dateInfo}</div>` : ''}
+            </div>
+            ${index < serviceFlow.length - 1 ? '<div class="timeline-step-connector"></div>' : ''}
+        `;
+
+        timelineContainer.appendChild(stepElement);
+    });
+
+    // Add the detailed history below the timeline
+    const historyTitle = document.createElement('h4');
+    historyTitle.className = 'section-title';
+    historyTitle.textContent = 'Status History';
+    statusHistoryContainer.appendChild(historyTitle);
+
+    const historyList = document.createElement('div');
+    historyList.className = 'status-history-list';
+    statusHistoryContainer.appendChild(historyList);
+
+    // Add history items in reverse order (newest first)
+    for (let i = window.statusHistory.length - 1; i >= 0; i--) {
+        const statusData = window.statusHistory[i];
+        const statusClass = getStatusClass(statusData.status);
+
+        // Format the date
+        const date = new Date(statusData.updatedAt);
+        const formattedDate = date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+        const formattedTime = date.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        // Create the history item
+        const historyItem = document.createElement('div');
+        historyItem.className = 'status-history-item';
+        historyItem.innerHTML = `
+            <div class="status-history-badge ${statusClass.toLowerCase()}">
+                <i class="fas fa-circle"></i>
+            </div>
+            <div class="status-history-content">
+                <div class="status-history-title">${statusData.status}</div>
+                <div class="status-history-meta">
+                    <span class="status-history-time">${formattedDate} ${formattedTime}</span>
+                    <span class="status-history-user">${statusData.updatedBy}</span>
+                </div>
+            </div>
+        `;
+
+        // Add to the container
+        historyList.appendChild(historyItem);
+    }
+}
+
 function updateStatusInTable(requestId, status) {
+    // Find the row with the matching requestId
     const row = document.querySelector(`#vehiclesTableBody tr[data-id="${requestId}"]`);
     if (row) {
         const statusCell = row.querySelector('td:nth-child(5)');
         if (statusCell) {
             let statusClass = 'new';
-            if (status === 'Diagnosis' || status === 'Repair') {
+            if (status === 'Diagnosis' || status === 'Repair' || status === 'Inspection') {
                 statusClass = 'in-progress';
             } else if (status === 'Completed') {
                 statusClass = 'completed';
+            } else if (status === 'Billing' || status === 'Feedback') {
+                statusClass = status.toLowerCase();
             }
 
             statusCell.innerHTML = `
@@ -1553,13 +1666,17 @@ function updateStatusInTable(requestId, status) {
                 </span>
             `;
         }
+    } else {
+        // If the row wasn't found, refresh the table to ensure it's updated
+        console.log(`Row with requestId ${requestId} not found, refreshing table`);
+        fetchAssignedVehicles();
     }
 }
 
 function saveServiceItems() {
     if (window.inventoryItems.length === 0 && window.laborCharges.length === 0) {
         showNotification('No service items to save', 'info');
-        return Promise.resolve(false);
+        return;
     }
 
     showNotification('Saving service items...', 'info');
@@ -1568,14 +1685,37 @@ function saveServiceItems() {
     if (saveButton) saveButton.disabled = true;
 
     const token = getAuthToken();
-    const headers = {
-        'Content-Type': 'application/json',
-        'Authorization': token ? `Bearer ${token}` : ''
-    };
+    const headers = createAuthHeaders();
 
     const promises = [];
 
-    // Save inventory items if any
+    if (window.laborCharges.length > 0) {
+        const charges = window.laborCharges.map(charge => {
+            return {
+                description: charge.description || 'Labor Charge',
+                hours: parseFloat(charge.hours) || 0,
+                ratePerHour: parseFloat(charge.rate) || 0,
+                total: parseFloat(charge.hours * charge.rate) || 0
+            };
+        });
+
+        const laborPromise = fetch(`/serviceAdvisor/api/service/${window.currentRequestId}/labor-charges`, {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(charges)
+        })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => {
+                        throw new Error(`Failed to save labor charges: ${response.status} - ${text}`);
+                    });
+                }
+                return response.json();
+            });
+
+        promises.push(laborPromise);
+    }
+
     if (window.inventoryItems.length > 0) {
         const items = window.inventoryItems.map(item => {
             return {
@@ -1591,19 +1731,16 @@ function saveServiceItems() {
             replaceExisting: true
         };
 
-        console.log('Sending inventory items:', materialsRequest);
-
-        const materialsUrl = `/serviceAdvisor/api/dashboard/service-requests/${window.currentRequestId}/inventory-items`;
-
-        const inventoryPromise = fetch(materialsUrl, {
+        const inventoryPromise = fetch(`/serviceAdvisor/api/service/${window.currentRequestId}/inventory-items`, {
             method: 'POST',
             headers: headers,
             body: JSON.stringify(materialsRequest)
         })
             .then(response => {
                 if (!response.ok) {
-                    console.error(`Error saving inventory items: ${response.status}`);
-                    throw new Error(`Failed to save inventory items: ${response.status}`);
+                    return response.text().then(text => {
+                        throw new Error(`Failed to save inventory items: ${response.status} - ${text}`);
+                    });
                 }
                 return response.json();
             });
@@ -1611,76 +1748,23 @@ function saveServiceItems() {
         promises.push(inventoryPromise);
     }
 
-    // Save labor charges if any
-    if (window.laborCharges.length > 0) {
-        const charges = window.laborCharges.map(charge => {
-            return {
-                description: charge.description || 'Labor Charge',
-                hours: parseFloat(charge.hours) || 0,
-                rate: parseFloat(charge.rate) || 0
-            };
-        });
-
-        console.log('Sending labor charges:', charges);
-
-        const laborUrl = `/serviceAdvisor/api/dashboard/service-requests/${window.currentRequestId}/labor-charges`;
-
-        const laborPromise = fetch(laborUrl, {
-            method: 'POST',
-            headers: headers,
-            body: JSON.stringify(charges)
-        })
-            .then(response => {
-                if (!response.ok) {
-                    console.error(`Error saving labor charges: ${response.status}`);
-                    throw new Error(`Failed to save labor charges: ${response.status}`);
-                }
-                return response.json();
-            });
-
-        promises.push(laborPromise);
-    }
-
-    return Promise.allSettled(promises)
+    Promise.all(promises)
         .then(results => {
+            showNotification('Service items saved successfully!', 'success');
+
             if (saveButton) saveButton.disabled = false;
 
-            // Check if any promises succeeded
-            const anySuccess = results.some(result => result.status === 'fulfilled');
-
-            if (anySuccess) {
-                showNotification(`Service items saved successfully!`, 'success');
-
-                // Also update the status to "In Progress" if not already
-                updateServiceStatus('Diagnosis').catch(err => {
-                    console.log("Status update failed but items were saved:", err);
-                });
-
-                // Refresh the service request data
-                setTimeout(() => {
-                    openVehicleDetails(window.currentRequestId);
-                }, 1000);
-
-                return true;
-            } else {
-                // All promises failed
-                const errors = results
-                    .filter(r => r.status === 'rejected')
-                    .map(r => r.reason.message)
-                    .join('; ');
-
-                showNotification(`Error saving service items: ${errors}`, 'error');
-                return false;
-            }
+            setTimeout(() => {
+                openVehicleDetails(window.currentRequestId);
+            }, 1000);
         })
         .catch(error => {
-            console.error('Unexpected error during save:', error);
             showNotification('Error: ' + error.message, 'error');
 
             if (saveButton) saveButton.disabled = false;
-            return false;
         });
 }
+
 
 function markServiceComplete() {
     const requestId = window.currentRequestId;
@@ -1689,24 +1773,43 @@ function markServiceComplete() {
         return;
     }
 
-    // First save all service items
-    saveServiceItems().then(saved => {
-        // Now update the status to completed
-        updateServiceStatus('Completed')
-            .then(() => {
-                showNotification('Service marked as completed!', 'success');
+    showNotification('Marking service as completed...', 'info');
 
-                // Close the modal and refresh the list
-                setTimeout(() => {
-                    document.getElementById('vehicleDetailsModal').classList.remove('show');
-                    fetchAssignedVehicles();
-                }, 1500);
-            })
-            .catch(error => {
-                console.error('Error completing service:', error);
-                showNotification('Error marking service as complete: ' + error.message, 'error');
-            });
-    });
+    const token = getAuthToken();
+    const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+    };
+
+    const data = {
+        status: "Completed",
+        notes: "Service completed by " + document.querySelector('.user-info h3').textContent
+    };
+
+    fetch(`/serviceAdvisor/api/service/${requestId}/status`, {
+        method: 'PUT',
+        headers: headers,
+        body: JSON.stringify(data)
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Failed to update status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(result => {
+            showNotification('Service marked as completed!', 'success');
+
+            updateAllStatusBadges("Completed");
+
+            setTimeout(() => {
+                document.getElementById('vehicleDetailsModal').classList.remove('show');
+                fetchAssignedVehicles();
+            }, 1500);
+        })
+        .catch(error => {
+            showNotification('Error: ' + error.message, 'error');
+        });
 }
 
 function filterVehicles(filter) {
@@ -1772,7 +1875,6 @@ function showNotification(message, type = 'success') {
     }, 3000);
 }
 
-// Make functions available in global scope
 window.openVehicleDetails = openVehicleDetails;
 window.incrementInventoryQuantity = incrementInventoryQuantity;
 window.decrementInventoryQuantity = decrementInventoryQuantity;
@@ -1780,10 +1882,6 @@ window.updateInventoryQuantity = updateInventoryQuantity;
 window.removeInventoryItem = removeInventoryItem;
 window.removeLaborCharge = removeLaborCharge;
 window.handleTabClick = handleTabClick;
+window.sendBillToAdmin = sendBillToAdmin;
 window.updateBillPreview = updateBillPreview;
 window.updateInvoiceInfoFields = updateInvoiceInfoFields;
-window.fetchInventoryItems = fetchInventoryItems;
-window.saveServiceItems = saveServiceItems;
-window.updateServiceStatus = updateServiceStatus;
-window.markServiceComplete = markServiceComplete;
-window.fetchAssignedVehicles = fetchAssignedVehicles;

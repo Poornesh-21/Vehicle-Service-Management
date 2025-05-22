@@ -1,4 +1,4 @@
- /* Base Styles */
+/* Base Styles */
 :root {
     /* Primary Colors */
     --primary-color: #722F37;
@@ -564,7 +564,7 @@ body {
     border: 1px solid rgba(76, 201, 240, 0.2);
 }
 
-.status-badge.in-progress {
+.status-badge.in-progress, .status-badge.repair, .status-badge.inspection {
     background-color: rgba(255, 170, 0, 0.1);
     color: var(--warning);
     border: 1px solid rgba(255, 170, 0, 0.2);
@@ -576,8 +576,246 @@ body {
     border: 1px solid rgba(56, 176, 0, 0.2);
 }
 
+.status-badge.billing {
+    background-color: rgba(147, 51, 234, 0.1);
+    color: #9333ea; /* Purple */
+    border: 1px solid rgba(147, 51, 234, 0.2);
+}
+
+.status-badge.feedback {
+    background-color: rgba(236, 72, 153, 0.1);
+    color: #ec4899; /* Pink */
+    border: 1px solid rgba(236, 72, 153, 0.2);
+}
+
 .status-badge i {
     font-size: 0.75rem;
+}
+
+/* Status Tracker */
+.status-tracker {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-top: var(--spacing-md);
+}
+
+/* Timeline Graph Styles */
+.status-timeline-graph {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin: 30px 0;
+    position: relative;
+    overflow-x: auto;
+    padding: 20px 10px;
+}
+
+.timeline-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    flex: 1;
+    min-width: 100px;
+}
+
+.timeline-step-badge {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow-md);
+    transition: all 0.3s ease;
+}
+
+.timeline-step.completed .timeline-step-badge {
+    background-color: var(--success);
+    color: var(--white);
+}
+
+.timeline-step.in-progress .timeline-step-badge {
+    background-color: var(--warning);
+    color: var(--white);
+    animation: pulse 1.5s infinite;
+}
+
+.timeline-step.upcoming .timeline-step-badge {
+    background-color: var(--medium-gray);
+    color: var(--gray);
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 170, 0, 0.7);
+    }
+    70% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 10px rgba(255, 170, 0, 0);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 170, 0, 0);
+    }
+}
+
+.timeline-step-connector {
+    position: absolute;
+    height: 2px;
+    background-color: var(--medium-gray);
+    top: 20px;
+    width: 100%;
+    left: -50%;
+    z-index: 1;
+}
+
+.timeline-step:first-child .timeline-step-connector {
+    display: none;
+}
+
+.timeline-step.completed .timeline-step-connector {
+    background-color: var(--success);
+}
+
+.timeline-step-content {
+    text-align: center;
+    padding: 0 5px;
+}
+
+.timeline-step-title {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.timeline-step.completed .timeline-step-title {
+    color: var(--success);
+}
+
+.timeline-step.in-progress .timeline-step-title {
+    color: var(--warning);
+    font-weight: 700;
+}
+
+.timeline-step-date {
+    font-size: 0.8rem;
+    color: var(--gray);
+}
+
+/* Original Status History Styles - Modified for List View */
+.status-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+    margin-top: 20px;
+    position: relative;
+}
+
+.status-history-list:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 15px;
+    width: 2px;
+    background-color: var(--medium-gray);
+    z-index: 1;
+}
+
+.status-history-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--spacing-md);
+    position: relative;
+}
+
+.status-history-badge {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    box-shadow: var(--shadow-sm);
+}
+
+.status-history-badge.new {
+    background-color: var(--info);
+    color: var(--white);
+}
+
+.status-history-badge.in-progress, .status-history-badge.repair, .status-history-badge.inspection {
+    background-color: var(--warning);
+    color: var(--white);
+}
+
+.status-history-badge.completed {
+    background-color: var(--success);
+    color: var(--white);
+}
+
+.status-history-badge.billing {
+    background-color: #9333ea; /* Purple */
+    color: var(--white);
+}
+
+.status-history-badge.feedback {
+    background-color: #ec4899; /* Pink */
+    color: var(--white);
+}
+
+.status-history-content {
+    flex: 1;
+    background-color: var(--white);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+    box-shadow: var(--shadow-sm);
+}
+
+.status-history-title {
+    font-weight: 600;
+    margin-bottom: var(--spacing-xs);
+}
+
+.status-history-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.8rem;
+    color: var(--gray);
+}
+
+.status-history-time, .status-history-user {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.status-history-time:before {
+    content: '\f017'; /* Clock icon */
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 400;
+}
+
+.status-history-user:before {
+    content: '\f007'; /* User icon */
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 400;
+}
+
+/* Section title for history */
+.section-title {
+    margin: 20px 0 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--dark-gray);
+    border-bottom: 1px solid var(--medium-gray);
+    padding-bottom: 8px;
 }
 
 /* Actions Column */

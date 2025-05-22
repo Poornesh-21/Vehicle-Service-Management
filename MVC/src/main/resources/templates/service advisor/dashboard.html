@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="/CSS/service advisor/dashboard.css" rel="stylesheet">
+    <link href="dash.css" rel="stylesheet">
 </head>
 <body>
 <div class="app-container">
@@ -32,7 +32,7 @@
             <div class="nav-section">
                 <div class="nav-section-title">Main</div>
                 <ul>
-                    <li class="active"><a href="/serviceAdvisor/dashboard"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
+                    <li class="active"><a href="Dashboard/dashboard.html"><i class="fas fa-tachometer-alt"></i> <span>Dashboard</span></a></li>
                 </ul>
             </div>
 
@@ -439,7 +439,7 @@
                 </div>
             </div>
 
-            <!-- Update Status Tab - MODIFIED: Simplified with just status selection -->
+            <!-- Update Status Tab - Enhanced with status tracker -->
             <div class="tab-content" id="update-status-tab">
                 <div class="vehicle-summary">
                     <div class="vehicle-info-summary">
@@ -463,8 +463,47 @@
                             <select class="form-control" id="statusSelect">
                                 <option value="Diagnosis">Diagnosis</option>
                                 <option value="Repair">Repair</option>
+                                <option value="Inspection">Inspection</option>
+                                <option value="Billing">Billing</option>
+                                <option value="Feedback">Feedback</option>
                                 <option value="Completed">Completed</option>
                             </select>
+                        </div>
+                        <div class="form-group">
+                            <button class="btn btn-primary" id="updateStatusBtn">
+                                <i class="fas fa-save"></i> Update Status
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Tracker Bar -->
+                <div class="detail-card">
+                    <div class="detail-card-header">
+                        Status History
+                    </div>
+                    <div class="detail-card-body">
+                        <div class="status-tracker">
+                            <div class="status-timeline">
+                                <!-- Status timeline will be populated by JavaScript -->
+                                <div class="status-timeline-line"></div>
+                            </div>
+                            <div class="status-history" id="statusHistory">
+                                <!-- Example status history item -->
+                                <div class="status-history-item">
+                                    <div class="status-history-badge new">
+                                        <i class="fas fa-circle"></i>
+                                    </div>
+                                    <div class="status-history-content">
+                                        <div class="status-history-title">New</div>
+                                        <div class="status-history-meta">
+                                            <span class="status-history-time">May 5, 2025 10:30 AM</span>
+                                            <span class="status-history-user">John Smith (Service Advisor)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- More status history items will be added by JavaScript -->
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -545,6 +584,6 @@
     <i class="fas fa-check-circle"></i>
     <span id="notificationMessage">Operation completed successfully!</span>
 </div>
-<script src="/Javascript/service advisor/dashboard.js"></script>
+<script src="dashboard.html.js"></script>
 </body>
 </html>

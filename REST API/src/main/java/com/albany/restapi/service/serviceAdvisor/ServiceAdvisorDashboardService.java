@@ -2,362 +2,549 @@ package com.albany.restapi.service.serviceAdvisor;
 
 import com.albany.restapi.dto.LaborChargeDTO;
 import com.albany.restapi.dto.MaterialItemDTO;
-import com.albany.restapi.dto.MaterialUsageDTO;
-import com.albany.restapi.dto.ServiceRequestDTO;
+import com.albany.restapi.dto.MaterialRequestDTO;
+import com.albany.restapi.dto.ServiceDetailDTO;
+import com.albany.restapi.dto.ServiceStatusUpdateDTO;
 import com.albany.restapi.model.*;
 import com.albany.restapi.repository.*;
+import com.albany.restapi.security.JwtUtil;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ServiceAdvisorDashboardService {
 
-    private static final Logger logger = LoggerFactory.getLogger(ServiceAdvisorDashboardService.class);
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("MMM d, yyyy");
-    
     private final ServiceRequestRepository serviceRequestRepository;
+    private final ServiceTrackingRepository serviceTrackingRepository;
+    private final ServiceAdvisorRepository serviceAdvisorRepository;
+    private final InventoryRepository inventoryRepository;
     private final MaterialUsageRepository materialUsageRepository;
     private final UserRepository userRepository;
-    private final ServiceAdvisorAuthService serviceAdvisorAuthService;
-    private final InventoryRepository inventoryRepository;
-    
-    // Optional dependency for service tracking
-    @Autowired(required = false)
-    private ServiceTrackingRepository serviceTrackingRepository;
-    
+    private final JwtUtil jwtUtil;
+
     /**
-     * Get all service requests assigned to the service advisor
+     * Get all vehicles assigned to the service advisor
      */
-    public List<ServiceRequestDTO> getAllServiceRequests(String username) {
-        ServiceAdvisorProfile advisor = serviceAdvisorAuthService.getServiceAdvisorProfile(username);
+    public List<Map<String, Object>> getAssignedVehicles(String token) {
+        Integer advisorId = getAdvisorIdFromToken(token);
+        List<ServiceRequest> requests = serviceRequestRepository.findByServiceAdvisor_AdvisorId(advisorId);
         
-        return serviceRequestRepository.findByServiceAdvisor_AdvisorId(advisor.getAdvisorId()).stream()
-                .map(this::mapToDTO)
+        return requests.stream()
+                .filter(request -> request.getStatus() != ServiceRequest.Status.Completed)
+                .map(request -> {
+                    Map<String, Object> vehicle = new HashMap<>();
+                    vehicle.put("requestId", request.getRequestId());
+                    
+                    String vehicleName = "";
+                    if (request.getVehicleBrand() != null && request.getVehicleModel() != null) {
+                        vehicleName = request.getVehicleBrand() + " " + request.getVehicleModel();
+                        if (request.getVehicleYear() != null) {
+                            vehicleName += " (" + request.getVehicleYear() + ")";
+                        }
+                    }
+                    vehicle.put("vehicleName", vehicleName);
+                    vehicle.put("vehicleBrand", request.getVehicleBrand());
+                    vehicle.put("vehicleModel", request.getVehicleModel());
+                    vehicle.put("registrationNumber", request.getVehicleRegistration());
+                    
+                    // Get customer details
+                    User user = null;
+                    if (request.getUserId() != null) {
+                        user = userRepository.findById(request.getUserId().intValue()).orElse(null);
+                    }
+                    
+                    if (user != null) {
+                        vehicle.put("customerName", user.getFirstName() + " " + user.getLastName());
+                        vehicle.put("customerEmail", user.getEmail());
+                        vehicle.put("customerPhone", user.getPhoneNumber());
+                    } else {
+                        vehicle.put("customerName", "Unknown Customer");
+                        vehicle.put("customerEmail", "No Email");
+                    }
+                    
+                    vehicle.put("serviceType", request.getServiceType());
+                    vehicle.put("startDate", request.getCreatedAt());
+                    vehicle.put("status", request.getStatus().name());
+                    
+                    return vehicle;
+                })
                 .collect(Collectors.toList());
-    }
-    
-    /**
-     * Get service requests by status
-     */
-    public List<ServiceRequestDTO> getServiceRequestsByStatus(String username, ServiceRequest.Status status) {
-        ServiceAdvisorProfile advisor = serviceAdvisorAuthService.getServiceAdvisorProfile(username);
-        
-        return serviceRequestRepository.findByServiceAdvisor_AdvisorId(advisor.getAdvisorId()).stream()
-                .filter(request -> request.getStatus() == status)
-                .map(this::mapToDTO)
-                .collect(Collectors.toList());
-    }
-    
-    /**
-     * Get service request details by ID
-     */
-    public ServiceRequestDTO getServiceRequestDetails(String username, Integer requestId) {
-        ServiceAdvisorProfile advisor = serviceAdvisorAuthService.getServiceAdvisorProfile(username);
-        
-        ServiceRequest request = serviceRequestRepository.findById(requestId)
-                .orElseThrow(() -> new IllegalArgumentException("Service request not found with ID: " + requestId));
-        
-        // Verify the request is assigned to this advisor
-        if (request.getServiceAdvisor() == null || !request.getServiceAdvisor().getAdvisorId().equals(advisor.getAdvisorId())) {
-            throw new IllegalArgumentException("Service request is not assigned to this advisor");
-        }
-        
-        return mapToDTO(request);
-    }
-    
-    /**
-     * Update service request status
-     */
-    @Transactional
-    public ServiceRequestDTO updateServiceRequestStatus(String username, Integer requestId, ServiceRequest.Status status) {
-        ServiceAdvisorProfile advisor = serviceAdvisorAuthService.getServiceAdvisorProfile(username);
-        
-        ServiceRequest request = serviceRequestRepository.findById(requestId)
-                .orElseThrow(() -> new IllegalArgumentException("Service request not found with ID: " + requestId));
-        
-        // Verify the request is assigned to this advisor
-        if (request.getServiceAdvisor() == null || !request.getServiceAdvisor().getAdvisorId().equals(advisor.getAdvisorId())) {
-            throw new IllegalArgumentException("Service request is not assigned to this advisor");
-        }
-        
-        // Update the status
-        request.setStatus(status);
-        request.setUpdatedAt(LocalDateTime.now());
-        
-        // Update tracking record if status changed and serviceTrackingRepository is available
-        try {
-            if (serviceTrackingRepository != null) {
-                ServiceTracking tracking = ServiceTracking.builder()
-                        .serviceRequest(request)
-                        .status(status)
-                        .serviceAdvisor(advisor)
-                        .updatedAt(LocalDateTime.now())
-                        .workDescription("Status updated to " + status.name())
-                        .build();
-                
-                serviceTrackingRepository.save(tracking);
-            }
-        } catch (Exception e) {
-            logger.warn("Could not save service tracking record: {}", e.getMessage());
-            // Continue execution even if tracking fails
-        }
-        
-        ServiceRequest updatedRequest = serviceRequestRepository.save(request);
-        return mapToDTO(updatedRequest);
-    }
-    
-    /**
-     * Get dashboard statistics
-     */
-    public Map<String, Object> getDashboardStats(String username) {
-        ServiceAdvisorProfile advisor = serviceAdvisorAuthService.getServiceAdvisorProfile(username);
-        
-        List<ServiceRequest> allRequests = serviceRequestRepository.findByServiceAdvisor_AdvisorId(advisor.getAdvisorId());
-        
-        // Count requests by status
-        long receivedCount = allRequests.stream().filter(r -> r.getStatus() == ServiceRequest.Status.Received).count();
-        long diagnosisCount = allRequests.stream().filter(r -> r.getStatus() == ServiceRequest.Status.Diagnosis).count();
-        long repairCount = allRequests.stream().filter(r -> r.getStatus() == ServiceRequest.Status.Repair).count();
-        long completedCount = allRequests.stream().filter(r -> r.getStatus() == ServiceRequest.Status.Completed).count();
-        
-        // Get total active requests (not completed)
-        long activeCount = receivedCount + diagnosisCount + repairCount;
-        
-        // Create stats map
-        Map<String, Object> stats = new HashMap<>();
-        stats.put("totalRequests", allRequests.size());
-        stats.put("activeRequests", activeCount);
-        stats.put("completedRequests", completedCount);
-        
-        // Status breakdown
-        Map<String, Long> statusCounts = new HashMap<>();
-        statusCounts.put("received", receivedCount);
-        statusCounts.put("diagnosis", diagnosisCount);
-        statusCounts.put("repair", repairCount);
-        statusCounts.put("completed", completedCount);
-        stats.put("statusCounts", statusCounts);
-        
-        // Recent activity (last 5 updated requests)
-        List<ServiceRequestDTO> recentActivity = allRequests.stream()
-                .sorted((r1, r2) -> r2.getUpdatedAt().compareTo(r1.getUpdatedAt()))
-                .limit(5)
-                .map(this::mapToDTO)
-                .collect(Collectors.toList());
-        stats.put("recentActivity", recentActivity);
-        
-        return stats;
-    }
-    
-    /**
-     * Add inventory items to a service request
-     */
-    @Transactional
-    public ServiceRequestDTO addInventoryItems(String username, Integer requestId, 
-                                          List<MaterialItemDTO> items, boolean replaceExisting) {
-        ServiceAdvisorProfile advisor = serviceAdvisorAuthService.getServiceAdvisorProfile(username);
-        
-        ServiceRequest request = serviceRequestRepository.findById(requestId)
-                .orElseThrow(() -> new IllegalArgumentException("Service request not found with ID: " + requestId));
-        
-        // Verify the request is assigned to this advisor
-        if (request.getServiceAdvisor() == null || !request.getServiceAdvisor().getAdvisorId().equals(advisor.getAdvisorId())) {
-            throw new IllegalArgumentException("Service request is not assigned to this advisor");
-        }
-        
-        // Clear existing materials if needed
-        if (replaceExisting) {
-            List<MaterialUsage> existingMaterials = materialUsageRepository.findByServiceRequest_RequestIdOrderByUsedAtDesc(requestId);
-            materialUsageRepository.deleteAll(existingMaterials);
-        }
-        
-        // Add new materials
-        for (MaterialItemDTO item : items) {
-            InventoryItem inventoryItem = inventoryRepository.findById(item.getItemId())
-                    .orElseThrow(() -> new IllegalArgumentException("Inventory item not found with ID: " + item.getItemId()));
-            
-            // Check if there's enough stock
-            if (inventoryItem.getCurrentStock().compareTo(item.getQuantity()) < 0) {
-                throw new IllegalArgumentException("Not enough stock for item: " + inventoryItem.getName() + 
-                        ". Available: " + inventoryItem.getCurrentStock() + ", Requested: " + item.getQuantity());
-            }
-            
-            // Update inventory stock
-            inventoryItem.setCurrentStock(inventoryItem.getCurrentStock().subtract(item.getQuantity()));
-            inventoryRepository.save(inventoryItem);
-            
-            // Create material usage record
-            MaterialUsage materialUsage = MaterialUsage.builder()
-                    .inventoryItem(inventoryItem)
-                    .serviceRequest(request)
-                    .quantity(item.getQuantity())
-                    .usedAt(LocalDateTime.now())
-                    .build();
-            
-            materialUsageRepository.save(materialUsage);
-        }
-        
-        request.setUpdatedAt(LocalDateTime.now());
-        ServiceRequest updatedRequest = serviceRequestRepository.save(request);
-        
-        return mapToDTO(updatedRequest);
     }
 
     /**
-     * Add labor charges to a service request
+     * Get details for a specific service request
      */
-    @Transactional
-    public ServiceRequestDTO addLaborCharges(String username, Integer requestId, List<LaborChargeDTO> charges) {
-        ServiceAdvisorProfile advisor = serviceAdvisorAuthService.getServiceAdvisorProfile(username);
+    public ServiceDetailDTO getServiceDetails(Integer requestId, String token) {
+        Integer advisorId = getAdvisorIdFromToken(token);
+        ServiceRequest request = findServiceRequestWithPermissionCheck(requestId, advisorId);
         
-        ServiceRequest request = serviceRequestRepository.findById(requestId)
-                .orElseThrow(() -> new IllegalArgumentException("Service request not found with ID: " + requestId));
+        ServiceDetailDTO details = new ServiceDetailDTO();
+        details.setRequestId(request.getRequestId());
+        details.setVehicleBrand(request.getVehicleBrand());
+        details.setVehicleModel(request.getVehicleModel());
+        details.setVehicleYear(request.getVehicleYear());
+        details.setVehicleType(request.getVehicleType());
+        details.setRegistrationNumber(request.getVehicleRegistration());
+        details.setServiceType(request.getServiceType());
+        details.setStatus(request.getStatus().name());
+        details.setAdditionalDescription(request.getAdditionalDescription());
+        details.setRequestDate(request.getCreatedAt());
         
-        // Verify the request is assigned to this advisor
-        if (request.getServiceAdvisor() == null || !request.getServiceAdvisor().getAdvisorId().equals(advisor.getAdvisorId())) {
-            throw new IllegalArgumentException("Service request is not assigned to this advisor");
+        User user = null;
+        if (request.getUserId() != null) {
+            user = userRepository.findById(request.getUserId().intValue()).orElse(null);
         }
         
-        // Add labor charges to tracking if serviceTrackingRepository is available
-        if (serviceTrackingRepository != null) {
-            try {
-                for (LaborChargeDTO charge : charges) {
-                    // Convert hours to minutes for storage
-                    int minutes = charge.getHours().multiply(BigDecimal.valueOf(60)).intValue();
+        if (user != null) {
+            details.setCustomerName(user.getFirstName() + " " + user.getLastName());
+            details.setCustomerEmail(user.getEmail());
+            details.setCustomerPhone(user.getPhoneNumber());
+            details.setMembershipStatus(user.getMembershipType().name());
+        }
+        
+        ServiceAdvisorProfile advisor = request.getServiceAdvisor();
+        if (advisor != null && advisor.getUser() != null) {
+            details.setServiceAdvisor(advisor.getUser().getFirstName() + " " + advisor.getUser().getLastName());
+        }
+        
+        // Get current tracking information
+        ServiceTracking tracking = getOrCreateServiceTracking(request, advisor);
+        if (tracking != null) {
+            details.setLaborMinutes(tracking.getLaborMinutes());
+            details.setLaborCost(tracking.getLaborCost());
+            details.setTotalMaterialCost(tracking.getTotalMaterialCost());
+            details.setWorkDescription(tracking.getWorkDescription());
+            details.setLastStatusUpdate(tracking.getUpdatedAt());
+        }
+        
+        // Get materials used
+        List<MaterialUsage> materialsUsed = materialUsageRepository
+                .findByServiceRequest_RequestIdOrderByUsedAtDesc(requestId);
+        
+        if (!materialsUsed.isEmpty()) {
+            Map<String, Object> currentBill = new HashMap<>();
+            
+            List<Map<String, Object>> materials = materialsUsed.stream()
+                .filter(material -> material.getInventoryItem() != null)
+                .map(material -> {
+                    Map<String, Object> item = new HashMap<>();
+                    InventoryItem inventoryItem = material.getInventoryItem();
                     
-                    // Calculate total cost
-                    BigDecimal laborCost = charge.getHours().multiply(charge.getRate());
+                    item.put("itemId", inventoryItem.getItemId());
+                    item.put("name", inventoryItem.getName());
+                    item.put("quantity", material.getQuantity());
+                    item.put("unitPrice", inventoryItem.getUnitPrice());
                     
-                    ServiceTracking tracking = ServiceTracking.builder()
-                            .serviceRequest(request)
-                            .laborMinutes(minutes)
-                            .laborCost(laborCost)
-                            .workDescription(charge.getDescription() != null ? charge.getDescription() : "Labor Charge")
-                            .serviceAdvisor(advisor)
-                            .status(request.getStatus())
-                            .updatedAt(LocalDateTime.now())
-                            .build();
+                    return item;
+                }).collect(Collectors.toList());
+            
+            currentBill.put("materials", materials);
+            
+            // Extract labor charges from tracking
+            if (tracking != null && tracking.getLaborMinutes() != null && tracking.getLaborCost() != null) {
+                List<Map<String, Object>> laborCharges = new ArrayList<>();
+                
+                if (tracking.getLaborMinutes() > 0) {
+                    Map<String, Object> laborCharge = new HashMap<>();
                     
-                    serviceTrackingRepository.save(tracking);
+                    double hours = tracking.getLaborMinutes() / 60.0;
+                    
+                    BigDecimal hourDecimal = BigDecimal.valueOf(hours)
+                            .setScale(2, java.math.RoundingMode.HALF_UP);
+                    
+                    BigDecimal ratePerHour;
+                    if (hourDecimal.compareTo(BigDecimal.ZERO) > 0) {
+                        ratePerHour = tracking.getLaborCost()
+                                .divide(hourDecimal, 2, java.math.RoundingMode.HALF_UP);
+                    } else {
+                        ratePerHour = BigDecimal.ZERO;
+                    }
+                    
+                    laborCharge.put("description", "Labor Charge");
+                    laborCharge.put("hours", hourDecimal);
+                    laborCharge.put("ratePerHour", ratePerHour);
+                    
+                    laborCharges.add(laborCharge);
                 }
-            } catch (Exception e) {
-                logger.warn("Could not save labor charge records: {}", e.getMessage());
-                // Continue execution even if tracking fails
+                
+                currentBill.put("laborCharges", laborCharges);
+                
+                // Calculate totals
+                BigDecimal partsSubtotal = tracking.getTotalMaterialCost() != null ? 
+                        tracking.getTotalMaterialCost() : BigDecimal.ZERO;
+                BigDecimal laborSubtotal = tracking.getLaborCost() != null ? 
+                        tracking.getLaborCost() : BigDecimal.ZERO;
+                BigDecimal subtotal = partsSubtotal.add(laborSubtotal);
+                BigDecimal tax = subtotal.multiply(BigDecimal.valueOf(0.07))
+                        .setScale(2, java.math.RoundingMode.HALF_UP);
+                BigDecimal total = subtotal.add(tax);
+                
+                currentBill.put("partsSubtotal", partsSubtotal);
+                currentBill.put("laborSubtotal", laborSubtotal);
+                currentBill.put("subtotal", subtotal);
+                currentBill.put("tax", tax);
+                currentBill.put("total", total);
+                currentBill.put("notes", tracking.getWorkDescription());
+            }
+            
+            details.setCurrentBill(currentBill);
+        }
+        
+        return details;
+    }
+
+    /**
+     * Get all available inventory items
+     */
+    public List<Map<String, Object>> getAvailableInventoryItems(String token) {
+        getAdvisorIdFromToken(token); // Just verify the token is valid
+        
+        return inventoryRepository.findAllByOrderByNameAsc().stream()
+                .map(item -> {
+                    Map<String, Object> inventoryItem = new HashMap<>();
+                    inventoryItem.put("itemId", item.getItemId());
+                    inventoryItem.put("name", item.getName());
+                    inventoryItem.put("category", item.getCategory());
+                    inventoryItem.put("currentStock", item.getCurrentStock());
+                    inventoryItem.put("unitPrice", item.getUnitPrice());
+                    
+                    // Calculate stock status if not already done
+                    if (item.getStockStatus() == null) {
+                        item.calculateDerivedFields();
+                    }
+                    
+                    inventoryItem.put("stockStatus", item.getStockStatus());
+                    return inventoryItem;
+                })
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Update the status of a service request
+     */
+    @Transactional
+    public Map<String, Object> updateServiceStatus(Integer requestId, ServiceStatusUpdateDTO statusUpdate, String token) {
+        Integer advisorId = getAdvisorIdFromToken(token);
+        ServiceRequest request = findServiceRequestWithPermissionCheck(requestId, advisorId);
+        ServiceAdvisorProfile advisor = request.getServiceAdvisor();
+        
+        ServiceRequest.Status newStatus;
+        try {
+            newStatus = ServiceRequest.Status.valueOf(statusUpdate.getStatus());
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid status: " + statusUpdate.getStatus());
+        }
+        
+        request.setStatus(newStatus);
+        request.setUpdatedAt(LocalDateTime.now());
+        serviceRequestRepository.save(request);
+        
+        ServiceTracking tracking = getOrCreateServiceTracking(request, advisor);
+        tracking.setStatus(newStatus);
+        tracking.setUpdatedAt(LocalDateTime.now());
+        
+        if (statusUpdate.getNotes() != null && !statusUpdate.getNotes().isEmpty()) {
+            tracking.setWorkDescription(statusUpdate.getNotes());
+        }
+        
+        serviceTrackingRepository.save(tracking);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("requestId", request.getRequestId());
+        result.put("status", request.getStatus().name());
+        result.put("message", "Status updated successfully");
+        
+        return result;
+    }
+
+    /**
+     * Update labor charges for a service request
+     */
+    @Transactional
+    public Map<String, Object> updateLaborCharges(Integer requestId, List<LaborChargeDTO> laborCharges, String token) {
+        // Get the service advisor ID from the token
+        Integer advisorId = getAdvisorIdFromToken(token);
+        
+        // Find the service request and verify permissions
+        ServiceRequest request = findServiceRequestWithPermissionCheck(requestId, advisorId);
+        ServiceAdvisorProfile advisor = request.getServiceAdvisor();
+        
+        // Initialize totals
+        int totalMinutes = 0;
+        BigDecimal totalLaborCost = BigDecimal.ZERO;
+        
+        // Process labor charges
+        if (laborCharges != null && !laborCharges.isEmpty()) {
+            for (LaborChargeDTO charge : laborCharges) {
+                if (charge == null) continue;
+                
+                // Get hours and rate values, default to zero if null
+                BigDecimal hours = charge.getHours() != null ? charge.getHours() : BigDecimal.ZERO;
+                BigDecimal rate = charge.getRate() != null ? charge.getRate() : BigDecimal.ZERO;
+                
+                // Skip invalid entries
+                if (hours.compareTo(BigDecimal.ZERO) <= 0 || rate.compareTo(BigDecimal.ZERO) <= 0) {
+                    continue;
+                }
+                
+                // Convert hours to minutes
+                int minutes = hours.multiply(BigDecimal.valueOf(60))
+                        .setScale(0, java.math.RoundingMode.HALF_UP)
+                        .intValue();
+                
+                // Calculate cost
+                BigDecimal cost = hours.multiply(rate)
+                        .setScale(2, java.math.RoundingMode.HALF_UP);
+                
+                // Add to totals
+                totalMinutes += minutes;
+                totalLaborCost = totalLaborCost.add(cost);
+            }
+        }
+        
+        // Get or create service tracking record
+        ServiceTracking tracking = null;
+        List<ServiceTracking> existingTrackings = serviceTrackingRepository
+                .findByServiceRequest_RequestIdOrderByUpdatedAtDesc(requestId);
+        
+        if (!existingTrackings.isEmpty()) {
+            tracking = existingTrackings.get(0);
+        } else {
+            // Create new tracking record
+            tracking = new ServiceTracking();
+            tracking.setServiceRequest(request);
+            tracking.setServiceAdvisor(advisor);
+            tracking.setStatus(request.getStatus());
+            tracking.setTotalMaterialCost(BigDecimal.ZERO);
+        }
+        
+        // Update labor information
+        tracking.setLaborMinutes(totalMinutes);
+        tracking.setLaborCost(totalLaborCost);
+        tracking.setUpdatedAt(LocalDateTime.now());
+        
+        // Save the tracking record
+        tracking = serviceTrackingRepository.save(tracking);
+        
+        // Force flush to ensure immediate write to database
+        serviceTrackingRepository.flush();
+        
+        // Prepare response
+        Map<String, Object> result = new HashMap<>();
+        result.put("requestId", request.getRequestId());
+        result.put("trackingId", tracking.getTrackingId());
+        result.put("laborMinutes", tracking.getLaborMinutes());
+        result.put("laborCost", tracking.getLaborCost());
+        result.put("message", "Labor charges updated successfully");
+        
+        return result;
+    }
+
+    /**
+     * Get labor charges for a service request
+     */
+    public Map<String, Object> getLaborCharges(Integer requestId, String token) {
+        Integer advisorId = getAdvisorIdFromToken(token);
+        ServiceRequest request = findServiceRequestWithPermissionCheck(requestId, advisorId);
+        
+        List<ServiceTracking> trackings = serviceTrackingRepository
+                .findByServiceRequest_RequestIdOrderByUpdatedAtDesc(requestId);
+        
+        Map<String, Object> result = new HashMap<>();
+        result.put("requestId", requestId);
+        
+        if (!trackings.isEmpty()) {
+            ServiceTracking tracking = trackings.get(0);
+            
+            result.put("trackingId", tracking.getTrackingId());
+            result.put("laborMinutes", tracking.getLaborMinutes());
+            result.put("laborCost", tracking.getLaborCost());
+            
+            // Convert minutes to hours for display
+            if (tracking.getLaborMinutes() != null && tracking.getLaborMinutes() > 0) {
+                double hours = tracking.getLaborMinutes() / 60.0;
+                BigDecimal hourDecimal = BigDecimal.valueOf(hours)
+                        .setScale(2, java.math.RoundingMode.HALF_UP);
+                result.put("laborHours", hourDecimal);
+                
+                // Calculate hourly rate if possible
+                if (tracking.getLaborCost() != null && tracking.getLaborCost().compareTo(BigDecimal.ZERO) > 0 
+                        && hourDecimal.compareTo(BigDecimal.ZERO) > 0) {
+                    BigDecimal hourlyRate = tracking.getLaborCost()
+                            .divide(hourDecimal, 2, java.math.RoundingMode.HALF_UP);
+                    result.put("hourlyRate", hourlyRate);
+                } else {
+                    result.put("hourlyRate", BigDecimal.ZERO);
+                }
+            } else {
+                result.put("laborHours", BigDecimal.ZERO);
+                result.put("hourlyRate", BigDecimal.ZERO);
             }
         } else {
-            logger.warn("ServiceTrackingRepository not available, skipping labor charge tracking");
+            result.put("trackingId", null);
+            result.put("laborMinutes", 0);
+            result.put("laborCost", BigDecimal.ZERO);
+            result.put("laborHours", BigDecimal.ZERO);
+            result.put("hourlyRate", BigDecimal.ZERO);
         }
         
-        request.setUpdatedAt(LocalDateTime.now());
-        ServiceRequest updatedRequest = serviceRequestRepository.save(request);
-        
-        return mapToDTO(updatedRequest);
+        return result;
     }
-    
+
     /**
-     * Map ServiceRequest entity to DTO
+     * Update inventory items for a service request
      */
-    private ServiceRequestDTO mapToDTO(ServiceRequest request) {
-        ServiceRequestDTO dto = ServiceRequestDTO.builder()
-                .requestId(request.getRequestId())
-                .userId(request.getUserId())
-                .vehicleId(request.getVehicle() != null ? request.getVehicle().getVehicleId() : null)
-                .vehicleType(request.getVehicleType())
-                .vehicleBrand(request.getVehicleBrand())
-                .vehicleModel(request.getVehicleModel())
-                .vehicleRegistration(request.getVehicleRegistration())
-                .vehicleYear(request.getVehicleYear())
-                .serviceType(request.getServiceType())
-                .serviceDescription(request.getServiceDescription())
-                .additionalDescription(request.getAdditionalDescription())
-                .deliveryDate(request.getDeliveryDate())
-                .status(request.getStatus().name())
-                .createdAt(request.getCreatedAt())
-                .updatedAt(request.getUpdatedAt())
-                .build();
-
-        // Format dates for UI display
-        if (request.getDeliveryDate() != null) {
-            dto.setFormattedDeliveryDate(request.getDeliveryDate().format(DATE_FORMATTER));
-        }
-
-        if (request.getCreatedAt() != null) {
-            dto.setFormattedCreatedDate(request.getCreatedAt().format(DATE_FORMATTER));
-        }
-
-        // Add service advisor info if assigned
-        if (request.getServiceAdvisor() != null) {
-            dto.setServiceAdvisorId(request.getServiceAdvisor().getAdvisorId());
-
-            // Get service advisor name
-            User advisorUser = request.getServiceAdvisor().getUser();
-            if (advisorUser != null) {
-                dto.setServiceAdvisorName(
-                        (advisorUser.getFirstName() != null ? advisorUser.getFirstName() : "") + " " +
-                                (advisorUser.getLastName() != null ? advisorUser.getLastName() : "").trim()
-                );
-            }
-        }
-
-        // Get customer info if we have a userId
-        try {
-            if (request.getUserId() != null) {
-                User user = userRepository.findById(request.getUserId().intValue()).orElse(null);
-                if (user != null) {
-                    dto.setCustomerName(user.getFirstName() + " " + user.getLastName());
-                    dto.setCustomerEmail(user.getEmail());
-                    dto.setCustomerPhone(user.getPhoneNumber());
-                    dto.setMembershipStatus(user.getMembershipType().toString());
+    @Transactional
+    public Map<String, Object> updateInventoryItems(Integer requestId, MaterialRequestDTO materialRequest, String token) {
+        Integer advisorId = getAdvisorIdFromToken(token);
+        ServiceRequest request = findServiceRequestWithPermissionCheck(requestId, advisorId);
+        
+        // Handle replacing existing items
+        if (materialRequest.isReplaceExisting()) {
+            List<MaterialUsage> existingUsages = materialUsageRepository
+                    .findByServiceRequest_RequestIdOrderByUsedAtDesc(requestId);
+            
+            for (MaterialUsage usage : existingUsages) {
+                InventoryItem item = usage.getInventoryItem();
+                
+                // Return items to inventory
+                if (item != null && usage.getQuantity() != null) {
+                    item.setCurrentStock(item.getCurrentStock().add(usage.getQuantity()));
+                    inventoryRepository.save(item);
                 }
             }
-        } catch (Exception e) {
-            // Silently ignore exceptions when getting customer info
-            logger.warn("Error retrieving customer info for user ID: {}", request.getUserId(), e);
+            
+            materialUsageRepository.deleteAll(existingUsages);
         }
-
-        // Get materials used for this service request if available
-        try {
-            List<MaterialUsageDTO> materials = materialUsageRepository
-                    .findByServiceRequest_RequestIdOrderByUsedAtDesc(request.getRequestId())
-                    .stream()
-                    .map(material -> {
-                        String itemName = material.getInventoryItem() != null ?
-                                material.getInventoryItem().getName() : "Unknown Item";
-
-                        BigDecimal unitPrice = material.getInventoryItem() != null ?
-                                material.getInventoryItem().getUnitPrice() : BigDecimal.ZERO;
-
-                        return MaterialUsageDTO.builder()
-                                .materialUsageId(material.getMaterialUsageId())
-                                .name(itemName)
-                                .quantity(material.getQuantity())
-                                .unitPrice(unitPrice)
-                                .usedAt(material.getUsedAt())
-                                .totalCost(unitPrice.multiply(material.getQuantity()))
-                                .build();
-                    })
-                    .collect(Collectors.toList());
-
-            dto.setMaterials(materials);
-        } catch (Exception e) {
-            // Silently ignore exceptions when getting materials
-            logger.warn("Error retrieving materials for request ID: {}", request.getRequestId(), e);
+        
+        BigDecimal totalMaterialCost = BigDecimal.ZERO;
+        
+        // Process new inventory items
+        if (materialRequest.getItems() != null && !materialRequest.getItems().isEmpty()) {
+            for (MaterialItemDTO itemDTO : materialRequest.getItems()) {
+                if (itemDTO == null || itemDTO.getItemId() == null) continue;
+                
+                // Find the inventory item
+                InventoryItem item = inventoryRepository.findById(itemDTO.getItemId())
+                        .orElseThrow(() -> new EntityNotFoundException(
+                                "Inventory item not found: " + itemDTO.getItemId()));
+                
+                // Validate quantity
+                if (itemDTO.getQuantity() == null || itemDTO.getQuantity().compareTo(BigDecimal.ZERO) <= 0) {
+                    continue;
+                }
+                
+                // Check if we have enough stock
+                if (item.getCurrentStock().compareTo(itemDTO.getQuantity()) < 0) {
+                    throw new IllegalArgumentException(
+                            "Not enough stock for item: " + item.getName() + 
+                            ". Available: " + item.getCurrentStock() + 
+                            ", Requested: " + itemDTO.getQuantity());
+                }
+                
+                // Reduce inventory
+                item.setCurrentStock(item.getCurrentStock().subtract(itemDTO.getQuantity()));
+                inventoryRepository.save(item);
+                
+                // Record usage
+                MaterialUsage usage = MaterialUsage.builder()
+                        .inventoryItem(item)
+                        .serviceRequest(request)
+                        .quantity(itemDTO.getQuantity())
+                        .usedAt(LocalDateTime.now())
+                        .build();
+                
+                materialUsageRepository.save(usage);
+                
+                // Add to total cost
+                BigDecimal itemCost = item.getUnitPrice().multiply(itemDTO.getQuantity())
+                        .setScale(2, java.math.RoundingMode.HALF_UP);
+                totalMaterialCost = totalMaterialCost.add(itemCost);
+            }
         }
+        
+        // Update service tracking
+        ServiceTracking tracking = getOrCreateServiceTracking(request, request.getServiceAdvisor());
+        tracking.setTotalMaterialCost(totalMaterialCost);
+        tracking.setUpdatedAt(LocalDateTime.now());
+        serviceTrackingRepository.save(tracking);
+        
+        // Prepare response
+        Map<String, Object> result = new HashMap<>();
+        result.put("requestId", request.getRequestId());
+        result.put("totalMaterialCost", totalMaterialCost);
+        result.put("message", "Inventory items updated successfully");
+        
+        return result;
+    }
 
-        return dto;
+    /**
+     * Get advisor ID from JWT token
+     */
+    private Integer getAdvisorIdFromToken(String token) {
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+        
+        String username = jwtUtil.extractUsername(token);
+        User user = userRepository.findByEmail(username)
+                .orElseThrow(() -> new AccessDeniedException("Invalid token"));
+        
+        if (user.getRole() != User.Role.serviceAdvisor) {
+            throw new AccessDeniedException("Only service advisors can access this resource");
+        }
+        
+        ServiceAdvisorProfile profile = serviceAdvisorRepository.findByUser_UserId(user.getUserId())
+                .orElseThrow(() -> new EntityNotFoundException("Service advisor profile not found"));
+        
+        return profile.getAdvisorId();
+    }
+
+    /**
+     * Find service request and check permissions
+     */
+    private ServiceRequest findServiceRequestWithPermissionCheck(Integer requestId, Integer advisorId) {
+        ServiceRequest request = serviceRequestRepository.findById(requestId)
+                .orElseThrow(() -> new EntityNotFoundException("Service request not found: " + requestId));
+        
+        if (request.getServiceAdvisor() == null || !request.getServiceAdvisor().getAdvisorId().equals(advisorId)) {
+            throw new AccessDeniedException("You don't have permission to access this service request");
+        }
+        
+        return request;
+    }
+
+    /**
+     * Get or create service tracking record
+     */
+    private ServiceTracking getOrCreateServiceTracking(ServiceRequest request, ServiceAdvisorProfile advisor) {
+        List<ServiceTracking> trackings = serviceTrackingRepository
+                .findByServiceRequest_RequestIdOrderByUpdatedAtDesc(request.getRequestId());
+        
+        if (!trackings.isEmpty()) {
+            return trackings.get(0);
+        }
+        
+        // Create new tracking record
+        ServiceTracking tracking = ServiceTracking.builder()
+                .serviceRequest(request)
+                .serviceAdvisor(advisor)
+                .status(request.getStatus())
+                .laborMinutes(0)
+                .laborCost(BigDecimal.ZERO)
+                .totalMaterialCost(BigDecimal.ZERO)
+                .updatedAt(LocalDateTime.now())
+                .build();
+        
+        return serviceTrackingRepository.save(tracking);
     }
 }

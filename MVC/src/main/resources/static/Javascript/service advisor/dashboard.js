@@ -51,12 +51,8 @@ function addConnectionIndicator() {
             <span id="status-text" style="font-size: 0.8rem; color: #666;">Checking connection...</span>
         `;
 
-        const headerTitle = header.querySelector('.header-title');
-        if (headerTitle) {
-            header.insertBefore(statusIndicator, headerTitle.nextSibling);
-        } else {
-            header.appendChild(statusIndicator);
-        }
+        // Fix: Directly append to header instead of trying to insert before a specific element
+        header.appendChild(statusIndicator);
 
         checkApiConnection();
         setInterval(checkApiConnection, 30000);
@@ -168,16 +164,18 @@ function initializeEventListeners() {
         });
     }
 
+    // Add event listener for labor charge Add button
     const addLaborBtn = document.getElementById('addLaborBtn');
     if (addLaborBtn) {
         addLaborBtn.addEventListener('click', function() {
-            const hours = parseFloat(document.getElementById('laborHours').value);
-            const rate = parseFloat(document.getElementById('laborRate').value);
+            const laborHours = document.getElementById('laborHours');
+            const laborRate = document.getElementById('laborRate');
+
+            const hours = parseFloat(laborHours.value);
+            const rate = parseFloat(laborRate.value);
 
             if (!isNaN(hours) && !isNaN(rate) && hours > 0 && rate > 0) {
                 addLaborCharge("Labor Charge", hours, rate);
-                document.getElementById('laborHours').value = '1';
-                document.getElementById('laborRate').value = '65';
             } else {
                 showNotification('Please enter valid hours and rate', 'error');
             }
@@ -232,6 +230,77 @@ function initializeEventListeners() {
         }
     });
 }
+
+function saveLaborCharges() {
+    if (window.laborCharges.length === 0) {
+        showNotification('No labor charges to save', 'info');
+        return Promise.resolve(); // Return a resolved promise for chaining
+    }
+
+    showNotification('Saving labor charges...', 'info');
+
+    const saveButton = document.getElementById('saveInvoiceBtn');
+    if (saveButton) saveButton.disabled = true;
+
+    const token = getAuthToken();
+    const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': token ? `Bearer ${token}` : ''
+    };
+
+    // Format labor charges properly
+    const formattedCharges = window.laborCharges.map(charge => {
+        return {
+            description: charge.description || 'Labor Charge',
+            hours: parseFloat(charge.hours) || 0,
+            rate: parseFloat(charge.rate) || 0
+        };
+    });
+
+    // Filter out invalid charges
+    const validCharges = formattedCharges.filter(
+        charge => charge.hours > 0 && charge.rate > 0
+    );
+
+    if (validCharges.length === 0) {
+        showNotification('No valid labor charges to save', 'warning');
+        if (saveButton) saveButton.disabled = false;
+        return Promise.resolve();
+    }
+
+    // Log the data being sent for debugging
+    console.log('Sending labor charges:', JSON.stringify(validCharges));
+
+    // Make the API call
+    return fetch(`/serviceAdvisor/api/service/${window.currentRequestId}/labor-charges`, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(validCharges)
+    })
+        .then(response => {
+            // Check if the response is ok (status in the range 200-299)
+            if (!response.ok) {
+                // Get the response text for error details
+                return response.text().then(text => {
+                    throw new Error(`Failed to save labor charges: ${response.status} - ${text}`);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Labor charges saved successfully:', data);
+            showNotification('Labor charges saved successfully!', 'success');
+            if (saveButton) saveButton.disabled = false;
+            return data;
+        })
+        .catch(error => {
+            console.error('Labor charge error:', error);
+            showNotification('Error saving labor charges: ' + error.message, 'error');
+            if (saveButton) saveButton.disabled = false;
+            throw error;
+        });
+}
+
 
 function handleTabClick(tabElement) {
     const tabs = document.querySelectorAll('.tab');
@@ -919,6 +988,45 @@ function retryFetchInventoryItems() {
         .catch(error => {
         });
 }
+function loadExistingLaborCharges() {
+    if (!window.currentRequestId) return;
+
+    const token = getAuthToken();
+    const headers = {
+        'Authorization': token ? `Bearer ${token}` : ''
+    };
+
+    fetch(`/serviceAdvisor/api/service/${window.currentRequestId}/labor-charges`, {
+        method: 'GET',
+        headers: headers
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Failed to load labor charges: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.laborMinutes > 0 && data.laborCost > 0) {
+                // Calculate hours from minutes
+                const hours = data.laborHours || (data.laborMinutes / 60);
+                const rate = data.hourlyRate || (data.laborCost / hours);
+
+                // Add to local array
+                window.laborCharges = [{
+                    description: "Labor Charge",
+                    hours: hours,
+                    rate: rate
+                }];
+
+                renderLaborCharges();
+                updateBillSummary();
+            }
+        })
+        .catch(error => {
+            console.error('Error loading labor charges:', error);
+        });
+}
 
 function populateInventoryDropdown(items) {
     const inventorySelect = document.getElementById('inventoryItemSelect');
@@ -1137,23 +1245,106 @@ function removeInventoryItem(index) {
 }
 
 function addLaborCharge(description, hours, rate) {
+    // Ensure hours and rate are valid numbers
     hours = parseFloat(hours) || 0;
     rate = parseFloat(rate) || 0;
 
-    if (hours <= 0 || rate <= 0) {
-        showNotification('Hours and rate must be greater than zero', 'error');
+    if (hours <= 0) {
+        showNotification('Hours must be greater than zero', 'error');
         return;
     }
 
-    window.laborCharges.push({
+    if (rate <= 0) {
+        showNotification('Rate must be greater than zero', 'error');
+        return;
+    }
+
+    // Show loading state
+    const addLaborBtn = document.getElementById('addLaborBtn');
+    if (addLaborBtn) {
+        addLaborBtn.disabled = true;
+        addLaborBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+    }
+
+    // Create labor charge object
+    const laborCharge = {
         description: description || "Labor Charge",
         hours: hours,
         rate: rate
-    });
+    };
 
+    // Add to local array for UI display
+    window.laborCharges = [laborCharge]; // Replace current charges rather than adding
+
+    // Update UI immediately
     renderLaborCharges();
     updateBillSummary();
+
+    // Save to database immediately using the existing endpoint
+    const token = getAuthToken();
+    const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': token ? `Bearer ${token}` : ''
+    };
+
+    // Format charge properly for your server
+    const formattedLabor = [{
+        description: "Labor Charge",
+        hours: hours,
+        rate: rate
+    }];
+
+    console.log('Sending labor data:', JSON.stringify(formattedLabor));
+
+    // Make the API call using the existing labor-charges endpoint
+    fetch(`/serviceAdvisor/api/service/${window.currentRequestId}/labor-charges`, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(formattedLabor)
+    })
+        .then(response => {
+            // Log raw response for debugging
+            console.log('Response status:', response.status);
+
+            if (!response.ok) {
+                return response.text().then(text => {
+                    console.log('Error response:', text);
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        throw new Error(`Failed to save labor charge: ${response.status} - ${text}`);
+                    }
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Labor charge response:', data);
+            if (data.error) {
+                throw new Error(data.error);
+            }
+
+            // Show success message
+            showNotification('Labor charge added successfully', 'success');
+
+            // Reset form fields
+            document.getElementById('laborHours').value = '1';
+            document.getElementById('laborRate').value = '65';
+        })
+        .catch(error => {
+            console.error('Labor charge save error:', error);
+            showNotification('Error saving labor charge: ' + error.message, 'error');
+        })
+        .finally(() => {
+            // Reset button regardless of success/failure
+            if (addLaborBtn) {
+                addLaborBtn.disabled = false;
+                addLaborBtn.innerHTML = '<i class="fas fa-plus"></i> Add';
+            }
+        });
 }
+
+
 
 function renderLaborCharges() {
     const laborChargesList = document.getElementById('laborChargesList');
@@ -1196,10 +1387,95 @@ function renderLaborCharges() {
 }
 
 function removeLaborCharge(index) {
+    if (index < 0 || index >= window.laborCharges.length) {
+        return;
+    }
+
+    // Show loading state
+    const loadingIcon = document.createElement('i');
+    loadingIcon.className = 'fas fa-spinner fa-spin';
+    loadingIcon.style.marginLeft = '10px';
+
+    const laborList = document.getElementById('laborChargesList');
+    if (laborList) {
+        laborList.appendChild(loadingIcon);
+    }
+
+    // Remove from local array
     window.laborCharges.splice(index, 1);
+
+    // Update UI immediately
     renderLaborCharges();
     updateBillSummary();
+
+    // If there are no more labor charges, just show completed UI state
+    if (window.laborCharges.length === 0) {
+        showNotification('Labor charge removed', 'info');
+        if (laborList && loadingIcon.parentNode === laborList) {
+            laborList.removeChild(loadingIcon);
+        }
+        return;
+    }
+
+    // Update the database with remaining labor charges
+    const token = getAuthToken();
+    const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': token ? `Bearer ${token}` : ''
+    };
+
+    // Format remaining labor charges - use only the first one
+    const formattedCharge = window.laborCharges.map(charge => {
+        return {
+            description: charge.description || 'Labor Charge',
+            hours: parseFloat(charge.hours) || 0,
+            rate: parseFloat(charge.rate) || 0
+        };
+    });
+
+    console.log('Sending updated labor data:', JSON.stringify(formattedCharge));
+
+    // Make the API call to update labor charges
+    fetch(`/serviceAdvisor/api/service/${window.currentRequestId}/labor-charges`, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(formattedCharge)
+    })
+        .then(response => {
+            console.log('Response status:', response.status);
+
+            if (!response.ok) {
+                return response.text().then(text => {
+                    console.log('Error response:', text);
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        throw new Error(`Failed to update labor charges: ${response.status} - ${text}`);
+                    }
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Labor charges updated after removal:', data);
+            if (data.error) {
+                throw new Error(data.error);
+            }
+
+            showNotification('Labor charge removed', 'info');
+        })
+        .catch(error => {
+            console.error('Error updating labor charges after removal:', error);
+            showNotification('Error updating labor charges: ' + error.message, 'error');
+        })
+        .finally(() => {
+            // Remove loading icon
+            if (laborList && loadingIcon.parentNode === laborList) {
+                laborList.removeChild(loadingIcon);
+            }
+        });
 }
+
 
 function updateBillSummary() {
     let partsSubtotal = 0;
@@ -1401,7 +1677,7 @@ function initializeStatusEvents() {
 function updateStatusPreview(status) {
     const currentStatusBadge = document.getElementById('currentStatusBadge');
     if (currentStatusBadge) {
-        currentStatusBadge.classList.remove('new', 'in-progress', 'completed', 'diagnosis', 'pending-parts', 'repair', 'quality-check');
+        currentStatusBadge.classList.remove('new', 'completed', 'diagnosis',  'repair');
 
         let statusClass = 'new';
         if (status === 'Diagnosis' || status === 'Repair') {
@@ -1674,48 +1950,16 @@ function updateStatusInTable(requestId, status) {
 }
 
 function saveServiceItems() {
-    if (window.inventoryItems.length === 0 && window.laborCharges.length === 0) {
-        showNotification('No service items to save', 'info');
-        return;
-    }
-
-    showNotification('Saving service items...', 'info');
-
-    const saveButton = document.getElementById('saveInvoiceBtn');
-    if (saveButton) saveButton.disabled = true;
-
-    const token = getAuthToken();
-    const headers = createAuthHeaders();
-
     const promises = [];
 
-    if (window.laborCharges.length > 0) {
-        const charges = window.laborCharges.map(charge => {
-            return {
-                description: charge.description || 'Labor Charge',
-                hours: parseFloat(charge.hours) || 0,
-                ratePerHour: parseFloat(charge.rate) || 0,
-                total: parseFloat(charge.hours * charge.rate) || 0
-            };
-        });
+    // First, save labor charges
+    const laborPromise = saveLaborCharges().catch(error => {
+        console.error("Error saving labor charges:", error);
+        return null; // Continue with other operations even if labor charges fail
+    });
+    promises.push(laborPromise);
 
-        const laborPromise = fetch(`/serviceAdvisor/api/service/${window.currentRequestId}/labor-charges`, {
-            method: 'POST',
-            headers: headers,
-            body: JSON.stringify(charges)
-        })
-            .then(response => {
-                if (!response.ok) {
-                    return response.text().then(text => {
-                        throw new Error(`Failed to save labor charges: ${response.status} - ${text}`);
-                    });
-                }
-                return response.json();
-            });
-
-        promises.push(laborPromise);
-    }
-
+    // Save inventory items
     if (window.inventoryItems.length > 0) {
         const items = window.inventoryItems.map(item => {
             return {
@@ -1733,7 +1977,10 @@ function saveServiceItems() {
 
         const inventoryPromise = fetch(`/serviceAdvisor/api/service/${window.currentRequestId}/inventory-items`, {
             method: 'POST',
-            headers: headers,
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${getAuthToken()}`
+            },
             body: JSON.stringify(materialsRequest)
         })
             .then(response => {
@@ -1743,27 +1990,33 @@ function saveServiceItems() {
                     });
                 }
                 return response.json();
+            })
+            .then(data => {
+                console.log('Inventory items saved successfully:', data);
+                return data;
+            })
+            .catch(error => {
+                console.error('Inventory error:', error);
+                showNotification('Error saving inventory items: ' + error.message, 'error');
+                throw error;
             });
 
         promises.push(inventoryPromise);
     }
 
+    // Wait for all promises to complete
     Promise.all(promises)
         .then(results => {
-            showNotification('Service items saved successfully!', 'success');
-
-            if (saveButton) saveButton.disabled = false;
-
+            showNotification('All service items saved successfully!', 'success');
             setTimeout(() => {
                 openVehicleDetails(window.currentRequestId);
             }, 1000);
         })
         .catch(error => {
             showNotification('Error: ' + error.message, 'error');
-
-            if (saveButton) saveButton.disabled = false;
         });
 }
+
 
 
 function markServiceComplete() {
@@ -1859,6 +2112,11 @@ function filterVehiclesBySearch(searchTerm) {
             row.style.display = 'none';
         }
     });
+}
+
+function sendBillToAdmin() {
+    showNotification("Bill forwarding not implemented yet", "info");
+    return false;
 }
 
 function showNotification(message, type = 'success') {

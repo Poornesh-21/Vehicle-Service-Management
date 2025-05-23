@@ -64,6 +64,34 @@ function initializeEventListeners() {
     document.getElementById('confirmDeliveryBtn').addEventListener('click', function() {
         processDelivery();
     });
+    document.getElementById('paymentMethod').addEventListener('change', function() {
+        const transactionIdGroup = document.getElementById('transactionIdGroup');
+        // Hide transaction ID field when Cash is selected
+        if (this.value === 'Cash') {
+            transactionIdGroup.style.display = 'none';
+            document.getElementById('transactionId').value = 'CASH-' + Date.now().toString().slice(-6);
+            document.getElementById('transactionId').disabled = true;
+        } else {
+            transactionIdGroup.style.display = 'block';
+            document.getElementById('transactionId').value = '';
+            document.getElementById('transactionId').disabled = false;
+        }
+    });
+    document.getElementById('homeDelivery').addEventListener('change', function() {
+        if (this.checked) {
+            document.getElementById('pickupFields').style.display = 'none';
+            document.getElementById('deliveryFields').style.display = 'block';
+            document.getElementById('confirmDeliveryBtnText').textContent = 'Confirm Delivery';
+
+            // Auto-fill customer address if available
+            if (currentService) {
+                const customerAddress = getCustomerAddress(currentService);
+                if (customerAddress) {
+                    document.getElementById('deliveryAddress').value = customerAddress;
+                }
+            }
+        }
+    });
 }
 
 function normalizeServiceData(service) {
@@ -1075,6 +1103,43 @@ function openGenerateInvoiceModal() {
     const invoiceModal = new bootstrap.Modal(document.getElementById('generateInvoiceModal'));
     invoiceModal.show();
 }
+
+function getCustomerAddress(service) {
+    let address = '';
+
+    // Try to get address from different possible locations in the service object
+    if (service.enhancedCustomerData) {
+        const customer = service.enhancedCustomerData;
+        const addressParts = [];
+
+        if (customer.street) addressParts.push(customer.street);
+        if (customer.city) addressParts.push(customer.city);
+        if (customer.state) addressParts.push(customer.state);
+        if (customer.postalCode) addressParts.push(customer.postalCode);
+
+        if (addressParts.length > 0) {
+            return addressParts.join(', ');
+        }
+    }
+
+    // Try alternate locations for address
+    if (service.customer) {
+        const customer = service.customer;
+        const addressParts = [];
+
+        if (customer.street) addressParts.push(customer.street);
+        if (customer.city) addressParts.push(customer.city);
+        if (customer.state) addressParts.push(customer.state);
+        if (customer.postalCode) addressParts.push(customer.postalCode);
+
+        if (addressParts.length > 0) {
+            return addressParts.join(', ');
+        }
+    }
+
+    // If no address found, return empty string
+    return address;
+}
 function showSuccessMessage(title, message, onClose) {
     // First ensure any existing modals are properly closed
     const existingModals = document.querySelectorAll('.modal.show');
@@ -1355,6 +1420,17 @@ function tryPostUrls(urls, requestData, token) {
     }, Promise.reject(new Error('Starting POST URL chain')));
 }
 
+function openPaymentModal() {
+    if (!currentService) return;
+    document.getElementById('paymentServiceId').textContent = `REQ-${currentService.requestId || currentService.serviceId}`;
+    document.getElementById('paymentCustomerName').textContent = currentService.customerName;
+    const total = currentService.calculatedTotal || 0;
+    document.getElementById('paidAmount').value = total.toFixed(2);
+    const paymentModal = new bootstrap.Modal(document.getElementById('paymentModal'));
+    paymentModal.show();
+}
+
+// Update the openDeliveryModal function to prepare for address auto-fill
 function openDeliveryModal() {
     if (!currentService) return;
     document.getElementById('deliveryServiceId').textContent = `REQ-${currentService.requestId || currentService.serviceId}`;
@@ -1367,6 +1443,12 @@ function openDeliveryModal() {
     document.getElementById('pickupFields').style.display = 'block';
     document.getElementById('deliveryFields').style.display = 'none';
     document.getElementById('confirmDeliveryBtnText').textContent = 'Confirm Pickup';
+
+    // Pre-fetch customer address for later use
+    if (currentService) {
+        currentService.customerAddress = getCustomerAddress(currentService);
+    }
+
     const deliveryModal = new bootstrap.Modal(document.getElementById('deliveryModal'));
     deliveryModal.show();
 }

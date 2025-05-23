@@ -532,31 +532,41 @@ function parseFloatSafe(value, defaultValue) {
 function populateLaborChargesTable(laborCharges) {
     const tableBody = document.getElementById('laborChargesTableBody');
     tableBody.innerHTML = '';
+
     if (!laborCharges || laborCharges.length === 0) {
         tableBody.innerHTML = `
             <tr><td colspan="4" class="text-center">No labor charges recorded for this service</td></tr>
         `;
         return;
     }
+
+    console.log("Populating labor charges table with:", laborCharges);
+
     const formatter = new Intl.NumberFormat('en-IN', {
         style: 'currency',
         currency: 'INR',
         minimumFractionDigits: 2
     });
+
     let laborTotal = 0;
     laborCharges.forEach(charge => {
         if (!charge) return;
+
         const row = document.createElement('tr');
         const description = charge.description || 'Service Labor';
+
+        // Get hours
         const hours = parseFloatSafe(charge.hours, 0);
-        const ratePerHour = parseFloatSafe(charge.ratePerHour, 0);
-        let total;
-        if (charge.total) {
-            total = parseFloatSafe(charge.total, 0);
-        } else {
-            total = hours * ratePerHour;
-        }
+
+        // IMPORTANT: Use 'rate' to match backend field name
+        // Fall back to 'ratePerHour' for backward compatibility
+        const ratePerHour = parseFloatSafe(charge.rate || charge.ratePerHour, 0);
+
+        // Get or calculate total
+        let total = parseFloatSafe(charge.total, hours * ratePerHour);
+
         laborTotal += total;
+
         row.innerHTML = `
             <td>${description}</td>
             <td>${hours.toFixed(2)}</td>
@@ -565,6 +575,7 @@ function populateLaborChargesTable(laborCharges) {
         `;
         tableBody.appendChild(row);
     });
+
     if (laborCharges.length > 1) {
         const totalRow = document.createElement('tr');
         totalRow.innerHTML = `
@@ -584,11 +595,14 @@ function formatCurrency(amount) {
 }
 
 function updateInvoiceSummary(data) {
+    console.log("Updating invoice summary with data:", data);
+
     const formatter = new Intl.NumberFormat('en-IN', {
         style: 'currency',
         currency: 'INR',
         minimumFractionDigits: 2
     });
+
     if (!data) {
         document.getElementById('summaryMaterialsTotal').textContent = formatter.format(0);
         document.getElementById('summaryLaborTotal').textContent = formatter.format(0);
@@ -599,33 +613,95 @@ function updateInvoiceSummary(data) {
         return;
     }
 
-    const materialsTotal = parseFloatSafe(data.materialsTotal, 0);
-    const laborTotal = parseFloatSafe(data.laborTotal, 0);
-    const discount = parseFloatSafe(data.discount, 0);
-    let subtotal = parseFloatSafe(data.subtotal, 0);
-    if (subtotal === 0) {
-        subtotal = materialsTotal + laborTotal - discount;
-    }
-    let tax = parseFloatSafe(data.tax, 0);
-    if (tax === 0) {
-        tax = subtotal * 0.18;
-    }
-    let grandTotal = parseFloatSafe(data.grandTotal, 0);
-    if (grandTotal === 0) {
-        grandTotal = subtotal + tax;
+    // Materials total
+    const materialsTotal = parseFloatSafe(
+        data.materialsTotal || data.calculatedMaterialsTotal || data.total_material_cost,
+        0
+    );
+
+    // Labor total
+    const laborTotal = parseFloatSafe(
+        data.laborTotal || data.calculatedLaborTotal || data.labor_cost,
+        0
+    );
+
+    console.log(`Materials total: ${materialsTotal}, Labor total: ${laborTotal}`);
+
+    // Calculate premium discount (30% of labor only)
+    let discount = 0;
+
+    if (data.membershipStatus &&
+        (data.membershipStatus.toLowerCase() === 'premium' ||
+            data.membershipStatus.toLowerCase().includes('premium'))) {
+        // Apply 30% discount to labor only
+        discount = parseFloat((laborTotal * 0.3).toFixed(2));
+        console.log(`Applied premium discount: ${discount} (30% of labor ${laborTotal})`);
     }
 
+    // Calculate subtotal
+    const subtotal = parseFloat((materialsTotal + laborTotal - discount).toFixed(2));
+
+    // Calculate tax (18% GST)
+    const tax = parseFloat((subtotal * 0.18).toFixed(2));
+
+    // Calculate grand total
+    const grandTotal = parseFloat((subtotal + tax).toFixed(2));
+
+    // Update UI
     document.getElementById('summaryMaterialsTotal').textContent = formatter.format(materialsTotal);
     document.getElementById('summaryLaborTotal').textContent = formatter.format(laborTotal);
+
     if (discount > 0) {
+        // Update discount label
+        if (document.getElementById('premiumDiscountLabel')) {
+            document.getElementById('premiumDiscountLabel').textContent = 'Premium Discount (30% off labor)';
+        }
+
         document.getElementById('summaryDiscount').textContent = `-${formatter.format(discount)}`;
         document.getElementById('premiumDiscountRow').style.display = '';
     } else {
         document.getElementById('premiumDiscountRow').style.display = 'none';
     }
+
     document.getElementById('summarySubtotal').textContent = formatter.format(subtotal);
     document.getElementById('summaryGST').textContent = formatter.format(tax);
     document.getElementById('summaryGrandTotal').textContent = formatter.format(grandTotal);
+
+    // Store calculated values for later use
+    data.calculatedMaterialsTotal = materialsTotal;
+    data.calculatedLaborTotal = laborTotal;
+    data.calculatedDiscount = discount;
+    data.calculatedSubtotal = subtotal;
+    data.calculatedTax = tax;
+    data.calculatedTotal = grandTotal;
+}
+
+function calculateMaterialsTotal(materials) {
+    if (!materials || !Array.isArray(materials)) return 0;
+
+    return materials.reduce((total, material) => {
+        if (!material) return total;
+
+        const quantity = parseFloatSafe(material.quantity, 1);
+        const unitPrice = parseFloatSafe(material.unitPrice, 0);
+        const itemTotal = parseFloatSafe(material.total, quantity * unitPrice);
+
+        return total + itemTotal;
+    }, 0);
+}
+
+function calculateLaborTotal(laborCharges) {
+    if (!laborCharges || !Array.isArray(laborCharges)) return 0;
+
+    return laborCharges.reduce((total, charge) => {
+        if (!charge) return total;
+
+        const hours = parseFloatSafe(charge.hours, 0);
+        const rate = parseFloatSafe(charge.ratePerHour || charge.rate, 0);
+        const chargeTotal = parseFloatSafe(charge.total, hours * rate);
+
+        return total + chargeTotal;
+    }, 0);
 }
 
 function updateWorkflowSteps(service) {
@@ -693,6 +769,77 @@ function updateFooterButtons(service) {
     }
 }
 
+function processLaborData(data, serviceId) {
+    // Store original data for debugging
+    const originalData = JSON.parse(JSON.stringify(data));
+
+    // Check if we have labor_minutes and labor_cost from DB
+    if (data.labor_minutes !== undefined && data.labor_cost !== undefined) {
+        console.log(`Using DB values: labor_minutes=${data.labor_minutes}, labor_cost=${data.labor_cost}`);
+
+        // Convert minutes to hours (ensure floating point division)
+        const laborHours = data.labor_minutes / 60;
+
+        // Calculate hourly rate (avoid division by zero)
+        const hourlyRate = laborHours > 0 ? parseFloat((data.labor_cost / laborHours).toFixed(2)) : 0;
+
+        // Create labor charge object with correct values from DB
+        const laborCharge = {
+            description: data.work_description || data.serviceType || 'Service Labor',
+            hours: laborHours,
+            ratePerHour: hourlyRate,
+            total: parseFloat(data.labor_cost)
+        };
+
+        console.log("Created labor charge from DB data:", laborCharge);
+
+        // Override any existing labor charges
+        data.laborCharges = [laborCharge];
+        data.laborTotal = parseFloat(data.labor_cost);
+
+        // Make sure values are properly set for summary calculation
+        data.calculatedLaborTotal = data.laborTotal;
+    }
+    // Check for existing labor charges
+    else if (data.laborCharges && data.laborCharges.length > 0) {
+        console.log("Using existing labor charges:", data.laborCharges);
+
+        // Ensure labor total is calculated correctly
+        let total = 0;
+        data.laborCharges.forEach(charge => {
+            // Make sure each labor charge has a total
+            if (!charge.total && charge.hours && charge.ratePerHour) {
+                charge.total = charge.hours * charge.ratePerHour;
+            }
+            total += parseFloat(charge.total || 0);
+        });
+
+        data.laborTotal = total;
+        data.calculatedLaborTotal = total;
+    }
+    // Use default values as last resort
+    else if (data.serviceType) {
+        console.log("No labor data found, creating default labor charge");
+
+        // Much more conservative defaults - 1 hour at ₹100
+        data.laborCharges = [{
+            description: `Service: ${data.serviceType}`,
+            hours: 3, // Default to 3 hours based on original data
+            ratePerHour: 65, // Calculate from 195 ÷ 3
+            total: 195 // Default total based on original data
+        }];
+
+        data.laborTotal = 195;
+        data.calculatedLaborTotal = 195;
+    }
+
+    // Check if the data was modified during processing
+    if (JSON.stringify(data) !== JSON.stringify(originalData)) {
+        console.log("Data was modified during labor processing");
+    }
+}
+
+
 function loadInvoiceData(serviceId) {
     document.getElementById('materialsTableBody').innerHTML = `
         <tr><td colspan="4" class="text-center"><div class="spinner-border spinner-border-sm text-wine" role="status"></div> Loading materials...</td></tr>
@@ -700,26 +847,77 @@ function loadInvoiceData(serviceId) {
     document.getElementById('laborChargesTableBody').innerHTML = `
         <tr><td colspan="4" class="text-center"><div class="spinner-border spinner-border-sm text-wine" role="status"></div> Loading labor charges...</td></tr>
     `;
+
     const token = getAuthToken();
+
+    // Only use endpoints that actually exist in the backend
     const invoiceUrls = [
         `/admin/api/completed-services/${serviceId}/invoice-details`,
-        `/admin/api/invoice-details/service-request/${serviceId}`,
-        `/admin/api/invoice-details/service/${serviceId}`,
-        `/admin/api/services/${serviceId}/invoice-details`,
         `/admin/api/vehicle-tracking/service-request/${serviceId}`
     ];
+
+    console.log(`Loading invoice data for service ID: ${serviceId}`);
+
     tryFetchUrls(invoiceUrls, token)
         .then(data => {
+            console.log("Raw data from API:", data);
+
             if (!data) {
                 data = createDefaultInvoiceData(serviceId);
             }
+
+            // Check for labor_minutes and labor_cost in the response
+            if (data.labor_minutes !== undefined && data.labor_cost !== undefined) {
+                console.log(`Found labor data: ${data.labor_minutes} minutes, ₹${data.labor_cost}`);
+
+                // Convert minutes to hours
+                const laborHours = data.labor_minutes / 60;
+
+                // Calculate hourly rate
+                const hourlyRate = laborHours > 0 ? parseFloat((data.labor_cost / laborHours).toFixed(2)) : 0;
+
+                // Create labor charge with correct values
+                const laborCharge = {
+                    description: data.work_description || data.serviceType || 'Service Labor',
+                    hours: laborHours,
+                    rate: hourlyRate, // Use 'rate' to match backend field name
+                    total: parseFloat(data.labor_cost)
+                };
+
+                console.log("Created labor charge:", laborCharge);
+
+                // Override existing labor charges
+                data.laborCharges = [laborCharge];
+                data.laborTotal = parseFloat(data.labor_cost);
+            }
+            else if (data.laborCharges && data.laborCharges.length > 0) {
+                console.log("Using existing labor charges:", data.laborCharges);
+
+                // Calculate labor total
+                let total = 0;
+                data.laborCharges.forEach(charge => {
+                    // Important: use 'rate' (backend field) instead of 'ratePerHour'
+                    const hours = parseFloatSafe(charge.hours, 0);
+                    const rate = parseFloatSafe(charge.rate, 0);
+
+                    // Ensure each charge has a total
+                    if (charge.total === undefined) {
+                        charge.total = hours * rate;
+                    }
+
+                    total += parseFloatSafe(charge.total, 0);
+                });
+
+                data.laborTotal = total;
+            }
+
             const materials = data.materials || [];
             populateMaterialsTable(materials);
-            const laborCharges = data.laborCharges || [];
-            populateLaborChargesTable(laborCharges);
+            populateLaborChargesTable(data.laborCharges || []);
             updateInvoiceSummary(data);
         })
         .catch(error => {
+            console.error("Error loading invoice data:", error);
             document.getElementById('materialsTableBody').innerHTML = `
                 <tr><td colspan="4" class="text-center">No materials data available</td></tr>
             `;
@@ -744,6 +942,56 @@ function createDefaultInvoiceData(serviceId) {
         laborCharges: []
     };
 }
+function extractLaborData(data) {
+    if (!data) return null;
+
+    // Check direct properties first (most common case)
+    if (data.labor_minutes !== undefined && data.labor_cost !== undefined) {
+        return {
+            labor_minutes: data.labor_minutes,
+            labor_cost: data.labor_cost
+        };
+    }
+
+    // Check for data in serviceTracking object
+    if (data.serviceTracking &&
+        data.serviceTracking.labor_minutes !== undefined &&
+        data.serviceTracking.labor_cost !== undefined) {
+        return {
+            labor_minutes: data.serviceTracking.labor_minutes,
+            labor_cost: data.serviceTracking.labor_cost
+        };
+    }
+
+    // Check for data in serviceTrackings array (most recent entry)
+    if (data.serviceTrackings && Array.isArray(data.serviceTrackings) &&
+        data.serviceTrackings.length > 0) {
+        const tracking = data.serviceTrackings[0]; // Usually the most recent
+        if (tracking.labor_minutes !== undefined && tracking.labor_cost !== undefined) {
+            return {
+                labor_minutes: tracking.labor_minutes,
+                labor_cost: tracking.labor_cost
+            };
+        }
+    }
+
+    // Deep scan for any object containing both labor_minutes and labor_cost
+    for (const key in data) {
+        if (typeof data[key] === 'object' && data[key] !== null) {
+            const obj = data[key];
+            if (obj.labor_minutes !== undefined && obj.labor_cost !== undefined) {
+                return {
+                    labor_minutes: obj.labor_minutes,
+                    labor_cost: obj.labor_cost
+                };
+            }
+        }
+    }
+
+    // No labor data found in any expected location
+    return null;
+}
+
 
 function downloadInvoice(serviceId) {
     const token = getAuthToken();

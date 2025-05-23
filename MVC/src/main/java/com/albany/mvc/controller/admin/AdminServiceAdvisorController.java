@@ -32,12 +32,10 @@ public class AdminServiceAdvisorController {
     private final RestTemplate restTemplate;
 
     public AdminServiceAdvisorController(RestTemplate restTemplate) {
+
         this.restTemplate = restTemplate;
     }
 
-    /**
-     * Renders the service advisors page
-     */
     @GetMapping("/service-advisors")
     public String serviceAdvisorsPage(
             @RequestParam(required = false) String token,
@@ -88,10 +86,7 @@ public class AdminServiceAdvisorController {
                     .body(Collections.emptyList());
         }
     }
-
-    /**
-     * Fetches a single service advisor by ID from the REST API
-     */
+    
     @GetMapping("/service-advisors/{id}")
     @ResponseBody
     public ResponseEntity<ServiceAdvisorDTO> getServiceAdvisorById(

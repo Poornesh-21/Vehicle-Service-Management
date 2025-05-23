@@ -732,6 +732,8 @@ function fetchServiceDetails(requestId) {
                 loadCurrentBill(data.currentBill);
             }
 
+            // Update invoice elements to remove tax references
+            updateInvoiceTaxLabels();
 
             // Initialize status history
             if (data.status) {
@@ -752,7 +754,31 @@ function fetchServiceDetails(requestId) {
         });
 }
 
+/**
+ * Update invoice tax labels to show "No Tax"
+ */
+function updateInvoiceTaxLabels() {
+    // Find tax label in invoice summary
+    const taxLabel = document.querySelector('.invoice-row:has(#taxAmount)');
+    if (taxLabel) {
+        const taxLabelText = taxLabel.querySelector('span:first-child');
+        if (taxLabelText) {
+            taxLabelText.textContent = 'Tax:';
+        }
+    }
 
+    // Update tax amount display in invoice preview
+    const invoiceTaxElement = document.querySelector('.invoice-tax span:last-child');
+    if (invoiceTaxElement) {
+        invoiceTaxElement.textContent = '₹0.00 (No Tax)';
+    }
+}
+
+/**
+ * Show error in details tab
+ * @param {Error} error - Error object
+ * @param {number} requestId - Service request ID
+ */
 function showErrorInDetailsTab(error, requestId) {
     const detailsTab = document.getElementById('details-tab');
     if (detailsTab) {
@@ -1086,7 +1112,14 @@ function updateBillSummaryUI(billData) {
     document.getElementById('partsSubtotal').textContent = formatCurrency(billData.partsSubtotal);
     document.getElementById('laborSubtotal').textContent = formatCurrency(billData.laborSubtotal);
     document.getElementById('subtotalAmount').textContent = formatCurrency(billData.subtotal);
+    // document.getElementById('taxAmount').textContent = formatCurrency(0); // Zero tax
+    document.getElementById('totalAmount').textContent = formatCurrency(billData.subtotal); // Total equals subtotal (no tax)
 
+    // Update tax label
+    const taxLabel = document.querySelector('.invoice-row:has(#taxAmount) span:first-child');
+    if (taxLabel) {
+        taxLabel.textContent = 'Tax:';
+    }
 }
 
 /**
@@ -1740,6 +1773,9 @@ function updateBillSummary() {
         laborSubtotal += charge.hours * charge.rate;
     });
 
+    // Calculate total (removed tax calculation)
+    const subtotal = partsSubtotal + laborSubtotal;
+    const total = subtotal; // No tax applied
 
     // Format currency
     const formatter = new Intl.NumberFormat('en-IN', {
@@ -1752,6 +1788,7 @@ function updateBillSummary() {
     document.getElementById('partsSubtotal').textContent = formatter.format(partsSubtotal);
     document.getElementById('laborSubtotal').textContent = formatter.format(laborSubtotal);
     document.getElementById('subtotalAmount').textContent = formatter.format(subtotal);
+    document.getElementById('taxAmount').textContent = formatter.format(0); // Zero tax
     document.getElementById('totalAmount').textContent = formatter.format(total);
 }
 
@@ -1811,6 +1848,7 @@ function updateBillPreview() {
         invoiceItemsList.appendChild(row);
     }
 
+    // Calculate totals (no tax)
     let subtotal = 0;
     window.inventoryItems.forEach(item => {
         subtotal += item.price * item.quantity;
@@ -1820,12 +1858,15 @@ function updateBillPreview() {
         subtotal += charge.hours * charge.rate;
     });
 
+    const total = subtotal; // No tax applied
 
     // Update totals in UI
     const invoiceSubtotal = document.getElementById('invoiceSubtotal');
+    const invoiceTax = document.getElementById('invoiceTax');
     const invoiceTotal = document.getElementById('invoiceTotal');
 
     if (invoiceSubtotal) invoiceSubtotal.textContent = formatter.format(subtotal);
+    if (invoiceTax) invoiceTax.textContent = formatter.format(0); // Zero tax
     if (invoiceTotal) invoiceTotal.textContent = formatter.format(total);
 
     // Update invoice info fields
@@ -1889,6 +1930,9 @@ function updateInvoiceInfoFields() {
     updateInvoiceField('.invoice-service .invoice-detail:nth-child(3)', `<span>Registration:</span> ${registrationNumber}`);
     updateInvoiceField('.invoice-service .invoice-detail:nth-child(4)', `<span>Invoice Date:</span> ${formattedDate}`);
     updateInvoiceField('.invoice-service .invoice-detail:nth-child(5)', `<span>Invoice #:</span> ${window.currentInvoiceNumber}`);
+
+    // Update invoice tax line to say "No Tax"
+    updateInvoiceField('.invoice-tax', `<span>Tax:</span><span id="invoiceTax">₹0.00 (No Tax)</span>`);
 }
 
 /**

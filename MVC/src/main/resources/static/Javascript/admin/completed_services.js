@@ -1000,24 +1000,46 @@ function downloadInvoice(serviceId) {
 }
 
 function openGenerateInvoiceModal() {
-    if (!currentService) return;
+    if (!currentService) {
+        showToast('Service data not available', 'error');
+        return;
+    }
+
+    // Format currency for display
     const formatter = new Intl.NumberFormat('en-IN', {
         style: 'currency',
         currency: 'INR',
         minimumFractionDigits: 2
     });
+
+    // Set service and customer information
     document.getElementById('invoiceServiceId').textContent = `REQ-${currentService.requestId || currentService.serviceId}`;
-    document.getElementById('invoiceCustomerName').textContent = currentService.customerName;
-    document.getElementById('customerEmail').value = currentService.customerEmail || '';
+    document.getElementById('invoiceCustomerName').textContent = currentService.customerName || 'Unknown Customer';
+
+    // Pre-fill customer email if available
+    if (currentService.customerEmail) {
+        document.getElementById('customerEmail').value = currentService.customerEmail;
+    } else if (currentService.enhancedCustomerData && currentService.enhancedCustomerData.email) {
+        document.getElementById('customerEmail').value = currentService.enhancedCustomerData.email;
+    } else {
+        // Try to get email from different locations in the object
+        const email = findEmailInObject(currentService);
+        document.getElementById('customerEmail').value = email || '';
+    }
+
+    // Set invoice amounts
     let materialsTotal = currentService.calculatedMaterialsTotal || 0;
     let laborTotal = currentService.calculatedLaborTotal || 0;
     let discount = currentService.calculatedDiscount || 0;
     let subtotal = currentService.calculatedSubtotal || 0;
     let tax = currentService.calculatedTax || 0;
     let total = currentService.calculatedTotal || 0;
+
+    // Handle premium status and discount display
     const isPremium = isMembershipPremium(currentService);
     const premiumDiscountRow = document.getElementById('invoicePremiumDiscountRow');
     const premiumBadge = document.getElementById('invoicePremiumBadge');
+
     if (isPremium) {
         premiumBadge.style.display = '';
         if (discount > 0) {
@@ -1030,30 +1052,147 @@ function openGenerateInvoiceModal() {
         premiumDiscountRow.style.display = 'none';
         premiumBadge.style.display = 'none';
     }
+
+    // Set amount displays
     document.getElementById('invoiceMaterialsTotal').textContent = formatter.format(materialsTotal);
     document.getElementById('invoiceLaborTotal').textContent = formatter.format(laborTotal);
     document.getElementById('invoiceSubtotal').textContent = formatter.format(subtotal);
     document.getElementById('invoiceGST').textContent = formatter.format(tax);
     document.getElementById('invoiceGrandTotal').textContent = formatter.format(total);
+
+    // Check if send email checkbox should be checked by default
+    const emailInput = document.getElementById('customerEmail');
+    const sendEmailCheckbox = document.getElementById('sendInvoiceEmail');
+    sendEmailCheckbox.checked = emailInput.value.trim() !== '';
+
+    // Close service details modal if open
     const serviceDetailsModal = bootstrap.Modal.getInstance(document.getElementById('viewServiceDetailsModal'));
-    serviceDetailsModal.hide();
+    if (serviceDetailsModal) {
+        serviceDetailsModal.hide();
+    }
+
+    // Show invoice generation modal
     const invoiceModal = new bootstrap.Modal(document.getElementById('generateInvoiceModal'));
     invoiceModal.show();
 }
+function showSuccessMessage(title, message, onClose) {
+    // First ensure any existing modals are properly closed
+    const existingModals = document.querySelectorAll('.modal.show');
+    existingModals.forEach(modal => {
+        const instance = bootstrap.Modal.getInstance(modal);
+        if (instance) instance.hide();
+    });
+
+    // Clean up any lingering backdrops
+    const modalBackdrops = document.querySelectorAll('.modal-backdrop');
+    modalBackdrops.forEach(backdrop => {
+        backdrop.remove();
+    });
+
+    // Reset modal-related classes on body
+    document.body.classList.remove('modal-open');
+    document.body.style.removeProperty('padding-right');
+
+    // Get the success modal element
+    const successModal = document.getElementById('successModal');
+
+    // If it doesn't exist, create it
+    if (!successModal) {
+        const modalDiv = document.createElement('div');
+        modalDiv.id = 'successModal';
+        modalDiv.className = 'modal fade';
+        modalDiv.setAttribute('tabindex', '-1');
+        modalDiv.setAttribute('aria-hidden', 'true');
+        modalDiv.innerHTML = `
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title" id="successTitle">${title}</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-center py-4">
+                        <div class="mb-3">
+                            <i class="fas fa-check-circle fa-3x text-success"></i>
+                        </div>
+                        <p id="successMessage">${message}</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modalDiv);
+
+        // Initialize the new modal
+        const newModal = new bootstrap.Modal(modalDiv);
+
+        // Setup listeners for modal events
+        modalDiv.addEventListener('hidden.bs.modal', function() {
+            if (typeof onClose === 'function') {
+                setTimeout(onClose, 100); // Small delay to ensure modal is fully closed
+            }
+        });
+
+        // Show the modal
+        newModal.show();
+    } else {
+        // Update existing modal content
+        document.getElementById('successTitle').textContent = title;
+        document.getElementById('successMessage').textContent = message;
+
+        // Get or create modal instance
+        let modalInstance = bootstrap.Modal.getInstance(successModal);
+        if (!modalInstance) {
+            modalInstance = new bootstrap.Modal(successModal);
+        }
+
+        // Setup listeners for modal events
+        successModal.addEventListener('hidden.bs.modal', function() {
+            if (typeof onClose === 'function') {
+                setTimeout(onClose, 100); // Small delay to ensure modal is fully closed
+            }
+        });
+
+        // Show the modal
+        modalInstance.show();
+    }
+}
 
 function generateInvoice() {
-    if (!currentService) return;
-    const email = document.getElementById('customerEmail').value;
+    if (!currentService) {
+        showToast('Service data not available', 'error');
+        return;
+    }
+
+    // Get email address from input field
+    const email = document.getElementById('customerEmail').value.trim();
+
+    // Validate email - this is just basic validation
     if (!email) {
         showToast('Please enter customer email', 'error');
         return;
     }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showToast('Please enter a valid email address', 'error');
+        return;
+    }
+
+    // Get whether to send the email or not
     const sendEmail = document.getElementById('sendInvoiceEmail').checked;
+
+    // Disable button to prevent double-clicks
     const confirmBtn = document.getElementById('confirmGenerateInvoiceBtn');
     confirmBtn.disabled = true;
     confirmBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2" role="status"></div> Generating...';
+
+    // Close the modal
     const invoiceModal = bootstrap.Modal.getInstance(document.getElementById('generateInvoiceModal'));
     invoiceModal.hide();
+
+    // Prepare request data
     const invoiceRequest = {
         serviceId: currentService.requestId || currentService.serviceId,
         emailAddress: email,
@@ -1067,7 +1206,11 @@ function generateInvoice() {
         total: currentService.calculatedTotal,
         membershipStatus: getMembershipStatus(currentService)
     };
+
+    // Get authentication token
     const token = getAuthToken();
+
+    // Make API call to generate invoice
     fetch(`/admin/api/invoices/service-request/${currentService.requestId || currentService.serviceId}/generate`, {
         method: 'POST',
         headers: {
@@ -1078,34 +1221,53 @@ function generateInvoice() {
     })
         .then(response => {
             if (!response.ok) {
-                throw new Error('Failed to generate invoice');
+                return response.json().then(data => {
+                    throw new Error(data.error || 'Failed to generate invoice');
+                });
             }
             return response.json();
         })
         .then(data => {
+            // Reset button state
             confirmBtn.disabled = false;
             confirmBtn.innerHTML = '<i class="fas fa-file-invoice"></i> Generate & Send';
+
+            // Update local service data
             if (currentService) {
                 currentService.hasInvoice = true;
+                currentService.invoiceId = data.invoiceId;
             }
+
+            // Refresh the service list
             loadCompletedServices();
+
+            // Show success message
             const successModal = new bootstrap.Modal(document.getElementById('successModal'));
             document.getElementById('successTitle').textContent = 'Invoice Generated';
             document.getElementById('successMessage').textContent = sendEmail ?
                 `Invoice has been generated and sent to ${email}` :
                 'Invoice has been generated successfully';
             successModal.show();
+
+            // Automatically proceed to payment after short delay
             setTimeout(() => {
                 successModal.hide();
                 openPaymentModal();
             }, 2000);
         })
         .catch(error => {
+            // Reset button state
             confirmBtn.disabled = false;
             confirmBtn.innerHTML = '<i class="fas fa-file-invoice"></i> Generate & Send';
-            showToast('Error generating invoice: ' + error.message, 'error');
+
+            // Show error message
+            showToast('Error: ' + error.message, 'error');
+
+            // Log detailed error for debugging
+            console.error('Invoice generation failed:', error);
         });
 }
+
 
 function openPaymentModal() {
     if (!currentService) return;

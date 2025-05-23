@@ -6,7 +6,10 @@ import com.albany.restapi.dto.MaterialItemDTO;
 import com.albany.restapi.exception.ServiceRequestExceptions.ServiceRequestNotFoundException;
 import com.albany.restapi.model.*;
 import com.albany.restapi.repository.*;
+import com.albany.restapi.service.EmailService;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +24,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CompletedServiceService {
     
+    private static final Logger logger = LoggerFactory.getLogger(CompletedServiceService.class);
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("MMM d, yyyy");
     
     private final ServiceRequestRepository serviceRequestRepository;
@@ -29,6 +33,7 @@ public class CompletedServiceService {
     private final CustomerRepository customerRepository;
     private final InvoiceRepository invoiceRepository;
     private final PaymentRepository paymentRepository;
+    private final EmailService emailService;
     
     /**
      * Get all completed services
@@ -70,6 +75,8 @@ public class CompletedServiceService {
      */
     @Transactional
     public Invoice generateInvoice(Integer requestId, String emailAddress, boolean sendEmail, String notes) {
+        logger.info("Generating invoice for service ID: {}, Email: {}, SendEmail: {}", requestId, emailAddress, sendEmail);
+        
         ServiceRequest request = serviceRequestRepository.findById(requestId)
                 .orElseThrow(() -> new ServiceRequestNotFoundException(requestId));
                 
@@ -78,9 +85,17 @@ public class CompletedServiceService {
         }
         
         // Check if invoice already exists
-        Optional<Invoice> existingInvoice = invoiceRepository.findByRequestId(requestId);
-        if (existingInvoice.isPresent()) {
-            return existingInvoice.get();
+        Optional<Invoice> existingInvoiceOpt = invoiceRepository.findByRequestId(requestId);
+        if (existingInvoiceOpt.isPresent()) {
+            Invoice existingInvoice = existingInvoiceOpt.get();
+            logger.info("Invoice already exists with ID: {}", existingInvoice.getInvoiceId());
+            
+            // If sending email is requested and we have a valid email address
+            if (sendEmail && isValidEmail(emailAddress)) {
+                sendInvoiceEmail(request, existingInvoice, emailAddress);
+            }
+            
+            return existingInvoice;
         }
         
         // Get invoice details
@@ -97,14 +112,53 @@ public class CompletedServiceService {
                 .build();
         
         Invoice savedInvoice = invoiceRepository.save(invoice);
+        logger.info("Invoice generated successfully with ID: {}", savedInvoice.getInvoiceId());
         
-        // Send email if requested
-        if (sendEmail && emailAddress != null && !emailAddress.isEmpty()) {
-            // Email sending logic would be here
-            // You could use a service like EmailService from the provided code
+        // Send email if requested and we have a valid email
+        if (sendEmail && isValidEmail(emailAddress)) {
+            sendInvoiceEmail(request, savedInvoice, emailAddress);
+        } else if (sendEmail) {
+            logger.warn("Email sending requested but no valid email provided for service ID: {}", requestId);
         }
         
         return savedInvoice;
+    }
+    
+    /**
+     * Helper method to validate email format
+     */
+    private boolean isValidEmail(String email) {
+        if (email == null || email.trim().isEmpty()) {
+            return false;
+        }
+        
+        // Basic email validation
+        String emailRegex = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
+        return email.matches(emailRegex);
+    }
+    
+    /**
+     * Helper method to send invoice email
+     */
+    private void sendInvoiceEmail(ServiceRequest request, Invoice invoice, String emailAddress) {
+        try {
+            CompletedServiceDTO serviceDTO = getInvoiceDetails(request.getRequestId());
+            
+            // Get customer name from service request
+            String customerName = "Valued Customer";
+            if (request.getUserId() != null) {
+                User user = userRepository.findById(request.getUserId().intValue()).orElse(null);
+                if (user != null) {
+                    customerName = user.getFirstName() + " " + user.getLastName();
+                }
+            }
+            
+            // If the email address doesn't match user's email, use the provided one
+            emailService.sendInvoiceEmail(emailAddress, customerName, serviceDTO, invoice);
+            logger.info("Invoice email sent successfully to: {}", emailAddress);
+        } catch (Exception e) {
+            logger.error("Failed to send invoice email: {}", e.getMessage(), e);
+        }
     }
     
     /**
@@ -233,7 +287,8 @@ public class CompletedServiceService {
                     }
                 }
             } catch (Exception e) {
-                // Silent catch
+                logger.warn("Error retrieving customer information for service request {}: {}", 
+                        request.getRequestId(), e.getMessage());
             }
         }
         

@@ -13,16 +13,18 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Controller for service request management
+ * Handles both page rendering and API operations for service requests
+ */
 @Controller
 @RequestMapping("/admin")
 public class AdminServiceRequestController {
     private static final Logger logger = LoggerFactory.getLogger(AdminServiceRequestController.class);
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("MMM d, yyyy");
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${api.base.url:http://localhost:8080}")
@@ -36,18 +38,13 @@ public class AdminServiceRequestController {
 
     /**
      * Renders the service requests page
+     * No longer requires token as URL parameter - will be handled by JavaScript
      */
     @GetMapping("/service-requests")
     public String serviceRequestsPage(
-            @RequestParam(required = false) String token,
             @RequestParam(required = false) String success,
             Model model) {
 
-        if (token == null || token.isEmpty()) {
-            return "redirect:/admin/login?error=session_expired";
-        }
-
-        model.addAttribute("token", token);
         if (success != null) {
             model.addAttribute("success", success);
         }
@@ -55,17 +52,18 @@ public class AdminServiceRequestController {
         return "admin/serviceRequests";
     }
 
+    /* API ENDPOINTS */
+
     /**
-     * API endpoint to get all service requests
+     * Get all service requests
      */
     @GetMapping("/service-requests/api")
     @ResponseBody
     public ResponseEntity<List<ServiceRequestDTO>> getAllServiceRequests(
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestParam(value = "token", required = false) String token) {
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
 
         try {
-            HttpHeaders headers = createHeaders(authHeader, token);
+            HttpHeaders headers = createHeaders(authHeader);
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
             ResponseEntity<List<ServiceRequestDTO>> response = restTemplate.exchange(
@@ -76,25 +74,28 @@ public class AdminServiceRequestController {
             );
 
             return ResponseEntity.status(response.getStatusCode()).body(response.getBody());
+        } catch (HttpClientErrorException e) {
+            logger.error("Client error fetching service requests: {}", e.getMessage());
+            return ResponseEntity.status(e.getStatusCode())
+                    .body(Collections.emptyList());
         } catch (Exception e) {
             logger.error("Error fetching service requests: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Collections.emptyList());
         }
     }
-    
+
     /**
-     * API endpoint to get a service request by ID
+     * Get service request by ID
      */
     @GetMapping("/service-requests/api/{id}")
     @ResponseBody
     public ResponseEntity<ServiceRequestDTO> getServiceRequestById(
             @PathVariable("id") Integer id,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestParam(value = "token", required = false) String token) {
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
 
         try {
-            HttpHeaders headers = createHeaders(authHeader, token);
+            HttpHeaders headers = createHeaders(authHeader);
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
             ResponseEntity<ServiceRequestDTO> response = restTemplate.exchange(
@@ -115,17 +116,16 @@ public class AdminServiceRequestController {
     }
 
     /**
-     * API endpoint to create a new service request
+     * Create a new service request
      */
     @PostMapping("/service-requests/api")
     @ResponseBody
     public ResponseEntity<?> createServiceRequest(
             @RequestBody ServiceRequestDTO requestDTO,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestParam(value = "token", required = false) String token) {
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
 
         try {
-            HttpHeaders headers = createHeaders(authHeader, token);
+            HttpHeaders headers = createHeaders(authHeader);
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<ServiceRequestDTO> entity = new HttpEntity<>(requestDTO, headers);
 
@@ -142,7 +142,8 @@ public class AdminServiceRequestController {
             try {
                 String errorBody = e.getResponseBodyAsString();
                 Map<String, Object> errorMap = objectMapper.readValue(errorBody, Map.class);
-                return ResponseEntity.status(e.getStatusCode()).body(errorMap);
+                return ResponseEntity.status(e.getStatusCode())
+                        .body(errorMap);
             } catch (Exception ex) {
                 return ResponseEntity.status(e.getStatusCode())
                         .body(Map.of("error", "Failed to create service request"));
@@ -155,18 +156,17 @@ public class AdminServiceRequestController {
     }
 
     /**
-     * API endpoint to assign a service advisor to a request
+     * Assign a service advisor to a request
      */
     @PutMapping("/service-requests/api/{id}/assign")
     @ResponseBody
     public ResponseEntity<?> assignServiceAdvisor(
             @PathVariable("id") Integer id,
             @RequestBody Map<String, Integer> request,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestParam(value = "token", required = false) String token) {
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
 
         try {
-            HttpHeaders headers = createHeaders(authHeader, token);
+            HttpHeaders headers = createHeaders(authHeader);
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<Map<String, Integer>> entity = new HttpEntity<>(request, headers);
 
@@ -198,12 +198,10 @@ public class AdminServiceRequestController {
     /**
      * Helper method to create HTTP headers with authorization if provided
      */
-    private HttpHeaders createHeaders(String authHeader, String token) {
+    private HttpHeaders createHeaders(String authHeader) {
         HttpHeaders headers = new HttpHeaders();
         if (authHeader != null && !authHeader.isEmpty()) {
             headers.set("Authorization", authHeader);
-        } else if (token != null && !token.isEmpty()) {
-            headers.set("Authorization", "Bearer " + token);
         }
         return headers;
     }

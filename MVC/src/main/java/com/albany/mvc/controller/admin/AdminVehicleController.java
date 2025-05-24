@@ -16,6 +16,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Controller for vehicle management
+ * Handles API operations for vehicles
+ */
 @Controller
 @RequestMapping("/admin")
 public class AdminVehicleController {
@@ -39,13 +43,12 @@ public class AdminVehicleController {
     @ResponseBody
     public ResponseEntity<List<VehicleDTO>> getVehiclesForCustomer(
             @PathVariable("customerId") Integer customerId,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestParam(value = "token", required = false) String token) {
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
 
         try {
             logger.info("Fetching vehicles for customer: {}", customerId);
             
-            HttpHeaders headers = createHeaders(authHeader, token);
+            HttpHeaders headers = createHeaders(authHeader);
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
             // Use the REST API endpoint
@@ -75,11 +78,10 @@ public class AdminVehicleController {
     @ResponseBody
     public ResponseEntity<VehicleDTO> getVehicleById(
             @PathVariable("id") Integer id,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestParam(value = "token", required = false) String token) {
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
 
         try {
-            HttpHeaders headers = createHeaders(authHeader, token);
+            HttpHeaders headers = createHeaders(authHeader);
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
             ResponseEntity<VehicleDTO> response = restTemplate.exchange(
@@ -107,11 +109,10 @@ public class AdminVehicleController {
     public ResponseEntity<?> createVehicle(
             @PathVariable("customerId") Integer customerId,
             @RequestBody VehicleDTO vehicleDTO,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestParam(value = "token", required = false) String token) {
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
 
         try {
-            HttpHeaders headers = createHeaders(authHeader, token);
+            HttpHeaders headers = createHeaders(authHeader);
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<VehicleDTO> entity = new HttpEntity<>(vehicleDTO, headers);
 
@@ -143,12 +144,10 @@ public class AdminVehicleController {
     /**
      * Helper method to create HTTP headers with authorization if provided
      */
-    private HttpHeaders createHeaders(String authHeader, String token) {
+    private HttpHeaders createHeaders(String authHeader) {
         HttpHeaders headers = new HttpHeaders();
         if (authHeader != null && !authHeader.isEmpty()) {
             headers.set("Authorization", authHeader);
-        } else if (token != null && !token.isEmpty()) {
-            headers.set("Authorization", "Bearer " + token);
         }
         return headers;
     }

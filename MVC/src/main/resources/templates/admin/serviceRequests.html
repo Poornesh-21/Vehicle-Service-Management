@@ -159,20 +159,13 @@
                         <th>Customer</th>
                         <th>Membership</th>
                         <th>Service Type</th>
-                        <th>Status</th>
                         <th>Delivery Date</th>
                         <th>Advisor</th>
                         <th>Actions</th>
                     </tr>
                     </thead>
                     <tbody id="serviceRequestsTableBody">
-                    <!-- Will be populated dynamically via JavaScript -->
-                    <tr id="loading-row">
-                        <td colspan="9" class="text-center py-4">
-                            <div class="spinner-border text-wine" role="status"></div>
-                            <p class="mt-2">Loading service requests...</p>
-                        </td>
-                    </tr>
+
                     <tr id="empty-row" style="display: none;">
                         <td colspan="9" class="text-center py-4">
                             <div class="my-5">
@@ -364,11 +357,6 @@
 
                 <h5 class="mb-3">Select Service Advisor</h5>
                 <div id="advisorsList">
-                    <!-- Will be populated dynamically -->
-                    <div class="text-center py-4">
-                        <div class="spinner-border text-wine" role="status"></div>
-                        <p class="mt-2">Loading service advisors...</p>
-                    </div>
                 </div>
 
                 <input type="hidden" id="selectedRequestId">
@@ -401,14 +389,7 @@
                         <div class="detail-label">Request ID</div>
                         <div class="detail-value" id="viewRequestId">REQ-1001</div>
                     </div>
-                    <div class="service-detail-col">
-                        <div class="detail-label">Status</div>
-                        <div class="detail-value" id="viewStatus">
-                            <span class="status-badge status-received">
-                                <i class="fas fa-clock"></i> Received
-                            </span>
-                        </div>
-                    </div>
+
                     <div class="service-detail-col">
                         <div class="detail-label">Created Date</div>
                         <div class="detail-value" id="viewCreatedDate">April 8, 2025</div>
@@ -486,10 +467,6 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn-premium secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn-premium primary" id="editServiceRequestBtn">
-                    <i class="fas fa-edit"></i>
-                    Edit
-                </button>
             </div>
         </div>
     </div>

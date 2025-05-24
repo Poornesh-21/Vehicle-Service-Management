@@ -1,10 +1,46 @@
-/**
- * Albany Vehicle Service System - Service Advisor Dashboard
- * Core functionality for managing vehicle service assignments
- */
+function loadAdvisorName() {
+    // Load the service advisor name from localStorage/sessionStorage
+    const userName = localStorage.getItem('userName') || sessionStorage.getItem('userName') || 'Service Advisor';
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Initialize state
+    // Find all elements that should display the advisor name
+    const nameElements = document.querySelectorAll('.advisor-name, .user-name, .user-info h3');
+
+    // Update each element with the advisor's name
+    nameElements.forEach(element => {
+        if (element) {
+            element.textContent = userName;
+        }
+    });
+
+    // Update the profile image alt text if it exists
+    const profileImg = document.querySelector('.profile-img');
+    if (profileImg) {
+        profileImg.alt = userName;
+    }
+}function setupLogoutHandler() {
+    const logoutBtn = document.querySelector('.logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            // Clear all storage
+            localStorage.removeItem('jwtToken');
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('userEmail');
+            localStorage.removeItem('userName');
+            sessionStorage.removeItem('jwt-token');
+
+            // Show logout notification
+            showNotification('Logging out...', 'info');
+
+            // Redirect to login page after a brief delay
+            setTimeout(() => {
+                window.location.href = '/serviceAdvisor/login?logout=true';
+            }, 500);
+        });
+    }
+}document.addEventListener('DOMContentLoaded', () => {
+    // Initialize state with empty arrays to prevent undefined errors
     const state = {
         inventoryPrices: {},
         inventoryData: {},
@@ -17,46 +53,25 @@ document.addEventListener('DOMContentLoaded', () => {
         maxRetries: 3
     };
 
-    // Initialize from URL or session storage
-    initializeFromURL();
+    // Initialize global state
+    window.inventoryItems = [];
+    window.laborCharges = [];
 
-    // Set up dashboard components
     setupUI();
     fetchAssignedVehicles();
 
-    // Set up refresh interval (5 minutes)
     setInterval(fetchAssignedVehicles, 300000);
 });
 
-/**
- * Initialize state from URL parameters and session storage
- */
-function initializeFromURL() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
-    if (token) {
-        sessionStorage.setItem('jwt-token', token);
-    }
-}
-
-/**
- * Set up all UI components and event listeners
- */
 function setupUI() {
     addRefreshButton();
     initializeEventListeners();
     initializeStatusEvents();
     updateModalFooterButtons();
-    addConnectionIndicator();
-
-    // Start connection check
-    checkApiConnection();
-    setInterval(checkApiConnection, 30000);
+    setupLogoutHandler();
+    loadAdvisorName();
 }
 
-/**
- * Add refresh button to header
- */
 function addRefreshButton() {
     const headerActions = document.querySelector('.header-actions');
     if (headerActions) {
@@ -72,91 +87,23 @@ function addRefreshButton() {
     }
 }
 
-/**
- * Add connection status indicator to header
- * Fixes layout issues by keeping it compact and properly positioned
- */
 function addConnectionIndicator() {
-    const header = document.querySelector('.header-actions');
-    if (!header) return;
-
-    const statusIndicator = document.createElement('div');
-    statusIndicator.id = 'connection-status';
-    statusIndicator.style.display = 'inline-flex';
-    statusIndicator.style.alignItems = 'center';
-    statusIndicator.style.marginLeft = '10px';
-    statusIndicator.style.gap = '5px';
-    statusIndicator.innerHTML = `
-        <span id="status-icon" class="status-indicator" 
-              style="width: 8px; height: 8px; border-radius: 50%; 
-                     background-color: #ccc; display: inline-block;"></span>
-        <span id="status-text" style="font-size: 0.75rem; color: #666; 
-                                      display: inline-block;">Checking...</span>
-    `;
-
-    header.appendChild(statusIndicator);
+    // No longer adding the connection indicator
+    // This function is intentionally empty to disable the feature
 }
 
-/**
- * Check API connection status
- */
 function checkApiConnection() {
-    const statusIcon = document.getElementById('status-icon');
-    const statusText = document.getElementById('status-text');
-
-    if (!statusIcon || !statusText) return;
-
-    const token = getAuthToken();
-    const headers = {};
-    if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    fetch('/serviceAdvisor/api/assigned-vehicles', {
-        method: 'HEAD',
-        headers: headers
-    })
-        .then(response => {
-            if (response.ok) {
-                statusIcon.style.backgroundColor = '#38b000';
-                statusText.textContent = 'Connected';
-                statusText.style.color = '#38b000';
-            } else {
-                statusIcon.style.backgroundColor = '#ffaa00';
-                statusText.textContent = 'Error';
-                statusText.style.color = '#ffaa00';
-            }
-        })
-        .catch(error => {
-            statusIcon.style.backgroundColor = '#d90429';
-            statusText.textContent = 'Offline';
-            statusText.style.color = '#d90429';
-        });
+    // Function is now empty to disable connection indicator functionality
 }
 
-/**
- * Set up all event listeners for the dashboard
- */
 function initializeEventListeners() {
-    // Filter button events
     setupFilterEvents();
-
-    // Search functionality
     setupSearchEvents();
-
-    // Modal control events
     setupModalEvents();
-
-    // Tab navigation
     setupTabEvents();
-
-    // Service item events
     setupServiceItemEvents();
 }
 
-/**
- * Set up filter button events
- */
 function setupFilterEvents() {
     const filterButton = document.getElementById('filterButton');
     const filterMenu = document.getElementById('filterMenu');
@@ -184,9 +131,6 @@ function setupFilterEvents() {
     });
 }
 
-/**
- * Set up search functionality
- */
 function setupSearchEvents() {
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
@@ -197,9 +141,6 @@ function setupSearchEvents() {
     }
 }
 
-/**
- * Set up modal control events
- */
 function setupModalEvents() {
     const closeVehicleDetailsModal = document.getElementById('closeVehicleDetailsModal');
     const closeDetailsBtn = document.getElementById('closeDetailsBtn');
@@ -217,13 +158,9 @@ function setupModalEvents() {
         });
     }
 
-    // Close modals with escape key and backdrop click
     setupModalCloseEvents();
 }
 
-/**
- * Set up modal close events (escape key and backdrop click)
- */
 function setupModalCloseEvents() {
     const modalBackdrops = document.querySelectorAll('.modal-backdrop');
     modalBackdrops.forEach(backdrop => {
@@ -250,9 +187,6 @@ function setupModalCloseEvents() {
     });
 }
 
-/**
- * Set up tab navigation events
- */
 function setupTabEvents() {
     const tabs = document.querySelectorAll('.tab');
     tabs.forEach(tab => {
@@ -262,11 +196,7 @@ function setupTabEvents() {
     });
 }
 
-/**
- * Set up service item events (inventory and labor)
- */
 function setupServiceItemEvents() {
-    // Add inventory item button
     const addItemBtn = document.getElementById('addItemBtn');
     if (addItemBtn) {
         addItemBtn.addEventListener('click', () => {
@@ -281,7 +211,6 @@ function setupServiceItemEvents() {
         });
     }
 
-    // Add labor charge button
     const addLaborBtn = document.getElementById('addLaborBtn');
     if (addLaborBtn) {
         addLaborBtn.addEventListener('click', () => {
@@ -299,13 +228,11 @@ function setupServiceItemEvents() {
         });
     }
 
-    // Save invoice button
     const saveInvoiceBtn = document.getElementById('saveInvoiceBtn');
     if (saveInvoiceBtn) {
         saveInvoiceBtn.addEventListener('click', saveServiceItems);
     }
 
-    // Preview invoice button
     const previewInvoiceBtn = document.getElementById('previewInvoiceBtn');
     if (previewInvoiceBtn) {
         previewInvoiceBtn.addEventListener('click', () => {
@@ -316,16 +243,12 @@ function setupServiceItemEvents() {
         });
     }
 
-    // Mark complete button
     const markCompleteBtn = document.getElementById('markCompleteBtn');
     if (markCompleteBtn) {
         markCompleteBtn.addEventListener('click', markServiceComplete);
     }
 }
 
-/**
- * Initialize status events
- */
 function initializeStatusEvents() {
     const statusSelect = document.getElementById('statusSelect');
     if (statusSelect) {
@@ -340,10 +263,6 @@ function initializeStatusEvents() {
     }
 }
 
-/**
- * Handle tab click
- * @param {HTMLElement} tabElement - The clicked tab element
- */
 function handleTabClick(tabElement) {
     const tabs = document.querySelectorAll('.tab');
     const tabContents = document.querySelectorAll('.tab-content');
@@ -358,14 +277,19 @@ function handleTabClick(tabElement) {
 
     updateModalFooterButtons();
 
+    // Update invoice with actual data when switching to invoice tab
     if (tabName === 'generate-invoice') {
-        setTimeout(updateBillPreview, 100);
+        setTimeout(() => {
+            // Re-fetch data if needed to ensure latest
+            if (!window.currentServiceData) {
+                fetchServiceDetails(window.currentRequestId, true);
+            } else {
+                updateBillPreview();
+            }
+        }, 100);
     }
 }
 
-/**
- * Update modal footer buttons based on active tab
- */
 function updateModalFooterButtons() {
     const markCompleteBtn = document.getElementById('markCompleteBtn');
     const activeTab = document.querySelector('.tab.active');
@@ -381,20 +305,23 @@ function updateModalFooterButtons() {
     }
 }
 
-/**
- * Get authentication token from URL or session storage
- * @returns {string|null} - Auth token or null if not found
- */
 function getAuthToken() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token') || sessionStorage.getItem('jwt-token');
+    // First try to get from sessionStorage
+    let token = sessionStorage.getItem('jwt-token');
+
+    // If not in sessionStorage, try localStorage
+    if (!token) {
+        token = localStorage.getItem('jwtToken');
+
+        // If found in localStorage, also save to sessionStorage for consistency
+        if (token) {
+            sessionStorage.setItem('jwt-token', token);
+        }
+    }
+
     return token;
 }
 
-/**
- * Create authorization headers for API requests
- * @returns {Object} - Headers object with Content-Type and Authorization
- */
 function createAuthHeaders() {
     const token = getAuthToken();
     const headers = {
@@ -408,11 +335,7 @@ function createAuthHeaders() {
     return headers;
 }
 
-/**
- * Fetch assigned vehicles from API
- */
 function fetchAssignedVehicles() {
-    // Global fetch retry state
     window.fetchRetries = window.fetchRetries || 0;
     const MAX_RETRIES = 3;
 
@@ -421,10 +344,12 @@ function fetchAssignedVehicles() {
 
     if (token) {
         headers['Authorization'] = `Bearer ${token}`;
-        sessionStorage.setItem('jwt-token', token);
+    } else {
+        // If no token is found, redirect to login page
+        window.location.href = '/serviceAdvisor/login?error=session_expired';
+        return;
     }
 
-    // Show loading state
     const tableBody = document.getElementById('vehiclesTableBody');
     if (tableBody) {
         tableBody.innerHTML = `
@@ -443,6 +368,11 @@ function fetchAssignedVehicles() {
     })
         .then(response => {
             if (!response.ok) {
+                if (response.status === 401 || response.status === 403) {
+                    // If unauthorized, redirect to login
+                    window.location.href = '/serviceAdvisor/login?error=session_expired';
+                    return;
+                }
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
             return response.json();
@@ -467,9 +397,6 @@ function fetchAssignedVehicles() {
         });
 }
 
-/**
- * Load dummy data when API fails
- */
 function loadDummyData() {
     showNotification("Unable to connect to server, showing placeholder data", "warning");
 
@@ -518,10 +445,6 @@ function loadDummyData() {
     updateVehiclesTable(dummyVehicles);
 }
 
-/**
- * Update vehicles table with data
- * @param {Array} vehicles - Array of vehicle data
- */
 function updateVehiclesTable(vehicles) {
     const tableBody = document.getElementById('vehiclesTableBody');
     if (!tableBody) return;
@@ -548,13 +471,8 @@ function updateVehiclesTable(vehicles) {
             openVehicleDetails(vehicle.requestId);
         };
 
-        // Format date
         const formattedDate = formatDate(vehicle.startDate);
-
-        // Get status class and text
         const { statusClass, statusText } = getStatusDisplay(vehicle.status);
-
-        // Format vehicle name correctly
         const vehicleName = getVehicleName(vehicle);
         const registrationNumber = vehicle.registrationNumber || 'No Registration';
         const customerName = vehicle.customerName || 'Unknown Customer';
@@ -592,11 +510,6 @@ function updateVehiclesTable(vehicles) {
     });
 }
 
-/**
- * Format date string for display
- * @param {string} dateString - Date string to format
- * @returns {string} - Formatted date string
- */
 function formatDate(dateString) {
     if (!dateString) return 'N/A';
 
@@ -612,11 +525,6 @@ function formatDate(dateString) {
     }
 }
 
-/**
- * Get status display class and text
- * @param {string} status - Status value
- * @returns {Object} - Object with statusClass and statusText
- */
 function getStatusDisplay(status) {
     let statusClass = 'new';
     let statusText = status || 'New';
@@ -640,11 +548,6 @@ function getStatusDisplay(status) {
     return { statusClass, statusText };
 }
 
-/**
- * Get formatted vehicle name
- * @param {Object} vehicle - Vehicle data
- * @returns {string} - Formatted vehicle name
- */
 function getVehicleName(vehicle) {
     if (vehicle.vehicleName) return vehicle.vehicleName;
 
@@ -655,17 +558,12 @@ function getVehicleName(vehicle) {
     return `${brand} ${model}${year}`.trim() || 'Unknown Vehicle';
 }
 
-/**
- * Open vehicle details modal
- * @param {number} requestId - Service request ID
- */
 function openVehicleDetails(requestId) {
     window.currentRequestId = requestId;
 
     const vehicleDetailsModal = document.getElementById('vehicleDetailsModal');
     vehicleDetailsModal.classList.add('show');
 
-    // Show loading state
     const detailsTab = document.getElementById('details-tab');
     if (detailsTab) {
         detailsTab.innerHTML = `
@@ -676,16 +574,10 @@ function openVehicleDetails(requestId) {
         `;
     }
 
-    // Reset tabs
     resetTabs();
-
-    // Fetch service details
     fetchServiceDetails(requestId);
 }
 
-/**
- * Reset tabs to default state
- */
 function resetTabs() {
     const tabs = document.querySelectorAll('.tab');
     tabs.forEach(tab => tab.classList.remove('active'));
@@ -698,11 +590,7 @@ function resetTabs() {
     updateModalFooterButtons();
 }
 
-/**
- * Fetch service details from API
- * @param {number} requestId - Service request ID
- */
-function fetchServiceDetails(requestId) {
+function fetchServiceDetails(requestId, refreshInvoice = false) {
     const token = getAuthToken();
     const headers = {};
     if (token) {
@@ -720,22 +608,39 @@ function fetchServiceDetails(requestId) {
             return response.json();
         })
         .then(data => {
-            // Generate invoice number if needed
+            // Initialize arrays if they don't exist
+            if (!window.inventoryItems) window.inventoryItems = [];
+            if (!window.laborCharges) window.laborCharges = [];
+
+            // Store the data for use in other functions
+            window.currentServiceData = data;
+            window.currentRequestId = requestId;
+
             window.currentInvoiceNumber = 'INV-' + new Date().getFullYear() + '-' +
                 String(Math.floor(Math.random() * 10000)).padStart(4, '0');
 
-            // Load vehicle details
-            loadVehicleDetails(data);
-
-            // Load current bill data
-            if (data.currentBill) {
-                loadCurrentBill(data.currentBill);
+            // Look for year field in various properties based on API response
+            if (data.year && !data.vehicleYear) {
+                data.vehicleYear = data.year;
             }
 
-            // Update invoice elements to remove tax references
+            // If the vehicle object exists and has a year property, use it
+            if (data.vehicle && data.vehicle.year && !data.vehicleYear) {
+                data.vehicleYear = data.vehicle.year;
+            }
+
+            loadVehicleDetails(data);
+
+            if (data.currentBill) {
+                loadCurrentBill(data.currentBill);
+            } else {
+                // Ensure arrays are initialized even if no bill data
+                window.inventoryItems = [];
+                window.laborCharges = [];
+            }
+
             updateInvoiceTaxLabels();
 
-            // Initialize status history
             if (data.status) {
                 window.statusHistory = [{
                     status: data.status,
@@ -745,8 +650,12 @@ function fetchServiceDetails(requestId) {
                 updateStatusHistory();
             }
 
-            // Fetch inventory items
             fetchInventoryItems();
+
+            // If this function was called to refresh the invoice, update it now
+            if (refreshInvoice) {
+                updateBillPreview();
+            }
         })
         .catch(error => {
             showNotification('Error loading service details: ' + error.message, 'error');
@@ -754,11 +663,7 @@ function fetchServiceDetails(requestId) {
         });
 }
 
-/**
- * Update invoice tax labels to show "No Tax"
- */
 function updateInvoiceTaxLabels() {
-    // Find tax label in invoice summary
     const taxLabel = document.querySelector('.invoice-row:has(#taxAmount)');
     if (taxLabel) {
         const taxLabelText = taxLabel.querySelector('span:first-child');
@@ -767,18 +672,12 @@ function updateInvoiceTaxLabels() {
         }
     }
 
-    // Update tax amount display in invoice preview
     const invoiceTaxElement = document.querySelector('.invoice-tax span:last-child');
     if (invoiceTaxElement) {
         invoiceTaxElement.textContent = '₹0.00 (No Tax)';
     }
 }
 
-/**
- * Show error in details tab
- * @param {Error} error - Error object
- * @param {number} requestId - Service request ID
- */
 function showErrorInDetailsTab(error, requestId) {
     const detailsTab = document.getElementById('details-tab');
     if (detailsTab) {
@@ -795,10 +694,6 @@ function showErrorInDetailsTab(error, requestId) {
     }
 }
 
-/**
- * Load vehicle details into UI
- * @param {Object} data - Vehicle details data
- */
 function loadVehicleDetails(data) {
     if (!data) {
         showNotification('Error: No data received from server', 'error');
@@ -808,18 +703,32 @@ function loadVehicleDetails(data) {
     try {
         createDetailCardsIfNeeded();
 
-        // Vehicle information card
+        // Extract year from registration number as fallback
+        let yearFromRegistration = null;
+        if (data.registrationNumber && data.registrationNumber.includes("1969")) {
+            yearFromRegistration = 1969;
+        }
+
+        // Get year from all possible sources
+        const vehicleYear = data.vehicleYear || data.year ||
+            (data.vehicle && data.vehicle.year) ||
+            yearFromRegistration ||
+            extractYearFromName(data.vehicleName) ||
+            extractYearFromModel(data.vehicleBrand + ' ' + data.vehicleModel) ||
+            extractYearFromRegistration(data.registrationNumber);
+
         const vehicleCard = document.querySelector('.detail-card:nth-of-type(1)');
         if (vehicleCard) {
             const makeModel = `${data.vehicleBrand || ''} ${data.vehicleModel || ''}`.trim();
             setDetailValue(vehicleCard, 1, makeModel || 'Not specified');
             setDetailValue(vehicleCard, 2, data.registrationNumber || 'Not specified');
-            // Make sure year is displayed correctly
-            setDetailValue(vehicleCard, 3, data.vehicleYear || 'Not specified');
+
+            // Display year from any source we found
+            setDetailValue(vehicleCard, 3, vehicleYear ? vehicleYear.toString() : 'Not specified');
+
             setDetailValue(vehicleCard, 4, data.vehicleType || 'Not specified');
         }
 
-        // Customer information card
         const customerCard = document.querySelector('.detail-card:nth-of-type(2)');
         if (customerCard) {
             setDetailValue(customerCard, 1, data.customerName || 'Not specified');
@@ -827,19 +736,17 @@ function loadVehicleDetails(data) {
             setDetailValue(customerCard, 3, data.customerPhone || 'Not specified');
         }
 
-        // Service information card
         const serviceCard = document.querySelector('.detail-card:nth-of-type(3)');
         if (serviceCard) {
             setDetailValue(serviceCard, 1, data.serviceType || 'General Service');
             setDetailValue(serviceCard, 2, formatDate(data.requestDate));
-
-            // Update status with badge
             updateStatusBadge(serviceCard, data.status);
-
             setDetailValue(serviceCard, 4, data.additionalDescription || 'No additional description provided.');
         }
 
-        // Update vehicle summary elements
+        // Store the found year in the data object for other functions to use
+        data.vehicleYear = vehicleYear;
+
         updateVehicleSummary(data);
     } catch (error) {
         console.error('Error displaying vehicle details:', error);
@@ -847,12 +754,53 @@ function loadVehicleDetails(data) {
     }
 }
 
-/**
- * Set detail value in card
- * @param {HTMLElement} cardElement - Card element
- * @param {number} index - Row index (1-based)
- * @param {string} value - Value to set
- */
+// Extract year from registration number
+function extractYearFromRegistration(regNumber) {
+    if (!regNumber) return null;
+
+    // Look for 4-digit years or 2-digit years in registration
+    const yearMatch = regNumber.match(/\b(19\d{2}|20\d{2})\b/);
+    if (yearMatch) {
+        return parseInt(yearMatch[1]);
+    }
+
+    // Check if we have a registration with format like "TN 52 FM 1969"
+    const parts = regNumber.split(/\s+/);
+    for (const part of parts) {
+        if (/^(19|20)\d{2}$/.test(part)) {
+            return parseInt(part);
+        }
+    }
+
+    return null;
+}
+
+// Helper function to extract year from vehicle name string
+function extractYearFromName(vehicleName) {
+    if (!vehicleName) return null;
+
+    // Look for 4-digit years in the vehicle name
+    const yearMatch = vehicleName.match(/\b(19\d{2}|20\d{2})\b/);
+    if (yearMatch) {
+        return parseInt(yearMatch[1]);
+    }
+    return null;
+}
+
+// Helper function to extract year from make/model string
+function extractYearFromModel(makeModel) {
+    if (!makeModel) return null;
+
+    // Try to extract year from possible patterns like "Ford Mustang 1969" or "Ford Mustang (1969)"
+    const yearPattern = /\b(19\d{2}|20\d{2})\b|\((\d{4})\)/;
+    const match = makeModel.match(yearPattern);
+
+    if (match) {
+        return parseInt(match[1] || match[2]);
+    }
+    return null;
+}
+
 function setDetailValue(cardElement, index, value) {
     try {
         const rows = cardElement.querySelectorAll('.detail-card-body .detail-row');
@@ -869,11 +817,6 @@ function setDetailValue(cardElement, index, value) {
     }
 }
 
-/**
- * Update status badge in service card
- * @param {HTMLElement} serviceCard - Service card element
- * @param {string} status - Status value
- */
 function updateStatusBadge(serviceCard, status) {
     const statusCell = serviceCard.querySelector('.detail-card-body .detail-row:nth-child(3) .detail-value');
     if (statusCell) {
@@ -886,12 +829,7 @@ function updateStatusBadge(serviceCard, status) {
     }
 }
 
-/**
- * Update vehicle summary elements
- * @param {Object} data - Vehicle data
- */
 function updateVehicleSummary(data) {
-    // Update vehicle info summary headers
     const vehicleSummaryElements = document.querySelectorAll('.vehicle-summary .vehicle-info-summary h4');
     const vehicleInfo = buildVehicleInfoString(data);
 
@@ -899,13 +837,11 @@ function updateVehicleSummary(data) {
         element.textContent = vehicleInfo;
     });
 
-    // Update customer info in summary
     const customerElements = document.querySelectorAll('.vehicle-summary .vehicle-info-summary p');
     customerElements.forEach(element => {
         element.textContent = `Customer: ${data.customerName || 'Unknown'}`;
     });
 
-    // Update status badges
     const statusDisplayElements = document.querySelectorAll('.vehicle-summary .status-display');
     const { statusClass, statusText } = getStatusDisplay(data.status);
 
@@ -917,28 +853,28 @@ function updateVehicleSummary(data) {
         `;
     });
 
-    // Update status select
     updateStatusSelect(data.status);
 }
 
-/**
- * Build vehicle info string
- * @param {Object} data - Vehicle data
- * @returns {string} - Formatted vehicle info string
- */
 function buildVehicleInfoString(data) {
     const brand = data.vehicleBrand || '';
     const model = data.vehicleModel || '';
-    const year = data.vehicleYear ? ` (${data.vehicleYear})` : '';
+
+    // Get year from all available sources including registration
+    const year = data.vehicleYear || data.year ||
+        (data.vehicle && data.vehicle.year) ||
+        extractYearFromRegistration(data.registrationNumber) ||
+        extractYearFromName(data.vehicleName) ||
+        extractYearFromModel(brand + ' ' + model);
+
+    // Format the year as parenthetical if available
+    const yearText = year ? ` (${year})` : '';
+
     const reg = data.registrationNumber ? ` - ${data.registrationNumber}` : '';
 
-    return `${brand} ${model}${year}${reg}`.trim() || 'Unknown Vehicle';
+    return `${brand} ${model}${yearText}${reg}`.trim() || 'Unknown Vehicle';
 }
 
-/**
- * Update status select dropdown
- * @param {string} status - Current status
- */
 function updateStatusSelect(status) {
     const statusSelect = document.getElementById('statusSelect');
     if (statusSelect && status) {
@@ -951,9 +887,6 @@ function updateStatusSelect(status) {
     }
 }
 
-/**
- * Create detail cards if they don't exist
- */
 function createDetailCardsIfNeeded() {
     const detailsTab = document.getElementById('details-tab');
     if (!detailsTab || detailsTab.querySelector('.detail-card')) return;
@@ -961,7 +894,6 @@ function createDetailCardsIfNeeded() {
     const row = document.createElement('div');
     row.className = 'row';
 
-    // Vehicle information card
     row.appendChild(createDetailCard('Vehicle Information', [
         { label: 'Make/Model:', value: 'Loading...' },
         { label: 'Registration:', value: 'Loading...' },
@@ -969,14 +901,12 @@ function createDetailCardsIfNeeded() {
         { label: 'Type:', value: 'Loading...' }
     ]));
 
-    // Customer information card
     row.appendChild(createDetailCard('Customer Information', [
         { label: 'Name:', value: 'Loading...' },
         { label: 'Email:', value: 'Loading...' },
         { label: 'Phone:', value: 'Loading...' }
     ]));
 
-    // Service information card
     row.appendChild(createDetailCard('Service Request Details', [
         { label: 'Service Type:', value: 'Loading...' },
         { label: 'Request Date:', value: 'Loading...' },
@@ -988,12 +918,6 @@ function createDetailCardsIfNeeded() {
     detailsTab.appendChild(row);
 }
 
-/**
- * Create detail card element
- * @param {string} title - Card title
- * @param {Array} rows - Array of {label, value} objects
- * @returns {HTMLElement} - Card element
- */
 function createDetailCard(title, rows) {
     const card = document.createElement('div');
     card.className = 'detail-card';
@@ -1020,11 +944,6 @@ function createDetailCard(title, rows) {
     return card;
 }
 
-/**
- * Get CSS class for status
- * @param {string} status - Status value
- * @returns {string} - CSS class name
- */
 function getStatusClass(status) {
     if (!status) return 'new';
 
@@ -1046,10 +965,6 @@ function getStatusClass(status) {
     }
 }
 
-/**
- * Load current bill data
- * @param {Object} billData - Bill data
- */
 function loadCurrentBill(billData) {
     if (!billData) return;
 
@@ -1057,7 +972,6 @@ function loadCurrentBill(billData) {
         window.inventoryItems = [];
         window.laborCharges = [];
 
-        // Load materials
         if (billData.materials && Array.isArray(billData.materials)) {
             billData.materials.forEach(item => {
                 if (item && item.itemId) {
@@ -1071,7 +985,6 @@ function loadCurrentBill(billData) {
             });
         }
 
-        // Load labor charges
         if (billData.laborCharges && Array.isArray(billData.laborCharges)) {
             billData.laborCharges.forEach(charge => {
                 if (charge) {
@@ -1084,12 +997,10 @@ function loadCurrentBill(billData) {
             });
         }
 
-        // Render items and update UI
         renderInventoryItems();
         renderLaborCharges();
         updateBillSummaryUI(billData);
 
-        // Set service notes
         const serviceNotesTextarea = document.getElementById('serviceNotes');
         if (serviceNotesTextarea && billData.notes) {
             serviceNotesTextarea.value = billData.notes;
@@ -1100,9 +1011,6 @@ function loadCurrentBill(billData) {
     }
 }
 
-/**
- * Update bill summary UI elements
- */
 function updateBillSummaryUI(billData) {
     const formatCurrency = (value) => {
         const num = parseFloat(value) || 0;
@@ -1112,26 +1020,19 @@ function updateBillSummaryUI(billData) {
     document.getElementById('partsSubtotal').textContent = formatCurrency(billData.partsSubtotal);
     document.getElementById('laborSubtotal').textContent = formatCurrency(billData.laborSubtotal);
     document.getElementById('subtotalAmount').textContent = formatCurrency(billData.subtotal);
-    // document.getElementById('taxAmount').textContent = formatCurrency(0); // Zero tax
-    document.getElementById('totalAmount').textContent = formatCurrency(billData.subtotal); // Total equals subtotal (no tax)
+    document.getElementById('totalAmount').textContent = formatCurrency(billData.subtotal);
 
-    // Update tax label
     const taxLabel = document.querySelector('.invoice-row:has(#taxAmount) span:first-child');
     if (taxLabel) {
         taxLabel.textContent = 'Tax:';
     }
 }
 
-/**
- * Fetch inventory items from API
- * @returns {Promise} - Promise that resolves with inventory items
- */
 function fetchInventoryItems() {
     const token = getAuthToken();
     const headers = createAuthHeaders();
     const inventorySelect = document.getElementById('inventoryItemSelect');
 
-    // Show loading state
     if (inventorySelect) {
         clearInventorySelect(inventorySelect);
         addLoadingOption(inventorySelect);
@@ -1157,20 +1058,12 @@ function fetchInventoryItems() {
         });
 }
 
-/**
- * Clear inventory select dropdown
- * @param {HTMLElement} inventorySelect - Select element
- */
 function clearInventorySelect(inventorySelect) {
     while (inventorySelect.options.length > 1) {
         inventorySelect.remove(1);
     }
 }
 
-/**
- * Add loading option to inventory select
- * @param {HTMLElement} inventorySelect - Select element
- */
 function addLoadingOption(inventorySelect) {
     const loadingOption = document.createElement('option');
     loadingOption.disabled = true;
@@ -1179,11 +1072,6 @@ function addLoadingOption(inventorySelect) {
     inventorySelect.selectedIndex = 1;
 }
 
-/**
- * Handle inventory fetch error
- * @param {Error} error - Error object
- * @param {HTMLElement} inventorySelect - Select element
- */
 function handleInventoryFetchError(error, inventorySelect) {
     showNotification('Error loading inventory items. Please try again.', 'error');
 
@@ -1199,9 +1087,6 @@ function handleInventoryFetchError(error, inventorySelect) {
     setTimeout(retryFetchInventoryItems, 3000);
 }
 
-/**
- * Retry fetching inventory items
- */
 function retryFetchInventoryItems() {
     const token = getAuthToken();
     const headers = createAuthHeaders();
@@ -1221,13 +1106,10 @@ function retryFetchInventoryItems() {
             showNotification('Inventory items loaded successfully', 'info');
         })
         .catch(error => {
-            console.error('Error retrying inventory fetch:', error);
+            // Silent error - already showed notification
         });
 }
 
-/**
- * Load existing labor charges from API
- */
 function loadExistingLaborCharges() {
     if (!window.currentRequestId) return;
 
@@ -1248,11 +1130,9 @@ function loadExistingLaborCharges() {
         })
         .then(data => {
             if (data.laborMinutes > 0 && data.laborCost > 0) {
-                // Calculate hours from minutes
                 const hours = data.laborHours || (data.laborMinutes / 60);
                 const rate = data.hourlyRate || (data.laborCost / hours);
 
-                // Add to local array
                 window.laborCharges = [{
                     description: "Labor Charge",
                     hours: hours,
@@ -1268,10 +1148,6 @@ function loadExistingLaborCharges() {
         });
 }
 
-/**
- * Populate inventory dropdown with items
- * @param {Array} items - Inventory items
- */
 function populateInventoryDropdown(items) {
     const inventorySelect = document.getElementById('inventoryItemSelect');
     if (!inventorySelect) return;
@@ -1319,11 +1195,6 @@ function populateInventoryDropdown(items) {
     inventorySelect.selectedIndex = 0;
 }
 
-/**
- * Add inventory item to service
- * @param {string|number} itemId - Item ID
- * @param {number} quantity - Quantity to add
- */
 function addInventoryItem(itemId, quantity = 1) {
     if (!itemId) {
         showNotification('Please select an inventory item', 'error');
@@ -1345,7 +1216,6 @@ function addInventoryItem(itemId, quantity = 1) {
     const itemData = window.inventoryData[parsedItemId];
     const existingItemIndex = window.inventoryItems.findIndex(item => Number(item.key) === parsedItemId);
 
-    // Check stock limits
     const newTotalQuantity = existingItemIndex >= 0
         ? window.inventoryItems[existingItemIndex].quantity + quantity
         : quantity;
@@ -1355,7 +1225,6 @@ function addInventoryItem(itemId, quantity = 1) {
         return;
     }
 
-    // Update or add item
     if (existingItemIndex >= 0) {
         window.inventoryItems[existingItemIndex].quantity += quantity;
         showNotification(`Updated quantity for ${itemData.name}`, 'info');
@@ -1369,20 +1238,15 @@ function addInventoryItem(itemId, quantity = 1) {
         showNotification(`Added ${itemData.name} to service items`, 'info');
     }
 
-    // Reset form
     const inventorySelect = document.getElementById('inventoryItemSelect');
     const quantityInput = document.getElementById('itemQuantity');
     if (inventorySelect) inventorySelect.selectedIndex = 0;
     if (quantityInput) quantityInput.value = 1;
 
-    // Update UI
     renderInventoryItems();
     updateBillSummary();
 }
 
-/**
- * Render inventory items in the UI
- */
 function renderInventoryItems() {
     const inventoryItemsList = document.getElementById('inventoryItemsList');
     if (!inventoryItemsList) return;
@@ -1432,10 +1296,6 @@ function renderInventoryItems() {
     });
 }
 
-/**
- * Increment inventory quantity
- * @param {number} index - Item index
- */
 function incrementInventoryQuantity(index) {
     if (!window.inventoryItems[index]) return;
 
@@ -1456,10 +1316,6 @@ function incrementInventoryQuantity(index) {
     updateBillSummary();
 }
 
-/**
- * Decrement inventory quantity
- * @param {number} index - Item index
- */
 function decrementInventoryQuantity(index) {
     if (window.inventoryItems[index].quantity > 1) {
         window.inventoryItems[index].quantity--;
@@ -1468,10 +1324,6 @@ function decrementInventoryQuantity(index) {
     }
 }
 
-/**
- * Update inventory quantity
- * @param {HTMLElement} input - Input element
- */
 function updateInventoryQuantity(input) {
     const index = parseInt(input.getAttribute('data-index'));
     const quantity = parseInt(input.value) || 1;
@@ -1498,24 +1350,13 @@ function updateInventoryQuantity(input) {
     }
 }
 
-/**
- * Remove inventory item
- * @param {number} index - Item index
- */
 function removeInventoryItem(index) {
     window.inventoryItems.splice(index, 1);
     renderInventoryItems();
     updateBillSummary();
 }
 
-/**
- * Add labor charge
- * @param {string} description - Labor description
- * @param {number} hours - Hours
- * @param {number} rate - Hourly rate
- */
 function addLaborCharge(description, hours, rate) {
-    // Validate inputs
     hours = parseFloat(hours) || 0;
     rate = parseFloat(rate) || 0;
 
@@ -1529,36 +1370,26 @@ function addLaborCharge(description, hours, rate) {
         return;
     }
 
-    // Show loading state
     const addLaborBtn = document.getElementById('addLaborBtn');
     if (addLaborBtn) {
         addLaborBtn.disabled = true;
         addLaborBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
     }
 
-    // Create labor charge object
     const laborCharge = {
         description: description || "Labor Charge",
         hours: hours,
         rate: rate
     };
 
-    // Add to local array (replace existing)
     window.laborCharges = [laborCharge];
 
-    // Update UI immediately
     renderLaborCharges();
     updateBillSummary();
 
-    // Save to API
     saveLaborChargeToAPI(laborCharge, addLaborBtn);
 }
 
-/**
- * Save labor charge to API
- * @param {Object} laborCharge - Labor charge object
- * @param {HTMLElement} addLaborBtn - Add button element
- */
 function saveLaborChargeToAPI(laborCharge, addLaborBtn) {
     const token = getAuthToken();
     const headers = {
@@ -1566,7 +1397,6 @@ function saveLaborChargeToAPI(laborCharge, addLaborBtn) {
         'Authorization': token ? `Bearer ${token}` : ''
     };
 
-    // Format for API
     const formattedLabor = [{
         description: laborCharge.description,
         hours: laborCharge.hours,
@@ -1597,16 +1427,13 @@ function saveLaborChargeToAPI(laborCharge, addLaborBtn) {
 
             showNotification('Labor charge added successfully', 'success');
 
-            // Reset form
             document.getElementById('laborHours').value = '1';
             document.getElementById('laborRate').value = '65';
         })
         .catch(error => {
-            console.error('Labor charge save error:', error);
             showNotification('Error saving labor charge: ' + error.message, 'error');
         })
         .finally(() => {
-            // Reset button
             if (addLaborBtn) {
                 addLaborBtn.disabled = false;
                 addLaborBtn.innerHTML = '<i class="fas fa-plus"></i> Add';
@@ -1614,9 +1441,6 @@ function saveLaborChargeToAPI(laborCharge, addLaborBtn) {
         });
 }
 
-/**
- * Render labor charges in the UI
- */
 function renderLaborCharges() {
     const laborChargesList = document.getElementById('laborChargesList');
     if (!laborChargesList) return;
@@ -1657,16 +1481,11 @@ function renderLaborCharges() {
     });
 }
 
-/**
- * Remove labor charge
- * @param {number} index - Charge index
- */
 function removeLaborCharge(index) {
     if (index < 0 || index >= window.laborCharges.length) {
         return;
     }
 
-    // Show loading indicator
     const loadingIcon = document.createElement('i');
     loadingIcon.className = 'fas fa-spinner fa-spin';
     loadingIcon.style.marginLeft = '10px';
@@ -1676,35 +1495,24 @@ function removeLaborCharge(index) {
         laborList.appendChild(loadingIcon);
     }
 
-    // Remove from local array
     window.laborCharges.splice(index, 1);
 
-    // Update UI immediately
     renderLaborCharges();
     updateBillSummary();
 
-    // If there are no more labor charges, just show completed UI state
     if (window.laborCharges.length === 0) {
         showNotification('Labor charge removed', 'info');
         if (laborList && loadingIcon.parentNode === laborList) {
             laborList.removeChild(loadingIcon);
         }
 
-        // Update API with empty array
         updateLaborChargesAPI([], laborList, loadingIcon);
         return;
     }
 
-    // Update API with remaining charges
     updateLaborChargesAPI(window.laborCharges, laborList, loadingIcon);
 }
 
-/**
- * Update labor charges in API
- * @param {Array} laborCharges - Labor charges
- * @param {HTMLElement} laborList - Labor list element
- * @param {HTMLElement} loadingIcon - Loading icon element
- */
 function updateLaborChargesAPI(laborCharges, laborList, loadingIcon) {
     const token = getAuthToken();
     const headers = {
@@ -1712,7 +1520,6 @@ function updateLaborChargesAPI(laborCharges, laborList, loadingIcon) {
         'Authorization': token ? `Bearer ${token}` : ''
     };
 
-    // Format for API
     const formattedCharges = laborCharges.map(charge => {
         return {
             description: charge.description || 'Labor Charge',
@@ -1746,56 +1553,54 @@ function updateLaborChargesAPI(laborCharges, laborList, loadingIcon) {
             showNotification('Labor charges updated', 'info');
         })
         .catch(error => {
-            console.error('Error updating labor charges:', error);
             showNotification('Error updating labor charges: ' + error.message, 'error');
         })
         .finally(() => {
-            // Remove loading icon
-            if (laborList && loadingIcon.parentNode === laborList) {
+            if (laborList && loadingIcon && loadingIcon.parentNode === laborList) {
                 laborList.removeChild(loadingIcon);
             }
         });
 }
 
-/**
- * Update bill summary totals
- */
 function updateBillSummary() {
-    // Calculate parts subtotal
     let partsSubtotal = 0;
     window.inventoryItems.forEach(item => {
         partsSubtotal += item.price * item.quantity;
     });
 
-    // Calculate labor subtotal
     let laborSubtotal = 0;
     window.laborCharges.forEach(charge => {
         laborSubtotal += charge.hours * charge.rate;
     });
 
-    // Calculate total (removed tax calculation)
     const subtotal = partsSubtotal + laborSubtotal;
-    const total = subtotal; // No tax applied
+    const total = subtotal;
 
-    // Format currency
     const formatter = new Intl.NumberFormat('en-IN', {
         style: 'currency',
         currency: 'INR',
         minimumFractionDigits: 2
     });
 
-    // Update UI
     document.getElementById('partsSubtotal').textContent = formatter.format(partsSubtotal);
     document.getElementById('laborSubtotal').textContent = formatter.format(laborSubtotal);
     document.getElementById('subtotalAmount').textContent = formatter.format(subtotal);
-    document.getElementById('taxAmount').textContent = formatter.format(0); // Zero tax
+    document.getElementById('taxAmount').textContent = formatter.format(0);
     document.getElementById('totalAmount').textContent = formatter.format(total);
 }
 
-/**
- * Update invoice preview
- */
 function updateBillPreview() {
+    // Initialize arrays if they don't exist
+    if (!window.inventoryItems) window.inventoryItems = [];
+    if (!window.laborCharges) window.laborCharges = [];
+
+    // Store current vehicle and customer data globally to ensure it's available for invoice
+    if (!window.currentServiceData) {
+        // Fetch fresh data to ensure we have the latest information
+        fetchServiceDetails(window.currentRequestId, true);
+        return;
+    }
+
     const invoiceItemsList = document.getElementById('invoiceItemsList');
     if (!invoiceItemsList) return;
 
@@ -1807,38 +1612,42 @@ function updateBillPreview() {
         minimumFractionDigits: 2
     });
 
-    // Add inventory items
-    window.inventoryItems.forEach(item => {
-        const row = document.createElement('tr');
-        const total = item.price * item.quantity;
+    // Safety check before forEach
+    if (Array.isArray(window.inventoryItems)) {
+        window.inventoryItems.forEach(item => {
+            const row = document.createElement('tr');
+            const total = item.price * item.quantity;
 
-        row.innerHTML = `
-            <td>${item.name} (Parts)</td>
-            <td>${item.quantity}</td>
-            <td>${formatter.format(item.price)}</td>
-            <td>${formatter.format(total)}</td>
-        `;
+            row.innerHTML = `
+                <td>${item.name} (Parts)</td>
+                <td>${item.quantity}</td>
+                <td>${formatter.format(item.price)}</td>
+                <td>${formatter.format(total)}</td>
+            `;
 
-        invoiceItemsList.appendChild(row);
-    });
+            invoiceItemsList.appendChild(row);
+        });
+    }
 
-    // Add labor charges
-    window.laborCharges.forEach(charge => {
-        const row = document.createElement('tr');
-        const total = charge.hours * charge.rate;
+    // Safety check before forEach
+    if (Array.isArray(window.laborCharges)) {
+        window.laborCharges.forEach(charge => {
+            const row = document.createElement('tr');
+            const total = charge.hours * charge.rate;
 
-        row.innerHTML = `
-            <td>Labor Charge</td>
-            <td>${charge.hours} hrs</td>
-            <td>${formatter.format(charge.rate)}/hr</td>
-            <td>${formatter.format(total)}</td>
-        `;
+            row.innerHTML = `
+                <td>Labor Charge</td>
+                <td>${charge.hours} hrs</td>
+                <td>${formatter.format(charge.rate)}/hr</td>
+                <td>${formatter.format(total)}</td>
+            `;
 
-        invoiceItemsList.appendChild(row);
-    });
+            invoiceItemsList.appendChild(row);
+        });
+    }
 
-    // Show empty state if no items
-    if (window.inventoryItems.length === 0 && window.laborCharges.length === 0) {
+    if ((!Array.isArray(window.inventoryItems) || window.inventoryItems.length === 0) &&
+        (!Array.isArray(window.laborCharges) || window.laborCharges.length === 0)) {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td colspan="4" style="text-align: center; padding: 20px;">
@@ -1848,65 +1657,64 @@ function updateBillPreview() {
         invoiceItemsList.appendChild(row);
     }
 
-    // Calculate totals (no tax)
     let subtotal = 0;
-    window.inventoryItems.forEach(item => {
-        subtotal += item.price * item.quantity;
-    });
 
-    window.laborCharges.forEach(charge => {
-        subtotal += charge.hours * charge.rate;
-    });
+    // Safety check before forEach
+    if (Array.isArray(window.inventoryItems)) {
+        window.inventoryItems.forEach(item => {
+            subtotal += item.price * item.quantity;
+        });
+    }
 
-    const total = subtotal; // No tax applied
+    // Safety check before forEach
+    if (Array.isArray(window.laborCharges)) {
+        window.laborCharges.forEach(charge => {
+            subtotal += charge.hours * charge.rate;
+        });
+    }
 
-    // Update totals in UI
+    const total = subtotal;
+
     const invoiceSubtotal = document.getElementById('invoiceSubtotal');
     const invoiceTax = document.getElementById('invoiceTax');
     const invoiceTotal = document.getElementById('invoiceTotal');
 
     if (invoiceSubtotal) invoiceSubtotal.textContent = formatter.format(subtotal);
-    if (invoiceTax) invoiceTax.textContent = formatter.format(0); // Zero tax
+    if (invoiceTax) invoiceTax.textContent = formatter.format(0);
     if (invoiceTotal) invoiceTotal.textContent = formatter.format(total);
 
-    // Update invoice info fields
-    updateInvoiceInfoFields();
+    updateInvoiceInfoFields(window.currentServiceData);
 }
 
-/**
- * Update invoice info fields
- */
-function updateInvoiceInfoFields() {
-    // Get customer info
-    const customerName = document.querySelector('.vehicle-summary .vehicle-info-summary p')?.textContent?.replace('Customer: ', '') || 'Unknown Customer';
-    const customerEmailElement = document.querySelector('.detail-card:nth-of-type(2) .detail-row:nth-child(2) .detail-value');
-    const customerPhoneElement = document.querySelector('.detail-card:nth-of-type(2) .detail-row:nth-child(3) .detail-value');
-    const customerEmail = customerEmailElement?.textContent || 'Not available';
-    const customerPhone = customerPhoneElement?.textContent || 'Not available';
+function updateInvoiceInfoFields(serviceData) {
+    // Use the provided service data or try to get it from the global state
+    const data = serviceData || window.currentServiceData;
 
-    // Get vehicle info
-    const vehicleInfoElement = document.querySelector('.vehicle-summary .vehicle-info-summary h4');
-    let vehicleModel = 'Unknown Vehicle';
-    let registrationNumber = 'Unknown';
-
-    if (vehicleInfoElement) {
-        const vehicleText = vehicleInfoElement.textContent;
-        const regMatch = vehicleText.match(/\(([^)]+)\)/);
-        if (regMatch && regMatch[1]) {
-            registrationNumber = regMatch[1];
-            vehicleModel = vehicleText.replace(/\s*\([^)]+\)/, '').trim();
-        } else {
-            vehicleModel = vehicleText;
-        }
+    if (!data) {
+        console.error('No service data available for invoice');
+        return;
     }
 
-    // Try to get registration from details if not found
-    if (registrationNumber === 'Unknown') {
-        const regElement = document.querySelector('.detail-card:nth-of-type(1) .detail-row:nth-child(2) .detail-value');
-        if (regElement) {
-            registrationNumber = regElement.textContent.trim();
-        }
+    // Use the actual data from the vehicle
+    const customerName = data.customerName || 'Unknown Customer';
+    const customerEmail = data.customerEmail || 'Not available';
+    const customerPhone = data.customerPhone || 'Not available';
+
+    // Get vehicle information
+    const vehicleBrand = data.vehicleBrand || '';
+    const vehicleModel = data.vehicleModel || '';
+    const vehicleYear = data.vehicleYear || '';
+
+    // Build the vehicle description
+    let vehicleDescription = vehicleBrand;
+    if (vehicleModel) {
+        vehicleDescription += ' ' + vehicleModel;
     }
+    if (vehicleYear) {
+        vehicleDescription += ' (' + vehicleYear + ')';
+    }
+
+    const registrationNumber = data.registrationNumber || data.vehicleRegistration || 'Unknown';
 
     // Generate invoice date and number
     const today = new Date();
@@ -1926,7 +1734,7 @@ function updateInvoiceInfoFields() {
     updateInvoiceField('.invoice-customer .invoice-detail:nth-child(4)', `<span>Phone:</span> ${customerPhone}`);
 
     // Update vehicle info
-    updateInvoiceField('.invoice-service .invoice-detail:nth-child(2)', `<span>Vehicle:</span> ${vehicleModel}`);
+    updateInvoiceField('.invoice-service .invoice-detail:nth-child(2)', `<span>Vehicle:</span> ${vehicleDescription}`);
     updateInvoiceField('.invoice-service .invoice-detail:nth-child(3)', `<span>Registration:</span> ${registrationNumber}`);
     updateInvoiceField('.invoice-service .invoice-detail:nth-child(4)', `<span>Invoice Date:</span> ${formattedDate}`);
     updateInvoiceField('.invoice-service .invoice-detail:nth-child(5)', `<span>Invoice #:</span> ${window.currentInvoiceNumber}`);
@@ -1935,11 +1743,6 @@ function updateInvoiceInfoFields() {
     updateInvoiceField('.invoice-tax', `<span>Tax:</span><span id="invoiceTax">₹0.00 (No Tax)</span>`);
 }
 
-/**
- * Update invoice field
- * @param {string} selector - Element selector
- * @param {string} html - HTML content
- */
 function updateInvoiceField(selector, html) {
     const element = document.querySelector(selector);
     if (element) {
@@ -1947,10 +1750,6 @@ function updateInvoiceField(selector, html) {
     }
 }
 
-/**
- * Update status preview
- * @param {string} status - Status value
- */
 function updateStatusPreview(status) {
     const currentStatusBadge = document.getElementById('currentStatusBadge');
     if (currentStatusBadge) {
@@ -1965,9 +1764,6 @@ function updateStatusPreview(status) {
     }
 }
 
-/**
- * Update service status
- */
 function updateServiceStatus() {
     const statusSelect = document.getElementById('statusSelect');
     if (!statusSelect) return;
@@ -1981,7 +1777,6 @@ function updateServiceStatus() {
     const token = getAuthToken();
     const headers = createAuthHeaders();
 
-    // Get service advisor name
     const serviceAdvisorName = document.querySelector('.user-info h3')?.textContent || 'Service Advisor';
 
     const statusData = {
@@ -1992,15 +1787,11 @@ function updateServiceStatus() {
         updatedAt: new Date().toISOString()
     };
 
-    // Update local status history
     if (window.statusHistory === undefined) {
         window.statusHistory = [];
     }
 
-    // Add the new status to the history
     window.statusHistory.push(statusData);
-
-    // Update the status history display
     updateStatusHistory();
 
     return fetch(`/serviceAdvisor/api/service/${window.currentRequestId}/status`, {
@@ -2033,28 +1824,21 @@ function updateServiceStatus() {
         });
 }
 
-/**
- * Update all status badges
- * @param {string} status - Status value
- */
 function updateAllStatusBadges(status) {
     let statusClass = getStatusClass(status);
 
-    // Update main status badge
     const currentStatusBadge = document.getElementById('currentStatusBadge');
     if (currentStatusBadge) {
         updateStatusBadgeClasses(currentStatusBadge, statusClass);
         currentStatusBadge.innerHTML = `<i class="fas fa-circle"></i> ${status}`;
     }
 
-    // Update status display badges
     const statusDisplays = document.querySelectorAll('.status-display .status-badge');
     statusDisplays.forEach(badge => {
         updateStatusBadgeClasses(badge, statusClass);
         badge.innerHTML = `<i class="fas fa-circle"></i> ${status}`;
     });
 
-    // Update detail status badge
     const detailStatus = document.querySelector('.detail-card:nth-of-type(3) .detail-row:nth-child(3) .detail-value .status-badge');
     if (detailStatus) {
         updateStatusBadgeClasses(detailStatus, statusClass);
@@ -2062,27 +1846,17 @@ function updateAllStatusBadges(status) {
     }
 }
 
-/**
- * Update status badge classes
- * @param {HTMLElement} badge - Badge element
- * @param {string} newClass - New class to add
- */
 function updateStatusBadgeClasses(badge, newClass) {
     badge.classList.remove('new', 'in-progress', 'completed', 'repair', 'inspection', 'billing', 'feedback');
     badge.classList.add(newClass.toLowerCase());
 }
 
-/**
- * Update status history display
- */
 function updateStatusHistory() {
     const statusHistoryContainer = document.getElementById('statusHistory');
     if (!statusHistoryContainer) return;
 
-    // Clear existing history items
     statusHistoryContainer.innerHTML = '';
 
-    // Initialize status history if needed
     if (!window.statusHistory || window.statusHistory.length === 0) {
         const initialStatus = {
             status: 'New',
@@ -2092,7 +1866,6 @@ function updateStatusHistory() {
         window.statusHistory = [initialStatus];
     }
 
-    // Define the standard service flow
     const serviceFlow = [
         { status: 'New', label: 'New' },
         { status: 'Diagnosis', label: 'Diagnosis' },
@@ -2103,39 +1876,24 @@ function updateStatusHistory() {
         { status: 'Completed', label: 'Completed' }
     ];
 
-    // Get current status and its index
     const currentStatus = window.statusHistory[window.statusHistory.length - 1].status;
     const currentStatusIndex = serviceFlow.findIndex(step => step.status === currentStatus);
 
-    // Create timeline
     createStatusTimeline(statusHistoryContainer, serviceFlow, currentStatusIndex);
-
-    // Create history list
     createStatusHistoryList(statusHistoryContainer);
 }
 
-/**
- * Create status timeline
- * @param {HTMLElement} container - Container element
- * @param {Array} serviceFlow - Service flow steps
- * @param {number} currentStatusIndex - Current status index
- */
 function createStatusTimeline(container, serviceFlow, currentStatusIndex) {
-    // Create timeline container
     const timelineContainer = document.createElement('div');
     timelineContainer.className = 'status-timeline-graph';
     container.appendChild(timelineContainer);
 
-    // Add each step to timeline
     serviceFlow.forEach((step, index) => {
-        // Determine step status
         let stepStatus = index < currentStatusIndex ? 'completed' :
             index === currentStatusIndex ? 'in-progress' : 'upcoming';
 
-        // Find history entry for this step
         const historyEntry = window.statusHistory.find(entry => entry.status === step.status);
 
-        // Create step element
         const stepElement = document.createElement('div');
         stepElement.className = `timeline-step ${stepStatus}`;
 
@@ -2160,39 +1918,26 @@ function createStatusTimeline(container, serviceFlow, currentStatusIndex) {
     });
 }
 
-/**
- * Get step icon class
- * @param {string} stepStatus - Step status
- * @returns {string} - Icon class
- */
 function getStepIcon(stepStatus) {
     return stepStatus === 'completed' ? 'fa-check' :
         stepStatus === 'in-progress' ? 'fa-sync' : 'fa-clock';
 }
 
-/**
- * Create status history list
- * @param {HTMLElement} container - Container element
- */
 function createStatusHistoryList(container) {
-    // Add title
     const historyTitle = document.createElement('h4');
     historyTitle.className = 'section-title';
     historyTitle.textContent = 'Status History';
     container.appendChild(historyTitle);
 
-    // Create list container
     const historyList = document.createElement('div');
     historyList.className = 'status-history-list';
     container.appendChild(historyList);
 
-    // Add history items (newest first)
     for (let i = window.statusHistory.length - 1; i >= 0; i--) {
         const statusData = window.statusHistory[i];
         const statusClass = getStatusClass(statusData.status);
         const formattedDateTime = formatDateTimeForHistory(statusData.updatedAt);
 
-        // Create history item
         const historyItem = document.createElement('div');
         historyItem.className = 'status-history-item';
         historyItem.innerHTML = `
@@ -2212,11 +1957,6 @@ function createStatusHistoryList(container) {
     }
 }
 
-/**
- * Format date and time for history display
- * @param {string} dateTimeString - ISO date string
- * @returns {string} - Formatted date and time
- */
 function formatDateTimeForHistory(dateTimeString) {
     try {
         const date = new Date(dateTimeString);
@@ -2235,13 +1975,7 @@ function formatDateTimeForHistory(dateTimeString) {
     }
 }
 
-/**
- * Update status in vehicles table
- * @param {number} requestId - Request ID
- * @param {string} status - Status value
- */
 function updateStatusInTable(requestId, status) {
-    // Find row with matching ID
     const row = document.querySelector(`#vehiclesTableBody tr[data-id="${requestId}"]`);
     if (row) {
         const statusCell = row.querySelector('td:nth-child(5)');
@@ -2255,32 +1989,24 @@ function updateStatusInTable(requestId, status) {
             `;
         }
     } else {
-        // Row not found, refresh table
-        console.log(`Row with requestId ${requestId} not found, refreshing table`);
         fetchAssignedVehicles();
     }
 }
 
-/**
- * Save service items (labor and inventory)
- */
 function saveServiceItems() {
     const promises = [];
 
-    // Save labor charges
     const laborPromise = saveLaborCharges().catch(error => {
         console.error("Error saving labor charges:", error);
-        return null; // Continue with other operations even if labor charges fail
+        return null;
     });
     promises.push(laborPromise);
 
-    // Save inventory items if there are any
     if (window.inventoryItems.length > 0) {
         const inventoryPromise = saveInventoryItems();
         promises.push(inventoryPromise);
     }
 
-    // Wait for all promises to complete
     Promise.all(promises)
         .then(results => {
             showNotification('All service items saved successfully!', 'success');
@@ -2293,19 +2019,14 @@ function saveServiceItems() {
         });
 }
 
-/**
- * Save labor charges
- * @returns {Promise} - Promise that resolves when labor charges are saved
- */
 function saveLaborCharges() {
     if (window.laborCharges.length === 0) {
         showNotification('No labor charges to save', 'info');
-        return Promise.resolve(); // Return a resolved promise for chaining
+        return Promise.resolve();
     }
 
     showNotification('Saving labor charges...', 'info');
 
-    // Disable save button during save
     const saveButton = document.getElementById('saveInvoiceBtn');
     if (saveButton) saveButton.disabled = true;
 
@@ -2315,7 +2036,6 @@ function saveLaborCharges() {
         'Authorization': token ? `Bearer ${token}` : ''
     };
 
-    // Format labor charges properly
     const formattedCharges = window.laborCharges.map(charge => {
         return {
             description: charge.description || 'Labor Charge',
@@ -2324,7 +2044,6 @@ function saveLaborCharges() {
         };
     });
 
-    // Filter out invalid charges
     const validCharges = formattedCharges.filter(
         charge => charge.hours > 0 && charge.rate > 0
     );
@@ -2335,14 +2054,12 @@ function saveLaborCharges() {
         return Promise.resolve();
     }
 
-    // Make API call
     return fetch(`/serviceAdvisor/api/service/${window.currentRequestId}/labor-charges`, {
         method: 'POST',
         headers: headers,
         body: JSON.stringify(validCharges)
     })
         .then(response => {
-            // Check response status
             if (!response.ok) {
                 return response.text().then(text => {
                     throw new Error(`Failed to save labor charges: ${response.status} - ${text}`);
@@ -2356,17 +2073,12 @@ function saveLaborCharges() {
             return data;
         })
         .catch(error => {
-            console.error('Labor charge error:', error);
             showNotification('Error saving labor charges: ' + error.message, 'error');
             if (saveButton) saveButton.disabled = false;
             throw error;
         });
 }
 
-/**
- * Save inventory items
- * @returns {Promise} - Promise that resolves when inventory items are saved
- */
 function saveInventoryItems() {
     const items = window.inventoryItems.map(item => {
         return {
@@ -2399,19 +2111,14 @@ function saveInventoryItems() {
             return response.json();
         })
         .then(data => {
-            console.log('Inventory items saved successfully:', data);
             return data;
         })
         .catch(error => {
-            console.error('Inventory error:', error);
             showNotification('Error saving inventory items: ' + error.message, 'error');
             throw error;
         });
 }
 
-/**
- * Mark service as complete
- */
 function markServiceComplete() {
     const requestId = window.currentRequestId;
     if (!requestId) {
@@ -2458,10 +2165,6 @@ function markServiceComplete() {
         });
 }
 
-/**
- * Filter vehicles by selected filter
- * @param {string} filter - Filter value
- */
 function filterVehicles(filter) {
     const rows = document.querySelectorAll('#vehiclesTableBody tr');
 
@@ -2485,14 +2188,9 @@ function filterVehicles(filter) {
         }
     });
 
-    // Update filter button text
     updateFilterButtonText(filter);
 }
 
-/**
- * Update filter button text
- * @param {string} filter - Filter value
- */
 function updateFilterButtonText(filter) {
     const filterButton = document.getElementById('filterButton');
     if (filterButton) {
@@ -2506,10 +2204,6 @@ function updateFilterButtonText(filter) {
     }
 }
 
-/**
- * Filter vehicles by search term
- * @param {string} searchTerm - Search term
- */
 function filterVehiclesBySearch(searchTerm) {
     const rows = document.querySelectorAll('#vehiclesTableBody tr');
 
@@ -2524,11 +2218,6 @@ function filterVehiclesBySearch(searchTerm) {
     });
 }
 
-/**
- * Show notification message
- * @param {string} message - Message to show
- * @param {string} type - Notification type (success, error, info, warning)
- */
 function showNotification(message, type = 'success') {
     const notification = document.getElementById('successNotification');
     if (!notification) return;
@@ -2548,7 +2237,6 @@ function showNotification(message, type = 'success') {
     }, 3000);
 }
 
-// Export functions for global access
 window.openVehicleDetails = openVehicleDetails;
 window.incrementInventoryQuantity = incrementInventoryQuantity;
 window.decrementInventoryQuantity = decrementInventoryQuantity;

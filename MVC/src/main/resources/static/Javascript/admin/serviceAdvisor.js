@@ -205,19 +205,7 @@ function setupEventListeners() {
         });
     }
 
-    const sortDropdownItems = document.querySelectorAll('.dropdown-menu .dropdown-item');
-    sortDropdownItems.forEach(item => {
-        item.addEventListener('click', function(e) {
-            e.preventDefault();
-            sortDropdownItems.forEach(i => i.classList.remove('active'));
-            this.classList.add('active');
-            document.getElementById('sortDropdown').innerHTML = `
-                  <i class="fas fa-sort"></i>
-                  Sort by: ${this.textContent}
-              `;
-            sortServiceAdvisors(this.textContent.toLowerCase());
-        });
-    });
+
 }
 
 function getToken() {
@@ -917,24 +905,5 @@ function updateServiceAdvisor() {
 
 function filterServiceAdvisors(searchTerm) {
     currentPage = 1;
-    renderServiceAdvisors();
-}
-
-function sortServiceAdvisors(sortBy) {
-    serviceAdvisors.sort((a, b) => {
-        switch (sortBy) {
-            case 'name':
-                return (a.firstName + a.lastName).localeCompare(b.firstName + b.lastName);
-            case 'department':
-                return (a.department || '').localeCompare(b.department || '');
-            case 'workload':
-                return b.workloadPercentage - a.workloadPercentage;
-            case 'hire date':
-                return new Date(a.hireDate || 0) - new Date(b.hireDate || 0);
-            default:
-                return 0;
-        }
-    });
-
     renderServiceAdvisors();
 }

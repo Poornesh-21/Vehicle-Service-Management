@@ -1,29 +1,14 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Configuration
-    const API_BASE_URL = 'http://localhost:8080'; // REST API base URL - CHANGE THIS TO MATCH YOUR REST API SERVER
-    const MVC_BASE_URL = ''; // Current application base URL (empty for same origin)
+    const API_BASE_URL = 'http://localhost:8080';
+    const MVC_BASE_URL = '';
 
-    // Password toggle functionality
     setupPasswordToggles();
-
-    // Password strength meter functionality
     setupPasswordStrengthMeter();
-
-    // Login form handling
     setupLoginForm();
-
-    // Password change form handling
     setupPasswordChangeForm();
-
-    // Check for existing token and auto-login
     checkExistingToken();
-
-    // Custom fetch response handler for better error messages
     setupFetchResponseHandler();
 
-    /**
-     * Set up password toggle functionality for showing/hiding passwords
-     */
     function setupPasswordToggles() {
         const toggles = [
             { toggle: 'togglePassword', field: 'password', icon: 'eyeIcon' },
@@ -48,9 +33,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    /**
-     * Set up password strength meter
-     */
     function setupPasswordStrengthMeter() {
         const newPassword = document.getElementById('newPassword');
 
@@ -59,7 +41,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const value = newPassword.value;
                 let strength = 0;
 
-                // Check password length
                 const lengthCheck = document.getElementById('length');
                 if (value.length >= 8) {
                     updateRequirement(lengthCheck, true);
@@ -68,7 +49,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     updateRequirement(lengthCheck, false);
                 }
 
-                // Check for uppercase letters
                 const uppercaseCheck = document.getElementById('uppercase');
                 if (/[A-Z]/.test(value)) {
                     updateRequirement(uppercaseCheck, true);
@@ -77,7 +57,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     updateRequirement(uppercaseCheck, false);
                 }
 
-                // Check for lowercase letters
                 const lowercaseCheck = document.getElementById('lowercase');
                 if (/[a-z]/.test(value)) {
                     updateRequirement(lowercaseCheck, true);
@@ -86,7 +65,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     updateRequirement(lowercaseCheck, false);
                 }
 
-                // Check for numbers
                 const numberCheck = document.getElementById('number');
                 if (/[0-9]/.test(value)) {
                     updateRequirement(numberCheck, true);
@@ -95,7 +73,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     updateRequirement(numberCheck, false);
                 }
 
-                // Check for special characters
                 const specialCheck = document.getElementById('special');
                 if (/[^A-Za-z0-9]/.test(value)) {
                     updateRequirement(specialCheck, true);
@@ -104,12 +81,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     updateRequirement(specialCheck, false);
                 }
 
-                // Update strength meter
                 updateStrengthMeter(strength);
             });
         }
 
-        // Handle confirm password validation
         const confirmPassword = document.getElementById('confirmPassword');
         if (confirmPassword && newPassword) {
             confirmPassword.addEventListener('input', function() {
@@ -124,9 +99,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    /**
-     * Update requirement indicator
-     */
     function updateRequirement(element, isMet) {
         if (element) {
             if (isMet) {
@@ -139,9 +111,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    /**
-     * Update strength meter visualization
-     */
     function updateStrengthMeter(strength) {
         const strengthProgress = document.getElementById('strengthProgress');
         const strengthText = document.getElementById('strengthText');
@@ -168,9 +137,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    /**
-     * Set up login form handling
-     */
     function setupLoginForm() {
         const loginForm = document.getElementById('loginForm');
 
@@ -193,7 +159,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     password: passwordValue
                 };
 
-                // Make login request - Using the full URL to the REST API
                 fetch(`${API_BASE_URL}/serviceAdvisor/api/login`, {
                     method: 'POST',
                     headers: {
@@ -205,19 +170,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     .then(data => {
                         console.log("Login successful", data);
 
-                        // Validate role
                         if (data.role && data.role.toLowerCase() !== 'serviceadvisor') {
                             throw new Error('You do not have permission to access the Service Advisor portal');
                         }
 
-                        // Store session data
                         storeSessionData(data);
 
-                        // Check if temporary password
                         const isTemporaryPassword = checkIfTemporaryPassword(passwordValue);
 
                         if (isTemporaryPassword) {
-                            // Show password change modal
                             document.getElementById('currentPassword').value = passwordValue;
                             const changePasswordModal = new bootstrap.Modal(document.getElementById('changePasswordModal'));
                             changePasswordModal.show();
@@ -225,8 +186,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             loginBtn.disabled = false;
                             loginBtn.innerHTML = originalText;
                         } else {
-                            // Redirect to dashboard
-                            window.location.href = `${MVC_BASE_URL}/serviceAdvisor/dashboard?token=${data.token}`;
+                            window.location.href = `${MVC_BASE_URL}/serviceAdvisor/dashboard`;
                         }
                     })
                     .catch(error => {
@@ -239,9 +199,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    /**
-     * Set up password change form handling
-     */
     function setupPasswordChangeForm() {
         const changePasswordForm = document.getElementById('changePasswordForm');
 
@@ -257,13 +214,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 hideErrorMessage();
                 passwordMismatch.classList.add('d-none');
 
-                // Validate passwords match
                 if (newPasswordValue !== confirmPasswordValue) {
                     passwordMismatch.classList.remove('d-none');
                     return;
                 }
 
-                // Validate password strength
                 if (validatePasswordStrength(newPasswordValue) < 60) {
                     showErrorMessage('Password is not strong enough. Please follow the requirements.');
                     return;
@@ -283,8 +238,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     isTemporaryPassword: true
                 };
 
-                // Make change password request - Use full URL
-                fetch(`${API_BASE_URL}/serviceAdvisor/api/change-password?token=${token}`, {
+                fetch(`${API_BASE_URL}/serviceAdvisor/api/change-password`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -297,13 +251,13 @@ document.addEventListener('DOMContentLoaded', function() {
                         console.log("Password changed successfully", data);
 
                         if (data.token) {
-                            localStorage.setItem('jwtToken', data.token);
+                            storeSessionData(data);
                         }
 
                         showSuccessMessage('Password changed successfully! Redirecting to dashboard...');
 
                         setTimeout(() => {
-                            window.location.href = `${MVC_BASE_URL}/serviceAdvisor/dashboard?token=${data.token || token}`;
+                            window.location.href = `${MVC_BASE_URL}/serviceAdvisor/dashboard`;
                         }, 1500);
                     })
                     .catch(error => {
@@ -316,15 +270,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    /**
-     * Check for existing token and attempt auto-login
-     */
     function checkExistingToken() {
         const existingToken = localStorage.getItem('jwtToken');
         const role = localStorage.getItem('userRole');
 
+        // Check if we're on the logout page
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('logout')) {
+            // Clear all storage on logout page load
+            clearSessionData();
+            return;
+        }
+
         if (existingToken && role && role.toLowerCase() === 'serviceadvisor') {
-            // Try to validate token - Use full URL
             fetch(`${API_BASE_URL}/serviceAdvisor/api/validate-token`, {
                 method: 'GET',
                 headers: {
@@ -333,7 +291,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
                 .then(response => {
                     if (response.ok) {
-                        window.location.href = `${MVC_BASE_URL}/serviceAdvisor/dashboard?token=${existingToken}`;
+                        window.location.href = `${MVC_BASE_URL}/serviceAdvisor/dashboard`;
                     } else {
                         clearSessionData();
                     }
@@ -344,11 +302,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    /**
-     * Improved API response handling
-     */
     function setupFetchResponseHandler() {
-        // Patch fetch to improve error handling for login endpoint
         (function() {
             const originalFetch = window.fetch;
 
@@ -392,9 +346,8 @@ document.addEventListener('DOMContentLoaded', function() {
         })();
     }
 
-    /**
-     * Handle API response and extract error messages
-     */
+
+
     function handleApiResponse(response) {
         console.log(`Response status: ${response.status}`);
         if (!response.ok) {
@@ -402,7 +355,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error("API error:", errorData);
                 throw new Error(errorData.message || errorData.error || 'Request failed');
             }).catch(error => {
-                // Handle case where response body is not valid JSON
                 if (error instanceof SyntaxError) {
                     throw new Error(`Request failed with status ${response.status}`);
                 }
@@ -412,29 +364,24 @@ document.addEventListener('DOMContentLoaded', function() {
         return response.json();
     }
 
-    /**
-     * Store session data in localStorage
-     */
     function storeSessionData(data) {
         localStorage.setItem('jwtToken', data.token);
         localStorage.setItem('userRole', data.role);
         localStorage.setItem('userEmail', data.email);
         localStorage.setItem('userName', data.firstName + ' ' + data.lastName);
+
+        // Also store in sessionStorage for consistency with dashboard.js
+        sessionStorage.setItem('jwt-token', data.token);
     }
 
-    /**
-     * Clear session data from localStorage
-     */
     function clearSessionData() {
         localStorage.removeItem('jwtToken');
         localStorage.removeItem('userRole');
         localStorage.removeItem('userEmail');
         localStorage.removeItem('userName');
+        sessionStorage.removeItem('jwt-token');
     }
 
-    /**
-     * Calculate password strength (0-100)
-     */
     function validatePasswordStrength(password) {
         let strength = 0;
 
@@ -447,16 +394,10 @@ document.addEventListener('DOMContentLoaded', function() {
         return strength;
     }
 
-    /**
-     * Check if password is a temporary password
-     */
     function checkIfTemporaryPassword(password) {
         return password.startsWith('SA2025-');
     }
 
-    /**
-     * Show error message
-     */
     function showErrorMessage(message) {
         let errorAlert = document.getElementById('loginError');
 
@@ -474,9 +415,6 @@ document.addEventListener('DOMContentLoaded', function() {
         errorAlert.classList.remove('d-none');
     }
 
-    /**
-     * Show success message
-     */
     function showSuccessMessage(message) {
         let successAlert = document.getElementById('passwordSuccess');
 
@@ -494,9 +432,6 @@ document.addEventListener('DOMContentLoaded', function() {
         successAlert.classList.remove('d-none');
     }
 
-    /**
-     * Hide error messages
-     */
     function hideErrorMessage() {
         const alerts = ['loginError', 'passwordError', 'passwordSuccess'];
 

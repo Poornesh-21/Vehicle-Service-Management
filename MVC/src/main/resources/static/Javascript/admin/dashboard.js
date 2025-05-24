@@ -119,6 +119,7 @@ function setupAuthentication() {
     setupViewAllButtons(token);
 
     // Add token to current URL if not already present
+    // Add token to current URL if not already present
     if (window.location.href.indexOf('token=') === -1) {
         const separator = window.location.href.indexOf('?') === -1 ? '?' : '&';
         const newUrl = window.location.href + separator + 'token=' + encodeURIComponent(token);
@@ -954,19 +955,24 @@ function showSpinner() {
     }
 }
 
-/**
- * Hide the loading spinner
- */
 function hideSpinner() {
     const spinnerOverlay = document.getElementById('spinnerOverlay');
     if (spinnerOverlay) {
+        // First hide it visually for immediate effect
         spinnerOverlay.style.display = 'none';
-    }
-}
 
-/**
- * Show API error message with retry option
- */
+        // Then completely remove it from the DOM
+        spinnerOverlay.parentNode.removeChild(spinnerOverlay);
+    }
+
+    // Also remove any loading indicator elements
+    const loadingElements = document.querySelectorAll('.loading-data, .loading-message');
+    loadingElements.forEach(element => {
+        if (element && element.parentNode) {
+            element.parentNode.removeChild(element);
+        }
+    });
+}
 function showApiError(message) {
     // Check if error container exists, create if not
     let errorContainer = document.getElementById('apiErrorContainer');

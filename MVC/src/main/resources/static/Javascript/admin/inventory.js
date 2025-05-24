@@ -43,29 +43,10 @@ function setupLogout() {
 }
 
 function setupAuthentication() {
-    const tokenFromStorage = localStorage.getItem("jwt-token") || sessionStorage.getItem("jwt-token");
-
-    if (tokenFromStorage) {
-        const currentUrl = new URL(window.location.href);
-        const urlToken = currentUrl.searchParams.get('token');
-
-        if (!urlToken) {
-            document.querySelectorAll('.sidebar-menu-link').forEach(link => {
-                const href = link.getAttribute('href');
-                if (href && !href.includes('token=')) {
-                    const separator = href.includes('?') ? '&' : '?';
-                    link.setAttribute('href', href + separator + 'token=' + encodeURIComponent(tokenFromStorage));
-                }
-            });
-
-            if (window.location.href.indexOf('token=') === -1) {
-                const separator = window.location.href.indexOf('?') === -1 ? '?' : '&';
-                const newUrl = window.location.href + separator + 'token=' + encodeURIComponent(tokenFromStorage);
-                window.history.replaceState({}, document.title, newUrl);
-            }
-        }
-    } else {
+    const token = getToken();
+    if (!token) {
         window.location.href = '/admin/login?error=session_expired';
+        return;
     }
 }
 

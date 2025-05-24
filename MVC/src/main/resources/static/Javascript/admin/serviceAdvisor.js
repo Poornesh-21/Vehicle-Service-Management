@@ -40,11 +40,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function setupAuthentication() {
-        const tokenFromStorage = localStorage.getItem("jwt-token") || sessionStorage.getItem("jwt-token");
-
-        if (tokenFromStorage) {
-        } else {
+        const token = getToken();
+        if (!token) {
             window.location.href = '/admin/login?error=session_expired';
+            return;
         }
     }
 

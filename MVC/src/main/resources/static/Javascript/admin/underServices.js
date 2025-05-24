@@ -10,13 +10,6 @@ const itemsPerPage = 5;
 let currentServiceId = null;
 
 function getJwtToken() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const tokenFromUrl = urlParams.get('token');
-
-    if (tokenFromUrl) {
-        return tokenFromUrl;
-    }
-
     return localStorage.getItem("jwt-token") || sessionStorage.getItem("jwt-token");
 }
 
@@ -64,29 +57,10 @@ function setupDateDisplay() {
 }
 
 function setupAuthentication() {
-    const tokenFromStorage = getJwtToken();
-
-    if (tokenFromStorage) {
-        const currentUrl = new URL(window.location.href);
-        const urlToken = currentUrl.searchParams.get('token');
-
-        if (!urlToken) {
-            document.querySelectorAll('.sidebar-menu-link').forEach(link => {
-                const href = link.getAttribute('href');
-                if (href && !href.includes('token=')) {
-                    const separator = href.includes('?') ? '&' : '?';
-                    link.setAttribute('href', href + separator + 'token=' + encodeURIComponent(tokenFromStorage));
-                }
-            });
-
-            if (window.location.href.indexOf('token=') === -1) {
-                const separator = window.location.href.indexOf('?') === -1 ? '?' : '&';
-                const newUrl = window.location.href + separator + 'token=' + encodeURIComponent(tokenFromStorage);
-                window.history.replaceState({}, document.title, newUrl);
-            }
-        }
-    } else {
+    const token = getJwtToken();
+    if (!token) {
         window.location.href = '/admin/login?error=session_expired';
+        return;
     }
 }
 
@@ -161,7 +135,13 @@ function loadVehiclesUnderServiceFromAPI() {
         return;
     }
 
-    fetch('/admin/api/vehicle-tracking/under-service?token=' + encodeURIComponent(token))
+    fetch('/admin/api/vehicle-tracking/under-service', {
+        method: 'GET',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        }
+    })
         .then(response => {
             if (!response.ok) {
                 throw new Error('API call failed: ' + response.status);
@@ -279,8 +259,6 @@ function showVehiclesUnderServicePage(page) {
 
     displayVehiclesUnderService(vehiclesToShow);
 }
-
-// Update the displayVehiclesUnderService function in underServices.js
 
 function displayVehiclesUnderService(vehicles) {
     const tableBody = document.getElementById('vehiclesUnderServiceTableBody');
@@ -428,7 +406,13 @@ function viewServiceUnderServiceDetails(serviceId) {
 
     const vehicle = vehiclesUnderService.find(v => v.requestId === parseInt(serviceId));
 
-    fetch(`/admin/api/vehicle-tracking/service-request/${serviceId}?token=${encodeURIComponent(token)}`)
+    fetch(`/admin/api/vehicle-tracking/service-request/${serviceId}`, {
+        method: 'GET',
+        headers: {
+            'Authorization': 'Bearer ' + token,
+            'Content-Type': 'application/json'
+        }
+    })
         .then(response => {
             if (!response.ok) {
                 throw new Error('API call failed: ' + response.status);
@@ -566,10 +550,11 @@ function applyFilters() {
     document.getElementById('loading-row-service').style.display = '';
     document.getElementById('empty-row-service').style.display = 'none';
 
-    fetch(`/admin/api/vehicle-tracking/under-service/filter?token=${encodeURIComponent(token)}`, {
+    fetch('/admin/api/vehicle-tracking/under-service/filter', {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
         },
         body: JSON.stringify(filterCriteria)
     })
@@ -679,10 +664,11 @@ function submitStatusUpdate() {
         $('body').css('padding-right', '');
     }, 100);
 
-    fetch(`/admin/api/vehicle-tracking/service-request/${serviceId}/status?token=${encodeURIComponent(token)}`, {
+    fetch(`/admin/api/vehicle-tracking/service-request/${serviceId}/status`, {
         method: 'PUT',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
         },
         body: JSON.stringify({
             status: newStatus
@@ -724,6 +710,11 @@ function submitStatusUpdate() {
 
 function showToastNotification(title, message) {
     let toastContainer = document.querySelector('.toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+        document.body.appendChild(toastContainer);
+    }
 
     const toastId = 'toast-' + Date.now();
     const toastHtml = `

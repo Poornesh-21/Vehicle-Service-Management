@@ -244,29 +244,10 @@ function setupDateDisplay() {
 }
 
 function setupAuthentication() {
-    const tokenFromStorage = localStorage.getItem("jwt-token") || sessionStorage.getItem("jwt-token");
-
-    if (tokenFromStorage) {
-        const currentUrl = new URL(window.location.href);
-        const urlToken = currentUrl.searchParams.get('token');
-
-        if (!urlToken) {
-            document.querySelectorAll('.sidebar-menu-link').forEach(link => {
-                const href = link.getAttribute('href');
-                if (href && !href.includes('token=')) {
-                    const separator = href.includes('?') ? '&' : '?';
-                    link.setAttribute('href', href + separator + 'token=' + encodeURIComponent(tokenFromStorage));
-                }
-            });
-
-            if (window.location.href.indexOf('token=') === -1) {
-                const separator = window.location.href.indexOf('?') === -1 ? '?' : '&';
-                const newUrl = window.location.href + separator + 'token=' + encodeURIComponent(tokenFromStorage);
-                window.history.replaceState({}, document.title, newUrl);
-            }
-        }
-    } else {
+    const token = getToken();
+    if (!token) {
         window.location.href = '/admin/login?error=session_expired';
+        return;
     }
 }
 
@@ -466,7 +447,7 @@ function loadServiceRequests() {
         return;
     }
 
-    fetch(`/admin/service-requests/api${token ? `?token=${token}` : ''}`, {
+    fetch('/admin/service-requests/api', {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -598,8 +579,7 @@ function loadVehiclesForCustomer(customerId) {
         return;
     }
 
-    // CHANGE THIS LINE - Fix the endpoint to match what we implemented
-    fetch(`/admin/api/customers/${customerId}/vehicles${token ? `?token=${token}` : ''}`, {
+    fetch(`/admin/api/customers/${customerId}/vehicles`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -686,7 +666,6 @@ function saveNewVehicle(callback) {
         return;
     }
 
-    // CHANGE THIS LINE - Fix the endpoint to match what we implemented
     fetch(`/admin/api/customers/${customerId}/vehicles`, {
         method: 'POST',
         headers: {
@@ -744,8 +723,7 @@ function fetchVehicleDetails(vehicleId) {
 
     showSpinner();
 
-    // CHANGE THIS LINE - Fix the endpoint to match what we implemented
-    fetch(`/admin/api/vehicles/${vehicleId}${token ? `?token=${token}` : ''}`, {
+    fetch(`/admin/api/vehicles/${vehicleId}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -809,7 +787,7 @@ function createEnhancedServiceRequest(vehicleId) {
         return;
     }
 
-    fetch(`/admin/service-requests/api${token ? `?token=${token}` : ''}`, {
+    fetch('/admin/service-requests/api', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -870,7 +848,7 @@ function createServiceRequestWithVehicle(vehicleId) {
     const token = getToken();
     showSpinner();
 
-    fetch(`/admin/api/vehicles/${vehicleId}${token ? `?token=${token}` : ''}`, {
+    fetch(`/admin/api/vehicles/${vehicleId}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -909,7 +887,7 @@ function createServiceRequestWithVehicle(vehicleId) {
                 return;
             }
 
-            return fetch(`/admin/service-requests/api${token ? `?token=${token}` : ''}`, {
+            return fetch('/admin/service-requests/api', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1039,7 +1017,7 @@ function fetchServiceRequest(requestId) {
 
     showSpinner();
 
-    fetch(`/admin/service-requests/api/${requestId}${token ? `?token=${token}` : ''}`, {
+    fetch(`/admin/service-requests/api/${requestId}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -1189,7 +1167,7 @@ function assignServiceAdvisor() {
         return;
     }
 
-    fetch(`/admin/service-requests/api/${requestId}/assign${token ? `?token=${token}` : ''}`, {
+    fetch(`/admin/service-requests/api/${requestId}/assign`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
@@ -1278,7 +1256,7 @@ function renderServiceRequests() {
         const row = document.createElement('tr');
         row.className = 'active-page';
         row.innerHTML = `
-        <td>REQ-${request.requestId}</td>
+        <td>REQ-${request.requestId || request.serviceId}</td>
         <td>
             <div class="vehicle-info">
                 <div class="vehicle-icon">

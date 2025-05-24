@@ -31,32 +31,20 @@ public class AdminVehicleTrackingController {
         this.restTemplate = restTemplate;
     }
 
-    /**
-     * Renders the under service page
-     * Removed token parameter - authentication handled by JavaScript
-     */
     @GetMapping("/under-service")
     public String underServicePage(
             @RequestParam(required = false) String success,
             Model model) {
-
-        // Token check removed - handled by client-side JavaScript
-
         if (success != null) {
             model.addAttribute("success", success);
         }
-
         return "admin/underservices";
     }
 
-    /**
-     * Get all vehicles currently under service
-     */
     @GetMapping("/api/vehicle-tracking/under-service")
     @ResponseBody
     public ResponseEntity<List<?>> getVehiclesUnderService(
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
-
         try {
             HttpHeaders headers = createHeaders(authHeader);
             HttpEntity<String> entity = new HttpEntity<>(headers);
@@ -76,15 +64,11 @@ public class AdminVehicleTrackingController {
         }
     }
 
-    /**
-     * Get details for a specific service request
-     */
     @GetMapping("/api/vehicle-tracking/service-request/{id}")
     @ResponseBody
     public ResponseEntity<?> getServiceRequestDetails(
             @PathVariable("id") Integer id,
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
-
         try {
             HttpHeaders headers = createHeaders(authHeader);
             HttpEntity<String> entity = new HttpEntity<>(headers);
@@ -114,16 +98,12 @@ public class AdminVehicleTrackingController {
         }
     }
 
-    /**
-     * Update service request status
-     */
     @PutMapping("/api/vehicle-tracking/service-request/{id}/status")
     @ResponseBody
     public ResponseEntity<?> updateServiceRequestStatus(
             @PathVariable("id") Integer id,
             @RequestBody Map<String, String> request,
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
-
         try {
             HttpHeaders headers = createHeaders(authHeader);
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -154,15 +134,11 @@ public class AdminVehicleTrackingController {
         }
     }
 
-    /**
-     * Filter vehicles under service
-     */
     @PostMapping("/api/vehicle-tracking/under-service/filter")
     @ResponseBody
     public ResponseEntity<List<?>> filterVehiclesUnderService(
             @RequestBody Map<String, Object> filterCriteria,
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
-
         try {
             HttpHeaders headers = createHeaders(authHeader);
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -183,10 +159,6 @@ public class AdminVehicleTrackingController {
         }
     }
 
-    /**
-     * Helper method to create HTTP headers with authorization if provided
-     * Removed token parameter since we only use Authorization header now
-     */
     private HttpHeaders createHeaders(String authHeader) {
         HttpHeaders headers = new HttpHeaders();
         if (authHeader != null && !authHeader.isEmpty()) {

@@ -1,4 +1,3 @@
-// MVC/src/main/java/com/albany/mvc/controller/admin/AdminCompletedServiceController.java
 package com.albany.mvc.controller.admin;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,20 +31,12 @@ public class AdminCompletedServiceController {
         this.restTemplate = restTemplate;
     }
 
-    /**
-     * Renders the completed services page
-     */
     @GetMapping("/completed-services")
     public String completedServicesPage(
-            @RequestParam(required = false) String token,
             @RequestParam(required = false) String success,
             Model model) {
 
-        if (token == null || token.isEmpty()) {
-            return "redirect:/admin/login?error=session_expired";
-        }
-
-        model.addAttribute("token", token);
+        // Authentication is now handled client-side via JavaScript
         if (success != null) {
             model.addAttribute("success", success);
         }
@@ -53,17 +44,13 @@ public class AdminCompletedServiceController {
         return "admin/completed_services";
     }
 
-    /**
-     * Get all completed services
-     */
     @GetMapping("/api/completed-services")
     @ResponseBody
     public ResponseEntity<List<?>> getAllCompletedServices(
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestParam(value = "token", required = false) String token) {
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
 
         try {
-            HttpHeaders headers = createHeaders(authHeader, token);
+            HttpHeaders headers = createHeaders(authHeader);
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
             ResponseEntity<List<?>> response = restTemplate.exchange(
@@ -81,18 +68,14 @@ public class AdminCompletedServiceController {
         }
     }
 
-    /**
-     * Get completed service by ID
-     */
     @GetMapping("/api/completed-services/{id}")
     @ResponseBody
     public ResponseEntity<?> getCompletedServiceById(
             @PathVariable("id") Integer id,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestParam(value = "token", required = false) String token) {
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
 
         try {
-            HttpHeaders headers = createHeaders(authHeader, token);
+            HttpHeaders headers = createHeaders(authHeader);
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
             ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
@@ -120,18 +103,14 @@ public class AdminCompletedServiceController {
         }
     }
 
-    /**
-     * Get invoice details for a completed service
-     */
     @GetMapping("/api/completed-services/{id}/invoice-details")
     @ResponseBody
     public ResponseEntity<?> getInvoiceDetails(
             @PathVariable("id") Integer id,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestParam(value = "token", required = false) String token) {
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
 
         try {
-            HttpHeaders headers = createHeaders(authHeader, token);
+            HttpHeaders headers = createHeaders(authHeader);
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
             ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
@@ -159,19 +138,15 @@ public class AdminCompletedServiceController {
         }
     }
 
-    /**
-     * Generate invoice for a completed service
-     */
     @PostMapping("/api/invoices/service-request/{id}/generate")
     @ResponseBody
     public ResponseEntity<?> generateInvoice(
             @PathVariable("id") Integer id,
             @RequestBody Map<String, Object> request,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestParam(value = "token", required = false) String token) {
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
 
         try {
-            HttpHeaders headers = createHeaders(authHeader, token);
+            HttpHeaders headers = createHeaders(authHeader);
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(request, headers);
 
@@ -200,19 +175,15 @@ public class AdminCompletedServiceController {
         }
     }
 
-    /**
-     * Process payment for a completed service
-     */
     @PostMapping("/api/completed-services/{id}/payment")
     @ResponseBody
     public ResponseEntity<?> processPayment(
             @PathVariable("id") Integer id,
             @RequestBody Map<String, Object> request,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestParam(value = "token", required = false) String token) {
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
 
         try {
-            HttpHeaders headers = createHeaders(authHeader, token);
+            HttpHeaders headers = createHeaders(authHeader);
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(request, headers);
 
@@ -241,19 +212,15 @@ public class AdminCompletedServiceController {
         }
     }
 
-    /**
-     * Mark service as delivered
-     */
     @PostMapping("/api/completed-services/{id}/dispatch")
     @ResponseBody
     public ResponseEntity<?> markAsDelivered(
             @PathVariable("id") Integer id,
             @RequestBody Map<String, Object> request,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestParam(value = "token", required = false) String token) {
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
 
         try {
-            HttpHeaders headers = createHeaders(authHeader, token);
+            HttpHeaders headers = createHeaders(authHeader);
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(request, headers);
 
@@ -282,17 +249,13 @@ public class AdminCompletedServiceController {
         }
     }
 
-    /**
-     * Download invoice
-     */
     @GetMapping("/api/completed-services/{id}/invoice/download")
     public ResponseEntity<?> downloadInvoice(
             @PathVariable("id") Integer id,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestParam(value = "token", required = false) String token) {
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
 
         try {
-            HttpHeaders headers = createHeaders(authHeader, token);
+            HttpHeaders headers = createHeaders(authHeader);
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
             ResponseEntity<byte[]> response = restTemplate.exchange(
@@ -314,15 +277,10 @@ public class AdminCompletedServiceController {
         }
     }
 
-    /**
-     * Helper method to create HTTP headers with authorization if provided
-     */
-    private HttpHeaders createHeaders(String authHeader, String token) {
+    private HttpHeaders createHeaders(String authHeader) {
         HttpHeaders headers = new HttpHeaders();
         if (authHeader != null && !authHeader.isEmpty()) {
             headers.set("Authorization", authHeader);
-        } else if (token != null && !token.isEmpty()) {
-            headers.set("Authorization", "Bearer " + token);
         }
         return headers;
     }

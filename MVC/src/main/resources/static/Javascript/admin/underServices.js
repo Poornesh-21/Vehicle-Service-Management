@@ -1,4 +1,11 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Check authentication first
+    const token = getJwtToken();
+    if (!token) {
+        window.location.href = '/admin/login?error=session_expired';
+        return;
+    }
+
     initializeApp();
     setupEventListeners();
     loadVehiclesUnderServiceFromAPI();
@@ -10,13 +17,16 @@ const itemsPerPage = 5;
 let currentServiceId = null;
 
 function getJwtToken() {
-    return localStorage.getItem("jwt-token") || sessionStorage.getItem("jwt-token");
+    const sessionToken = sessionStorage.getItem('jwt-token');
+    if (sessionToken) return sessionToken;
+    const localToken = localStorage.getItem('jwt-token');
+    if (localToken) return localToken;
+    return '';
 }
 
 function initializeApp() {
     setupMobileMenu();
     setupLogout();
-    setupAuthentication();
     setupDateDisplay();
     setupNavigation();
 }
@@ -57,20 +67,12 @@ function setupDateDisplay() {
     }
 }
 
-function setupAuthentication() {
-    const token = getJwtToken();
-    if (!token) {
-        window.location.href = '/admin/login?error=session_expired';
-        return;
-    }
-}
-
 function setupNavigation() {
     const currentPath = window.location.pathname;
     document.querySelectorAll('.sidebar-menu-link').forEach(link => {
         const href = link.getAttribute('href');
 
-        // Clean up URLs with token parameters
+        // Clean up URLs - remove any token parameters
         if (href && href.includes('token=')) {
             const cleanHref = href.split('?')[0];
             link.setAttribute('href', cleanHref);
@@ -146,32 +148,43 @@ function setupEventListeners() {
     });
 }
 
+function apiCall(url, method = 'GET', body = null) {
+    const token = getJwtToken();
+    if (!token) {
+        window.location.href = '/admin/login?error=session_expired';
+        return Promise.reject(new Error('No authentication token found'));
+    }
+
+    const options = {
+        method,
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    };
+
+    if (body) {
+        options.body = JSON.stringify(body);
+    }
+
+    return fetch(url, options)
+        .then(response => {
+            if (response.status === 401) {
+                window.location.href = '/admin/login?error=session_expired';
+                throw new Error('Session expired');
+            }
+            if (!response.ok) {
+                throw new Error(`API call failed: ${response.status}`);
+            }
+            return response.json();
+        });
+}
+
 function loadVehiclesUnderServiceFromAPI() {
     document.getElementById('loading-row-service').style.display = '';
     document.getElementById('empty-row-service').style.display = 'none';
 
-    const token = getJwtToken();
-    if (!token) {
-        return;
-    }
-
-    fetch('/admin/api/vehicle-tracking/under-service', {
-        method: 'GET',
-        headers: {
-            'Authorization': 'Bearer ' + token,
-            'Content-Type': 'application/json'
-        }
-    })
-        .then(response => {
-            if (!response.ok) {
-                if (response.status === 401) {
-                    window.location.href = '/admin/login?error=session_expired';
-                    throw new Error('Session expired');
-                }
-                throw new Error('API call failed: ' + response.status);
-            }
-            return response.json();
-        })
+    apiCall('/admin/api/vehicle-tracking/under-service')
         .then(data => {
             vehiclesUnderService = data;
 
@@ -296,7 +309,6 @@ function displayVehiclesUnderService(vehicles) {
 
     loadingRow.style.display = 'none';
 
-    // Show all vehicles instead of filtering for assigned vehicles only
     if (vehicles.length === 0) {
         emptyRow.style.display = '';
         emptyRow.innerHTML = `
@@ -330,7 +342,6 @@ function displayVehiclesUnderService(vehicles) {
             day: 'numeric'
         }) : 'Not set';
 
-        // Set default values if properties are missing
         const vehicleName = vehicle.vehicleName || (vehicle.vehicleBrand && vehicle.vehicleModel ?
             `${vehicle.vehicleBrand} ${vehicle.vehicleModel}` : 'Unknown Vehicle');
         const registrationNumber = vehicle.registrationNumber || 'Not specified';
@@ -381,14 +392,11 @@ function displayVehiclesUnderService(vehicles) {
         tableBody.appendChild(row);
     });
 
-    // Add click handler for the assign button if needed
     document.querySelectorAll('.assign-btn').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
             const row = this.closest('tr');
             const serviceId = row.getAttribute('data-id');
-            // You can call a function to open an assignment modal here
-            // For example: openAssignmentModal(serviceId);
         });
     });
 }
@@ -423,27 +431,9 @@ function viewServiceUnderServiceDetails(serviceId) {
     document.getElementById('spinnerOverlay').classList.add('show');
     currentServiceId = serviceId;
 
-    const token = getJwtToken();
-    if (!token) {
-        return;
-    }
-
-    const vehicle = vehiclesUnderService.find(v => v.requestId === parseInt(serviceId));
-
-    fetch(`/admin/api/vehicle-tracking/service-request/${serviceId}`, {
-        method: 'GET',
-        headers: {
-            'Authorization': 'Bearer ' + token,
-            'Content-Type': 'application/json'
-        }
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('API call failed: ' + response.status);
-            }
-            return response.json();
-        })
+    apiCall(`/admin/api/vehicle-tracking/service-request/${serviceId}`)
         .then(service => {
+            const vehicle = vehiclesUnderService.find(v => v.requestId === parseInt(serviceId));
             const mergedService = { ...vehicle, ...service };
             document.getElementById('spinnerOverlay').classList.remove('show');
 
@@ -557,11 +547,6 @@ function applyFilters() {
     const dateTo = document.getElementById('filterDateTo').value;
     const serviceAdvisor = document.getElementById('filterByServiceAdvisor').value;
 
-    const token = getJwtToken();
-    if (!token) {
-        return;
-    }
-
     const filterCriteria = {
         vehicleType: vehicleType || null,
         serviceType: serviceType || null,
@@ -574,20 +559,7 @@ function applyFilters() {
     document.getElementById('loading-row-service').style.display = '';
     document.getElementById('empty-row-service').style.display = 'none';
 
-    fetch('/admin/api/vehicle-tracking/under-service/filter', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + token
-        },
-        body: JSON.stringify(filterCriteria)
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('API call failed: ' + response.status);
-            }
-            return response.json();
-        })
+    apiCall('/admin/api/vehicle-tracking/under-service/filter', 'POST', filterCriteria)
         .then(data => {
             vehiclesUnderService = data;
 
@@ -674,12 +646,8 @@ function updateServiceStatus(serviceId) {
 function submitStatusUpdate() {
     document.getElementById('spinnerOverlay').classList.add('show');
     const serviceId = currentServiceId;
-    const token = getJwtToken();
-    if (!token) {
-        return;
-    }
-
     const newStatus = document.getElementById('serviceStatusSelect').value;
+
     $('#updateStatusModal').modal('hide');
 
     setTimeout(function() {
@@ -688,22 +656,9 @@ function submitStatusUpdate() {
         $('body').css('padding-right', '');
     }, 100);
 
-    fetch(`/admin/api/vehicle-tracking/service-request/${serviceId}/status`, {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + token
-        },
-        body: JSON.stringify({
-            status: newStatus
-        })
+    apiCall(`/admin/api/vehicle-tracking/service-request/${serviceId}/status`, 'PUT', {
+        status: newStatus
     })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('API call failed: ' + response.status);
-            }
-            return response.json();
-        })
         .then(data => {
             document.getElementById('spinnerOverlay').classList.remove('show');
 

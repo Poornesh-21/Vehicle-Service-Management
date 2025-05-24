@@ -78,7 +78,7 @@ $(document).ready(function() {
 
                 sessionStorage.setItem("jwt-token", response.token);
 
-                window.location.href = "/admin/dashboard?token=" + encodeURIComponent(response.token);
+                window.location.href = "/admin/dashboard";
             },
             error: function(xhr) {
                 let errorMsg = "Authentication failed. Please check your credentials.";

@@ -3,7 +3,6 @@ package com.albany.mvc.controller.admin;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class AdminController {
@@ -14,12 +13,7 @@ public class AdminController {
     }
 
     @GetMapping("/admin/dashboard")
-    public String dashboard(@RequestParam(required = false) String token, Model model) {
-        if (token == null || token.isEmpty()) {
-            return "redirect:/admin/login?error=session_expired";
-        }
-
-        model.addAttribute("token", token);
+    public String dashboard(Model model) {
         return "admin/dashboard";
     }
 
@@ -30,7 +24,6 @@ public class AdminController {
 
     @GetMapping("/login")
     public String redirectLogin() {
-
         return "redirect:/admin/login";
     }
 }

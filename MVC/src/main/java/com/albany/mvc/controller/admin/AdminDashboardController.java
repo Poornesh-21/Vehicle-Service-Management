@@ -4,18 +4,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
 
-/**
- * Controller for dashboard API endpoints only
- * No view mapping - that's handled by AdminController
- */
 @Controller
 @RequestMapping("/admin/dashboard")
 public class AdminDashboardController {
@@ -30,17 +36,13 @@ public class AdminDashboardController {
         this.restTemplate = restTemplate;
     }
 
-    /**
-     * Get dashboard data from the REST API
-     */
     @GetMapping("/api/data")
     @ResponseBody
     public ResponseEntity<?> getDashboardData(
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestParam(value = "token", required = false) String token) {
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
 
         try {
-            HttpHeaders headers = createHeaders(authHeader, token);
+            HttpHeaders headers = createHeaders(authHeader);
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
             ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
@@ -62,19 +64,15 @@ public class AdminDashboardController {
         }
     }
 
-    /**
-     * Assign service advisor to a request
-     */
     @PutMapping("/api/assign/{requestId}")
     @ResponseBody
     public ResponseEntity<?> assignAdvisor(
             @PathVariable Integer requestId,
             @RequestParam Integer advisorId,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestParam(value = "token", required = false) String token) {
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
 
         try {
-            HttpHeaders headers = createHeaders(authHeader, token);
+            HttpHeaders headers = createHeaders(authHeader);
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
             ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
@@ -96,15 +94,10 @@ public class AdminDashboardController {
         }
     }
 
-    /**
-     * Helper method to create HTTP headers with authorization if provided
-     */
-    private HttpHeaders createHeaders(String authHeader, String token) {
+    private HttpHeaders createHeaders(String authHeader) {
         HttpHeaders headers = new HttpHeaders();
         if (authHeader != null && !authHeader.isEmpty()) {
             headers.set("Authorization", authHeader);
-        } else if (token != null && !token.isEmpty()) {
-            headers.set("Authorization", "Bearer " + token);
         }
         return headers;
     }

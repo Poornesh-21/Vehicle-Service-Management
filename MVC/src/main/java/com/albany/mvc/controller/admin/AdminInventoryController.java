@@ -37,18 +37,15 @@ public class AdminInventoryController {
 
     /**
      * Renders the inventory page
+     * Removed token parameter requirement - authentication handled by JavaScript
      */
     @GetMapping("/inventory")
     public String inventoryPage(
-            @RequestParam(required = false) String token,
             @RequestParam(required = false) String success,
             Model model) {
 
-        if (token == null || token.isEmpty()) {
-            return "redirect:/admin/login?error=session_expired";
-        }
+        // Token check removed - handled by client-side JavaScript
 
-        model.addAttribute("token", token);
         if (success != null) {
             model.addAttribute("success", success);
         }
@@ -291,6 +288,7 @@ public class AdminInventoryController {
 
     /**
      * Helper method to create HTTP headers with authorization if provided
+     * Removed token parameter since we only use Authorization header now
      */
     private HttpHeaders createHeaders(String authHeader) {
         HttpHeaders headers = new HttpHeaders();

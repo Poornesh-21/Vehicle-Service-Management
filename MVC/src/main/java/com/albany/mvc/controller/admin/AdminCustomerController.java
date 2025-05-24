@@ -41,38 +41,15 @@ public class AdminCustomerController {
 
     /**
      * Renders the customers page
+     * Removed token parameter - authentication handled by JavaScript
      */
     @GetMapping("/customers")
     public String customersPage(
-            @RequestParam(required = false) String token,
             @RequestParam(required = false) String success,
             Model model) {
 
-        if (token == null || token.isEmpty()) {
-            return "redirect:/admin/login?error=session_expired";
-        }
+        // Token check removed - handled by client-side JavaScript
 
-        try {
-            List<CustomerDTO> customers = fetchAllCustomers(token);
-
-            // Format dates for display
-            customers.forEach(customer -> {
-                if (customer.getLastServiceDate() != null) {
-                    customer.setFormattedLastServiceDate(
-                            customer.getLastServiceDate().format(DATE_FORMATTER)
-                    );
-                } else {
-                    customer.setFormattedLastServiceDate("No service yet");
-                }
-            });
-
-            model.addAttribute("customers", customers);
-        } catch (Exception e) {
-            logger.error("Error fetching customers: {}", e.getMessage());
-            model.addAttribute("customers", Collections.emptyList());
-        }
-
-        model.addAttribute("token", token);
         if (success != null) {
             model.addAttribute("success", success);
         }
@@ -262,25 +239,8 @@ public class AdminCustomerController {
     }
 
     /**
-     * Helper method to fetch all customers using RestTemplate
-     */
-    private List<CustomerDTO> fetchAllCustomers(String token) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(token);
-        HttpEntity<String> entity = new HttpEntity<>(headers);
-
-        ResponseEntity<List<CustomerDTO>> response = restTemplate.exchange(
-                apiBaseUrl + "/admin/customers/api",
-                HttpMethod.GET,
-                entity,
-                new ParameterizedTypeReference<List<CustomerDTO>>() {}
-        );
-
-        return response.getBody();
-    }
-
-    /**
      * Helper method to create HTTP headers with authorization if provided
+     * Removed token parameter since we only use Authorization header now
      */
     private HttpHeaders createHeaders(String authHeader) {
         HttpHeaders headers = new HttpHeaders();

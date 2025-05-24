@@ -18,6 +18,7 @@ function initializeApp() {
     setupLogout();
     setupAuthentication();
     setupDateDisplay();
+    setupNavigation();
 }
 
 function setupMobileMenu() {
@@ -62,6 +63,25 @@ function setupAuthentication() {
         window.location.href = '/admin/login?error=session_expired';
         return;
     }
+}
+
+function setupNavigation() {
+    const currentPath = window.location.pathname;
+    document.querySelectorAll('.sidebar-menu-link').forEach(link => {
+        const href = link.getAttribute('href');
+
+        // Clean up URLs with token parameters
+        if (href && href.includes('token=')) {
+            const cleanHref = href.split('?')[0];
+            link.setAttribute('href', cleanHref);
+        }
+
+        if (href && currentPath.includes(href.split('?')[0])) {
+            link.classList.add('active');
+        } else {
+            link.classList.remove('active');
+        }
+    });
 }
 
 function setupEventListeners() {
@@ -144,6 +164,10 @@ function loadVehiclesUnderServiceFromAPI() {
     })
         .then(response => {
             if (!response.ok) {
+                if (response.status === 401) {
+                    window.location.href = '/admin/login?error=session_expired';
+                    throw new Error('Session expired');
+                }
                 throw new Error('API call failed: ' + response.status);
             }
             return response.json();

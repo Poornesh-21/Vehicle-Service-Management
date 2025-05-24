@@ -56,6 +56,12 @@ function setupNavigation() {
         const href = link.getAttribute('href');
         const baseHref = href ? href.split('?')[0] : '';
 
+        // Update href to remove any token parameters if present
+        if (href && href.includes('token=')) {
+            const cleanHref = baseHref;
+            link.setAttribute('href', cleanHref);
+        }
+
         if (baseHref && currentPath.includes(baseHref)) {
             link.classList.add('active');
         } else {
@@ -160,61 +166,6 @@ function setupEventListeners() {
         'editUnitPrice': 'editUnitPriceError',
         'editReorderLevel': 'editReorderLevelError'
     });
-}
-
-function setupFormValidation(formId, fieldMap) {
-    const form = document.getElementById(formId);
-    if (!form) return;
-
-    for (const fieldId in fieldMap) {
-        const field = document.getElementById(fieldId);
-        const errorId = fieldMap[fieldId];
-
-        if (field) {
-            field.addEventListener('blur', function() {
-                let errorMessage = '';
-                if (!this.value) {
-                    errorMessage = 'This field is required';
-                } else if (this.type === 'number' && parseFloat(this.value) < 0) {
-                    errorMessage = 'Value must be a positive number';
-                }
-
-                validateField(this, document.getElementById(errorId), errorMessage);
-            });
-
-            if (field.tagName === 'SELECT') {
-                field.addEventListener('change', function() {
-                    validateField(this, document.getElementById(errorId),
-                        this.value ? '' : 'Please select an option');
-                });
-            }
-        }
-    }
-
-    const modalId = formId === 'addInventoryForm' ? 'addInventoryModal' : 'editInventoryModal';
-    const modal = document.getElementById(modalId);
-    if (modal) {
-        modal.addEventListener('hidden.bs.modal', function() {
-            form.reset();
-
-            for (const fieldId in fieldMap) {
-                const field = document.getElementById(fieldId);
-                if (field) {
-                    field.classList.remove('is-valid', 'is-invalid');
-                }
-
-                const errorElement = document.getElementById(fieldMap[fieldId]);
-                if (errorElement) {
-                    errorElement.textContent = '';
-                }
-            }
-
-            const formErrorMessage = document.getElementById(formId === 'addInventoryForm' ? 'formErrorMessage' : 'editFormErrorMessage');
-            if (formErrorMessage) {
-                formErrorMessage.style.display = 'none';
-            }
-        });
-    }
 }
 
 function getToken() {

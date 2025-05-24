@@ -33,18 +33,15 @@ public class AdminVehicleTrackingController {
 
     /**
      * Renders the under service page
+     * Removed token parameter - authentication handled by JavaScript
      */
     @GetMapping("/under-service")
     public String underServicePage(
-            @RequestParam(required = false) String token,
             @RequestParam(required = false) String success,
             Model model) {
 
-        if (token == null || token.isEmpty()) {
-            return "redirect:/admin/login?error=session_expired";
-        }
+        // Token check removed - handled by client-side JavaScript
 
-        model.addAttribute("token", token);
         if (success != null) {
             model.addAttribute("success", success);
         }
@@ -58,11 +55,10 @@ public class AdminVehicleTrackingController {
     @GetMapping("/api/vehicle-tracking/under-service")
     @ResponseBody
     public ResponseEntity<List<?>> getVehiclesUnderService(
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestParam(value = "token", required = false) String token) {
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
 
         try {
-            HttpHeaders headers = createHeaders(authHeader, token);
+            HttpHeaders headers = createHeaders(authHeader);
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
             ResponseEntity<List<?>> response = restTemplate.exchange(
@@ -87,11 +83,10 @@ public class AdminVehicleTrackingController {
     @ResponseBody
     public ResponseEntity<?> getServiceRequestDetails(
             @PathVariable("id") Integer id,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestParam(value = "token", required = false) String token) {
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
 
         try {
-            HttpHeaders headers = createHeaders(authHeader, token);
+            HttpHeaders headers = createHeaders(authHeader);
             HttpEntity<String> entity = new HttpEntity<>(headers);
 
             ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
@@ -127,11 +122,10 @@ public class AdminVehicleTrackingController {
     public ResponseEntity<?> updateServiceRequestStatus(
             @PathVariable("id") Integer id,
             @RequestBody Map<String, String> request,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestParam(value = "token", required = false) String token) {
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
 
         try {
-            HttpHeaders headers = createHeaders(authHeader, token);
+            HttpHeaders headers = createHeaders(authHeader);
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<Map<String, String>> entity = new HttpEntity<>(request, headers);
 
@@ -167,11 +161,10 @@ public class AdminVehicleTrackingController {
     @ResponseBody
     public ResponseEntity<List<?>> filterVehiclesUnderService(
             @RequestBody Map<String, Object> filterCriteria,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            @RequestParam(value = "token", required = false) String token) {
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
 
         try {
-            HttpHeaders headers = createHeaders(authHeader, token);
+            HttpHeaders headers = createHeaders(authHeader);
             headers.setContentType(MediaType.APPLICATION_JSON);
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(filterCriteria, headers);
 
@@ -192,13 +185,12 @@ public class AdminVehicleTrackingController {
 
     /**
      * Helper method to create HTTP headers with authorization if provided
+     * Removed token parameter since we only use Authorization header now
      */
-    private HttpHeaders createHeaders(String authHeader, String token) {
+    private HttpHeaders createHeaders(String authHeader) {
         HttpHeaders headers = new HttpHeaders();
         if (authHeader != null && !authHeader.isEmpty()) {
             headers.set("Authorization", authHeader);
-        } else if (token != null && !token.isEmpty()) {
-            headers.set("Authorization", "Bearer " + token);
         }
         return headers;
     }

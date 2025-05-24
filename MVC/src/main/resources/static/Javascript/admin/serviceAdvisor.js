@@ -7,99 +7,73 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeApp();
     setupEventListeners();
     loadServiceAdvisors();
+});
 
-    function initializeApp() {
-        setupMobileMenu();
-        setupLogout();
-        setupAuthentication();
-        setupNavigation();
-    }
+function initializeApp() {
+    setupMobileMenu();
+    setupLogout();
+    setupAuthentication();
+    setupNavigation();
+}
 
-    function setupMobileMenu() {
-        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-        if (mobileMenuToggle) {
-            mobileMenuToggle.addEventListener('click', function() {
-                document.getElementById('sidebar').classList.toggle('active');
-            });
-        }
-    }
-
-    function setupLogout() {
-        const logoutBtn = document.getElementById('logoutBtn');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', function() {
-                localStorage.removeItem("jwt-token");
-                sessionStorage.removeItem("jwt-token");
-                localStorage.removeItem("user-role");
-                localStorage.removeItem("user-name");
-                sessionStorage.removeItem("user-role");
-                sessionStorage.removeItem("user-name");
-                window.location.href = '/admin/logout';
-            });
-        }
-    }
-
-    function setupAuthentication() {
-        const token = getToken();
-        if (!token) {
-            window.location.href = '/admin/login?error=session_expired';
-            return;
-        }
-    }
-
-    function setupNavigation() {
-        const currentPath = window.location.pathname;
-        document.querySelectorAll('.sidebar-menu-link').forEach(link => {
-            const href = link.getAttribute('href');
-            if (href && currentPath.includes(href.split('?')[0])) {
-                link.classList.add('active');
-            } else {
-                link.classList.remove('active');
-            }
+function setupMobileMenu() {
+    const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+    if (mobileMenuToggle) {
+        mobileMenuToggle.addEventListener('click', function() {
+            document.getElementById('sidebar').classList.toggle('active');
         });
     }
+}
 
-    function setupEventListeners() {
-        const addAdvisorModalEl = document.getElementById('addAdvisorModal');
-        if (addAdvisorModalEl) {
-            addAdvisorModalEl.addEventListener('hidden.bs.modal', function() {
-                clearErrorMessage('addAdvisorForm');
-                const form = document.getElementById('addAdvisorForm');
-                if (form) {
-                    form.querySelectorAll('.is-invalid').forEach(input => {
-                        input.classList.remove('is-invalid');
-                    });
-                    form.querySelectorAll('.error-message').forEach(error => {
-                        error.classList.remove('show');
-                        error.textContent = '';
-                    });
-                }
-            });
+function setupLogout() {
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function() {
+            localStorage.removeItem("jwt-token");
+            sessionStorage.removeItem("jwt-token");
+            localStorage.removeItem("user-role");
+            localStorage.removeItem("user-name");
+            sessionStorage.removeItem("user-role");
+            sessionStorage.removeItem("user-name");
+            window.location.href = '/admin/logout';
+        });
+    }
+}
+
+function setupAuthentication() {
+    const token = getToken();
+    if (!token) {
+        window.location.href = '/admin/login?error=session_expired';
+        return;
+    }
+}
+
+function setupNavigation() {
+    const currentPath = window.location.pathname;
+    document.querySelectorAll('.sidebar-menu-link').forEach(link => {
+        const href = link.getAttribute('href');
+
+        // Clean up URLs with token parameters
+        if (href && href.includes('token=')) {
+            const cleanHref = href.split('?')[0];
+            link.setAttribute('href', cleanHref);
         }
 
-        const editAdvisorModalEl = document.getElementById('editAdvisorModal');
-        if (editAdvisorModalEl) {
-            editAdvisorModalEl.addEventListener('hidden.bs.modal', function() {
-                clearErrorMessage('editAdvisorForm');
-                const form = document.getElementById('editAdvisorForm');
-                if (form) {
-                    form.querySelectorAll('.is-invalid').forEach(input => {
-                        input.classList.remove('is-invalid');
-                    });
-                    form.querySelectorAll('.error-message').forEach(error => {
-                        error.classList.remove('show');
-                        error.textContent = '';
-                    });
-                }
-            });
+        if (href && currentPath.includes(href.split('?')[0])) {
+            link.classList.add('active');
+        } else {
+            link.classList.remove('active');
         }
+    });
+}
 
-        const addAdvisorBtn = document.getElementById('addAdvisorBtn');
-        if (addAdvisorBtn) {
-            addAdvisorBtn.addEventListener('click', function() {
-                const form = document.getElementById('addAdvisorForm');
-                form.reset();
-                clearErrorMessage('addAdvisorForm');
+function setupEventListeners() {
+    const addAdvisorModalEl = document.getElementById('addAdvisorModal');
+    if (addAdvisorModalEl) {
+        addAdvisorModalEl.addEventListener('hidden.bs.modal', function() {
+            clearErrorMessage('addAdvisorForm');
+            const form = document.getElementById('addAdvisorForm');
+            if (form) {
                 form.querySelectorAll('.is-invalid').forEach(input => {
                     input.classList.remove('is-invalid');
                 });
@@ -107,111 +81,144 @@ document.addEventListener('DOMContentLoaded', function() {
                     error.classList.remove('show');
                     error.textContent = '';
                 });
-                const addAdvisorModal = new bootstrap.Modal(document.getElementById('addAdvisorModal'));
-                addAdvisorModal.show();
-            });
-        }
-
-        const saveAdvisorBtn = document.getElementById('saveAdvisorBtn');
-        if (saveAdvisorBtn) {
-            saveAdvisorBtn.addEventListener('click', saveServiceAdvisor);
-        }
-
-        const editAdvisorFromDetailsBtn = document.getElementById('editAdvisorFromDetailsBtn');
-        if (editAdvisorFromDetailsBtn) {
-            editAdvisorFromDetailsBtn.addEventListener('click', function() {
-                const advisorId = this.getAttribute('data-advisor-id');
-                showEditModal(advisorId);
-            });
-        }
-
-        const updateAdvisorBtn = document.getElementById('updateAdvisorBtn');
-        if (updateAdvisorBtn) {
-            updateAdvisorBtn.addEventListener('click', updateServiceAdvisor);
-        }
-
-        const resetPasswordBtn = document.getElementById('resetPasswordBtn');
-        if (resetPasswordBtn) {
-            resetPasswordBtn.addEventListener('click', function() {
-                const generatedPassword = generateRandomPassword();
-                document.getElementById('editPassword').value = generatedPassword;
-                showConfirmation(
-                    "Password Reset",
-                    "A new temporary password has been generated and will be sent to the service advisor's email."
-                );
-            });
-        }
-
-        const profileTabs = document.querySelectorAll('.profile-tab');
-        profileTabs.forEach(tab => {
-            tab.addEventListener('click', function() {
-                const tabId = this.getAttribute('data-tab');
-                profileTabs.forEach(t => t.classList.remove('active'));
-                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                this.classList.add('active');
-                document.getElementById(`${tabId}-tab`).classList.add('active');
-            });
+            }
         });
+    }
 
-        const searchInput = document.getElementById('advisorSearch');
-        if (searchInput) {
-            searchInput.addEventListener('keyup', function() {
-                filterServiceAdvisors(this.value);
+    const editAdvisorModalEl = document.getElementById('editAdvisorModal');
+    if (editAdvisorModalEl) {
+        editAdvisorModalEl.addEventListener('hidden.bs.modal', function() {
+            clearErrorMessage('editAdvisorForm');
+            const form = document.getElementById('editAdvisorForm');
+            if (form) {
+                form.querySelectorAll('.is-invalid').forEach(input => {
+                    input.classList.remove('is-invalid');
+                });
+                form.querySelectorAll('.error-message').forEach(error => {
+                    error.classList.remove('show');
+                    error.textContent = '';
+                });
+            }
+        });
+    }
+
+    const addAdvisorBtn = document.getElementById('addAdvisorBtn');
+    if (addAdvisorBtn) {
+        addAdvisorBtn.addEventListener('click', function() {
+            const form = document.getElementById('addAdvisorForm');
+            form.reset();
+            clearErrorMessage('addAdvisorForm');
+            form.querySelectorAll('.is-invalid').forEach(input => {
+                input.classList.remove('is-invalid');
             });
-        }
+            form.querySelectorAll('.error-message').forEach(error => {
+                error.classList.remove('show');
+                error.textContent = '';
+            });
+            const addAdvisorModal = new bootstrap.Modal(document.getElementById('addAdvisorModal'));
+            addAdvisorModal.show();
+        });
+    }
 
-        const filterPills = document.querySelectorAll('.filter-pill');
-        filterPills.forEach(pill => {
-            pill.addEventListener('click', function() {
-                filterPills.forEach(p => p.classList.remove('active'));
-                this.classList.add('active');
-                currentFilter = this.textContent.trim().toLowerCase().replace(' ', '-');
-                currentPage = 1;
+    const saveAdvisorBtn = document.getElementById('saveAdvisorBtn');
+    if (saveAdvisorBtn) {
+        saveAdvisorBtn.addEventListener('click', saveServiceAdvisor);
+    }
+
+    const editAdvisorFromDetailsBtn = document.getElementById('editAdvisorFromDetailsBtn');
+    if (editAdvisorFromDetailsBtn) {
+        editAdvisorFromDetailsBtn.addEventListener('click', function() {
+            const advisorId = this.getAttribute('data-advisor-id');
+            showEditModal(advisorId);
+        });
+    }
+
+    const updateAdvisorBtn = document.getElementById('updateAdvisorBtn');
+    if (updateAdvisorBtn) {
+        updateAdvisorBtn.addEventListener('click', updateServiceAdvisor);
+    }
+
+    const resetPasswordBtn = document.getElementById('resetPasswordBtn');
+    if (resetPasswordBtn) {
+        resetPasswordBtn.addEventListener('click', function() {
+            const generatedPassword = generateRandomPassword();
+            document.getElementById('editPassword').value = generatedPassword;
+            showConfirmation(
+                "Password Reset",
+                "A new temporary password has been generated and will be sent to the service advisor's email."
+            );
+        });
+    }
+
+    const profileTabs = document.querySelectorAll('.profile-tab');
+    profileTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const tabId = this.getAttribute('data-tab');
+            profileTabs.forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById(`${tabId}-tab`).classList.add('active');
+        });
+    });
+
+    const searchInput = document.getElementById('advisorSearch');
+    if (searchInput) {
+        searchInput.addEventListener('keyup', function() {
+            filterServiceAdvisors(this.value);
+        });
+    }
+
+    const filterPills = document.querySelectorAll('.filter-pill');
+    filterPills.forEach(pill => {
+        pill.addEventListener('click', function() {
+            filterPills.forEach(p => p.classList.remove('active'));
+            this.classList.add('active');
+            currentFilter = this.textContent.trim().toLowerCase().replace(' ', '-');
+            currentPage = 1;
+            renderServiceAdvisors();
+        });
+    });
+
+    const prevBtn = document.getElementById('prevBtn');
+    if (prevBtn) {
+        prevBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (currentPage > 1) {
+                currentPage--;
                 renderServiceAdvisors();
-            });
+                updatePaginationUI();
+            }
         });
+    }
 
-        const prevBtn = document.getElementById('prevBtn');
-        if (prevBtn) {
-            prevBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                if (currentPage > 1) {
-                    currentPage--;
-                    renderServiceAdvisors();
-                    updatePaginationUI();
-                }
-            });
-        }
+    const nextBtn = document.getElementById('nextBtn');
+    if (nextBtn) {
+        nextBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const filteredAdvisors = getFilteredAdvisors();
+            const totalPages = Math.ceil(filteredAdvisors.length / itemsPerPage);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderServiceAdvisors();
+                updatePaginationUI();
+            }
+        });
+    }
 
-        const nextBtn = document.getElementById('nextBtn');
-        if (nextBtn) {
-            nextBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                const filteredAdvisors = getFilteredAdvisors();
-                const totalPages = Math.ceil(filteredAdvisors.length / itemsPerPage);
-                if (currentPage < totalPages) {
-                    currentPage++;
-                    renderServiceAdvisors();
-                    updatePaginationUI();
-                }
-            });
-        }
-
-        const sortDropdownItems = document.querySelectorAll('.dropdown-menu .dropdown-item');
-        sortDropdownItems.forEach(item => {
-            item.addEventListener('click', function(e) {
-                e.preventDefault();
-                sortDropdownItems.forEach(i => i.classList.remove('active'));
-                this.classList.add('active');
-                document.getElementById('sortDropdown').innerHTML = `
+    const sortDropdownItems = document.querySelectorAll('.dropdown-menu .dropdown-item');
+    sortDropdownItems.forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            sortDropdownItems.forEach(i => i.classList.remove('active'));
+            this.classList.add('active');
+            document.getElementById('sortDropdown').innerHTML = `
                   <i class="fas fa-sort"></i>
                   Sort by: ${this.textContent}
               `;
-                sortServiceAdvisors(this.textContent.toLowerCase());
-            });
+            sortServiceAdvisors(this.textContent.toLowerCase());
         });
-    }
-});
+    });
+}
 
 function getToken() {
     return localStorage.getItem('jwt-token') || sessionStorage.getItem('jwt-token');
@@ -428,7 +435,7 @@ function updatePaginationUI() {
 
     for (let i = 1; i <= totalPages; i++) {
         const pageItem = document.createElement('li');
-        pageItem.className = 'page-item ' + (i === currentPage ? 'active' : '');
+        pageItem.className = `page-item ${i === currentPage ? 'active' : ''}`;
         pageItem.innerHTML = `<a class="page-link" href="#">${i}</a>`;
         pageItem.addEventListener('click', function(e) {
             e.preventDefault();

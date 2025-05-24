@@ -1,58 +1,69 @@
+/**
+ * Customer Management JavaScript
+ * Handles all functionality for the customer management page
+ */
 document.addEventListener('DOMContentLoaded', function() {
-    // UI Element References
+    // ===== Core Elements =====
     const sidebar = document.getElementById('sidebar');
     const mobileMenuToggle = document.getElementById('mobileMenuToggle');
     const spinnerOverlay = document.getElementById('spinnerOverlay');
-    const searchInput = document.getElementById('customerSearch');
+    const customerSearch = document.getElementById('customerSearch');
     const filterPills = document.querySelectorAll('.filter-pill');
-    const profileTabs = document.querySelectorAll('.profile-tab');
     const addCustomerBtn = document.getElementById('addCustomerBtn');
     const saveCustomerBtn = document.getElementById('saveCustomerBtn');
     const editCustomerFromDetailsBtn = document.getElementById('editCustomerFromDetailsBtn');
     const updateCustomerBtn = document.getElementById('updateCustomerBtn');
+    const profileTabs = document.querySelectorAll('.profile-tab');
+    const paginationLinks = document.querySelectorAll('.pagination .page-link');
+    const CUSTOMERS_PER_PAGE = 10;
 
-    // API Endpoints
+    // ===== API Endpoints =====
     const API_BASE = '/admin/customers/api';
+    const SERVICE_API = '/admin/service-requests/api';
 
-    // Initialize Mobile Menu
-    if (mobileMenuToggle) {
-        mobileMenuToggle.addEventListener('click', () => sidebar.classList.toggle('active'));
+    // ===== State Management =====
+    let allCustomers = [];
+    let currentPage = 1;
+    let totalPages = 1;
+    let selectedCustomerId = null;
+    let serviceHistory = [];
+
+    // ===== Authentication =====
+    // Get auth token from localStorage or sessionStorage
+    function getToken() {
+        return localStorage.getItem("jwt-token") || sessionStorage.getItem("jwt-token");
     }
 
-    // Initialize Auth - Get token from URL params first, then from storage
-    const urlParams = new URLSearchParams(window.location.search);
-    const urlToken = urlParams.get('token');
-
-    // Store token from URL if available (and remove from URL)
-    if (urlToken) {
-        localStorage.setItem("jwt-token", urlToken);
-        // Remove token from URL to prevent exposing it
-        const url = new URL(window.location);
-        url.searchParams.delete('token');
-        window.history.replaceState({}, document.title, url);
+    // Check token and redirect if not authenticated
+    function checkAuth() {
+        const token = getToken();
+        if (!token) {
+            window.location.href = '/admin/login?error=session_expired';
+            return false;
+        }
+        return true;
     }
 
-    const token = getToken();
-    if (!token) {
-        window.location.href = '/admin/login?error=session_expired';
-        return;
+    // Get Authorization headers for API requests
+    function getAuthHeaders() {
+        return {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + getToken()
+        };
     }
 
-    // UI Helper Functions
+    // ===== UI Helpers =====
+    // Show loading spinner
     function showSpinner() {
         spinnerOverlay.classList.add('show');
     }
 
+    // Hide loading spinner
     function hideSpinner() {
         setTimeout(() => spinnerOverlay.classList.remove('show'), 300);
     }
 
-    function showConfirmation(title, message) {
-        document.getElementById('confirmationTitle').textContent = title;
-        document.getElementById('confirmationMessage').textContent = message;
-        new bootstrap.Modal(document.getElementById('successModal')).show();
-    }
-
+    // Show toast notification
     function showToast(title, message, type = 'info') {
         let toastContainer = document.getElementById('toast-container');
         if (!toastContainer) {
@@ -90,59 +101,644 @@ document.addEventListener('DOMContentLoaded', function() {
         toast.addEventListener('hidden.bs.toast', () => toast.remove());
     }
 
-    // Auth Functions
-    function getToken() {
-        return localStorage.getItem("jwt-token") || sessionStorage.getItem("jwt-token");
+    // Show success confirmation modal
+    function showConfirmation(title, message) {
+        document.getElementById('confirmationTitle').textContent = title;
+        document.getElementById('confirmationMessage').textContent = message;
+        new bootstrap.Modal(document.getElementById('successModal')).show();
     }
 
-    function getAuthHeaders() {
-        return {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + getToken()
-        };
+    // Generate initials from name
+    function getInitials(firstName, lastName) {
+        const firstInitial = firstName && firstName.length > 0 ? firstName.charAt(0).toUpperCase() : '';
+        const lastInitial = lastName && lastName.length > 0 ? lastName.charAt(0).toUpperCase() : '';
+        return firstInitial + lastInitial;
     }
 
-    // Handle unauthorized responses
-    function handleResponse(response) {
-        if (response.status === 401 || response.status === 403) {
-            // Token expired or invalid
-            localStorage.removeItem("jwt-token");
-            sessionStorage.removeItem("jwt-token");
-            window.location.href = '/admin/login?error=session_expired';
-            throw new Error('Authentication failed');
+    // Format date for display
+    function formatDate(dateString) {
+        if (!dateString) return 'Not available';
+        try {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        } catch (e) {
+            return 'Invalid date';
         }
+    }
 
-        if (!response.ok) {
-            return response.json().then(data => {
-                throw new Error(data.message || `Server responded with status: ${response.status}`);
-            }).catch(() => {
-                throw new Error(`Server responded with status: ${response.status}`);
+    // ===== Data Loading =====
+    // Load all customers from API
+    function loadCustomers() {
+        if (!checkAuth()) return;
+
+        showSpinner();
+
+        fetch(API_BASE, {
+            method: 'GET',
+            headers: getAuthHeaders()
+        })
+            .then(response => {
+                if (!response.ok) {
+                    if (response.status === 401 || response.status === 403) {
+                        localStorage.removeItem("jwt-token");
+                        sessionStorage.removeItem("jwt-token");
+                        window.location.href = '/admin/login?error=session_expired';
+                        throw new Error('Authentication failed');
+                    }
+                    throw new Error(`Server responded with status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(customers => {
+                hideSpinner();
+                allCustomers = customers || [];
+                totalPages = Math.ceil(allCustomers.length / CUSTOMERS_PER_PAGE);
+                updatePagination();
+                renderCustomers(currentPage);
+            })
+            .catch(error => {
+                hideSpinner();
+                if (error.message !== 'Authentication failed') {
+                    showToast('Error', `Failed to load customers: ${error.message}`, 'error');
+                }
             });
-        }
-
-        return response.json();
     }
 
-    // Navigation Setup
-    document.querySelectorAll('.sidebar-menu-link').forEach(link => {
-        const href = link.getAttribute('href');
+    // Fetch customer details by ID
+    function fetchCustomerDetails(customerId) {
+        if (!checkAuth()) return Promise.reject(new Error('Authentication failed'));
 
-        if (href && !href.startsWith('/admin/') && !href.startsWith('#')) {
-            link.setAttribute('href', '/admin' + href);
+        return fetch(`${API_BASE}/${customerId}`, {
+            method: 'GET',
+            headers: getAuthHeaders()
+        })
+            .then(response => {
+                if (!response.ok) {
+                    if (response.status === 401 || response.status === 403) {
+                        localStorage.removeItem("jwt-token");
+                        sessionStorage.removeItem("jwt-token");
+                        window.location.href = '/admin/login?error=session_expired';
+                        throw new Error('Authentication failed');
+                    }
+                    throw new Error(`Failed to load customer details: ${response.status}`);
+                }
+                return response.json();
+            });
+    }
+
+    // Fetch service history for a customer
+    function fetchServiceHistory(customerId) {
+        if (!checkAuth() || !customerId) return Promise.resolve([]);
+
+        // Use the standard service requests API with status filter
+        return fetch(`${SERVICE_API}?customerId=${customerId}`, {
+            method: 'GET',
+            headers: getAuthHeaders()
+        })
+            .then(response => {
+                if (!response.ok) {
+                    if (response.status === 401 || response.status === 403) {
+                        throw new Error('Authentication failed');
+                    }
+                    return []; // Return empty array on error
+                }
+                return response.json();
+            })
+            .then(services => {
+                // Filter for completed services only
+                if (Array.isArray(services)) {
+                    return services.filter(service =>
+                        service.status === 'Completed' ||
+                        service.state === 'Completed' ||
+                        service.serviceStatus === 'Completed'
+                    );
+                }
+                return [];
+            })
+            .catch(error => {
+                console.error('Error fetching service history:', error);
+                return []; // Return empty array on any error
+            });
+    }
+
+    // ===== UI Rendering =====
+    // Render customers table with pagination
+    function renderCustomers(page = 1) {
+        const tableBody = document.querySelector('.customers-table tbody');
+        if (!tableBody) return;
+
+        // Clear existing rows
+        tableBody.innerHTML = '';
+
+        if (allCustomers.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center py-4">
+                        <div class="no-data-message">
+                            <i class="fas fa-users fa-3x mb-3 text-muted"></i>
+                            <h4>No customers found</h4>
+                            <p class="text-muted">Add your first customer to get started</p>
+                        </div>
+                    </td>
+                </tr>`;
+            return;
         }
 
-        if (href && href.includes('token=')) {
-            const url = new URL(href, window.location.origin);
-            url.searchParams.delete('token');
-            link.setAttribute('href', url.pathname + url.search);
+        // Calculate slice of customers to show based on pagination
+        const start = (page - 1) * CUSTOMERS_PER_PAGE;
+        const end = start + CUSTOMERS_PER_PAGE;
+        const customersToShow = allCustomers.slice(start, end);
+
+        // Create and append rows
+        customersToShow.forEach(customer => {
+            const row = document.createElement('tr');
+            row.className = 'customer-row';
+            row.setAttribute('data-customer-id', customer.customerId);
+
+            const initials = getInitials(customer.firstName, customer.lastName);
+            const membershipClass = customer.membershipStatus === 'Premium' ? 'premium' : 'standard';
+            const membershipIcon = customer.membershipStatus === 'Premium' ? 'fas fa-crown' : 'fas fa-user';
+
+            // Ensure proper formatting for service count and last service date
+            const serviceCount = customer.totalServices && !isNaN(parseInt(customer.totalServices))
+                ? parseInt(customer.totalServices)
+                : 0;
+
+            const lastServiceDate = formatDate(customer.lastServiceDate);
+
+            row.innerHTML = `
+                <td>
+                    <div class="customer-cell">
+                        <div class="customer-avatar">${initials}</div>
+                        <div class="customer-info">
+                            <div class="customer-name">${customer.firstName} ${customer.lastName}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>${customer.email}</td>
+                <td>
+                    <span class="phone-number">
+                        <i class="fas fa-phone-alt"></i>
+                        <span>${customer.phoneNumber || 'Not provided'}</span>
+                    </span>
+                </td>
+                <td>
+                    <span class="membership-badge ${membershipClass}">
+                        <i class="${membershipIcon}"></i>
+                        <span>${customer.membershipStatus || 'Standard'}</span>
+                    </span>
+                </td>
+                <td>${serviceCount}</td>
+                <td>
+                    <span class="last-service">
+                        <i class="fas fa-calendar-day"></i>
+                        <span>${lastServiceDate}</span>
+                    </span>
+                </td>
+            `;
+
+            tableBody.appendChild(row);
+
+            // Add click event listener to row
+            row.addEventListener('click', () => {
+                selectedCustomerId = customer.customerId;
+                openCustomerDetailsModal(customer.customerId);
+            });
+        });
+    }
+
+    // Update pagination controls based on data
+    function updatePagination() {
+        const pagination = document.querySelector('.pagination');
+        if (!pagination) return;
+
+        // Get existing elements
+        const items = pagination.querySelectorAll('.page-item');
+        const prevBtn = items[0];
+        const nextBtn = items[items.length - 1];
+
+        // Clear all items except first and last
+        while (pagination.children.length > 2) {
+            pagination.removeChild(pagination.children[1]);
         }
 
-        if (window.location.pathname.includes(href)) {
-            link.classList.add('active');
-        }
-    });
+        // Insert active page button
+        const pageItem = document.createElement('li');
+        pageItem.className = 'page-item active';
+        pageItem.innerHTML = `<a class="page-link" href="#">1</a>`;
+        pagination.insertBefore(pageItem, nextBtn);
 
-    // Setup Filters
+        // Disable navigation buttons since we only have one page
+        prevBtn.classList.add('disabled');
+        nextBtn.classList.add('disabled');
+
+        // Update event listeners for page button
+        pageItem.querySelector('.page-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            // Already on page 1, nothing to do
+        });
+    }
+
+    // Display customer details in modal
+    function populateCustomerDetails(customer) {
+        // Basic info
+        document.getElementById('viewCustomerInitials').textContent = getInitials(customer.firstName, customer.lastName);
+        document.getElementById('viewCustomerName').textContent = `${customer.firstName} ${customer.lastName}`;
+        document.getElementById('viewCustomerEmail').textContent = customer.email;
+        document.getElementById('viewCustomerPhone').textContent = customer.phoneNumber || 'Not provided';
+
+        // Address info
+        const address = [customer.street, customer.city, customer.state, customer.postalCode]
+            .filter(part => part && part.trim() !== '')
+            .join(', ');
+        document.getElementById('viewCustomerAddress').textContent = address || 'Not provided';
+
+        // Membership & service info
+        document.getElementById('viewCustomerMembership').textContent = customer.membershipStatus || 'Standard';
+        document.getElementById('viewCustomerServices').textContent = customer.totalServices || '0';
+        document.getElementById('viewCustomerLastService').textContent = formatDate(customer.lastServiceDate);
+
+        // Set customer ID for edit button
+        document.getElementById('editCustomerFromDetailsBtn').setAttribute('data-customer-id', customer.customerId);
+    }
+
+    // Populate service history in modal
+    function populateServiceHistory(services) {
+        const tableBody = document.getElementById('serviceHistoryTableBody');
+        if (!tableBody) return;
+
+        tableBody.innerHTML = '';
+
+        if (!services || services.length === 0) {
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center py-4">
+                        <div class="no-data-message">
+                            <i class="fas fa-tools fa-3x mb-3 text-muted"></i>
+                            <h4>No service history found</h4>
+                            <p class="text-muted">This customer has not had any completed services yet</p>
+                        </div>
+                    </td>
+                </tr>`;
+            return;
+        }
+
+        // Get the customer's membership status for discount calculation
+        const membershipStatus = document.getElementById('viewCustomerMembership').textContent.trim();
+        const isPremium = membershipStatus.toLowerCase() === 'premium';
+
+        // Sort services by date (newest first)
+        const sortedServices = [...services].sort((a, b) => {
+            const dateA = a.updatedAt || a.completionDate || a.createdAt;
+            const dateB = b.updatedAt || b.completionDate || b.createdAt;
+            return new Date(dateB) - new Date(dateA);
+        });
+
+        sortedServices.forEach(service => {
+            const row = document.createElement('tr');
+
+            // Get vehicle name from available properties
+            let vehicleName = 'Unknown vehicle';
+            if (service.vehicleBrand && service.vehicleModel) {
+                vehicleName = `${service.vehicleBrand} ${service.vehicleModel}`;
+            } else if (service.vehicle && service.vehicle.brand && service.vehicle.model) {
+                vehicleName = `${service.vehicle.brand} ${service.vehicle.model}`;
+            } else if (service.vehicleName) {
+                vehicleName = service.vehicleName;
+            }
+
+            // Use completion date for completed services
+            const serviceDate = formatDate(service.updatedAt || service.completionDate || service.createdAt);
+
+            // Calculate service amount with labor discount for premium customers
+            // Extract labor and material costs
+            let laborCost = 0;
+            try {
+                laborCost = parseFloat(service.laborCost || 0);
+            } catch (e) {
+                console.error('Error parsing laborCost:', e);
+            }
+
+            let materialCost = 0;
+            try {
+                materialCost = parseFloat(service.totalMaterialCost || 0);
+            } catch (e) {
+                console.error('Error parsing materialCost:', e);
+            }
+
+            // Apply premium discount to labor if applicable
+            if (isPremium && laborCost > 0) {
+                laborCost = laborCost * 0.7; // 30% discount
+            }
+
+            // Calculate total
+            let totalAmount = laborCost + materialCost;
+
+            // If we still don't have a valid amount, try other properties
+            if (totalAmount <= 0) {
+                if (typeof service.totalAmount !== 'undefined' && service.totalAmount !== null) {
+                    try {
+                        totalAmount = parseFloat(service.totalAmount);
+                    } catch (e) {}
+                } else if (typeof service.calculatedTotal !== 'undefined' && service.calculatedTotal !== null) {
+                    try {
+                        totalAmount = parseFloat(service.calculatedTotal);
+                    } catch (e) {}
+                } else if (service.invoice && service.invoice.totalAmount) {
+                    try {
+                        totalAmount = parseFloat(service.invoice.totalAmount);
+                    } catch (e) {}
+                }
+            }
+
+            // If still no amount, use fixed default
+            if (totalAmount <= 0 || isNaN(totalAmount)) {
+                totalAmount = 3000;
+            }
+
+            // Format the amount
+            const amount = `₹${totalAmount.toFixed(2)}`;
+
+            row.innerHTML = `
+                <td>${vehicleName}</td>
+                <td>${service.serviceType || 'General Service'}</td>
+                <td>${serviceDate}</td>
+                <td><span class="service-status completed">Completed</span></td>
+                <td>${amount}</td>
+            `;
+
+            tableBody.appendChild(row);
+        });
+    }
+
+    // Open customer details modal
+    function openCustomerDetailsModal(customerId) {
+        showSpinner();
+        let customerData;
+
+        // Fetch customer details
+        fetchCustomerDetails(customerId)
+            .then(customer => {
+                customerData = customer;
+                populateCustomerDetails(customer);
+
+                // After populating details, fetch service history
+                return fetchServiceHistory(customerId);
+            })
+            .then(services => {
+                serviceHistory = services || [];
+
+                // Update customer total services count with actual completed services
+                if (customerData && serviceHistory.length > 0) {
+                    // Update service count display
+                    document.getElementById('viewCustomerServices').textContent = serviceHistory.length;
+
+                    // Update Total Services in table as well if this row is visible
+                    const customerRow = document.querySelector(`.customer-row[data-customer-id="${customerId}"]`);
+                    if (customerRow) {
+                        const totalServicesCell = customerRow.querySelector('td:nth-child(5)');
+                        if (totalServicesCell) {
+                            totalServicesCell.textContent = serviceHistory.length;
+                        }
+                    }
+
+                    // Find most recent service for last service date
+                    const sortedServices = [...serviceHistory].sort((a, b) =>
+                        new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt)
+                    );
+
+                    if (sortedServices[0]) {
+                        const lastServiceDate = sortedServices[0].updatedAt || sortedServices[0].createdAt;
+                        const formattedDate = formatDate(lastServiceDate);
+
+                        // Update in modal
+                        document.getElementById('viewCustomerLastService').textContent = formattedDate;
+
+                        // Update in table if this row is visible
+                        if (customerRow) {
+                            const lastServiceCell = customerRow.querySelector('td:nth-child(6) .last-service span');
+                            if (lastServiceCell) {
+                                lastServiceCell.textContent = formattedDate;
+                            }
+                        }
+
+                        // Also update the customer data in our local store
+                        const customerIndex = allCustomers.findIndex(c => c.customerId === parseInt(customerId));
+                        if (customerIndex !== -1) {
+                            allCustomers[customerIndex].totalServices = serviceHistory.length;
+                            allCustomers[customerIndex].lastServiceDate = lastServiceDate;
+                        }
+                    }
+                }
+
+                populateServiceHistory(serviceHistory);
+                hideSpinner();
+                new bootstrap.Modal(document.getElementById('customerDetailsModal')).show();
+            })
+            .catch(error => {
+                hideSpinner();
+                showToast('Error', error.message || 'Failed to load customer details', 'error');
+            });
+    }
+
+    // ===== Form Validation =====
+    function validateCustomerForm(formId, singleFieldId = null) {
+        const prefix = formId === 'editCustomerForm' ? 'edit' : '';
+
+        // Define field IDs with their corresponding validation rules
+        const fields = {
+            firstName: {
+                id: prefix + 'firstName',
+                required: true,
+                pattern: /^[A-Za-z]+$/,
+                minLength: 1,
+                maxLength: 50,
+                errorId: prefix + 'firstName-error',
+                messages: {
+                    required: "First name is required",
+                    pattern: "First name must contain only alphabetic characters",
+                    length: "First name must be between 1 and 50 characters"
+                }
+            },
+            lastName: {
+                id: prefix + 'lastName',
+                required: true,
+                pattern: /^[A-Za-z]+$/,
+                minLength: 1,
+                maxLength: 50,
+                errorId: prefix + 'lastName-error',
+                messages: {
+                    required: "Last name is required",
+                    pattern: "Last name must contain only alphabetic characters",
+                    length: "Last name must be between 1 and 50 characters"
+                }
+            },
+            email: {
+                id: prefix + 'email',
+                required: true,
+                pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                maxLength: 100,
+                errorId: prefix + 'email-error',
+                messages: {
+                    required: "Email is required",
+                    pattern: "Please enter a valid email address",
+                    length: "Email must be less than 100 characters"
+                }
+            },
+            phone: {
+                id: prefix + 'phone',
+                required: true,
+                pattern: /^(\+?\d{1,3}[-\s]?)?\d{9,12}$/,
+                errorId: prefix + 'phone-error',
+                messages: {
+                    required: "Phone number is required",
+                    pattern: "Please enter a valid phone number"
+                }
+            },
+            street: {
+                id: prefix + 'street',
+                maxLength: 200,
+                errorId: prefix + 'street-error',
+                messages: {
+                    length: "Street address must be less than 200 characters"
+                }
+            },
+            city: {
+                id: prefix + 'city',
+                pattern: /^[A-Za-z\s]*$/,
+                maxLength: 100,
+                errorId: prefix + 'city-error',
+                messages: {
+                    pattern: "City must contain only alphabetic characters and spaces",
+                    length: "City must be less than 100 characters"
+                }
+            },
+            state: {
+                id: prefix + 'state',
+                pattern: /^[A-Za-z\s]*$/,
+                maxLength: 100,
+                errorId: prefix + 'state-error',
+                messages: {
+                    pattern: "State must contain only alphabetic characters and spaces",
+                    length: "State must be less than 100 characters"
+                }
+            },
+            postalCode: {
+                id: prefix + 'postalCode',
+                pattern: /^\d{6}$/,
+                errorId: prefix + 'postalCode-error',
+                messages: {
+                    pattern: "Postal code must be a 6-digit number"
+                }
+            },
+            membershipStatus: {
+                id: prefix + 'membershipStatus',
+                required: true,
+                errorId: prefix + 'membershipStatus-error',
+                messages: {
+                    required: "Membership status is required"
+                }
+            }
+        };
+
+        // Reset validation state
+        const fieldsToValidate = singleFieldId
+            ? [Object.values(fields).find(f => f.id === singleFieldId)]
+            : Object.values(fields);
+
+        fieldsToValidate.forEach(field => {
+            if (!field) return;
+
+            const inputElement = document.getElementById(field.id);
+            const errorElement = document.getElementById(field.errorId);
+
+            if (inputElement) inputElement.classList.remove('is-invalid');
+            if (errorElement) {
+                errorElement.textContent = '';
+                errorElement.style.display = 'none';
+            }
+        });
+
+        // Validate each field
+        let isValid = true;
+
+        fieldsToValidate.forEach(field => {
+            if (!field) return;
+
+            const inputElement = document.getElementById(field.id);
+            if (!inputElement) return;
+
+            const value = inputElement.value.trim();
+
+            // Skip validation if field is optional and empty
+            if (!field.required && !value) return;
+
+            // Required check
+            if (field.required && !value) {
+                displayFieldError(field.id, field.errorId, field.messages.required);
+                isValid = false;
+                return;
+            }
+
+            // Length check
+            if (value && (
+                (field.minLength && value.length < field.minLength) ||
+                (field.maxLength && value.length > field.maxLength)
+            )) {
+                displayFieldError(field.id, field.errorId, field.messages.length);
+                isValid = false;
+                return;
+            }
+
+            // Pattern check
+            if (value && field.pattern && !field.pattern.test(value)) {
+                displayFieldError(field.id, field.errorId, field.messages.pattern);
+                isValid = false;
+            }
+        });
+
+        return isValid;
+    }
+
+    // Display field validation error
+    function displayFieldError(fieldId, errorId, message) {
+        const field = document.getElementById(fieldId);
+        const errorElement = document.getElementById(errorId);
+
+        if (field && errorElement) {
+            field.classList.add('is-invalid');
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+    }
+
+    // ===== Event Handlers =====
+    // Mobile menu toggle
+    if (mobileMenuToggle) {
+        mobileMenuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+    }
+
+    // Customer search
+    if (customerSearch) {
+        customerSearch.addEventListener('input', () => {
+            const searchTerm = customerSearch.value.toLowerCase();
+            const rows = document.querySelectorAll('.customer-row');
+
+            rows.forEach(row => {
+                const customerName = row.querySelector('.customer-name').textContent.toLowerCase();
+                const email = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                const phone = row.querySelector('.phone-number').textContent.toLowerCase();
+
+                row.style.display = (customerName.includes(searchTerm) ||
+                    email.includes(searchTerm) ||
+                    phone.includes(searchTerm)) ? '' : 'none';
+            });
+        });
+    }
+
+    // Filter pills
     if (filterPills.length) {
         filterPills.forEach(pill => {
             pill.addEventListener('click', function() {
@@ -167,25 +763,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Setup Search
-    if (searchInput) {
-        searchInput.addEventListener('keyup', function() {
-            const searchTerm = this.value.toLowerCase();
-            const rows = document.querySelectorAll('.customer-row');
-
-            rows.forEach(row => {
-                const customerName = row.querySelector('.customer-name').textContent.toLowerCase();
-                const email = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
-                const phone = row.querySelector('.phone-number').textContent.toLowerCase();
-
-                row.style.display = (customerName.includes(searchTerm) ||
-                    email.includes(searchTerm) ||
-                    phone.includes(searchTerm)) ? '' : 'none';
-            });
-        });
-    }
-
-    // Setup Profile Tabs
+    // Profile tabs
     if (profileTabs.length) {
         profileTabs.forEach(tab => {
             tab.addEventListener('click', function() {
@@ -200,258 +778,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Setup Customer Row Click Handlers
-    document.querySelectorAll('.customer-row').forEach(row => {
-        row.addEventListener('click', function() {
-            const customerId = this.getAttribute('data-customer-id');
-            fetchAndShowCustomerDetails(customerId);
-        });
-    });
-
-    // Customer CRUD Functions
-    function fetchAndShowCustomerDetails(customerId) {
-        showSpinner();
-
-        fetch(`${API_BASE}/${customerId}`, {
-            method: 'GET',
-            headers: getAuthHeaders()
-        })
-            .then(handleResponse)
-            .then(customer => {
-                populateCustomerDetails(customer);
-                hideSpinner();
-                new bootstrap.Modal(document.getElementById('customerDetailsModal')).show();
-            })
-            .catch(error => {
-                hideSpinner();
-                showToast('Error', error.message || 'Failed to load customer details. Please try again.', 'error');
-            });
-    }
-
-    function populateCustomerDetails(customer) {
-        document.getElementById('viewCustomerInitials').textContent = getInitials(customer.firstName, customer.lastName);
-        document.getElementById('viewCustomerName').textContent = `${customer.firstName} ${customer.lastName}`;
-        document.getElementById('viewCustomerEmail').textContent = customer.email;
-        document.getElementById('viewCustomerPhone').textContent = customer.phoneNumber || 'Not provided';
-
-        const address = [customer.street, customer.city, customer.state, customer.postalCode]
-            .filter(part => part && part.trim() !== '')
-            .join(', ');
-        document.getElementById('viewCustomerAddress').textContent = address || 'Not provided';
-
-        document.getElementById('viewCustomerMembership').textContent = customer.membershipStatus || 'Standard';
-        document.getElementById('viewCustomerServices').textContent = customer.totalServices || '0';
-        document.getElementById('viewCustomerLastService').textContent = customer.lastServiceDate
-            ? new Date(customer.lastServiceDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-            : 'No service yet';
-
-        document.getElementById('editCustomerFromDetailsBtn').setAttribute('data-customer-id', customer.customerId);
-    }
-
-    function getInitials(firstName, lastName) {
-        const firstInitial = firstName && firstName.length > 0 ? firstName.charAt(0).toUpperCase() : '';
-        const lastInitial = lastName && lastName.length > 0 ? lastName.charAt(0).toUpperCase() : '';
-        return firstInitial + lastInitial;
-    }
-
-    // Form Validation
-    function validateCustomerForm(formId, singleFieldId = null) {
-        try {
-            const prefix = formId === 'editCustomerForm' ? 'edit' : '';
-
-            // Define field IDs exactly as they appear in the HTML
-            const fieldIds = {
-                firstName: prefix + 'firstName',
-                lastName: prefix + 'lastName',
-                email: prefix + 'email',
-                phone: prefix + 'phone',
-                street: prefix + 'street',
-                city: prefix + 'city',
-                state: prefix + 'state',
-                postalCode: prefix + 'postalCode',
-                membershipStatus: prefix + 'membershipStatus'
-            };
-
-            const errorIds = {};
-            Object.keys(fieldIds).forEach(key => {
-                errorIds[key] = fieldIds[key] + '-error';
-            });
-
-            // Reset errors
-            if (singleFieldId) {
-                const fieldKey = Object.keys(fieldIds).find(key => fieldIds[key] === singleFieldId);
-                if (fieldKey) {
-                    const errorElement = document.getElementById(errorIds[fieldKey]);
-                    const inputElement = document.getElementById(singleFieldId);
-
-                    if (errorElement) {
-                        errorElement.textContent = '';
-                        errorElement.style.display = 'none';
-                    }
-
-                    if (inputElement) {
-                        inputElement.classList.remove('is-invalid');
-                    }
-                }
-            } else {
-                Object.values(errorIds).forEach(id => {
-                    const errorElement = document.getElementById(id);
-                    if (errorElement) {
-                        errorElement.textContent = '';
-                        errorElement.style.display = 'none';
-                    }
-                });
-
-                Object.values(fieldIds).forEach(id => {
-                    const inputElement = document.getElementById(id);
-                    if (inputElement) {
-                        inputElement.classList.remove('is-invalid');
-                    }
-                });
-            }
-
-            // Validation rules
-            const rules = {
-                firstName: {
-                    required: true,
-                    minLength: 1,
-                    maxLength: 50,
-                    pattern: /^[A-Za-z]+$/,
-                    messages: {
-                        required: "First name is required",
-                        length: "First name must be between 1 and 50 characters",
-                        pattern: "First name must contain only alphabetic characters"
-                    }
-                },
-                lastName: {
-                    required: true,
-                    minLength: 1,
-                    maxLength: 50,
-                    pattern: /^[A-Za-z]+$/,
-                    messages: {
-                        required: "Last name is required",
-                        length: "Last name must be between 1 and 50 characters",
-                        pattern: "Last name must contain only alphabetic characters"
-                    }
-                },
-                email: {
-                    required: true,
-                    maxLength: 100,
-                    pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                    messages: {
-                        required: "Email is required",
-                        pattern: "Please enter a valid email address",
-                        length: "Email must be less than 100 characters"
-                    }
-                },
-                phone: {
-                    required: true,
-                    pattern: /^(\+?\d{1,3}[-\s]?)?\d{9,12}$/,
-                    messages: {
-                        required: "Phone number is required",
-                        pattern: "Please enter a valid phone number. International format is accepted."
-                    }
-                },
-                street: {
-                    maxLength: 200,
-                    messages: {
-                        length: "Street address must be less than 200 characters"
-                    }
-                },
-                city: {
-                    pattern: /^[A-Za-z\s]*$/,
-                    maxLength: 100,
-                    messages: {
-                        length: "City must be less than 100 characters",
-                        pattern: "City must contain only alphabetic characters and spaces"
-                    }
-                },
-                state: {
-                    pattern: /^[A-Za-z\s]*$/,
-                    maxLength: 100,
-                    messages: {
-                        length: "State must be less than 100 characters",
-                        pattern: "State must contain only alphabetic characters and spaces"
-                    }
-                },
-                postalCode: {
-                    pattern: /^\d{6}$/,
-                    messages: {
-                        pattern: "Postal code must be a 6-digit number"
-                    }
-                },
-                membershipStatus: {
-                    required: true,
-                    messages: {
-                        required: "Membership status is required"
-                    }
-                }
-            };
-
-            let isValid = true;
-
-            // Validate only one field or all fields
-            const fieldsToValidate = singleFieldId
-                ? [Object.keys(fieldIds).find(key => fieldIds[key] === singleFieldId)]
-                : Object.keys(fieldIds);
-
-            fieldsToValidate.forEach(field => {
-                if (!field) return;
-
-                // Check if the field element exists before trying to access its value
-                const fieldElement = document.getElementById(fieldIds[field]);
-                if (!fieldElement) return;
-
-                const value = fieldElement.value.trim();
-                const rule = rules[field];
-
-                // Skip validation if the field is optional and empty
-                if (!rule.required && !value) return;
-
-                // Required check
-                if (rule.required && !value) {
-                    displayFieldError(fieldIds[field], errorIds[field], rule.messages.required);
-                    isValid = false;
-                    return;
-                }
-
-                // Length check
-                if (value && ((rule.minLength && value.length < rule.minLength) ||
-                    (rule.maxLength && value.length > rule.maxLength))) {
-                    displayFieldError(fieldIds[field], errorIds[field], rule.messages.length);
-                    isValid = false;
-                    return;
-                }
-
-                // Pattern check
-                if (value && rule.pattern && !rule.pattern.test(value)) {
-                    displayFieldError(fieldIds[field], errorIds[field], rule.messages.pattern);
-                    isValid = false;
-                }
-            });
-
-            return isValid;
-        } catch (error) {
-            showToast("Error", "There was an error validating the form. Please check all fields and try again.", "error");
-            return false;
-        }
-    }
-
-    function displayFieldError(fieldId, errorId, message) {
-        const field = document.getElementById(fieldId);
-        const errorElement = document.getElementById(errorId);
-
-        if (field && errorElement) {
-            field.classList.add('is-invalid');
-            errorElement.textContent = message;
-            errorElement.style.display = 'block';
-        }
-    }
-
-    function validateField(fieldId, formId) {
-        validateCustomerForm(formId, fieldId);
-    }
-
+    // Setup field validation on blur
     function setupFieldValidation(formId) {
         const prefix = formId === 'editCustomerForm' ? 'edit' : '';
 
@@ -463,7 +790,9 @@ document.addEventListener('DOMContentLoaded', function() {
         fieldIds.forEach(fieldId => {
             const field = document.getElementById(fieldId);
             if (field) {
-                field.addEventListener('blur', () => validateField(fieldId, formId));
+                field.addEventListener('blur', () => {
+                    validateCustomerForm(formId, fieldId);
+                });
             }
         });
     }
@@ -475,6 +804,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             document.getElementById('addCustomerForm').reset();
 
+            // Reset validation state
             document.querySelectorAll('#addCustomerForm .invalid-feedback').forEach(el => {
                 el.textContent = '';
                 el.style.display = 'none';
@@ -485,106 +815,88 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             new bootstrap.Modal(document.getElementById('addCustomerModal')).show();
+            setupFieldValidation('addCustomerForm');
 
             setTimeout(() => this.classList.remove('processing'), 300);
-
-            setupFieldValidation('addCustomerForm');
         });
     }
 
-    // Updated Save Customer Button handler with improved error handling
+    // Save Customer Button
     if (saveCustomerBtn) {
         saveCustomerBtn.addEventListener('click', function() {
+            if (!validateCustomerForm('addCustomerForm')) return;
+
             this.classList.add('processing');
             this.disabled = true;
+            showSpinner();
 
-            try {
-                const form = document.getElementById('addCustomerForm');
+            // Prepare form data
+            const formData = {
+                firstName: document.getElementById('firstName').value.trim(),
+                lastName: document.getElementById('lastName').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                phoneNumber: document.getElementById('phone').value.trim(),
+                street: document.getElementById('street').value.trim(),
+                city: document.getElementById('city').value.trim(),
+                state: document.getElementById('state').value.trim(),
+                postalCode: document.getElementById('postalCode').value.trim(),
+                membershipStatus: document.getElementById('membershipStatus').value,
+                isActive: true
+            };
 
-                if (!validateCustomerForm('addCustomerForm')) {
+            fetch(API_BASE, {
+                method: 'POST',
+                headers: getAuthHeaders(),
+                body: JSON.stringify(formData)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.message || `Error creating customer: ${response.status}`);
+                        }).catch(e => {
+                            // If JSON parsing fails, handle the text response
+                            return response.text().then(text => {
+                                throw new Error(text || `Error creating customer: ${response.status}`);
+                            });
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    hideSpinner();
+
+                    bootstrap.Modal.getInstance(document.getElementById('addCustomerModal')).hide();
+                    document.getElementById('addCustomerForm').reset();
+
+                    showConfirmation('Customer Added', 'The customer has been successfully added to the system.');
+
+                    // Refresh customer list
+                    setTimeout(() => {
+                        loadCustomers();
+                    }, 800);
+                })
+                .catch(error => {
+                    hideSpinner();
                     this.classList.remove('processing');
                     this.disabled = false;
-                    return;
-                }
-
-                showSpinner();
-
-                const formData = {
-                    firstName: document.getElementById('firstName').value.trim(),
-                    lastName: document.getElementById('lastName').value.trim(),
-                    email: document.getElementById('email').value.trim(),
-                    phoneNumber: document.getElementById('phone').value.trim(),
-                    street: document.getElementById('street').value.trim(),
-                    city: document.getElementById('city').value.trim(),
-                    state: document.getElementById('state').value.trim(),
-                    postalCode: document.getElementById('postalCode').value.trim(),
-                    membershipStatus: document.getElementById('membershipStatus').value,
-                    isActive: true  // Always set to true for new customers
-                };
-
-                fetch(API_BASE, {
-                    method: 'POST',
-                    headers: getAuthHeaders(),
-                    body: JSON.stringify(formData)
-                })
-                    .then(response => {
-                        if (!response.ok) {
-                            return response.json().then(data => {
-                                throw new Error(data.message || `Error creating customer: ${response.status}`);
-                            }).catch(e => {
-                                // If JSON parsing fails, handle the text response
-                                return response.text().then(text => {
-                                    throw new Error(text || `Error creating customer: ${response.status}`);
-                                });
-                            });
-                        }
-
-                        return response.json();
-                    })
-                    .then(data => {
-                        hideSpinner();
-
-                        const modal = bootstrap.Modal.getInstance(document.getElementById('addCustomerModal'));
-                        if (modal) modal.hide();
-
-                        showConfirmation('Customer Added', 'The customer has been successfully added to the system.');
-
-                        form.reset();
-
-                        setTimeout(() => window.location.reload(), 800);
-                    })
-                    .catch(error => {
-                        hideSpinner();
-                        this.classList.remove('processing');
-                        this.disabled = false;
-                        showToast('Error', error.message || 'Failed to add customer. Please try again.', 'error');
-                    });
-            } catch (e) {
-                hideSpinner();
-                this.classList.remove('processing');
-                this.disabled = false;
-                showToast('Error', 'An unexpected error occurred. Please try again.', 'error');
-            }
+                    showToast('Error', error.message || 'Failed to add customer. Please try again.', 'error');
+                });
         });
     }
 
-    // Edit Customer Button
+    // Edit Customer Button in Details Modal
     if (editCustomerFromDetailsBtn) {
         editCustomerFromDetailsBtn.addEventListener('click', function() {
             const customerId = this.getAttribute('data-customer-id');
             showSpinner();
 
-            fetch(`${API_BASE}/${customerId}`, {
-                method: 'GET',
-                headers: getAuthHeaders()
-            })
-                .then(handleResponse)
+            fetchCustomerDetails(customerId)
                 .then(customer => {
                     hideSpinner();
 
-                    const detailsModal = bootstrap.Modal.getInstance(document.getElementById('customerDetailsModal'));
-                    detailsModal.hide();
+                    bootstrap.Modal.getInstance(document.getElementById('customerDetailsModal')).hide();
 
+                    // Reset validation state
                     document.querySelectorAll('#editCustomerForm .invalid-feedback').forEach(el => {
                         el.textContent = '';
                         el.style.display = 'none';
@@ -594,6 +906,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         el.classList.remove('is-invalid');
                     });
 
+                    // Populate form
                     document.getElementById('editCustomerId').value = customer.customerId;
                     document.getElementById('editUserId').value = customer.userId;
                     document.getElementById('editFirstName').value = customer.firstName;
@@ -606,13 +919,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     document.getElementById('editPostalCode').value = customer.postalCode || '';
                     document.getElementById('editMembershipStatus').value = customer.membershipStatus || 'Standard';
 
-                    new bootstrap.Modal(document.getElementById('editCustomerModal')).show();
-
                     setupFieldValidation('editCustomerForm');
+                    new bootstrap.Modal(document.getElementById('editCustomerModal')).show();
                 })
                 .catch(error => {
                     hideSpinner();
-                    showToast('Error', error.message || 'Failed to load customer details for editing. Please try again.', 'error');
+                    showToast('Error', error.message || 'Failed to load customer details', 'error');
                 });
         });
     }
@@ -645,20 +957,38 @@ document.addEventListener('DOMContentLoaded', function() {
                 headers: getAuthHeaders(),
                 body: JSON.stringify(formData)
             })
-                .then(handleResponse)
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.message || `Error updating customer: ${response.status}`);
+                        }).catch(e => {
+                            return response.text().then(text => {
+                                throw new Error(text || `Error updating customer: ${response.status}`);
+                            });
+                        });
+                    }
+                    return response.json();
+                })
                 .then(data => {
                     hideSpinner();
 
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('editCustomerModal'));
-                    modal.hide();
+                    bootstrap.Modal.getInstance(document.getElementById('editCustomerModal')).hide();
 
                     showConfirmation('Customer Updated', 'The customer information has been successfully updated.');
 
-                    setTimeout(() => window.location.reload(), 1000);
+                    // Refresh customer list
+                    setTimeout(() => {
+                        loadCustomers();
+
+                        // If customer details modal was open, refresh it
+                        if (selectedCustomerId === parseInt(customerId)) {
+                            openCustomerDetailsModal(customerId);
+                        }
+                    }, 800);
                 })
                 .catch(error => {
                     hideSpinner();
-                    showToast('Error', error.message || 'Failed to update customer. Please try again.', 'error');
+                    showToast('Error', error.message || 'Failed to update customer', 'error');
                 });
         });
     }
@@ -671,112 +1001,21 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location.href = '/admin/logout';
     });
 
-    // Initial Load of Customers
-    function loadCustomers() {
-        showSpinner();
+    // ===== Initialization =====
+    // Check URL parameters for token
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlToken = urlParams.get('token');
 
-        fetch(API_BASE, {
-            method: 'GET',
-            headers: getAuthHeaders()
-        })
-            .then(handleResponse)
-            .then(customers => {
-                hideSpinner();
-                if (customers && customers.length > 0) {
-                    populateCustomersTable(customers);
-                }
-            })
-            .catch(error => {
-                hideSpinner();
-                if (error.message !== 'Authentication failed') {
-                    showToast('Error', error.message || 'Failed to load customers. Please refresh and try again.', 'error');
-                }
-            });
+    // Store token from URL if available (and remove from URL)
+    if (urlToken) {
+        localStorage.setItem("jwt-token", urlToken);
+        const url = new URL(window.location);
+        url.searchParams.delete('token');
+        window.history.replaceState({}, document.title, url);
     }
 
-    function populateCustomersTable(customers) {
-        const tableBody = document.querySelector('.customers-table tbody');
-        if (!tableBody) return;
-
-        // Clear existing rows except any "empty" rows
-        const emptyRow = tableBody.querySelector('tr[colspan="6"]');
-        tableBody.innerHTML = '';
-
-        if (customers.length === 0 && emptyRow) {
-            tableBody.appendChild(emptyRow);
-            return;
-        }
-
-        customers.forEach(customer => {
-            const row = document.createElement('tr');
-            row.className = 'customer-row';
-            row.setAttribute('data-customer-id', customer.customerId);
-
-            const initials = getInitials(customer.firstName, customer.lastName);
-            const membershipClass = customer.membershipStatus === 'Premium' ? 'premium' : 'standard';
-            const membershipIcon = customer.membershipStatus === 'Premium' ? 'fas fa-crown' : 'fas fa-user';
-            const formattedDate = customer.lastServiceDate
-                ? new Date(customer.lastServiceDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-                : 'No service yet';
-
-            row.innerHTML = `
-                <td>
-                    <div class="customer-cell">
-                        <div class="customer-avatar">${initials}</div>
-                        <div class="customer-info">
-                            <div class="customer-name">${customer.firstName} ${customer.lastName}</div>
-                        </div>
-                    </div>
-                </td>
-                <td>${customer.email}</td>
-                <td>
-                    <span class="phone-number">
-                        <i class="fas fa-phone-alt"></i>
-                        <span>${customer.phoneNumber || 'Not provided'}</span>
-                    </span>
-                </td>
-                <td>
-                    <span class="membership-badge ${membershipClass}">
-                        <i class="${membershipIcon}"></i>
-                        <span>${customer.membershipStatus || 'Standard'}</span>
-                    </span>
-                </td>
-                <td>${customer.totalServices || 0}</td>
-                <td>
-                    <span class="last-service">
-                        <i class="fas fa-calendar-day"></i>
-                        <span>${formattedDate}</span>
-                    </span>
-                </td>
-            `;
-
-            tableBody.appendChild(row);
-
-            row.addEventListener('click', function() {
-                fetchAndShowCustomerDetails(customer.customerId);
-            });
-        });
-
-        // If no customers, add empty state row
-        if (customers.length === 0) {
-            const emptyRow = document.createElement('tr');
-            emptyRow.innerHTML = `
-                <td colspan="6" class="text-center py-4">
-                    <div class="no-data-message">
-                        <i class="fas fa-users fa-3x mb-3 text-muted"></i>
-                        <h4>No customers found</h4>
-                        <p class="text-muted">Add your first customer to get started</p>
-                    </div>
-                </td>
-            `;
-            tableBody.appendChild(emptyRow);
-        }
-    }
-
-    // Start the application
-    if (window.location.pathname.includes('/admin/customers')) {
-        if (document.querySelectorAll('.customer-row').length === 0) {
-            loadCustomers();
-        }
+    // Initialize page
+    if (checkAuth()) {
+        loadCustomers();
     }
 });

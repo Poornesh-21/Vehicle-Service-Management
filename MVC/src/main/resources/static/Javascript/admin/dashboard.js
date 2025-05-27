@@ -1,22 +1,40 @@
+/**
+ * Albany Service Dashboard
+ * Main dashboard module for Albany Service Admin Portal
+ */
+
+// Dashboard state management
 const dashboardState = {
-    stats: null,
-    currentPage: {
-        due: 1,
-        inService: 1,
-        completed: 1
+    stats: {
+        vehiclesDue: 0,
+        vehiclesInProgress: 0,
+        vehiclesCompleted: 0,
+        totalRevenue: 0,
+        vehiclesDueList: [],
+        vehiclesInServiceList: [],
+        completedServicesList: []
     },
-    itemsPerPage: {
-        due: 5,
-        inService: 5,
-        completed: 3
+    pagination: {
+        due: { current: 1, itemsPerPage: 5, total: 0 },
+        inService: { current: 1, itemsPerPage: 5, total: 0 },
+        completed: { current: 1, itemsPerPage: 3, total: 0 }
     },
-    isLoading: false
+    filters: {
+        dueSearchTerm: '',
+        inServiceSearchTerm: '',
+        completedSearchTerm: ''
+    },
+    loading: false
 };
 
+// Initialize the application
 document.addEventListener('DOMContentLoaded', () => {
     initializeApp();
 });
 
+/**
+ * Application initialization
+ */
 function initializeApp() {
     setupMobileMenu();
     setupLogout();
@@ -26,6 +44,9 @@ function initializeApp() {
     loadDashboardData();
 }
 
+/**
+ * Setup mobile menu toggle
+ */
 function setupMobileMenu() {
     const mobileMenuToggle = document.getElementById('mobileMenuToggle');
     const sidebar = document.getElementById('sidebar');
@@ -40,6 +61,7 @@ function setupMobileMenu() {
             }
         });
 
+        // Close sidebar on window resize if screen becomes large
         window.addEventListener('resize', () => {
             if (window.innerWidth >= 992 && sidebar.classList.contains('active')) {
                 sidebar.classList.remove('active');
@@ -53,6 +75,9 @@ function setupMobileMenu() {
     }
 }
 
+/**
+ * Setup logout functionality
+ */
 function setupLogout() {
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
@@ -70,6 +95,219 @@ function setupLogout() {
     }
 }
 
+/**
+ * Setup event listeners for dashboard interactions
+ */
+function setupEventListeners() {
+    // Setup pagination for each section
+    setupPagination('dueTable', 'dueTablePagination', 'due');
+    setupPagination('serviceTable', 'serviceTablePagination', 'inService');
+    setupPagination('completedServicesGrid', 'completedServicesPagination', 'completed');
+
+    // Setup search functionality
+    setupSearch();
+
+    // Setup View All buttons with correct URLs
+    setupViewAllButtons();
+
+    // Setup retry button for API errors
+    const retryButton = document.getElementById('apiErrorRetry');
+    if (retryButton) {
+        retryButton.addEventListener('click', () => {
+            hideApiError();
+            loadDashboardData();
+        });
+    }
+}
+
+/**
+ * Setup pagination controls for each section
+ * @param {string} tableId - Table ID
+ * @param {string} paginationId - Pagination container ID
+ * @param {string} section - Section identifier (due, inService, completed)
+ */
+function setupPagination(tableId, paginationId, section) {
+    const paginationElement = document.getElementById(paginationId);
+    if (!paginationElement) return;
+
+    // Page number buttons
+    paginationElement.querySelectorAll('[data-page]').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const page = parseInt(this.getAttribute('data-page'));
+            changePage(page, section);
+        });
+    });
+
+    // Previous button
+    const prevBtn = document.getElementById(`${section}PrevBtn`);
+    if (prevBtn) {
+        prevBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (dashboardState.pagination[section].current > 1) {
+                changePage(dashboardState.pagination[section].current - 1, section);
+            }
+        });
+    }
+
+    // Next button
+    const nextBtn = document.getElementById(`${section}NextBtn`);
+    if (nextBtn) {
+        nextBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const totalPages = Math.ceil(dashboardState.pagination[section].total / dashboardState.pagination[section].itemsPerPage);
+            if (dashboardState.pagination[section].current < totalPages) {
+                changePage(dashboardState.pagination[section].current + 1, section);
+            }
+        });
+    }
+}
+
+/**
+ * Setup search functionality for all sections
+ */
+function setupSearch() {
+    // Map search inputs to their respective tables/grids
+    const searchMappings = {
+        'dueTableSearch': { section: 'due', type: 'table' },
+        'serviceTableSearch': { section: 'inService', type: 'table' },
+        'completedServiceSearch': { section: 'completed', type: 'grid' }
+    };
+
+    // Add event listeners to all search inputs
+    Object.entries(searchMappings).forEach(([searchId, config]) => {
+        const searchInput = document.getElementById(searchId);
+        if (searchInput) {
+            searchInput.addEventListener('keyup', function() {
+                const searchTerm = this.value.trim();
+                dashboardState.filters[`${config.section}SearchTerm`] = searchTerm;
+
+                if (config.type === 'table') {
+                    filterTable(config.section);
+                } else {
+                    filterCompletedServices(searchTerm);
+                }
+            });
+        }
+    });
+}
+
+/**
+ * Filter table rows based on search term
+ * @param {string} section - Section identifier (due, inService)
+ */
+function filterTable(section) {
+    const searchTerm = dashboardState.filters[`${section}SearchTerm`].toLowerCase();
+
+    // If search term is empty, reset to normal pagination view
+    if (!searchTerm) {
+        dashboardState.pagination[section].current = 1;
+        renderSection(section);
+        updatePaginationUI(section);
+        return;
+    }
+
+    // Filter the data based on section
+    let filteredData = [];
+
+    if (section === 'due') {
+        filteredData = dashboardState.stats.vehiclesDueList.filter(item =>
+            objectContainsSearchTerm(item, searchTerm)
+        );
+    } else if (section === 'inService') {
+        filteredData = dashboardState.stats.vehiclesInServiceList.filter(item =>
+            objectContainsSearchTerm(item, searchTerm)
+        );
+    }
+
+    // Update pagination for the filtered data
+    dashboardState.pagination[section].total = filteredData.length;
+    dashboardState.pagination[section].current = 1;
+
+    // Render the filtered data
+    if (section === 'due') {
+        renderDueTable(filteredData);
+    } else if (section === 'inService') {
+        renderServiceTable(filteredData);
+    }
+
+    updatePaginationUI(section);
+}
+
+/**
+ * Check if an object contains the search term in any of its string properties
+ * @param {Object} obj - Object to search in
+ * @param {string} searchTerm - Term to search for
+ * @returns {boolean} - True if object contains the search term
+ */
+function objectContainsSearchTerm(obj, searchTerm) {
+    if (!obj) return false;
+
+    return Object.values(obj).some(value => {
+        if (value === null || value === undefined) return false;
+
+        if (typeof value === 'string') {
+            return value.toLowerCase().includes(searchTerm);
+        }
+
+        if (typeof value === 'object') {
+            return objectContainsSearchTerm(value, searchTerm);
+        }
+
+        return String(value).toLowerCase().includes(searchTerm);
+    });
+}
+
+/**
+ * Filter completed services grid based on search term
+ * @param {string} searchTerm - Term to search for
+ */
+function filterCompletedServices(searchTerm) {
+    searchTerm = searchTerm.toLowerCase();
+
+    // If search term is empty, reset to normal pagination view
+    if (!searchTerm) {
+        dashboardState.pagination.completed.current = 1;
+        renderCompletedServices();
+        updatePaginationUI('completed');
+        return;
+    }
+
+    // Filter completed services
+    const filteredServices = dashboardState.stats.completedServicesList.filter(service =>
+        objectContainsSearchTerm(service, searchTerm)
+    );
+
+    // Update pagination
+    dashboardState.pagination.completed.total = filteredServices.length;
+    dashboardState.pagination.completed.current = 1;
+
+    // Render filtered data
+    renderCompletedServices(filteredServices);
+    updatePaginationUI('completed');
+}
+
+/**
+ * Setup "View All" buttons to link to correct pages
+ */
+function setupViewAllButtons() {
+    const buttonMappings = {
+        'viewAllDueBtn': '/admin/service-requests?filter=due',
+        'viewAllInServiceBtn': '/admin/under-service',
+        'viewAllCompletedBtn': '/admin/completed-services'
+    };
+
+    Object.entries(buttonMappings).forEach(([id, url]) => {
+        const button = document.getElementById(id);
+        if (button) {
+            button.href = url;
+        }
+    });
+}
+
+/**
+ * Setup current date display
+ */
 function setupDateDisplay() {
     const dateElement = document.getElementById('current-date');
     if (dateElement) {
@@ -79,6 +317,9 @@ function setupDateDisplay() {
     }
 }
 
+/**
+ * Setup user name display
+ */
 function setupUserName() {
     const userNameElement = document.getElementById('userName');
     if (userNameElement) {
@@ -89,112 +330,24 @@ function setupUserName() {
     }
 }
 
-function setupEventListeners() {
-    setupPagination('dueTable', 'dueTablePagination', 'due');
-    setupPagination('serviceTable', 'serviceTablePagination', 'inService');
-    setupPagination('completedServicesGrid', 'completedServicesPagination', 'completed');
-    setupSearch();
-    setupViewAllButtons();
-
-    const retryButton = document.getElementById('apiErrorRetry');
-    if (retryButton) {
-        retryButton.addEventListener('click', () => {
-            hideApiError();
-            loadDashboardData();
-        });
-    }
-}
-
-function setupViewAllButtons() {
-    const buttons = {
-        'viewAllDueBtn': '/admin/service-requests?filter=due',
-        'viewAllInServiceBtn': '/admin/under-service',
-        'viewAllCompletedBtn': '/admin/completed-services'
-    };
-
-    Object.entries(buttons).forEach(([id, url]) => {
-        const button = document.getElementById(id);
-        if (button) {
-            button.href = url;
-        }
-    });
-}
-
-function setupPagination(tableId, paginationId, type) {
-    const paginationElement = document.getElementById(paginationId);
-    if (!paginationElement) return;
-
-    paginationElement.querySelectorAll('[data-page]').forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            const page = parseInt(this.getAttribute('data-page'));
-            changePage(page, type);
-        });
-    });
-
-    const prevBtn = document.getElementById(`${type}PrevBtn`);
-    if (prevBtn) {
-        prevBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            if (dashboardState.currentPage[type] > 1) {
-                changePage(dashboardState.currentPage[type] - 1, type);
-            }
-        });
-    }
-
-    const nextBtn = document.getElementById(`${type}NextBtn`);
-    if (nextBtn) {
-        nextBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            const totalItems = getTotalItemsForType(type);
-            const totalPages = Math.ceil(totalItems / dashboardState.itemsPerPage[type]);
-
-            if (dashboardState.currentPage[type] < totalPages) {
-                changePage(dashboardState.currentPage[type] + 1, type);
-            }
-        });
-    }
-}
-
-function setupSearch() {
-    const searchMappings = {
-        'dueTableSearch': { tableId: 'dueTable', type: 'table' },
-        'serviceTableSearch': { tableId: 'serviceTable', type: 'table' },
-        'completedServiceSearch': { tableId: 'completedServicesGrid', type: 'grid' }
-    };
-
-    Object.entries(searchMappings).forEach(([searchId, config]) => {
-        const searchInput = document.getElementById(searchId);
-        if (searchInput) {
-            searchInput.addEventListener('keyup', function() {
-                const searchTerm = this.value.trim();
-                if (config.type === 'table') {
-                    filterTable(config.tableId, searchTerm);
-                } else {
-                    filterCompletedServices(searchTerm);
-                }
-            });
-        }
-    });
-}
-
+/**
+ * Load dashboard data from API
+ */
 function loadDashboardData() {
-    if (dashboardState.isLoading) return;
+    if (dashboardState.loading) return;
 
-    dashboardState.isLoading = true;
+    dashboardState.loading = true;
     showSpinner();
     hideApiError();
 
     const token = getToken();
     if (!token) {
-        console.error('No authentication token found when loading data');
+        console.error('No authentication token found');
         window.location.href = '/admin/login?error=session_expired';
         return;
     }
 
-    const url = `${window.location.origin}/admin/dashboard/api/data`;
-
-    fetch(url, {
+    fetch(`${window.location.origin}/admin/dashboard/api/data`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -222,40 +375,177 @@ function loadDashboardData() {
             return response.json();
         })
         .then(data => {
-            dashboardState.isLoading = false;
+            dashboardState.loading = false;
             hideSpinner();
 
             if (!data) {
                 throw new Error('Empty response received from server');
             }
 
+            // Process the data to ensure proper categorization
+            processAndCategorizeData(data);
+
+            // Save processed data to state
             dashboardState.stats = data;
+
+            // Update pagination totals
+            dashboardState.pagination.due.total = data.vehiclesDueList?.length || 0;
+            dashboardState.pagination.inService.total = data.vehiclesInServiceList?.length || 0;
+            dashboardState.pagination.completed.total = data.completedServicesList?.length || 0;
+
+            // Update UI
             updateDashboardUI();
         })
         .catch(error => {
-            dashboardState.isLoading = false;
+            dashboardState.loading = false;
             hideSpinner();
             console.error('Error loading dashboard data:', error);
             showApiError(`Failed to load dashboard data: ${error.message}`);
         });
 }
 
+/**
+ * Process and categorize service requests
+ * @param {Object} data - Dashboard data from API
+ */
+function processAndCategorizeData(data) {
+    console.log("Original data from server:", JSON.stringify(data));
+
+    // Initialize arrays if they don't exist
+    if (!data.vehiclesDueList) data.vehiclesDueList = [];
+    if (!data.vehiclesInServiceList) data.vehiclesInServiceList = [];
+    if (!data.completedServicesList) data.completedServicesList = [];
+
+    // Track completed services separately - they should remain in completedServicesList
+    const completedServices = [...data.completedServicesList];
+
+    // Combine all non-completed service requests into a single array for reprocessing
+    const allServiceRequests = [];
+
+    // Add all requests from vehiclesDueList
+    if (Array.isArray(data.vehiclesDueList)) {
+        data.vehiclesDueList.forEach(request => {
+            // Skip if it's already in completed services
+            if (request.status === 'Completed') {
+                if (!completedServices.some(s => s.requestId === request.requestId)) {
+                    completedServices.push(request);
+                }
+            } else {
+                allServiceRequests.push({...request, source: 'due'});
+            }
+        });
+    }
+
+    // Add all requests from vehiclesInServiceList
+    if (Array.isArray(data.vehiclesInServiceList)) {
+        data.vehiclesInServiceList.forEach(request => {
+            // Skip if it's already in completed services
+            if (request.status === 'Completed') {
+                if (!completedServices.some(s => s.requestId === request.requestId)) {
+                    completedServices.push(request);
+                }
+            } else if (!allServiceRequests.some(r => r.requestId === request.requestId)) {
+                allServiceRequests.push({...request, source: 'inService'});
+            }
+        });
+    }
+
+    console.log("Combined service requests:", allServiceRequests.length);
+
+    // Create new empty lists
+    const newDueList = [];
+    const newInServiceList = [];
+
+    // Process each request and categorize it correctly
+    allServiceRequests.forEach(request => {
+        // Check for service advisor assignment - CRITICAL PART
+        // If service_advisor_id exists OR serviceAdvisorId exists OR serviceAdvisor object exists,
+        // then the request should go to Under Service
+        const hasServiceAdvisor =
+            // Check for service_advisor_id (database field) which is critical
+            request.service_advisor_id !== undefined && request.service_advisor_id !== null ||
+            // Direct property checks for variations
+            request.serviceAdvisorId !== undefined && request.serviceAdvisorId !== null ||
+            // Check for serviceAdvisorName (but exclude "Not Assigned")
+            (typeof request.serviceAdvisorName === 'string' &&
+                !request.serviceAdvisorName.toLowerCase().includes('not assigned') &&
+                request.serviceAdvisorName.trim() !== '') ||
+            // Check for serviceAdvisor object
+            (request.serviceAdvisor && (
+                request.serviceAdvisor.advisorId ||
+                request.serviceAdvisor.id ||
+                (typeof request.serviceAdvisor === 'number' && request.serviceAdvisor > 0) ||
+                (request.serviceAdvisor.user && (
+                    request.serviceAdvisor.user.firstName ||
+                    request.serviceAdvisor.user.lastName
+                ))
+            ));
+
+        console.log(`Request ID: ${request.requestId}, Has Service Advisor: ${hasServiceAdvisor}, Raw service_advisor_id: ${request.service_advisor_id}, serviceAdvisorId: ${request.serviceAdvisorId}`);
+
+        // Properly categorize
+        if (hasServiceAdvisor) {
+            // Add to under service list
+            if (!newInServiceList.some(r => r.requestId === request.requestId)) {
+                newInServiceList.push(request);
+            }
+        } else {
+            // Add to due for service list
+            if (!newDueList.some(r => r.requestId === request.requestId)) {
+                newDueList.push(request);
+            }
+        }
+    });
+
+    console.log("New categorization - Due for service: " + newDueList.length + ", Under service: " + newInServiceList.length);
+
+    // Replace the original lists with our newly categorized lists
+    data.vehiclesDueList = newDueList;
+    data.vehiclesInServiceList = newInServiceList;
+    data.completedServicesList = completedServices;
+
+    // Update the counts
+    data.vehiclesDue = newDueList.length;
+    data.vehiclesInProgress = newInServiceList.length;
+    data.vehiclesCompleted = completedServices.length;
+
+    console.log("Recategorized data:", {
+        dueCount: data.vehiclesDue,
+        inProgressCount: data.vehiclesInProgress,
+        completedCount: data.vehiclesCompleted
+    });
+}
+
+/**
+ * Update dashboard UI with loaded data
+ */
 function updateDashboardUI() {
     if (!dashboardState.stats) {
         console.error('No dashboard stats available to update UI');
         return;
     }
 
+    // Update statistics
     updateDashboardStats();
+
+    // Render all sections
     renderDueTable();
     renderServiceTable();
     renderCompletedServices();
-    updateAllPagination();
+
+    // Update pagination for all sections
+    updatePaginationUI('due');
+    updatePaginationUI('inService');
+    updatePaginationUI('completed');
 }
 
+/**
+ * Update dashboard statistics counters
+ */
 function updateDashboardStats() {
     if (!dashboardState.stats) return;
 
+    // Map element IDs to stat properties
     const elements = {
         vehiclesDue: document.getElementById('vehiclesDueCount'),
         vehiclesInProgress: document.getElementById('vehiclesInProgressCount'),
@@ -263,6 +553,7 @@ function updateDashboardStats() {
         totalRevenue: document.getElementById('totalRevenueAmount')
     };
 
+    // Update each element with its corresponding stat
     if (elements.vehiclesDue) {
         elements.vehiclesDue.textContent = dashboardState.stats.vehiclesDue || 0;
     }
@@ -280,37 +571,43 @@ function updateDashboardStats() {
     }
 }
 
-function updateAllPagination() {
-    updatePaginationUI('due');
-    updatePaginationUI('inService');
-    updatePaginationUI('completed');
-}
-
-function renderDueTable() {
+/**
+ * Render the due vehicles table
+ * @param {Array} customData - Optional filtered data to display
+ */
+function renderDueTable(customData) {
     const tableBody = document.getElementById('dueTableBody');
     if (!tableBody) return;
 
+    // Remove loading indicator
     const loadingRow = document.getElementById('dueTableLoading');
     if (loadingRow) {
         loadingRow.remove();
     }
 
-    const dueList = dashboardState.stats?.vehiclesDueList || [];
+    // Get data to display (either filtered or all)
+    const dueList = customData || dashboardState.stats?.vehiclesDueList || [];
 
+    // Show empty state if no data
     if (dueList.length === 0) {
         tableBody.innerHTML = getEmptyStateHTML('No vehicles due for service', 'car',
             'All vehicles are currently serviced or no pending service requests.');
         return;
     }
 
+    // Clear previous content
     tableBody.innerHTML = '';
 
-    dueList.forEach((vehicle, index) => {
-        const isActivePage = index < dashboardState.itemsPerPage.due;
+    // Calculate pagination
+    const { current, itemsPerPage } = dashboardState.pagination.due;
+    const startIndex = (current - 1) * itemsPerPage;
+    const endIndex = Math.min(startIndex + itemsPerPage, dueList.length);
+    const itemsToShow = dueList.slice(startIndex, endIndex);
 
+    // Create rows for each item
+    itemsToShow.forEach(vehicle => {
         const row = document.createElement('tr');
-        row.className = `data-row${isActivePage ? ' active-page' : ''}`;
-        row.dataset.page = Math.ceil((index + 1) / dashboardState.itemsPerPage.due);
+        row.className = 'data-row active-page';
 
         row.innerHTML = `
       <td>
@@ -343,44 +640,49 @@ function renderDueTable() {
         </span>
       </td>
       <td>${formatDate(vehicle.dueDate)}</td>
-      <td class="table-actions-cell">
-        <a href="/admin/service-requests/${vehicle.requestId}" 
-           class="btn-premium sm primary">
-          <i class="fas fa-eye"></i>
-          View Details
-        </a>
-      </td>
     `;
 
         tableBody.appendChild(row);
     });
 }
 
-function renderServiceTable() {
+/**
+ * Render the vehicles under service table
+ * @param {Array} customData - Optional filtered data to display
+ */
+function renderServiceTable(customData) {
     const tableBody = document.getElementById('serviceTableBody');
     if (!tableBody) return;
 
+    // Remove loading indicator
     const loadingRow = document.getElementById('serviceTableLoading');
     if (loadingRow) {
         loadingRow.remove();
     }
 
-    const inServiceList = dashboardState.stats?.vehiclesInServiceList || [];
+    // Get data to display (either filtered or all)
+    const inServiceList = customData || dashboardState.stats?.vehiclesInServiceList || [];
 
+    // Show empty state if no data
     if (inServiceList.length === 0) {
         tableBody.innerHTML = getEmptyStateHTML('No vehicles currently in service', 'wrench',
             'There are no vehicles currently being serviced.');
         return;
     }
 
+    // Clear previous content
     tableBody.innerHTML = '';
 
-    inServiceList.forEach((vehicle, index) => {
-        const isActivePage = index < dashboardState.itemsPerPage.inService;
+    // Calculate pagination
+    const { current, itemsPerPage } = dashboardState.pagination.inService;
+    const startIndex = (current - 1) * itemsPerPage;
+    const endIndex = Math.min(startIndex + itemsPerPage, inServiceList.length);
+    const itemsToShow = inServiceList.slice(startIndex, endIndex);
 
+    // Create rows for each item
+    itemsToShow.forEach(vehicle => {
         const row = document.createElement('tr');
-        row.className = `data-row${isActivePage ? ' active-page' : ''}`;
-        row.dataset.page = Math.ceil((index + 1) / dashboardState.itemsPerPage.inService);
+        row.className = 'data-row active-page';
 
         row.innerHTML = `
       <td>
@@ -410,30 +712,30 @@ function renderServiceTable() {
       </td>
       <td>${formatDate(vehicle.startDate)}</td>
       <td>${formatDate(vehicle.estimatedCompletionDate)}</td>
-      <td class="table-actions-cell">
-        <a href="/admin/under-service/${vehicle.requestId}" 
-           class="btn-premium sm primary">
-          <i class="fas fa-eye"></i>
-          View Details
-        </a>
-      </td>
     `;
 
         tableBody.appendChild(row);
     });
 }
 
-function renderCompletedServices() {
+/**
+ * Render the completed services grid
+ * @param {Array} customData - Optional filtered data to display
+ */
+function renderCompletedServices(customData) {
     const container = document.getElementById('completedServicesGrid');
     if (!container) return;
 
+    // Remove loading indicator
     const loadingElement = document.getElementById('completedServicesLoading');
     if (loadingElement) {
         loadingElement.remove();
     }
 
-    const completedList = dashboardState.stats?.completedServicesList || [];
+    // Get data to display (either filtered or all)
+    const completedList = customData || dashboardState.stats?.completedServicesList || [];
 
+    // Show empty state if no data
     if (completedList.length === 0) {
         container.innerHTML = `
       <div class="text-center py-5 w-100">
@@ -445,14 +747,19 @@ function renderCompletedServices() {
         return;
     }
 
+    // Clear previous content
     container.innerHTML = '';
 
-    completedList.forEach((service, index) => {
-        const isActivePage = index < dashboardState.itemsPerPage.completed;
+    // Calculate pagination
+    const { current, itemsPerPage } = dashboardState.pagination.completed;
+    const startIndex = (current - 1) * itemsPerPage;
+    const endIndex = Math.min(startIndex + itemsPerPage, completedList.length);
+    const itemsToShow = completedList.slice(startIndex, endIndex);
 
+    // Create cards for each item
+    itemsToShow.forEach(service => {
         const card = document.createElement('div');
-        card.className = `service-card${isActivePage ? ' active-page' : ''}`;
-        card.dataset.page = Math.ceil((index + 1) / dashboardState.itemsPerPage.completed);
+        card.className = 'service-card active-page';
 
         card.innerHTML = `
       <div class="service-card-header">
@@ -486,24 +793,89 @@ function renderCompletedServices() {
         </div>
         <div class="price">Total Cost: ₹${formatCurrency(service.totalCost || 0)}</div>
       </div>
-      <div class="service-card-footer">
-        <a href="/admin/completed-services/${service.serviceId || service.requestId}" 
-           class="btn-premium sm secondary">
-          <i class="fas fa-eye"></i>
-          View Details
-        </a>
-        <a href="/admin/completed-services/${service.serviceId || service.requestId}/invoice" 
-           class="btn-premium sm primary">
-          <i class="fas fa-file-invoice"></i>
-          ${service.hasInvoice ? 'View Invoice' : 'Generate Invoice'}
-        </a>
-      </div>
     `;
 
         container.appendChild(card);
     });
 }
 
+/**
+ * Change current page for a section
+ * @param {number} page - Page number to navigate to
+ * @param {string} section - Section identifier (due, inService, completed)
+ */
+function changePage(page, section) {
+    dashboardState.pagination[section].current = page;
+    renderSection(section);
+    updatePaginationUI(section);
+}
+
+/**
+ * Render a specific section based on section name
+ * @param {string} section - Section to render (due, inService, completed)
+ */
+function renderSection(section) {
+    switch(section) {
+        case 'due':
+            renderDueTable();
+            break;
+        case 'inService':
+            renderServiceTable();
+            break;
+        case 'completed':
+            renderCompletedServices();
+            break;
+        default:
+            console.error('Unknown section:', section);
+    }
+}
+
+/**
+ * Update pagination UI for a section
+ * @param {string} section - Section identifier (due, inService, completed)
+ */
+function updatePaginationUI(section) {
+    const { current, itemsPerPage, total } = dashboardState.pagination[section];
+    const totalPages = Math.ceil(total / itemsPerPage) || 1;
+
+    // Get pagination container
+    const paginationId = section === 'completed' ?
+        'completedServicesPagination' :
+        `${section}TablePagination`;
+    const paginationElement = document.getElementById(paginationId);
+    if (!paginationElement) return;
+
+    // Update page number buttons
+    paginationElement.querySelectorAll('[data-page]').forEach(button => {
+        const buttonPage = parseInt(button.getAttribute('data-page'));
+        button.classList.toggle('active', buttonPage === current);
+
+        // Hide page numbers beyond total pages
+        if (buttonPage > totalPages) {
+            button.style.display = 'none';
+        } else {
+            button.style.display = '';
+        }
+    });
+
+    // Update previous button state
+    const prevBtn = document.getElementById(`${section}PrevBtn`);
+    if (prevBtn) {
+        prevBtn.classList.toggle('disabled', current === 1);
+    }
+
+    // Update next button state
+    const nextBtn = document.getElementById(`${section}NextBtn`);
+    if (nextBtn) {
+        nextBtn.classList.toggle('disabled', current === totalPages || totalPages === 0);
+    }
+}
+
+/**
+ * Get CSS class for status badge
+ * @param {string} status - Status value
+ * @returns {string} - CSS class name
+ */
 function getStatusClass(status) {
     if (!status) return 'progress';
 
@@ -517,6 +889,11 @@ function getStatusClass(status) {
     }
 }
 
+/**
+ * Get icon for status badge
+ * @param {string} status - Status value
+ * @returns {string} - Font Awesome icon name
+ */
 function getStatusIcon(status) {
     if (!status) return 'spinner';
 
@@ -534,165 +911,17 @@ function getStatusIcon(status) {
     }
 }
 
-function getTotalItemsForType(type) {
-    if (!dashboardState.stats) return 0;
-
-    switch (type) {
-        case 'due':
-            return dashboardState.stats.vehiclesDueList?.length || 0;
-        case 'inService':
-            return dashboardState.stats.vehiclesInServiceList?.length || 0;
-        case 'completed':
-            return dashboardState.stats.completedServicesList?.length || 0;
-        default:
-            return 0;
-    }
-}
-
-function changePage(page, type) {
-    dashboardState.currentPage[type] = page;
-
-    switch (type) {
-        case 'due':
-            updateDueTablePage();
-            break;
-        case 'inService':
-            updateServiceTablePage();
-            break;
-        case 'completed':
-            updateCompletedServicesPage();
-            break;
-    }
-
-    updatePaginationUI(type);
-}
-
-function updateDueTablePage() {
-    const tableRows = document.querySelectorAll('#dueTable tbody tr.data-row');
-    const startIndex = (dashboardState.currentPage.due - 1) * dashboardState.itemsPerPage.due;
-    const endIndex = startIndex + dashboardState.itemsPerPage.due;
-
-    tableRows.forEach(row => {
-        row.classList.remove('active-page');
-    });
-
-    for (let i = startIndex; i < endIndex && i < tableRows.length; i++) {
-        tableRows[i].classList.add('active-page');
-    }
-}
-
-function updateServiceTablePage() {
-    const tableRows = document.querySelectorAll('#serviceTable tbody tr.data-row');
-    const startIndex = (dashboardState.currentPage.inService - 1) * dashboardState.itemsPerPage.inService;
-    const endIndex = startIndex + dashboardState.itemsPerPage.inService;
-
-    tableRows.forEach(row => {
-        row.classList.remove('active-page');
-    });
-
-    for (let i = startIndex; i < endIndex && i < tableRows.length; i++) {
-        tableRows[i].classList.add('active-page');
-    }
-}
-
-function updateCompletedServicesPage() {
-    const cards = document.querySelectorAll('#completedServicesGrid .service-card');
-    const startIndex = (dashboardState.currentPage.completed - 1) * dashboardState.itemsPerPage.completed;
-    const endIndex = startIndex + dashboardState.itemsPerPage.completed;
-
-    cards.forEach(card => {
-        card.classList.remove('active-page');
-    });
-
-    for (let i = startIndex; i < endIndex && i < cards.length; i++) {
-        cards[i].classList.add('active-page');
-    }
-}
-
-function updatePaginationUI(type) {
-    const totalItems = getTotalItemsForType(type);
-    const totalPages = Math.ceil(totalItems / dashboardState.itemsPerPage[type]);
-
-    const paginationElement = document.getElementById(`${type}TablePagination`) ||
-        document.getElementById(`${type}ServicesPagination`);
-
-    if (!paginationElement) return;
-
-    paginationElement.querySelectorAll('[data-page]').forEach(button => {
-        const buttonPage = parseInt(button.getAttribute('data-page'));
-        button.classList.toggle('active', buttonPage === dashboardState.currentPage[type]);
-
-        if (buttonPage > totalPages) {
-            button.style.display = 'none';
-        } else {
-            button.style.display = '';
-        }
-    });
-
-    const prevBtn = document.getElementById(`${type}PrevBtn`);
-    if (prevBtn) {
-        prevBtn.classList.toggle('disabled', dashboardState.currentPage[type] === 1);
-    }
-
-    const nextBtn = document.getElementById(`${type}NextBtn`);
-    if (nextBtn) {
-        nextBtn.classList.toggle('disabled', dashboardState.currentPage[type] === totalPages || totalPages === 0);
-    }
-}
-
-function filterTable(tableId, searchTerm) {
-    const tableBody = document.querySelector(`#${tableId} tbody`);
-    if (!tableBody) return;
-
-    const rows = tableBody.querySelectorAll('.data-row');
-    searchTerm = searchTerm.toLowerCase();
-
-    if (!searchTerm) {
-        if (tableId === 'dueTable') {
-            updateDueTablePage();
-        } else if (tableId === 'serviceTable') {
-            updateServiceTablePage();
-        }
-        return;
-    }
-
-    rows.forEach(row => {
-        row.classList.remove('active-page');
-    });
-
-    rows.forEach(row => {
-        const text = row.textContent.toLowerCase();
-        if (text.includes(searchTerm)) {
-            row.classList.add('active-page');
-        }
-    });
-}
-
-function filterCompletedServices(searchTerm) {
-    const cards = document.querySelectorAll('#completedServicesGrid .service-card');
-    searchTerm = searchTerm.toLowerCase();
-
-    if (!searchTerm) {
-        updateCompletedServicesPage();
-        return;
-    }
-
-    cards.forEach(card => {
-        card.classList.remove('active-page');
-    });
-
-    cards.forEach(card => {
-        const text = card.textContent.toLowerCase();
-        if (text.includes(searchTerm)) {
-            card.classList.add('active-page');
-        }
-    });
-}
-
+/**
+ * Get HTML for empty state display
+ * @param {string} title - Empty state title
+ * @param {string} icon - Font Awesome icon name
+ * @param {string} message - Empty state message
+ * @returns {string} - HTML string
+ */
 function getEmptyStateHTML(title, icon, message) {
     return `
     <tr>
-      <td colspan="6" class="text-center py-4">
+      <td colspan="5" class="text-center py-4">
         <div class="no-data-message">
           <i class="fas fa-${icon} fa-3x mb-3 text-muted"></i>
           <h5>${title}</h5>
@@ -703,6 +932,9 @@ function getEmptyStateHTML(title, icon, message) {
   `;
 }
 
+/**
+ * Show loading spinner
+ */
 function showSpinner() {
     let spinnerOverlay = document.getElementById('spinnerOverlay');
     if (!spinnerOverlay) {
@@ -725,13 +957,16 @@ function showSpinner() {
     }
 }
 
+/**
+ * Hide loading spinner
+ */
 function hideSpinner() {
     const spinnerOverlay = document.getElementById('spinnerOverlay');
     if (spinnerOverlay) {
         spinnerOverlay.style.display = 'none';
-        spinnerOverlay.parentNode.removeChild(spinnerOverlay);
     }
 
+    // Also hide any inline loading elements
     const loadingElements = document.querySelectorAll('.loading-data, .loading-message');
     loadingElements.forEach(element => {
         if (element && element.parentNode) {
@@ -740,6 +975,10 @@ function hideSpinner() {
     });
 }
 
+/**
+ * Show API error message
+ * @param {string} message - Error message to display
+ */
 function showApiError(message) {
     let errorContainer = document.getElementById('apiErrorContainer');
     if (!errorContainer) {
@@ -787,6 +1026,9 @@ function showApiError(message) {
     errorContainer.style.display = 'block';
 }
 
+/**
+ * Hide API error message
+ */
 function hideApiError() {
     const errorContainer = document.getElementById('apiErrorContainer');
     if (errorContainer) {
@@ -794,6 +1036,11 @@ function hideApiError() {
     }
 }
 
+/**
+ * Format date for display
+ * @param {string} dateString - Date string to format
+ * @returns {string} - Formatted date string
+ */
 function formatDate(dateString) {
     if (!dateString) return 'N/A';
 
@@ -805,6 +1052,11 @@ function formatDate(dateString) {
     }
 }
 
+/**
+ * Format currency value
+ * @param {number} value - Currency value to format
+ * @returns {string} - Formatted currency string
+ */
 function formatCurrency(value) {
     if (value === null || value === undefined) return '0.00';
 
@@ -818,6 +1070,11 @@ function formatCurrency(value) {
     }
 }
 
+/**
+ * Show toast notification
+ * @param {string} message - Message to display
+ * @param {string} type - Toast type (success, error, info)
+ */
 function showToast(message, type = 'success') {
     let toastContainer = document.querySelector('.toast-container');
     if (!toastContainer) return;
@@ -859,10 +1116,19 @@ function showToast(message, type = 'success') {
     }
 }
 
+/**
+ * Get authentication token
+ * @returns {string|null} - JWT token
+ */
 function getToken() {
     return localStorage.getItem('jwt-token') || sessionStorage.getItem('jwt-token');
 }
 
+/**
+ * Escape HTML special characters to prevent XSS
+ * @param {string} str - String to escape
+ * @returns {string} - Escaped string
+ */
 function escapeHTML(str) {
     if (!str) return '';
     return str.toString()
@@ -871,25 +1137,4 @@ function escapeHTML(str) {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#039;');
-}
-
-function makeAuthenticatedRequest(url, options = {}) {
-    const token = getToken();
-
-    if (!token) {
-        window.location.href = '/admin/login?error=session_expired';
-        return Promise.reject(new Error('Authentication token not found'));
-    }
-
-    options.headers = options.headers || {};
-    options.headers['Authorization'] = 'Bearer ' + token;
-
-    return fetch(url, options)
-        .then(response => {
-            if (response.status === 401 || response.status === 403) {
-                window.location.href = '/admin/login?error=session_expired';
-                throw new Error('Session expired');
-            }
-            return response;
-        });
 }

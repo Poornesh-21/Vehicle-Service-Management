@@ -1,10 +1,254 @@
 let completedServices = [];
 let currentServiceId = null;
 let currentService = null;
+
 document.addEventListener('DOMContentLoaded', function() {
     initializeEventListeners();
     loadCompletedServices();
+
+    // Initialize search functionality
+    initializeSearch();
+
+    // Listen for all modal hidden events to clean up backdrops
+    document.addEventListener('hidden.bs.modal', function(event) {
+        cleanupModalBackdrops();
+    });
 });
+
+// Function to properly clean up modal backdrops
+function cleanupModalBackdrops() {
+    // Remove all modal backdrops
+    const backdrops = document.querySelectorAll('.modal-backdrop');
+    backdrops.forEach(backdrop => backdrop.remove());
+
+    // Reset body styles
+    document.body.classList.remove('modal-open');
+    document.body.style.removeProperty('padding-right');
+}
+
+// Function to close all modals properly before opening a new one
+function closeAllModals() {
+    const modals = document.querySelectorAll('.modal.show');
+    modals.forEach(modal => {
+        const modalInstance = bootstrap.Modal.getInstance(modal);
+        if (modalInstance) {
+            modalInstance.hide();
+        }
+    });
+
+    // Ensure backdrops are cleaned up
+    cleanupModalBackdrops();
+}
+
+// Function to safely open a modal
+function safelyOpenModal(modalId) {
+    // First close any open modals
+    closeAllModals();
+
+    // Then open the new modal
+    const modalElement = document.getElementById(modalId);
+    if (modalElement) {
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+    }
+}
+function extractLaborData(data) {
+    if (!data) return null;
+
+    // Create an object to store the extracted labor data
+    let laborData = {
+        minutes: 0,
+        cost: 0,
+        description: '',
+        found: false
+    };
+
+    // Case 1: Direct properties (most common case)
+    if (data.labor_minutes !== undefined && data.labor_cost !== undefined) {
+        laborData.minutes = data.labor_minutes;
+        laborData.cost = data.labor_cost;
+        laborData.description = data.work_description || data.serviceType || 'Service Labor';
+        laborData.found = true;
+        console.log("Found labor data in root object:", laborData);
+        return laborData;
+    }
+
+    // Case 2: Check for data in the serviceTracking object
+    if (data.serviceTracking) {
+        const tracking = data.serviceTracking;
+        if (tracking.laborMinutes !== undefined && tracking.laborCost !== undefined) {
+            laborData.minutes = tracking.laborMinutes;
+            laborData.cost = tracking.laborCost;
+            laborData.description = tracking.workDescription || data.serviceType || 'Service Labor';
+            laborData.found = true;
+            console.log("Found labor data in serviceTracking:", laborData);
+            return laborData;
+        }
+
+        // Check alternate field names
+        if (tracking.labor_minutes !== undefined && tracking.labor_cost !== undefined) {
+            laborData.minutes = tracking.labor_minutes;
+            laborData.cost = tracking.labor_cost;
+            laborData.description = tracking.workDescription || data.serviceType || 'Service Labor';
+            laborData.found = true;
+            console.log("Found labor data in serviceTracking with alternate field names:", laborData);
+            return laborData;
+        }
+    }
+
+    // Case 3: Check for data in serviceTrackings array (most recent entry)
+    if (data.serviceTrackings && Array.isArray(data.serviceTrackings) && data.serviceTrackings.length > 0) {
+        const tracking = data.serviceTrackings[0]; // Most recent tracking
+
+        // Check standard field names
+        if (tracking.laborMinutes !== undefined && tracking.laborCost !== undefined) {
+            laborData.minutes = tracking.laborMinutes;
+            laborData.cost = tracking.laborCost;
+            laborData.description = tracking.workDescription || data.serviceType || 'Service Labor';
+            laborData.found = true;
+            console.log("Found labor data in serviceTrackings array:", laborData);
+            return laborData;
+        }
+
+        // Check alternate field names
+        if (tracking.labor_minutes !== undefined && tracking.labor_cost !== undefined) {
+            laborData.minutes = tracking.labor_minutes;
+            laborData.cost = tracking.labor_cost;
+            laborData.description = tracking.workDescription || data.serviceType || 'Service Labor';
+            laborData.found = true;
+            console.log("Found labor data in serviceTrackings array with alternate field names:", laborData);
+            return laborData;
+        }
+    }
+
+    // Case 4: Check for laborCost and laborMinutes fields directly
+    if (data.laborMinutes !== undefined && data.laborCost !== undefined) {
+        laborData.minutes = data.laborMinutes;
+        laborData.cost = data.laborCost;
+        laborData.description = data.workDescription || data.serviceType || 'Service Labor';
+        laborData.found = true;
+        console.log("Found labor data with camelCase field names:", laborData);
+        return laborData;
+    }
+
+    // Case 5: Deep scan for any object containing labor information
+    for (const key in data) {
+        if (typeof data[key] === 'object' && data[key] !== null) {
+            const obj = data[key];
+
+            // Check for labor_minutes and labor_cost
+            if (obj.labor_minutes !== undefined && obj.labor_cost !== undefined) {
+                laborData.minutes = obj.labor_minutes;
+                laborData.cost = obj.labor_cost;
+                laborData.description = obj.work_description || data.serviceType || 'Service Labor';
+                laborData.found = true;
+                console.log(`Found labor data in nested object ${key}:`, laborData);
+                return laborData;
+            }
+
+            // Check for laborMinutes and laborCost
+            if (obj.laborMinutes !== undefined && obj.laborCost !== undefined) {
+                laborData.minutes = obj.laborMinutes;
+                laborData.cost = obj.laborCost;
+                laborData.description = obj.workDescription || data.serviceType || 'Service Labor';
+                laborData.found = true;
+                console.log(`Found labor data in nested object ${key} with camelCase:`, laborData);
+                return laborData;
+            }
+        }
+    }
+
+    // No labor data found in any expected location
+    console.warn("No labor data found in response:", data);
+    return null;
+}
+
+// Search functionality
+function initializeSearch() {
+    // Create and add the search bar to the DOM
+    const tableHeader = document.querySelector('.table-header');
+    if (tableHeader) {
+        const searchContainer = document.createElement('div');
+        searchContainer.className = 'search-container';
+        searchContainer.innerHTML = `
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="fas fa-search"></i>
+                </span>
+                <input type="text" class="form-control" id="serviceSearchInput" placeholder="Search services...">
+            </div>
+        `;
+        tableHeader.appendChild(searchContainer);
+
+        // Add styles for the search container
+        const style = document.createElement('style');
+        style.textContent = `
+            .table-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 1rem;
+            }
+            .search-container {
+                width: 300px;
+            }
+            @media (max-width: 768px) {
+                .table-header {
+                    flex-direction: column;
+                    align-items: flex-start;
+                }
+                .search-container {
+                    width: 100%;
+                    margin-top: 1rem;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // Add event listener for search input
+        const searchInput = document.getElementById('serviceSearchInput');
+        searchInput.addEventListener('input', function() {
+            filterServicesTable(this.value.toLowerCase().trim());
+        });
+    }
+}
+
+// Filter table based on search term
+function filterServicesTable(searchTerm) {
+    const rows = document.querySelectorAll('#completedServicesTableBody tr:not(.no-results-row)');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        if (searchTerm === '' || text.includes(searchTerm)) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    // Show or hide "no results" message
+    const tableBody = document.getElementById('completedServicesTableBody');
+    if (tableBody) {
+        // Remove any existing no-results rows
+        document.querySelectorAll('.no-results-row').forEach(el => el.remove());
+
+        if (visibleCount === 0 && searchTerm !== '') {
+            const noResultsRow = document.createElement('tr');
+            noResultsRow.className = 'no-results-row';
+            noResultsRow.innerHTML = `
+                <td colspan="9" class="text-center py-4">
+                    <div class="text-muted">
+                        <i class="fas fa-search fa-2x mb-3"></i>
+                        <p>No services found matching "${searchTerm}"</p>
+                    </div>
+                </td>
+            `;
+            tableBody.appendChild(noResultsRow);
+        }
+    }
+}
 
 function isMembershipPremium(service) {
     if (service.membershipStatus) {
@@ -38,46 +282,28 @@ function initializeEventListeners() {
             viewServiceDetails(serviceId);
         }
     });
-    document.getElementById('generateInvoiceBtn').addEventListener('click', function() {
+
+    document.getElementById('generateInvoiceBtn')?.addEventListener('click', function() {
         openGenerateInvoiceModal();
     });
-    document.getElementById('confirmGenerateInvoiceBtn').addEventListener('click', function() {
+
+    document.getElementById('confirmGenerateInvoiceBtn')?.addEventListener('click', function() {
         generateInvoice();
     });
-    document.getElementById('confirmPaymentBtn').addEventListener('click', function() {
+
+    document.getElementById('confirmPaymentBtn')?.addEventListener('click', function() {
         processPayment();
     });
-    document.getElementById('customerPickup').addEventListener('change', function() {
+
+    document.getElementById('customerPickup')?.addEventListener('change', function() {
         if (this.checked) {
             document.getElementById('pickupFields').style.display = 'block';
             document.getElementById('deliveryFields').style.display = 'none';
             document.getElementById('confirmDeliveryBtnText').textContent = 'Confirm Pickup';
         }
     });
-    document.getElementById('homeDelivery').addEventListener('change', function() {
-        if (this.checked) {
-            document.getElementById('pickupFields').style.display = 'none';
-            document.getElementById('deliveryFields').style.display = 'block';
-            document.getElementById('confirmDeliveryBtnText').textContent = 'Confirm Delivery';
-        }
-    });
-    document.getElementById('confirmDeliveryBtn').addEventListener('click', function() {
-        processDelivery();
-    });
-    document.getElementById('paymentMethod').addEventListener('change', function() {
-        const transactionIdGroup = document.getElementById('transactionIdGroup');
-        // Hide transaction ID field when Cash is selected
-        if (this.value === 'Cash') {
-            transactionIdGroup.style.display = 'none';
-            document.getElementById('transactionId').value = 'CASH-' + Date.now().toString().slice(-6);
-            document.getElementById('transactionId').disabled = true;
-        } else {
-            transactionIdGroup.style.display = 'block';
-            document.getElementById('transactionId').value = '';
-            document.getElementById('transactionId').disabled = false;
-        }
-    });
-    document.getElementById('homeDelivery').addEventListener('change', function() {
+
+    document.getElementById('homeDelivery')?.addEventListener('change', function() {
         if (this.checked) {
             document.getElementById('pickupFields').style.display = 'none';
             document.getElementById('deliveryFields').style.display = 'block';
@@ -90,6 +316,24 @@ function initializeEventListeners() {
                     document.getElementById('deliveryAddress').value = customerAddress;
                 }
             }
+        }
+    });
+
+    document.getElementById('confirmDeliveryBtn')?.addEventListener('click', function() {
+        processDelivery();
+    });
+
+    document.getElementById('paymentMethod')?.addEventListener('change', function() {
+        const transactionIdGroup = document.getElementById('transactionIdGroup');
+        // Hide transaction ID field when Cash is selected
+        if (this.value === 'Cash') {
+            transactionIdGroup.style.display = 'none';
+            document.getElementById('transactionId').value = 'CASH-' + Date.now().toString().slice(-6);
+            document.getElementById('transactionId').disabled = true;
+        } else {
+            transactionIdGroup.style.display = 'block';
+            document.getElementById('transactionId').value = '';
+            document.getElementById('transactionId').disabled = false;
         }
     });
 }
@@ -351,23 +595,7 @@ function createServiceTableRow(service) {
 }
 
 function viewServiceDetails(serviceId) {
-    const modal = new bootstrap.Modal(document.getElementById('viewServiceDetailsModal'));
-    modal.show();
-    loadBasicServiceDetails(serviceId);
-    loadInvoiceData(serviceId);
-}
-
-document.addEventListener('DOMContentLoaded', function() {
-    document.addEventListener('click', function(e) {
-        if (e.target.classList.contains('view-service-btn') || e.target.closest('.view-service-btn')) {
-            const btn = e.target.classList.contains('view-service-btn') ? e.target : e.target.closest('.view-service-btn');
-            const serviceId = btn.getAttribute('data-id');
-            viewServiceDetails(serviceId);
-        }
-    });
-});
-
-function loadBasicServiceDetails(serviceId) {
+    closeAllModals();
     currentServiceId = serviceId;
     document.getElementById('viewServiceId').textContent = `REQ-${serviceId}`;
     document.getElementById('viewVehicleName').textContent = 'Loading...';
@@ -375,6 +603,16 @@ function loadBasicServiceDetails(serviceId) {
     document.getElementById('viewCustomerName').textContent = 'Loading...';
     document.getElementById('viewMembership').textContent = 'Loading...';
     document.getElementById('viewCompletionDate').textContent = 'Loading...';
+
+    // Show the modal before fetching data for better UX
+    const modal = new bootstrap.Modal(document.getElementById('viewServiceDetailsModal'));
+    modal.show();
+
+    loadBasicServiceDetails(serviceId);
+    loadInvoiceData(serviceId);
+}
+
+function loadBasicServiceDetails(serviceId) {
     const token = getAuthToken();
     const serviceUrls = [
         `/admin/api/completed-services/${serviceId}`,
@@ -568,8 +806,6 @@ function populateLaborChargesTable(laborCharges) {
         return;
     }
 
-    console.log("Populating labor charges table with:", laborCharges);
-
     const formatter = new Intl.NumberFormat('en-IN', {
         style: 'currency',
         currency: 'INR',
@@ -623,8 +859,6 @@ function formatCurrency(amount) {
 }
 
 function updateInvoiceSummary(data) {
-    console.log("Updating invoice summary with data:", data);
-
     const formatter = new Intl.NumberFormat('en-IN', {
         style: 'currency',
         currency: 'INR',
@@ -653,8 +887,6 @@ function updateInvoiceSummary(data) {
         0
     );
 
-    console.log(`Materials total: ${materialsTotal}, Labor total: ${laborTotal}`);
-
     // Calculate premium discount (30% of labor only)
     let discount = 0;
 
@@ -663,7 +895,6 @@ function updateInvoiceSummary(data) {
             data.membershipStatus.toLowerCase().includes('premium'))) {
         // Apply 30% discount to labor only
         discount = parseFloat((laborTotal * 0.3).toFixed(2));
-        console.log(`Applied premium discount: ${discount} (30% of labor ${laborTotal})`);
     }
 
     // Calculate subtotal
@@ -702,34 +933,6 @@ function updateInvoiceSummary(data) {
     data.calculatedSubtotal = subtotal;
     data.calculatedTax = tax;
     data.calculatedTotal = grandTotal;
-}
-
-function calculateMaterialsTotal(materials) {
-    if (!materials || !Array.isArray(materials)) return 0;
-
-    return materials.reduce((total, material) => {
-        if (!material) return total;
-
-        const quantity = parseFloatSafe(material.quantity, 1);
-        const unitPrice = parseFloatSafe(material.unitPrice, 0);
-        const itemTotal = parseFloatSafe(material.total, quantity * unitPrice);
-
-        return total + itemTotal;
-    }, 0);
-}
-
-function calculateLaborTotal(laborCharges) {
-    if (!laborCharges || !Array.isArray(laborCharges)) return 0;
-
-    return laborCharges.reduce((total, charge) => {
-        if (!charge) return total;
-
-        const hours = parseFloatSafe(charge.hours, 0);
-        const rate = parseFloatSafe(charge.ratePerHour || charge.rate, 0);
-        const chargeTotal = parseFloatSafe(charge.total, hours * rate);
-
-        return total + chargeTotal;
-    }, 0);
 }
 
 function updateWorkflowSteps(service) {
@@ -797,77 +1000,6 @@ function updateFooterButtons(service) {
     }
 }
 
-function processLaborData(data, serviceId) {
-    // Store original data for debugging
-    const originalData = JSON.parse(JSON.stringify(data));
-
-    // Check if we have labor_minutes and labor_cost from DB
-    if (data.labor_minutes !== undefined && data.labor_cost !== undefined) {
-        console.log(`Using DB values: labor_minutes=${data.labor_minutes}, labor_cost=${data.labor_cost}`);
-
-        // Convert minutes to hours (ensure floating point division)
-        const laborHours = data.labor_minutes / 60;
-
-        // Calculate hourly rate (avoid division by zero)
-        const hourlyRate = laborHours > 0 ? parseFloat((data.labor_cost / laborHours).toFixed(2)) : 0;
-
-        // Create labor charge object with correct values from DB
-        const laborCharge = {
-            description: data.work_description || data.serviceType || 'Service Labor',
-            hours: laborHours,
-            ratePerHour: hourlyRate,
-            total: parseFloat(data.labor_cost)
-        };
-
-        console.log("Created labor charge from DB data:", laborCharge);
-
-        // Override any existing labor charges
-        data.laborCharges = [laborCharge];
-        data.laborTotal = parseFloat(data.labor_cost);
-
-        // Make sure values are properly set for summary calculation
-        data.calculatedLaborTotal = data.laborTotal;
-    }
-    // Check for existing labor charges
-    else if (data.laborCharges && data.laborCharges.length > 0) {
-        console.log("Using existing labor charges:", data.laborCharges);
-
-        // Ensure labor total is calculated correctly
-        let total = 0;
-        data.laborCharges.forEach(charge => {
-            // Make sure each labor charge has a total
-            if (!charge.total && charge.hours && charge.ratePerHour) {
-                charge.total = charge.hours * charge.ratePerHour;
-            }
-            total += parseFloat(charge.total || 0);
-        });
-
-        data.laborTotal = total;
-        data.calculatedLaborTotal = total;
-    }
-    // Use default values as last resort
-    else if (data.serviceType) {
-        console.log("No labor data found, creating default labor charge");
-
-        // Much more conservative defaults - 1 hour at ₹100
-        data.laborCharges = [{
-            description: `Service: ${data.serviceType}`,
-            hours: 3, // Default to 3 hours based on original data
-            ratePerHour: 65, // Calculate from 195 ÷ 3
-            total: 195 // Default total based on original data
-        }];
-
-        data.laborTotal = 195;
-        data.calculatedLaborTotal = 195;
-    }
-
-    // Check if the data was modified during processing
-    if (JSON.stringify(data) !== JSON.stringify(originalData)) {
-        console.log("Data was modified during labor processing");
-    }
-}
-
-
 function loadInvoiceData(serviceId) {
     document.getElementById('materialsTableBody').innerHTML = `
         <tr><td colspan="4" class="text-center"><div class="spinner-border spinner-border-sm text-wine" role="status"></div> Loading materials...</td></tr>
@@ -878,10 +1010,13 @@ function loadInvoiceData(serviceId) {
 
     const token = getAuthToken();
 
-    // Only use endpoints that actually exist in the backend
+    // Use endpoints that might have the labor data
     const invoiceUrls = [
         `/admin/api/completed-services/${serviceId}/invoice-details`,
-        `/admin/api/vehicle-tracking/service-request/${serviceId}`
+        `/admin/api/vehicle-tracking/service-request/${serviceId}`,
+        `/admin/service-requests/api/${serviceId}`,
+        `/serviceAdvisor/api/service-details/${serviceId}`,
+        `/admin/api/service/${serviceId}/labor-charges`
     ];
 
     console.log(`Loading invoice data for service ID: ${serviceId}`);
@@ -894,30 +1029,33 @@ function loadInvoiceData(serviceId) {
                 data = createDefaultInvoiceData(serviceId);
             }
 
-            // Check for labor_minutes and labor_cost in the response
-            if (data.labor_minutes !== undefined && data.labor_cost !== undefined) {
-                console.log(`Found labor data: ${data.labor_minutes} minutes, ₹${data.labor_cost}`);
+            // Extract labor data using our enhanced function
+            const laborData = extractLaborData(data);
 
-                // Convert minutes to hours
-                const laborHours = data.labor_minutes / 60;
+            if (laborData && laborData.found) {
+                console.log("Labor data extracted successfully:", laborData);
 
-                // Calculate hourly rate
-                const hourlyRate = laborHours > 0 ? parseFloat((data.labor_cost / laborHours).toFixed(2)) : 0;
+                // Convert minutes to hours (ensure floating point division)
+                const laborHours = laborData.minutes / 60;
 
-                // Create labor charge with correct values
+                // Calculate hourly rate (avoid division by zero)
+                const hourlyRate = laborHours > 0 ? parseFloat((laborData.cost / laborHours).toFixed(2)) : 0;
+
+                // Create labor charge object with correct values
                 const laborCharge = {
-                    description: data.work_description || data.serviceType || 'Service Labor',
-                    hours: laborHours,
-                    rate: hourlyRate, // Use 'rate' to match backend field name
-                    total: parseFloat(data.labor_cost)
+                    description: laborData.description || 'Service Labor',
+                    hours: parseFloat(laborHours.toFixed(2)),
+                    rate: hourlyRate,
+                    total: parseFloat(laborData.cost)
                 };
 
-                console.log("Created labor charge:", laborCharge);
+                console.log("Created labor charge from extracted data:", laborCharge);
 
-                // Override existing labor charges
+                // Override any existing labor charges
                 data.laborCharges = [laborCharge];
-                data.laborTotal = parseFloat(data.labor_cost);
+                data.laborTotal = parseFloat(laborData.cost);
             }
+            // If no labor data was found but laborCharges exists
             else if (data.laborCharges && data.laborCharges.length > 0) {
                 console.log("Using existing labor charges:", data.laborCharges);
 
@@ -926,7 +1064,7 @@ function loadInvoiceData(serviceId) {
                 data.laborCharges.forEach(charge => {
                     // Important: use 'rate' (backend field) instead of 'ratePerHour'
                     const hours = parseFloatSafe(charge.hours, 0);
-                    const rate = parseFloatSafe(charge.rate, 0);
+                    const rate = parseFloatSafe(charge.rate || charge.ratePerHour, 0);
 
                     // Ensure each charge has a total
                     if (charge.total === undefined) {
@@ -937,6 +1075,22 @@ function loadInvoiceData(serviceId) {
                 });
 
                 data.laborTotal = total;
+            }
+            // If no labor data was found at all, create default labor charge
+            else if (data.serviceType || data.service_type) {
+                console.log("No labor data found, creating default labor charge");
+
+                const serviceType = data.serviceType || data.service_type || "Service";
+
+                // Create a default labor charge
+                data.laborCharges = [{
+                    description: `Service: ${serviceType}`,
+                    hours: 0,
+                    rate: 0,
+                    total: 0
+                }];
+
+                data.laborTotal = 0;
             }
 
             const materials = data.materials || [];
@@ -970,61 +1124,452 @@ function createDefaultInvoiceData(serviceId) {
         laborCharges: []
     };
 }
-function extractLaborData(data) {
-    if (!data) return null;
+function numberToWords(num) {
+    const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine',
+        'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen',
+        'Seventeen', 'Eighteen', 'Nineteen'];
+    const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
 
-    // Check direct properties first (most common case)
-    if (data.labor_minutes !== undefined && data.labor_cost !== undefined) {
-        return {
-            labor_minutes: data.labor_minutes,
-            labor_cost: data.labor_cost
-        };
-    }
-
-    // Check for data in serviceTracking object
-    if (data.serviceTracking &&
-        data.serviceTracking.labor_minutes !== undefined &&
-        data.serviceTracking.labor_cost !== undefined) {
-        return {
-            labor_minutes: data.serviceTracking.labor_minutes,
-            labor_cost: data.serviceTracking.labor_cost
-        };
-    }
-
-    // Check for data in serviceTrackings array (most recent entry)
-    if (data.serviceTrackings && Array.isArray(data.serviceTrackings) &&
-        data.serviceTrackings.length > 0) {
-        const tracking = data.serviceTrackings[0]; // Usually the most recent
-        if (tracking.labor_minutes !== undefined && tracking.labor_cost !== undefined) {
-            return {
-                labor_minutes: tracking.labor_minutes,
-                labor_cost: tracking.labor_cost
-            };
+    function convertLessThanOneThousand(num) {
+        if (num === 0) {
+            return '';
         }
+        if (num < 20) {
+            return ones[num];
+        }
+
+        const digit = num % 10;
+        if (num < 100) {
+            return tens[Math.floor(num / 10)] + (digit ? ' ' + ones[digit] : '');
+        }
+
+        return ones[Math.floor(num / 100)] + ' Hundred' + (num % 100 ? ' and ' + convertLessThanOneThousand(num % 100) : '');
     }
 
-    // Deep scan for any object containing both labor_minutes and labor_cost
-    for (const key in data) {
-        if (typeof data[key] === 'object' && data[key] !== null) {
-            const obj = data[key];
-            if (obj.labor_minutes !== undefined && obj.labor_cost !== undefined) {
-                return {
-                    labor_minutes: obj.labor_minutes,
-                    labor_cost: obj.labor_cost
-                };
+    if (num === 0) {
+        return 'Zero';
+    }
+
+    let result = '';
+
+    // Handle crores (10 million)
+    if (num >= 10000000) {
+        result += convertLessThanOneThousand(Math.floor(num / 10000000)) + ' Crore ';
+        num %= 10000000;
+    }
+
+    // Handle lakhs (100 thousand)
+    if (num >= 100000) {
+        result += convertLessThanOneThousand(Math.floor(num / 100000)) + ' Lakh ';
+        num %= 100000;
+    }
+
+    // Handle thousands
+    if (num >= 1000) {
+        result += convertLessThanOneThousand(Math.floor(num / 1000)) + ' Thousand ';
+        num %= 1000;
+    }
+
+    // Handle hundreds and remaining
+    if (num > 0) {
+        result += convertLessThanOneThousand(num);
+    }
+
+    return result.trim();
+}
+function generateInvoicePDF(data, serviceId) {
+    try {
+        // Check if jsPDF is available
+        if (typeof jspdf === 'undefined' || typeof jspdf.jsPDF === 'undefined') {
+            throw new Error("jsPDF library not loaded");
+        }
+
+        // Initialize jsPDF
+        const { jsPDF } = jspdf;
+        const doc = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+        });
+
+        // Set document properties
+        doc.setProperties({
+            title: `Invoice REQ-${serviceId}`,
+            subject: 'Vehicle Service Invoice',
+            author: 'Albany ',
+            creator: 'Albany'
+        });
+
+        // Get data needed for invoice
+        const invoiceNumber = `INV-${data.invoiceId || serviceId}`;
+        const currentDate = new Date().toLocaleDateString('en-US', {
+            year: 'numeric', month: 'long', day: 'numeric'
+        });
+
+        // Extract customer information
+        const customerName = data.customerName || 'Valued Customer';
+        const vehicleInfo = getVehicleInfo(data);
+        const registrationNumber = data.registrationNumber || data.vehicleRegistration || 'N/A';
+
+        // Formatting helper function
+        const formatCurrency = (amount) => {
+            return new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                minimumFractionDigits: 2
+            }).format(amount || 0);
+        };
+
+        // Set font styles
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(20);
+        doc.setTextColor(114, 47, 55); // Wine color
+
+        // Add company header
+        doc.text('ALBANY', 105, 20, { align: 'center' });
+
+        doc.setFontSize(10);
+        doc.setTextColor(100, 100, 100);
+        doc.text('123 Service Road, Salem, TamilNadu - 636015', 105, 25, { align: 'center' });
+        doc.text('Phone: +91 9827372810 | Email: info@info.albanyservice@gmail.com', 105, 30, { align: 'center' });
+
+        // Add horizontal line
+        doc.setDrawColor(114, 47, 55);
+        doc.setLineWidth(0.5);
+        doc.line(15, 35, 195, 35);
+
+        // Invoice title and details
+        doc.setFontSize(16);
+        doc.setTextColor(0, 0, 0);
+        doc.text('TAX INVOICE', 105, 45, { align: 'center' });
+
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+
+        // Invoice details box (left side)
+        doc.roundedRect(15, 50, 85, 30, 2, 2);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Invoice Number:', 20, 58);
+        doc.text('Invoice Date:', 20, 66);
+        doc.text('Service ID:', 20, 74);
+
+        doc.setFont('helvetica', 'normal');
+        doc.text(invoiceNumber, 60, 58);
+        doc.text(currentDate, 60, 66);
+        doc.text(`REQ-${serviceId}`, 60, 74);
+
+        // Customer details box (right side)
+        doc.roundedRect(105, 50, 85, 30, 2, 2);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Customer:', 110, 58);
+        doc.text('Vehicle:', 110, 66);
+        doc.text('Registration:', 110, 74);
+
+        doc.setFont('helvetica', 'normal');
+        doc.text(customerName, 140, 58);
+        doc.text(vehicleInfo, 140, 66);
+        doc.text(registrationNumber, 140, 74);
+
+        // Add invoice items section title
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(12);
+        doc.text('INVOICE DETAILS', 15, 90);
+
+        // Materials table
+        const materials = data.materials || [];
+        if (materials.length > 0) {
+            const materialRows = materials.map(item => {
+                if (!item) return null;
+                const quantity = parseFloatSafe(item.quantity, 1);
+                const unitPrice = parseFloatSafe(item.unitPrice, 0);
+                const total = parseFloatSafe(item.total, quantity * unitPrice);
+
+                return [
+                    item.name || 'Unknown Item',
+                    quantity,
+                    formatCurrency(unitPrice).replace('₹', ''),
+                    formatCurrency(total).replace('₹', '')
+                ];
+            }).filter(row => row !== null);
+
+            doc.autoTable({
+                head: [['Material', 'Quantity', 'Unit Price (₹)', 'Amount (₹)']],
+                body: materialRows,
+                startY: 95,
+                theme: 'grid',
+                headStyles: {
+                    fillColor: [114, 47, 55],
+                    textColor: [255, 255, 255],
+                    fontStyle: 'bold'
+                },
+                styles: {
+                    fontSize: 9
+                },
+                columnStyles: {
+                    0: { cellWidth: 80 },
+                    1: { cellWidth: 25, halign: 'right' },
+                    2: { cellWidth: 35, halign: 'right' },
+                    3: { cellWidth: 35, halign: 'right' }
+                }
+            });
+        } else {
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            doc.text('No materials used in this service.', 15, 100);
+            doc.autoTable({ startY: 105 }); // This sets the cursor position
+        }
+
+        // Labor charges table
+        const laborCharges = data.laborCharges || [];
+        if (laborCharges.length > 0) {
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(12);
+            doc.text('LABOR CHARGES', 15, doc.previousAutoTable.finalY + 10);
+
+            const laborRows = laborCharges.map(charge => {
+                if (!charge) return null;
+                const hours = parseFloatSafe(charge.hours, 0);
+                const rate = parseFloatSafe(charge.rate || charge.ratePerHour, 0);
+                const total = parseFloatSafe(charge.total, hours * rate);
+
+                return [
+                    charge.description || 'Service Labor',
+                    hours.toFixed(2),
+                    formatCurrency(rate).replace('₹', ''),
+                    formatCurrency(total).replace('₹', '')
+                ];
+            }).filter(row => row !== null);
+
+            doc.autoTable({
+                head: [['Description', 'Hours', 'Rate/Hour (₹)', 'Amount (₹)']],
+                body: laborRows,
+                startY: doc.previousAutoTable.finalY + 15,
+                theme: 'grid',
+                headStyles: {
+                    fillColor: [114, 47, 55],
+                    textColor: [255, 255, 255],
+                    fontStyle: 'bold'
+                },
+                styles: {
+                    fontSize: 9
+                },
+                columnStyles: {
+                    0: { cellWidth: 80 },
+                    1: { cellWidth: 25, halign: 'right' },
+                    2: { cellWidth: 35, halign: 'right' },
+                    3: { cellWidth: 35, halign: 'right' }
+                }
+            });
+        } else {
+            // If no previous table, set a default Y position
+            const startY = doc.previousAutoTable ? doc.previousAutoTable.finalY + 15 : 110;
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(12);
+            doc.text('LABOR CHARGES', 15, startY);
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+            doc.text('No labor charges recorded for this service.', 15, startY + 10);
+
+            // Set a position for the next section
+            doc.autoTable({
+                startY: startY + 15,
+                body: [['', '', '', '']]
+            });
+        }
+
+        // Calculate totals
+        const materialsTotal = parseFloatSafe(data.calculatedMaterialsTotal || data.materialsTotal, 0);
+        const laborTotal = parseFloatSafe(data.calculatedLaborTotal || data.laborTotal, 0);
+        const discount = parseFloatSafe(data.calculatedDiscount || data.discount, 0);
+        const subtotal = parseFloatSafe(data.calculatedSubtotal || data.subtotal, materialsTotal + laborTotal - discount);
+        const tax = parseFloatSafe(data.calculatedTax || data.tax, subtotal * 0.18);
+        const total = parseFloatSafe(data.calculatedTotal || data.totalAmount || data.grandTotal, subtotal + tax);
+
+        // Summary table
+        const summaryData = [];
+        summaryData.push(['Materials Total', '', '', formatCurrency(materialsTotal).replace('₹', '')]);
+        summaryData.push(['Labor Total', '', '', formatCurrency(laborTotal).replace('₹', '')]);
+
+        if (discount > 0) {
+            summaryData.push(['Premium Discount', '', '', '-' + formatCurrency(discount).replace('₹', '')]);
+        }
+
+        summaryData.push(['Subtotal', '', '', formatCurrency(subtotal).replace('₹', '')]);
+        summaryData.push(['GST (18%)', '', '', formatCurrency(tax).replace('₹', '')]);
+
+        doc.autoTable({
+            body: summaryData,
+            startY: doc.previousAutoTable.finalY + 10,
+            theme: 'plain',
+            styles: {
+                fontSize: 9
+            },
+            columnStyles: {
+                0: { cellWidth: 80 },
+                1: { cellWidth: 25 },
+                2: { cellWidth: 35 },
+                3: { cellWidth: 35, halign: 'right' }
             }
+        });
+
+        // Grand total
+        doc.autoTable({
+            body: [['GRAND TOTAL', '', '', formatCurrency(total).replace('₹', '')]],
+            startY: doc.previousAutoTable.finalY + 1,
+            theme: 'grid',
+            styles: {
+                fontSize: 10,
+                fontStyle: 'bold',
+                halign: 'right'
+            },
+            columnStyles: {
+                0: { cellWidth: 80, halign: 'left' },
+                1: { cellWidth: 25 },
+                2: { cellWidth: 35 },
+                3: { cellWidth: 35, halign: 'right' }
+            },
+            headStyles: {
+                fillColor: [114, 47, 55]
+            },
+            bodyStyles: {
+                fillColor: [240, 240, 240]
+            }
+        });
+
+        // Amount in words
+        const amountInWords = numberToWords(Math.round(total));
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Amount in words:', 15, doc.previousAutoTable.finalY + 10);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`${amountInWords} Rupees Only`, 50, doc.previousAutoTable.finalY + 10);
+
+        // Payment status
+        const isPaid = data.isPaid || data.paid || false;
+        if (isPaid) {
+            doc.setFontSize(14);
+            doc.setFont('helvetica', 'bold');
+            doc.setTextColor(39, 174, 96); // Green color
+            doc.text('PAID', 105, doc.previousAutoTable.finalY + 20, { align: 'center' });
         }
+
+        // Add terms and conditions
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(0, 0, 0);
+        doc.text('Terms & Conditions:', 15, doc.previousAutoTable.finalY + 25);
+
+        doc.setFont('helvetica', 'normal');
+        const terms = [
+            '1. All services come with a 3-month warranty for parts and labor.',
+            '2. Please retain this invoice for warranty claims.',
+            '3. Any complaints regarding service should be reported within 7 days.',
+            '4. All prices are inclusive of GST.'
+        ];
+
+        let yPos = doc.previousAutoTable.finalY + 30;
+        terms.forEach(term => {
+            doc.text(term, 15, yPos);
+            yPos += 5;
+        });
+
+        // Add footer
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            doc.setFontSize(8);
+            doc.setTextColor(100, 100, 100);
+            doc.text(
+                'Thank you for choosing Albany ',
+                105,
+                doc.internal.pageSize.height - 10,
+                { align: 'center' }
+            );
+            doc.text(
+                `Page ${i} of ${pageCount}`,
+                doc.internal.pageSize.width - 20,
+                doc.internal.pageSize.height - 10
+            );
+        }
+
+        // Save the PDF
+        const fileName = `Invoice_REQ-${serviceId}_${new Date().toISOString().split('T')[0]}.pdf`;
+        doc.save(fileName);
+
+        showToast('Invoice PDF downloaded successfully', 'success');
+    } catch (error) {
+        console.error("Error generating PDF:", error);
+        showToast('Error generating PDF: ' + error.message, 'error');
+
+        // Fallback to server-side PDF generation
+        const token = getAuthToken();
+        fallbackToPDFDownload(serviceId, token);
+    }
+}
+function fallbackToPDFDownload(serviceId, token) {
+    const downloadUrl = `/admin/api/completed-services/${serviceId}/invoice/download?token=${token}`;
+    window.open(downloadUrl, '_blank');
+}
+function getVehicleInfo(data) {
+    if (data.vehicleName) {
+        return data.vehicleName;
     }
 
-    // No labor data found in any expected location
-    return null;
+    let vehicleInfo = '';
+
+    if (data.vehicleBrand) {
+        vehicleInfo += data.vehicleBrand;
+    }
+
+    if (data.vehicleModel) {
+        vehicleInfo += vehicleInfo ? ' ' + data.vehicleModel : data.vehicleModel;
+    }
+
+    if (data.vehicleYear) {
+        vehicleInfo += vehicleInfo ? ` (${data.vehicleYear})` : data.vehicleYear;
+    }
+
+    if (!vehicleInfo && data.vehicle) {
+        const vehicle = data.vehicle;
+        vehicleInfo = `${vehicle.brand || ''} ${vehicle.model || ''} ${vehicle.year ? '(' + vehicle.year + ')' : ''}`.trim();
+    }
+
+    return vehicleInfo || 'Unknown Vehicle';
 }
 
 
 function downloadInvoice(serviceId) {
+    // Show loading indicator
+    showToast('Generating invoice PDF...', 'info');
+
     const token = getAuthToken();
-    const downloadUrl = `/admin/api/completed-services/${serviceId}/invoice/download?token=${token}`;
-    window.open(downloadUrl, '_blank');
+
+    // First try to get the invoice data
+    fetch(`/admin/api/completed-services/${serviceId}/invoice-details`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Failed to fetch invoice data: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("Invoice data for PDF:", data);
+            generateInvoicePDF(data, serviceId);
+        })
+        .catch(error => {
+            console.error("Error fetching invoice data:", error);
+            showToast('Error generating invoice PDF: ' + error.message, 'error');
+
+            // Fallback to server-side PDF generation
+            fallbackToPDFDownload(serviceId, token);
+        });
 }
 
 function openGenerateInvoiceModal() {
@@ -1032,6 +1577,9 @@ function openGenerateInvoiceModal() {
         showToast('Service data not available', 'error');
         return;
     }
+
+    // Close service details modal first
+    closeAllModals();
 
     // Format currency for display
     const formatter = new Intl.NumberFormat('en-IN', {
@@ -1093,15 +1641,8 @@ function openGenerateInvoiceModal() {
     const sendEmailCheckbox = document.getElementById('sendInvoiceEmail');
     sendEmailCheckbox.checked = emailInput.value.trim() !== '';
 
-    // Close service details modal if open
-    const serviceDetailsModal = bootstrap.Modal.getInstance(document.getElementById('viewServiceDetailsModal'));
-    if (serviceDetailsModal) {
-        serviceDetailsModal.hide();
-    }
-
     // Show invoice generation modal
-    const invoiceModal = new bootstrap.Modal(document.getElementById('generateInvoiceModal'));
-    invoiceModal.show();
+    safelyOpenModal('generateInvoiceModal');
 }
 
 function getCustomerAddress(service) {
@@ -1140,88 +1681,34 @@ function getCustomerAddress(service) {
     // If no address found, return empty string
     return address;
 }
+
 function showSuccessMessage(title, message, onClose) {
     // First ensure any existing modals are properly closed
-    const existingModals = document.querySelectorAll('.modal.show');
-    existingModals.forEach(modal => {
-        const instance = bootstrap.Modal.getInstance(modal);
-        if (instance) instance.hide();
-    });
+    closeAllModals();
 
-    // Clean up any lingering backdrops
-    const modalBackdrops = document.querySelectorAll('.modal-backdrop');
-    modalBackdrops.forEach(backdrop => {
-        backdrop.remove();
-    });
-
-    // Reset modal-related classes on body
-    document.body.classList.remove('modal-open');
-    document.body.style.removeProperty('padding-right');
-
-    // Get the success modal element
+    // Get or create success modal
     const successModal = document.getElementById('successModal');
 
-    // If it doesn't exist, create it
-    if (!successModal) {
-        const modalDiv = document.createElement('div');
-        modalDiv.id = 'successModal';
-        modalDiv.className = 'modal fade';
-        modalDiv.setAttribute('tabindex', '-1');
-        modalDiv.setAttribute('aria-hidden', 'true');
-        modalDiv.innerHTML = `
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header bg-success text-white">
-                        <h5 class="modal-title" id="successTitle">${title}</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body text-center py-4">
-                        <div class="mb-3">
-                            <i class="fas fa-check-circle fa-3x text-success"></i>
-                        </div>
-                        <p id="successMessage">${message}</p>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    </div>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(modalDiv);
+    // Update modal content
+    document.getElementById('successTitle').textContent = title;
+    document.getElementById('successMessage').textContent = message;
 
-        // Initialize the new modal
-        const newModal = new bootstrap.Modal(modalDiv);
-
-        // Setup listeners for modal events
-        modalDiv.addEventListener('hidden.bs.modal', function() {
-            if (typeof onClose === 'function') {
-                setTimeout(onClose, 100); // Small delay to ensure modal is fully closed
-            }
-        });
-
-        // Show the modal
-        newModal.show();
-    } else {
-        // Update existing modal content
-        document.getElementById('successTitle').textContent = title;
-        document.getElementById('successMessage').textContent = message;
-
-        // Get or create modal instance
-        let modalInstance = bootstrap.Modal.getInstance(successModal);
-        if (!modalInstance) {
-            modalInstance = new bootstrap.Modal(successModal);
-        }
-
-        // Setup listeners for modal events
-        successModal.addEventListener('hidden.bs.modal', function() {
-            if (typeof onClose === 'function') {
-                setTimeout(onClose, 100); // Small delay to ensure modal is fully closed
-            }
-        });
-
-        // Show the modal
-        modalInstance.show();
+    // Get or create modal instance
+    let modalInstance = bootstrap.Modal.getInstance(successModal);
+    if (!modalInstance) {
+        modalInstance = new bootstrap.Modal(successModal);
     }
+
+    // Setup close handler
+    if (typeof onClose === 'function') {
+        successModal.addEventListener('hidden.bs.modal', function handler() {
+            successModal.removeEventListener('hidden.bs.modal', handler);
+            setTimeout(onClose, 100);
+        });
+    }
+
+    // Show the modal
+    modalInstance.show();
 }
 
 function generateInvoice() {
@@ -1254,8 +1741,7 @@ function generateInvoice() {
     confirmBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2" role="status"></div> Generating...';
 
     // Close the modal
-    const invoiceModal = bootstrap.Modal.getInstance(document.getElementById('generateInvoiceModal'));
-    invoiceModal.hide();
+    closeAllModals();
 
     // Prepare request data
     const invoiceRequest = {
@@ -1307,18 +1793,11 @@ function generateInvoice() {
             loadCompletedServices();
 
             // Show success message
-            const successModal = new bootstrap.Modal(document.getElementById('successModal'));
-            document.getElementById('successTitle').textContent = 'Invoice Generated';
-            document.getElementById('successMessage').textContent = sendEmail ?
-                `Invoice has been generated and sent to ${email}` :
-                'Invoice has been generated successfully';
-            successModal.show();
-
-            // Automatically proceed to payment after short delay
-            setTimeout(() => {
-                successModal.hide();
-                openPaymentModal();
-            }, 2000);
+            showSuccessMessage(
+                'Invoice Generated',
+                sendEmail ? `Invoice has been generated and sent to ${email}` : 'Invoice has been generated successfully',
+                () => openPaymentModal()
+            );
         })
         .catch(error => {
             // Reset button state
@@ -1327,21 +1806,59 @@ function generateInvoice() {
 
             // Show error message
             showToast('Error: ' + error.message, 'error');
-
-            // Log detailed error for debugging
-            console.error('Invoice generation failed:', error);
         });
 }
 
+function fetchLaborCharges(serviceId, token) {
+    return fetch(`/admin/api/service/${serviceId}/labor-charges`, {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+        }
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Failed to fetch labor charges: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("Labor charges from dedicated endpoint:", data);
 
+            // Extract labor charges from the response
+            if (data.laborHours !== undefined && data.hourlyRate !== undefined) {
+                return {
+                    laborCharges: [{
+                        description: 'Service Labor',
+                        hours: data.laborHours,
+                        rate: data.hourlyRate,
+                        total: data.laborHours * data.hourlyRate
+                    }],
+                    laborTotal: data.laborHours * data.hourlyRate
+                };
+            }
+
+            return null;
+        })
+        .catch(error => {
+            console.error("Error fetching labor charges:", error);
+            return null;
+        });
+}
 function openPaymentModal() {
     if (!currentService) return;
+
+    // Close any open modals first
+    closeAllModals();
+
     document.getElementById('paymentServiceId').textContent = `REQ-${currentService.requestId || currentService.serviceId}`;
     document.getElementById('paymentCustomerName').textContent = currentService.customerName;
     const total = currentService.calculatedTotal || 0;
     document.getElementById('paidAmount').value = total.toFixed(2);
-    const paymentModal = new bootstrap.Modal(document.getElementById('paymentModal'));
-    paymentModal.show();
+
+    // Show the payment modal
+    safelyOpenModal('paymentModal');
 }
 
 function processPayment() {
@@ -1360,8 +1877,10 @@ function processPayment() {
     const confirmBtn = document.getElementById('confirmPaymentBtn');
     confirmBtn.disabled = true;
     confirmBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2" role="status"></div> Processing...';
-    const paymentModal = bootstrap.Modal.getInstance(document.getElementById('paymentModal'));
-    paymentModal.hide();
+
+    // Close the modal
+    closeAllModals();
+
     const paymentRequest = {
         serviceId: currentService.requestId || currentService.serviceId,
         paymentMethod: paymentMethod,
@@ -1384,14 +1903,13 @@ function processPayment() {
                 currentService.paid = true;
             }
             loadCompletedServices();
-            const successModal = new bootstrap.Modal(document.getElementById('successModal'));
-            document.getElementById('successTitle').textContent = 'Payment Processed';
-            document.getElementById('successMessage').textContent = 'Payment has been processed successfully';
-            successModal.show();
-            setTimeout(() => {
-                successModal.hide();
-                openDeliveryModal();
-            }, 2000);
+
+            // Show success message and then open delivery modal
+            showSuccessMessage(
+                'Payment Processed',
+                'Payment has been processed successfully',
+                () => openDeliveryModal()
+            );
         })
         .catch(error => {
             confirmBtn.disabled = false;
@@ -1420,19 +1938,12 @@ function tryPostUrls(urls, requestData, token) {
     }, Promise.reject(new Error('Starting POST URL chain')));
 }
 
-function openPaymentModal() {
-    if (!currentService) return;
-    document.getElementById('paymentServiceId').textContent = `REQ-${currentService.requestId || currentService.serviceId}`;
-    document.getElementById('paymentCustomerName').textContent = currentService.customerName;
-    const total = currentService.calculatedTotal || 0;
-    document.getElementById('paidAmount').value = total.toFixed(2);
-    const paymentModal = new bootstrap.Modal(document.getElementById('paymentModal'));
-    paymentModal.show();
-}
-
-// Update the openDeliveryModal function to prepare for address auto-fill
 function openDeliveryModal() {
     if (!currentService) return;
+
+    // Close any open modals first
+    closeAllModals();
+
     document.getElementById('deliveryServiceId').textContent = `REQ-${currentService.requestId || currentService.serviceId}`;
     document.getElementById('pickupPerson').value = '';
     document.getElementById('pickupTime').value = '';
@@ -1449,8 +1960,8 @@ function openDeliveryModal() {
         currentService.customerAddress = getCustomerAddress(currentService);
     }
 
-    const deliveryModal = new bootstrap.Modal(document.getElementById('deliveryModal'));
-    deliveryModal.show();
+    // Show the delivery modal
+    safelyOpenModal('deliveryModal');
 }
 
 function processDelivery() {
@@ -1487,8 +1998,10 @@ function processDelivery() {
     const confirmBtn = document.getElementById('confirmDeliveryBtn');
     confirmBtn.disabled = true;
     confirmBtn.innerHTML = '<div class="spinner-border spinner-border-sm me-2" role="status"></div> Processing...';
-    const deliveryModal = bootstrap.Modal.getInstance(document.getElementById('deliveryModal'));
-    deliveryModal.hide();
+
+    // Close the modal
+    closeAllModals();
+
     const deliveryRequest = {
         serviceId: currentService.requestId || currentService.serviceId,
         deliveryType: deliveryMethod,
@@ -1517,12 +2030,14 @@ function processDelivery() {
                 currentService.delivered = true;
             }
             loadCompletedServices();
-            const successModal = new bootstrap.Modal(document.getElementById('successModal'));
-            document.getElementById('successTitle').textContent = 'Delivery Scheduled';
-            document.getElementById('successMessage').textContent = deliveryMethod === 'pickup' ?
-                'Vehicle pickup has been scheduled successfully' :
-                'Vehicle delivery has been scheduled successfully';
-            successModal.show();
+
+            // Show success message
+            showSuccessMessage(
+                'Delivery Scheduled',
+                deliveryMethod === 'pickup' ?
+                    'Vehicle pickup has been scheduled successfully' :
+                    'Vehicle delivery has been scheduled successfully'
+            );
         })
         .catch(error => {
             confirmBtn.disabled = false;
@@ -1556,4 +2071,26 @@ function showToast(message, type = 'success') {
     toastEl.addEventListener('hidden.bs.toast', function() {
         toastEl.remove();
     });
+}
+
+// Helper function to find email in nested objects
+function findEmailInObject(obj) {
+    if (!obj) return null;
+
+    // Direct check
+    if (obj.email) return obj.email;
+    if (obj.customerEmail) return obj.customerEmail;
+
+    // Check in customer object
+    if (obj.customer && obj.customer.email) return obj.customer.email;
+
+    // Check in user object
+    if (obj.user && obj.user.email) return obj.user.email;
+
+    // Check in enhancedCustomerData
+    if (obj.enhancedCustomerData && obj.enhancedCustomerData.email) {
+        return obj.enhancedCustomerData.email;
+    }
+
+    return null;
 }

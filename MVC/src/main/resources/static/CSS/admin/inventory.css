@@ -1,9 +1,9 @@
 :root {
-    --dutch-white: #EFFBBB; /* Dutch White */
+    --dutch-white: #EFFBBB;
     --dutch-white-light: #f5ffd4;
     --dutch-white-dark: #d6e297;
     --dutch-white-darker: #bfca85;
-    --wine: #722F37; /* Wine */
+    --wine: #722F37;
     --wine-light: #8a3943;
     --wine-dark: #5e262e;
     --wine-darker: #491d23;
@@ -49,7 +49,6 @@ body, html {
     -moz-osx-font-smoothing: grayscale;
 }
 
-/* Scrollbar Styling */
 ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -75,7 +74,6 @@ body, html {
     min-height: 100vh;
 }
 
-/* Sidebar Styles */
 .sidebar {
     width: 280px;
     background: var(--wine-gradient);
@@ -96,13 +94,12 @@ body, html {
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
     display: flex;
     align-items: center;
-    justify-content: space-between;
 }
 
 .sidebar-header h2 {
     margin-bottom: 0;
     font-weight: 700;
-    color: var(--white);
+    color: #ffffff;
     font-size: 1.75rem;
     letter-spacing: 0.5px;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
@@ -113,6 +110,7 @@ body, html {
     overflow-y: auto;
     padding: 1.25rem 0;
 }
+
 
 .sidebar-content::-webkit-scrollbar {
     width: 4px;
@@ -147,7 +145,7 @@ body, html {
 
 .sidebar-menu-item {
     padding: 0 0.75rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.25rem;
 }
 
 .sidebar-menu-link {
@@ -156,14 +154,14 @@ body, html {
     padding: 0.85rem 1rem;
     color: rgba(255, 255, 255, 0.95);
     text-decoration: none;
-    border-radius: var(--radius-md);
-    transition: var(--transition);
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
     position: relative;
 }
 
 .sidebar-menu-link:hover {
     background-color: rgba(255, 255, 255, 0.1);
-    color: var(--white);
+    color: #ffffff;
 }
 
 .sidebar-menu-link.active {
@@ -185,6 +183,7 @@ body, html {
     border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
 
+
 .sidebar-menu-link i {
     width: 1.5rem;
     text-align: center;
@@ -196,7 +195,7 @@ body, html {
     font-size: 1rem;
     font-weight: 500;
     color: inherit;
-    margin-left: 0.25rem;
+    margin-left: 0;
 }
 
 .sidebar-footer {
@@ -215,7 +214,7 @@ body, html {
 .user-name {
     font-weight: 600;
     font-size: 0.95rem;
-    color: var(--white);
+    color: #ffffff;
 }
 
 .user-role {
@@ -227,22 +226,21 @@ body, html {
     padding: 0.5rem 1rem;
     background-color: rgba(255, 255, 255, 0.1);
     border: none;
-    border-radius: var(--radius-md);
-    color: var(--white);
+    border-radius: 0.5rem;
+    color: #ffffff;
     font-size: 0.9rem;
     font-weight: 500;
     display: flex;
     align-items: center;
     gap: 0.5rem;
     cursor: pointer;
-    transition: var(--transition);
+    transition: all 0.3s ease;
 }
 
 .logout-btn:hover {
     background-color: rgba(255, 255, 255, 0.2);
 }
 
-/* Main Content Styles */
 .main-content {
     flex: 1;
     margin-left: 280px;
@@ -250,8 +248,6 @@ body, html {
     transition: var(--transition);
     color: var(--dark-gray);
 }
-
-/* Header Styles */
 .page-header {
     display: flex;
     align-items: center;
@@ -293,7 +289,6 @@ body, html {
     gap: 1rem;
 }
 
-/* Premium Button */
 .btn-premium {
     padding: 0.75rem 1.5rem;
     border-radius: var(--radius-lg);
@@ -348,7 +343,6 @@ body, html {
     transform: translateY(-2px);
 }
 
-/* Search Box */
 .search-box {
     position: relative;
     max-width: 400px;
@@ -381,7 +375,6 @@ body, html {
     pointer-events: none;
 }
 
-/* Category Tabs */
 .category-tabs {
     display: flex;
     gap: 1rem;
@@ -415,7 +408,6 @@ body, html {
     border-color: var(--wine);
 }
 
-/* Inventory Grid Section */
 .grid-section {
     background-color: transparent;
     margin-bottom: 2rem;
@@ -490,7 +482,6 @@ body, html {
     pointer-events: none;
 }
 
-/* Inventory Grid */
 .inventory-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -502,7 +493,6 @@ body, html {
     box-shadow: var(--shadow-lg);
 }
 
-/* Inventory Item Card */
 .inventory-card {
     background-color: var(--white);
     border-radius: var(--radius-lg);
@@ -651,7 +641,6 @@ body, html {
     transform: translateY(-2px);
 }
 
-/* Loading State */
 .loading-grid {
     display: flex;
     justify-content: center;
@@ -675,7 +664,6 @@ body, html {
     height: 3rem;
 }
 
-/* Empty State */
 .empty-grid {
     display: flex;
     flex-direction: column;
@@ -707,7 +695,6 @@ body, html {
     margin-bottom: 2rem;
 }
 
-/* Inventory Stats */
 .stats-row {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -762,7 +749,6 @@ body, html {
     margin: 0;
 }
 
-/* Pagination */
 .pagination-container {
     display: flex;
     justify-content: center;
@@ -808,7 +794,6 @@ body, html {
     opacity: 0.6;
 }
 
-/* Modal Styles - Premium */
 .modal-premium .modal-content {
     border: none;
     border-radius: var(--radius-lg);
@@ -867,7 +852,6 @@ body, html {
     background-color: rgba(255, 255, 255, 0.3);
 }
 
-/* Form Styles */
 .form-row {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -937,7 +921,6 @@ body, html {
     box-shadow: 0 0 0 0.25rem rgba(114, 47, 55, 0.25);
 }
 
-/* Albany Spinner */
 .spinner-overlay {
     position: fixed;
     top: 0;
@@ -1054,7 +1037,6 @@ body, html {
     }
 }
 
-/* Footer */
 .app-footer {
     margin-top: 3rem;
     padding-bottom: 2rem;
@@ -1080,7 +1062,6 @@ body, html {
     color: var(--dutch-white-light);
 }
 
-/* Mobile menu toggle */
 .mobile-menu-toggle {
     display: none;
     position: fixed;
@@ -1106,65 +1087,26 @@ body, html {
     box-shadow: 0 6px 16px rgba(114, 47, 55, 0.3);
 }
 
-/* Responsive Design */
-@media (max-width: 991.98px) {
+@media (max-width: 1000px) {
+    .mobile-menu-toggle {
+        display: flex;
+    }
+
     .sidebar {
-        width: 5rem;
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+        transform: translateX(-100%);
     }
 
-    .sidebar-header h2,
-    .sidebar-menu-link span,
-    .user-info,
-    .nav-section-title,
-    .logout-btn span {
-        display: none;
-    }
-
-    .sidebar-menu-link {
-        justify-content: center;
-        padding: 0.75rem;
-    }
-
-    .sidebar-menu-link i {
-        margin-right: 0;
-        font-size: 1.25rem;
-    }
-
-    .sidebar-menu-link.active::before {
-        left: -0.5rem;
-    }
-
-    .sidebar-footer {
-        justify-content: center;
-        padding: 1rem;
-    }
-
-    .logout-btn {
-        padding: 0.5rem;
-        justify-content: center;
+    .sidebar.active {
+        transform: translateX(0);
     }
 
     .main-content {
-        margin-left: 5rem;
-    }
-
-    .page-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1rem;
-    }
-
-    .header-left h1 {
-        font-size: 2rem;
-    }
-
-    .inventory-grid {
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        margin-left: 0;
+        width: 100%;
     }
 }
 
-@media (max-width: 767.98px) {
+@media (max-width: 700px) {
     .sidebar {
         z-index: 1050;
     }
@@ -1236,7 +1178,7 @@ body, html {
     }
 }
 
-@media (max-width: 575.98px) {
+@media (max-width: 500px) {
     .main-content {
         padding: 1rem;
     }

@@ -8,7 +8,6 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
-    <!-- Google Fonts - Baloo Bhaijaan 2 -->
     <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="/CSS/admin/inventory.css" rel="stylesheet">
 
@@ -32,7 +31,6 @@
 </button>
 
 <div class="app-container">
-    <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <h2>Albany</h2>
@@ -48,7 +46,6 @@
                             <span>Dashboard</span>
                         </a>
                     </li>
-
                     <li class="sidebar-menu-item">
                         <a th:href="@{/admin/service-requests}" class="sidebar-menu-link">
                             <i class="fas fa-clipboard-list"></i>
@@ -62,7 +59,7 @@
                         </a>
                     </li>
                     <li class="sidebar-menu-item">
-                        <a th:href="@{/admin/completed-services}" class="sidebar-menu-link ">
+                        <a th:href="@{/admin/completed-services}" class="sidebar-menu-link">
                             <i class="fas fa-check-circle"></i>
                             <span>Completed Services</span>
                         </a>
@@ -73,8 +70,6 @@
             <div class="nav-section">
                 <div class="nav-section-title">Management</div>
                 <ul class="sidebar-menu">
-
-
                     <li class="sidebar-menu-item">
                         <a th:href="@{/admin/customers}" class="sidebar-menu-link">
                             <i class="fas fa-users"></i>
@@ -88,22 +83,21 @@
                         </a>
                     </li>
                     <li class="sidebar-menu-item">
-                        <a th:href="@{/admin/inventory}" class="sidebar-menu-link active ">
+                        <a th:href="@{/admin/inventory}" class="sidebar-menu-link active">
                             <i class="fas fa-boxes"></i>
                             <span>Inventory</span>
                         </a>
                     </li>
-
                 </ul>
             </div>
         </div>
 
         <div class="sidebar-footer">
             <div class="user-info">
-                <div class="user-name">Arthur Morgan</div>
+                <div class="user-name" id="userName">Administrator</div>
                 <div class="user-role">Administrator</div>
             </div>
-            <button class="logout-btn">
+            <button class="logout-btn" id="logoutBtn">
                 <i class="fas fa-sign-out-alt"></i>
                 <span>Logout</span>
             </button>

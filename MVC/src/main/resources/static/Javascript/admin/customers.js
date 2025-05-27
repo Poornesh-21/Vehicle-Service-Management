@@ -1014,7 +1014,6 @@ document.addEventListener('DOMContentLoaded', function() {
         window.history.replaceState({}, document.title, url);
     }
 
-    // Initialize page
     if (checkAuth()) {
         loadCustomers();
     }

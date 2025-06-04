@@ -1,0 +1,331 @@
+:root {
+    --primary: #722F37;
+    --primary-light: #8a383f;
+    --secondary: #EFFBBB;
+    --secondary-dark: #e5f0b1;
+    --text-dark: #333333;
+    --text-light: #555555;
+    --white: #ffffff;
+    --error: #dc3545;
+    --success: #28a745;
+    --gray-100: #f8f9fa;
+    --gray-200: #e9ecef;
+    --gray-300: #dee2e6;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Baloo Bhaijaan 2', cursive;
+}
+
+body {
+    min-height: 100vh;
+    background: var(--gray-100);
+    color: var(--text-dark);
+}
+
+/* Navbar styling */
+.navbar {
+    background-color: var(--white);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-brand {
+    color: var(--primary);
+    font-weight: 700;
+    font-size: 1.5rem;
+}
+
+.navbar-nav .nav-link {
+    color: var(--text-dark);
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    transition: color 0.3s;
+}
+
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link.active {
+    color: var(--primary);
+}
+
+.navbar-nav .nav-link.active {
+    position: relative;
+}
+
+.navbar-nav .nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 1rem;
+    right: 1rem;
+    height: 3px;
+    background-color: var(--primary);
+    border-radius: 3px 3px 0 0;
+}
+
+.user-dropdown img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 8px;
+}
+
+/* Card styling */
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+.card-header {
+    background-color: var(--white);
+    border-bottom: 1px solid var(--gray-200);
+    padding: 1.25rem 1.5rem;
+}
+
+.card-title {
+    color: var(--text-dark);
+    font-weight: 600;
+    margin-bottom: 0;
+}
+
+/* Button styling */
+.btn {
+    padding: 0.5rem 1.25rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background-color: var(--primary-light);
+    border-color: var(--primary-light);
+    box-shadow: 0 5px 15px rgba(114, 47, 55, 0.3);
+}
+
+.btn-outline-primary {
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-secondary {
+    background-color: var(--secondary);
+    border-color: var(--secondary);
+    color: var(--text-dark);
+}
+
+.btn-secondary:hover {
+    background-color: var(--secondary-dark);
+    border-color: var(--secondary-dark);
+    color: var(--text-dark);
+}
+
+/* Form styling */
+.form-control {
+    border-radius: 8px;
+    border: 1px solid var(--gray-300);
+    padding: 0.6rem 1rem;
+    transition: all 0.3s;
+}
+
+.form-control:focus {
+    box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.15);
+    border-color: var(--primary);
+}
+
+.form-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+/* Dashboard components */
+.stat-card {
+    border-radius: 12px;
+    padding: 1.5rem;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.stat-card .stat-icon {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+}
+
+.stat-card .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0.5rem 0;
+}
+
+.stat-card .stat-label {
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+/* Service cards */
+.service-card {
+    text-align: center;
+    padding: 2rem 1.5rem;
+    border-radius: 15px;
+    background: var(--white);
+    transition: all 0.3s ease;
+}
+
+.service-card .service-icon {
+    width: 70px;
+    height: 70px;
+    margin: 0 auto 1.5rem;
+    background-color: rgba(114, 47, 55, 0.1);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.service-card .service-icon i {
+    color: var(--primary);
+    font-size: 30px;
+}
+
+.service-card h4 {
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+/* Tables */
+.table-container {
+    background: var(--white);
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table thead th {
+    background-color: rgba(114, 47, 55, 0.05);
+    border-bottom: none;
+    color: var(--primary);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    padding: 1rem;
+}
+
+.table tbody td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-color: var(--gray-200);
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+/* Status badges */
+.badge {
+    padding: 0.5rem 0.8rem;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 0.85rem;
+}
+
+.badge-pending {
+    background-color: #fff8dd;
+    color: #ffc107;
+}
+
+.badge-completed {
+    background-color: #e6f7ee;
+    color: #28a745;
+}
+
+.badge-in-progress {
+    background-color: #e0f2ff;
+    color: #0d6efd;
+}
+
+.badge-cancelled {
+    background-color: #feeeee;
+    color: #dc3545;
+}
+
+/* Footer */
+.footer {
+    background-color: var(--white);
+    padding: 2rem 0;
+    margin-top: 3rem;
+    border-top: 1px solid var(--gray-200);
+}
+
+.footer-links a {
+    color: var(--text-light);
+    margin-right: 1.5rem;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.footer-links a:hover {
+    color: var(--primary);
+}
+
+.footer-social i {
+    font-size: 1.25rem;
+    margin-left: 1rem;
+    color: var(--text-light);
+    transition: color 0.3s;
+}
+
+.footer-social i:hover {
+    color: var(--primary);
+}
+
+/* Media queries */
+@media (max-width: 991.98px) {
+    .navbar-collapse {
+        background-color: var(--white);
+        padding: 1rem;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        margin-top: 1rem;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .stat-card .stat-value {
+        font-size: 1.75rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .service-card {
+        padding: 1.5rem 1rem;
+    }
+}

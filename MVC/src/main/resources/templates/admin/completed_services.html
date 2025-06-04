@@ -344,6 +344,7 @@
 </div>
 
 <!-- Payment Modal -->
+<!-- Updated Payment Modal with explicit ID for the transaction ID group -->
 <div class="modal fade modal-premium" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -361,26 +362,28 @@
                 </div>
 
                 <div class="mb-3">
-                    <label for="paymentMethod" class="form-label">Payment Method</label>
+                    <label for="paymentMethod" class="form-label">Payment Method <span class="text-danger">*</span></label>
                     <select class="form-select" id="paymentMethod" required>
                         <option value="">Select Payment Method</option>
-                        <option value="UPI">UPI</option>
                         <option value="Card">Credit/Debit Card</option>
+                        <option value="UPI">UPI</option>
                         <option value="Net_Banking">Net Banking</option>
                         <option value="Cash">Cash</option>
                     </select>
                 </div>
 
-                <div class="mb-3">
+                <!-- Added explicit ID for the transaction ID form group -->
+                <div class="mb-3" id="transactionIdGroup">
                     <label for="transactionId" class="form-label">Transaction ID</label>
                     <input type="text" class="form-control" id="transactionId" placeholder="Enter transaction ID">
+                    <div class="form-text">For electronic payments only. Will be auto-generated for cash payments.</div>
                 </div>
 
                 <div class="mb-3">
-                    <label for="paidAmount" class="form-label">Amount Received</label>
+                    <label for="paidAmount" class="form-label">Amount Received <span class="text-danger">*</span></label>
                     <div class="input-group">
                         <span class="input-group-text">₹</span>
-                        <input type="number" class="form-control" id="paidAmount" placeholder="Enter amount" required>
+                        <input type="number" class="form-control" id="paidAmount" placeholder="Enter amount" required step="0.01" min="0">
                     </div>
                 </div>
             </div>

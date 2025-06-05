@@ -1,3 +1,7 @@
+/**
+ * Customer Authentication Script for Login Page
+ * Handles login and registration with OTP verification
+ */
 document.addEventListener('DOMContentLoaded', function() {
     // References to DOM elements
     const loginTab = document.getElementById('login-tab');
@@ -14,11 +18,79 @@ document.addEventListener('DOMContentLoaded', function() {
     const countdownElement = document.getElementById('countdown');
     const resendOtpButton = document.getElementById('resend-otp');
 
+    // State variables
     let currentForm = 'login';
     let countdownInterval;
     let timerSeconds = 30;
     let otpAction = ''; // 'login' or 'register'
     let registrationData = null;
+
+    /**
+     * Clear all form errors
+     */
+    function clearErrors() {
+        // Remove invalid class from all inputs
+        document.querySelectorAll('.form-control').forEach(input => {
+            input.classList.remove('is-invalid');
+        });
+
+        // Clear all error messages
+        document.querySelectorAll('.invalid-feedback').forEach(error => {
+            error.textContent = '';
+        });
+    }
+
+    /**
+     * Clear OTP errors
+     */
+    function clearOtpErrors() {
+        const errorContainer = document.querySelector('.otp-error');
+        if (errorContainer) {
+            errorContainer.style.display = 'none';
+        }
+    }
+
+    /**
+     * Show toast message (for success notifications only)
+     */
+    function showToast(message, type = 'info') {
+        // Check if toast container exists, if not create it
+        let toastContainer = document.querySelector('.toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+            document.body.appendChild(toastContainer);
+        }
+
+        // Create toast element
+        const toastId = 'toast-' + Date.now();
+        const toastHtml = `
+            <div id="${toastId}" class="toast align-items-center text-white bg-${type === 'error' ? 'danger' : type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        `;
+
+        // Add toast to container
+        toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+
+        // Initialize and show toast
+        const toastElement = document.getElementById(toastId);
+        const toast = new bootstrap.Toast(toastElement, {
+            autohide: true,
+            delay: 5000
+        });
+        toast.show();
+
+        // Remove toast after it's hidden
+        toastElement.addEventListener('hidden.bs.toast', function() {
+            toastElement.remove();
+        });
+    }
 
     // Tab switching functionality
     if (loginTab && registerTab) {
@@ -39,12 +111,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // OTP-related functionality
+    // OTP input behavior
     if (otpInputs.length > 0) {
-        // Handle OTP input behavior
+        // Auto-focus next input when a digit is entered
         otpInputs.forEach((input, index) => {
-            // Auto-focus next input when a digit is entered
-            input.addEventListener('input', function() {
+            input.addEventListener('input', function(e) {
+                // Only allow numbers
+                this.value = this.value.replace(/[^0-9]/g, '');
+
                 if (this.value.length === this.maxLength) {
                     if (index < otpInputs.length - 1) {
                         otpInputs[index + 1].focus();
@@ -65,6 +139,23 @@ document.addEventListener('DOMContentLoaded', function() {
                     otpInputs[index - 1].focus();
                 }
             });
+
+            // Handle pasting OTP
+            input.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const pastedData = e.clipboardData.getData('text').trim();
+
+                // Check if pasted content is a 4-digit number
+                if (/^\d{4}$/.test(pastedData)) {
+                    // Fill all inputs with respective digits
+                    for (let i = 0; i < otpInputs.length; i++) {
+                        otpInputs[i].value = pastedData[i] || '';
+                    }
+
+                    // Auto-submit if all filled
+                    document.getElementById('otpForm').dispatchEvent(new Event('submit'));
+                }
+            });
         });
     }
 
@@ -72,7 +163,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (document.getElementById('loginForm')) {
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            const email = document.getElementById('login-email').value;
+            const email = document.getElementById('login-email').value.trim();
 
             if (!isValidEmail(email)) {
                 showError('login-email', 'Please enter a valid email address');
@@ -90,21 +181,21 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
 
             // Get form values
-            const firstName = document.getElementById('register-firstName').value;
-            const lastName = document.getElementById('register-lastName').value;
-            const email = document.getElementById('register-email').value;
-            const phone = document.getElementById('register-phone').value;
+            const firstName = document.getElementById('register-firstName').value.trim();
+            const lastName = document.getElementById('register-lastName').value.trim();
+            const email = document.getElementById('register-email').value.trim();
+            const phone = document.getElementById('register-phone').value.trim();
             const termsCheckbox = document.getElementById('terms-checkbox');
 
             // Validate form
             let isValid = true;
 
-            if (!firstName.trim()) {
+            if (!firstName) {
                 showError('register-firstName', 'Please enter your first name');
                 isValid = false;
             }
 
-            if (!lastName.trim()) {
+            if (!lastName) {
                 showError('register-lastName', 'Please enter your last name');
                 isValid = false;
             }
@@ -158,7 +249,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Verify OTP
             if (otpAction === 'login') {
                 verifyLoginOtp(displayEmail.textContent, otp);
-            } else {
+            } else if (otpAction === 'register') {
                 verifyRegistrationOtp(registrationData, otp);
             }
         });
@@ -180,10 +271,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle resend OTP
     if (resendOtpButton) {
         resendOtpButton.addEventListener('click', function() {
-            const email = displayEmail.textContent.trim();
             if (otpAction === 'login') {
+                const email = displayEmail.textContent.trim();
                 sendLoginOtp(email);
-            } else {
+            } else if (otpAction === 'register') {
                 if (registrationData) {
                     sendRegistrationOtp(registrationData);
                 }
@@ -225,7 +316,7 @@ document.addEventListener('DOMContentLoaded', function() {
         displayEmail.textContent = email;
         startCountdown();
 
-        // Focus first OTP input
+        // Focus first OTP input and clear all inputs
         otpInputs.forEach(input => input.value = '');
         otpInputs[0].focus();
     }
@@ -287,6 +378,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function stopCountdown() {
         if (countdownInterval) {
             clearInterval(countdownInterval);
+            countdownInterval = null;
         }
     }
 
@@ -309,40 +401,40 @@ document.addEventListener('DOMContentLoaded', function() {
         const submitBtn = document.querySelector('#loginForm button[type="submit"]');
         const originalText = submitBtn.textContent;
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Sending...';
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Sending...';
 
-        const formData = new URLSearchParams();
+        // Clear previous errors
+        clearErrors();
+
+        const formData = new FormData();
         formData.append('email', email);
 
         fetch('/authentication/login/send-otp', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
             body: formData
         })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(data => {
-                        throw new Error(data.message || 'Failed to send OTP');
-                    });
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
                 if (data.success === false) {
+                    // Show error below input field
+                    if (data.errorField) {
+                        showError(data.errorField === 'email' ? 'login-email' : data.errorField, data.message);
+                    } else {
+                        showError('login-email', data.message);
+                    }
                     throw new Error(data.message || 'Failed to send OTP');
                 }
+
+                // Show OTP form
                 showOtpForm(email);
             })
             .catch(error => {
-                alert(error.message || 'Error sending OTP. Please try again.');
                 console.error('Error:', error);
             })
             .finally(() => {
                 // Reset button state
                 submitBtn.disabled = false;
-                submitBtn.textContent = originalText;
+                submitBtn.innerHTML = originalText;
             });
     }
 
@@ -356,7 +448,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const submitBtn = document.querySelector('#registerForm button[type="submit"]');
         const originalText = submitBtn.textContent;
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Sending...';
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Sending...';
+
+        // Clear previous errors
+        clearErrors();
 
         fetch('/authentication/register/send-otp', {
             method: 'POST',
@@ -365,28 +460,28 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             body: JSON.stringify(registerData)
         })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(data => {
-                        throw new Error(data.message || 'Failed to send OTP');
-                    });
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
                 if (data.success === false) {
+                    // Show error below input field
+                    if (data.errorField) {
+                        showError('register-' + data.errorField, data.message);
+                    } else {
+                        showError('register-email', data.message);
+                    }
                     throw new Error(data.message || 'Failed to send OTP');
                 }
+
+                // Show OTP form
                 showOtpForm(registerData.email);
             })
             .catch(error => {
-                alert(error.message || 'Error sending OTP. Please try again.');
                 console.error('Error:', error);
             })
             .finally(() => {
                 // Reset button state
                 submitBtn.disabled = false;
-                submitBtn.textContent = originalText;
+                submitBtn.innerHTML = originalText;
             });
     }
 
@@ -394,36 +489,28 @@ document.addEventListener('DOMContentLoaded', function() {
      * Verify login OTP
      */
     function verifyLoginOtp(email, otp) {
-        console.log('Verifying OTP for:', email, otp);
-
         // Show loading state
         const submitBtn = document.querySelector('#otpForm button[type="submit"]');
         const originalText = submitBtn.textContent;
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Verifying...';
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Verifying...';
 
-        const formData = new URLSearchParams();
+        // Clear previous errors
+        clearOtpErrors();
+
+        const formData = new FormData();
         formData.append('email', email);
         formData.append('otp', otp);
 
         fetch('/authentication/login/verify-otp', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded'
-            },
             body: formData
         })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(data => {
-                        throw new Error(data.message || 'Invalid OTP');
-                    });
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
-                console.log('API response:', data);
                 if (data.success === false) {
+                    // Show error message
+                    showOtpError(data.message);
                     throw new Error(data.message || 'Invalid OTP');
                 }
 
@@ -437,22 +524,27 @@ document.addEventListener('DOMContentLoaded', function() {
                     membershipType: data.membershipType
                 }));
 
-                // Redirect to the book service page
-                window.location.href = data.redirectUrl || '/customer/bookService';
+                // Show success message
+                showToast('Login successful! Redirecting...', 'success');
+
+                // Redirect to the customer index page
+                setTimeout(() => {
+                    window.location.href = '/customer';
+                }, 1000);
             })
             .catch(error => {
                 console.error('Verification error:', error);
-                alert(error.message || 'OTP verification failed. Please try again.');
-                otpInputs.forEach(input => input.value = ''); // Clear OTP inputs
-                otpInputs[0].focus(); // Focus on the first input
+
+                // Clear OTP inputs and focus first input
+                otpInputs.forEach(input => input.value = '');
+                otpInputs[0].focus();
             })
             .finally(() => {
                 // Reset button state
                 submitBtn.disabled = false;
-                submitBtn.textContent = originalText;
+                submitBtn.innerHTML = originalText;
             });
     }
-
 
     /**
      * Verify registration OTP
@@ -462,25 +554,29 @@ document.addEventListener('DOMContentLoaded', function() {
         const submitBtn = document.querySelector('#otpForm button[type="submit"]');
         const originalText = submitBtn.textContent;
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Verifying...';
+        submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Verifying...';
 
-        fetch(`/authentication/register/verify-otp?otp=${encodeURIComponent(otp)}`, {
+        // Clear previous errors
+        clearOtpErrors();
+
+        // Create a new object with registration data and OTP
+        const requestData = {
+            ...registerData,
+            otp: otp
+        };
+
+        fetch('/authentication/register/verify-otp', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify(registerData)
+            body: JSON.stringify(requestData)
         })
-            .then(response => {
-                if (!response.ok) {
-                    return response.json().then(data => {
-                        throw new Error(data.message || 'Invalid OTP');
-                    });
-                }
-                return response.json();
-            })
+            .then(response => response.json())
             .then(data => {
                 if (data.success === false) {
+                    // Show error message
+                    showOtpError(data.message);
                     throw new Error(data.message || 'Invalid OTP');
                 }
 
@@ -494,28 +590,34 @@ document.addEventListener('DOMContentLoaded', function() {
                     membershipType: data.membershipType
                 }));
 
-                // Use the redirectUrl from the server response
-                window.location.href = data.redirectUrl || '/customer/bookService';
+                // Show success message
+                showToast('Registration successful! Redirecting...', 'success');
+
+                // Redirect to the customer index page
+                setTimeout(() => {
+                    window.location.href = '/customer';
+                }, 1000);
             })
             .catch(error => {
-                alert(error.message || 'OTP verification failed. Please try again.');
                 console.error('Error:', error);
-                // Reset OTP inputs
+
+                // Clear OTP inputs and focus first input
                 otpInputs.forEach(input => input.value = '');
                 otpInputs[0].focus();
             })
             .finally(() => {
                 // Reset button state
                 submitBtn.disabled = false;
-                submitBtn.textContent = originalText;
+                submitBtn.innerHTML = originalText;
             });
     }
 
     /**
-     * Show error message
+     * Show error message under input
      */
     function showError(inputId, message) {
         const input = document.getElementById(inputId);
+        if (!input) return;
 
         // Add error class to input
         input.classList.add('is-invalid');
@@ -545,6 +647,48 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /**
+     * Show toast message
+     */
+    function showToast(message, type = 'info') {
+        // Check if toast container exists, if not create it
+        let toastContainer = document.querySelector('.toast-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+            document.body.appendChild(toastContainer);
+        }
+
+        // Create toast element
+        const toastId = 'toast-' + Date.now();
+        const toastHtml = `
+            <div id="${toastId}" class="toast align-items-center text-white bg-${type === 'error' ? 'danger' : type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        `;
+
+        // Add toast to container
+        toastContainer.insertAdjacentHTML('beforeend', toastHtml);
+
+        // Initialize and show toast
+        const toastElement = document.getElementById(toastId);
+        const toast = new bootstrap.Toast(toastElement, {
+            autohide: true,
+            delay: 5000
+        });
+        toast.show();
+
+        // Remove toast after it's hidden
+        toastElement.addEventListener('hidden.bs.toast', function() {
+            toastElement.remove();
+        });
+    }
+
+    /**
      * Validate email format
      */
     function isValidEmail(email) {
@@ -559,5 +703,18 @@ document.addEventListener('DOMContentLoaded', function() {
         // Basic phone validation - allows various formats
         const phoneRegex = /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,6}$/;
         return phoneRegex.test(phone);
+    }
+
+    // Check if redirected from another page with a message
+    const urlParams = new URLSearchParams(window.location.search);
+    const messageParam = urlParams.get('message');
+    const messageType = urlParams.get('type') || 'info';
+
+    if (messageParam) {
+        showToast(decodeURIComponent(messageParam), messageType);
+
+        // Remove the parameters from URL
+        const newUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, newUrl);
     }
 });

@@ -51,6 +51,11 @@ public class SecurityConfig {
                         .requestMatchers("/serviceAdvisor/api/validate-token").hasRole("serviceAdvisor")
                         .requestMatchers("/serviceAdvisor/api/inventory-items").hasRole("serviceAdvisor")
                         .requestMatchers("/serviceAdvisor/api/dashboard/**").hasRole("serviceAdvisor")
+                        .requestMatchers("/api/customer/auth/login/send-otp").permitAll()
+                        .requestMatchers("/api/customer/auth/login/verify-otp").permitAll()
+                        .requestMatchers("/api/customer/auth/register/send-otp").permitAll()
+                        .requestMatchers("/api/customer/auth/register/verify-otp").permitAll()
+                        .requestMatchers("/authentication/**").permitAll()
 
                         .anyRequest().authenticated()
                 )

@@ -18,10 +18,55 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle URL parameters (e.g., messages from redirects)
     handleUrlParams();
 
+    // Set active navbar item based on current URL
+    setActiveNavItem();
+
     // Navbar scroll effect
     window.addEventListener('scroll', handleNavbarScroll);
     handleNavbarScroll();
 });
+
+/**
+ * Set active state for navbar items based on current URL
+ */
+function setActiveNavItem() {
+    // Get current path
+    const currentPath = window.location.pathname;
+
+    // Get all nav links
+    const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+
+    // Remove active class from all links
+    navLinks.forEach(link => {
+        link.classList.remove('active');
+    });
+
+    // Set active class based on current path
+    navLinks.forEach(link => {
+        const href = link.getAttribute('href');
+
+        // Skip hash links when on homepage
+        if (href.startsWith('#') && currentPath === '/') {
+            // For homepage, leave hash links as is
+            return;
+        }
+
+        // For absolute paths, check if current path matches
+        if (href.startsWith('/')) {
+            if (currentPath === href) {
+                link.classList.add('active');
+            }
+        }
+    });
+
+    // Special case for homepage
+    if (currentPath === '/' || currentPath === '') {
+        const homeLink = document.querySelector('.navbar-nav .nav-link[href="/"]');
+        if (homeLink) {
+            homeLink.classList.add('active');
+        }
+    }
+}
 
 /**
  * Main function to update UI based on authentication state

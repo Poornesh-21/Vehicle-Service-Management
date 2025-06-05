@@ -999,7 +999,7 @@ body {
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" th:href="@{/}">Home</a>
+                        <a class="nav-link" th:href="@{/}">Home</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" th:href="@{/customer/aboutUs}">About Us</a>
@@ -1007,21 +1007,21 @@ body {
                     <li class="nav-item">
                         <a class="nav-link" href="#services">Services</a>
                     </li>
-					<li class="nav-item">
-						<a class="nav-link" href="/customer/membership">Membership</a>
-					</li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/customer/membership}">Membership</a>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#contact">Contact Us</a>
                     </li>
-                    
                 </ul>
                 <div class="ms-lg-3 mt-3 mt-lg-0 d-flex">
-                    <a href="/authentication/login" class="btn btn-login me-2">Login</a>
-                    <a href="/authentication/login" class="btn btn-signup">Signup</a>
+                    <a th:href="@{/authentication/login}" class="btn btn-login me-2">Login</a>
+                    <a th:href="@{/authentication/login}" class="btn btn-signup">Signup</a>
                 </div>
             </div>
         </div>
     </nav>
+
 
     <!-- Hero Section -->
     <section class="hero-section">

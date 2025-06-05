@@ -19,6 +19,9 @@ import org.springframework.web.client.RestTemplate;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Controller for customer authentication
+ */
 @Controller
 @RequestMapping("/authentication")
 public class CustomerAuthController {
@@ -32,6 +35,9 @@ public class CustomerAuthController {
         this.restTemplate = restTemplate;
     }
 
+    /**
+     * Login/registration page
+     */
     @GetMapping("/login")
     public String loginPage(@RequestParam(required = false) String message,
                             @RequestParam(required = false) String type,
@@ -43,6 +49,9 @@ public class CustomerAuthController {
         return "customer/login";
     }
 
+    /**
+     * Send login OTP
+     */
     @PostMapping("/login/send-otp")
     @ResponseBody
     public ResponseEntity<?> sendLoginOtp(@RequestParam String email) {
@@ -72,6 +81,9 @@ public class CustomerAuthController {
         }
     }
 
+    /**
+     * Verify login OTP
+     */
     @PostMapping("/login/verify-otp")
     @ResponseBody
     public ResponseEntity<?> verifyLoginOtp(@RequestParam String email, @RequestParam String otp) {
@@ -102,6 +114,9 @@ public class CustomerAuthController {
         }
     }
 
+    /**
+     * Send registration OTP
+     */
     @PostMapping("/register/send-otp")
     @ResponseBody
     public ResponseEntity<?> sendRegistrationOtp(@RequestBody Map<String, Object> registrationData) {
@@ -128,6 +143,9 @@ public class CustomerAuthController {
         }
     }
 
+    /**
+     * Verify registration OTP
+     */
     @PostMapping("/register/verify-otp")
     @ResponseBody
     public ResponseEntity<?> verifyRegistrationOtp(@RequestBody Map<String, Object> requestData) {
@@ -135,16 +153,7 @@ public class CustomerAuthController {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
 
-            // Extract OTP from request data
-            String otp = (String) requestData.get("otp");
-            String email = (String) requestData.get("email");
-
-            // Create verification request
-            Map<String, Object> verificationRequest = new HashMap<>();
-            verificationRequest.put("email", email);
-            verificationRequest.put("otp", otp);
-
-            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(verificationRequest, headers);
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestData, headers);
 
             ResponseEntity<Map> response = restTemplate.exchange(
                     apiBaseUrl + "/api/customer/auth/register/verify-otp",
@@ -159,6 +168,38 @@ public class CustomerAuthController {
                     "success", false,
                     "message", "Failed to verify registration OTP: " + e.getMessage(),
                     "errorField", "otp"
+            ));
+        }
+    }
+
+    /**
+     * Validate token endpoint
+     */
+    @GetMapping("/validate-token")
+    @ResponseBody
+    public ResponseEntity<?> validateToken(@RequestParam(required = false) String token) {
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            if (token != null && !token.isEmpty()) {
+                headers.set("Authorization", "Bearer " + token);
+            }
+
+            HttpEntity<String> entity = new HttpEntity<>(headers);
+
+            ResponseEntity<Map> response = restTemplate.exchange(
+                    apiBaseUrl + "/api/customer/auth/validate-token",
+                    HttpMethod.GET,
+                    entity,
+                    Map.class
+            );
+
+            return ResponseEntity.ok(response.getBody());
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of(
+                    "valid", false,
+                    "message", "Failed to validate token: " + e.getMessage()
             ));
         }
     }

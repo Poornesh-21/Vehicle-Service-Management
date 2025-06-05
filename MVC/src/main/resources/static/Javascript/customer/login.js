@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Clear all error messages
         document.querySelectorAll('.invalid-feedback').forEach(error => {
-            error.textContent = '';
+            error.remove();
         });
     }
 
@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function clearOtpErrors() {
         const errorElement = document.querySelector('.otp-error');
         if (errorElement) {
-            errorElement.textContent = '';
+            errorElement.remove();
         }
     }
 
@@ -242,7 +242,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
 
             if (otp.length !== 4 || !/^\d{4}$/.test(otp)) {
-                alert('Please enter a valid 4-digit OTP code');
+                showOtpError('Please enter a valid 4-digit OTP code');
                 return;
             }
 
@@ -271,6 +271,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle resend OTP
     if (resendOtpButton) {
         resendOtpButton.addEventListener('click', function() {
+            if (this.disabled) return;
+
             if (otpAction === 'login') {
                 const email = displayEmail.textContent.trim();
                 sendLoginOtp(email);
@@ -301,6 +303,9 @@ document.addEventListener('DOMContentLoaded', function() {
             registerForm.classList.add('fade-in');
             currentForm = 'register';
         }
+
+        // Clear errors when switching tabs
+        clearErrors();
     }
 
     /**
@@ -635,10 +640,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Set error message
         errorElement.textContent = message;
 
-        // Remove error after 5 seconds
-        setTimeout(() => {
-            input.classList.remove('is-invalid');
-        }, 5000);
+        // Focus the input
+        input.focus();
 
         // Remove error when input changes
         input.addEventListener('input', function() {
@@ -647,45 +650,32 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /**
-     * Show toast message
+     * Show OTP error message
      */
-    function showToast(message, type = 'info') {
-        // Check if toast container exists, if not create it
-        let toastContainer = document.querySelector('.toast-container');
-        if (!toastContainer) {
-            toastContainer = document.createElement('div');
-            toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
-            document.body.appendChild(toastContainer);
+    function showOtpError(message) {
+        const otpForm = document.getElementById('otpForm');
+
+        // Check if error element already exists
+        let errorElement = otpForm.querySelector('.otp-error');
+
+        if (!errorElement) {
+            // Create error element
+            errorElement = document.createElement('div');
+            errorElement.className = 'otp-error alert alert-danger mt-3';
+            otpForm.appendChild(errorElement);
         }
 
-        // Create toast element
-        const toastId = 'toast-' + Date.now();
-        const toastHtml = `
-            <div id="${toastId}" class="toast align-items-center text-white bg-${type === 'error' ? 'danger' : type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
-                <div class="d-flex">
-                    <div class="toast-body">
-                        ${message}
-                    </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
-            </div>
-        `;
+        // Set error message
+        errorElement.textContent = message;
 
-        // Add toast to container
-        toastContainer.insertAdjacentHTML('beforeend', toastHtml);
-
-        // Initialize and show toast
-        const toastElement = document.getElementById(toastId);
-        const toast = new bootstrap.Toast(toastElement, {
-            autohide: true,
-            delay: 5000
-        });
-        toast.show();
-
-        // Remove toast after it's hidden
-        toastElement.addEventListener('hidden.bs.toast', function() {
-            toastElement.remove();
-        });
+        // Shake OTP inputs to indicate error
+        const otpInputsContainer = document.querySelector('.otp-inputs');
+        if (otpInputsContainer) {
+            otpInputsContainer.classList.add('shake');
+            setTimeout(() => {
+                otpInputsContainer.classList.remove('shake');
+            }, 500);
+        }
     }
 
     /**

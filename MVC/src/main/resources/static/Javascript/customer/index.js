@@ -22,10 +22,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const token = sessionStorage.getItem('authToken');
         const userInfoStr = sessionStorage.getItem('userInfo');
 
-        // Elements in the header
-        const loginBtn = document.querySelector('a.btn-login');
-        const signupBtn = document.querySelector('a.btn-signup');
-
         if (token && userInfoStr) {
             try {
                 // Parse user info
@@ -35,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 handleLoggedInUser(userInfo);
 
                 // Verify token validity in background
-                validateTokenInBackground();
+                validateTokenInBackground(token);
             } catch (error) {
                 console.error('Error parsing user info:', error);
                 // Clear invalid session data
@@ -50,44 +46,87 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /**
+     * Validate token with backend
+     */
+    function validateTokenInBackground(token) {
+        fetch('/api/customer/auth/validate-token', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Token validation failed');
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (!data.valid) {
+                    console.warn('Token invalid, logging out');
+                    logout(false); // Silent logout (no message)
+                } else {
+                    // Update user info from server in case anything changed
+                    if (data.user) {
+                        const currentInfo = JSON.parse(sessionStorage.getItem('userInfo') || '{}');
+                        const updatedInfo = {
+                            ...currentInfo,
+                            ...data.user
+                        };
+                        sessionStorage.setItem('userInfo', JSON.stringify(updatedInfo));
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Token validation error:', error);
+                // Don't logout on network errors to prevent poor user experience
+            });
+    }
+
+    /**
      * Handle UI changes for logged-in user
      */
     function handleLoggedInUser(userInfo) {
+        // Get navigation elements
         const loginBtn = document.querySelector('a.btn-login');
         const signupBtn = document.querySelector('a.btn-signup');
 
-        if (loginBtn && signupBtn) {
-            // Hide signup button
-            signupBtn.style.display = 'none';
+        if (!loginBtn || !signupBtn) {
+            console.warn('Login/signup buttons not found');
+            return;
+        }
 
-            // Check if user dropdown already exists
-            const existingDropdown = document.querySelector('.dropdown #userDropdown');
-            if (!existingDropdown) {
-                // Replace login button with user dropdown
-                const dropdownHtml = `
-                    <div class="dropdown">
-                        <button class="btn btn-user dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="bi bi-person-circle me-1"></i> ${userInfo.firstName}
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                            <li><a class="dropdown-item" href="/customer/profile">My Profile</a></li>
-                            <li><a class="dropdown-item" href="/customer/myVehicles">My Vehicles</a></li>
-                            <li><a class="dropdown-item" href="/customer/serviceHistory">Service History</a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="#" id="logoutBtn">Logout</a></li>
-                        </ul>
-                    </div>
-                `;
+        // Hide signup button
+        signupBtn.style.display = 'none';
 
-                // Replace login button with dropdown
-                loginBtn.parentNode.innerHTML = dropdownHtml;
+        // Check if user dropdown already exists
+        const existingDropdown = document.querySelector('.dropdown #userDropdown');
+        if (!existingDropdown) {
+            // Replace login button with user dropdown
+            const dropdownHtml = `
+                <div class="dropdown">
+                    <button class="btn btn-user dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-person-circle me-1"></i> ${userInfo.firstName}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                        <li><a class="dropdown-item" href="/customer/profile">My Profile</a></li>
+                        <li><a class="dropdown-item" href="/customer/myVehicles">My Vehicles</a></li>
+                        <li><a class="dropdown-item" href="/customer/serviceHistory">Service History</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" id="logoutBtn">Logout</a></li>
+                    </ul>
+                </div>
+            `;
 
-                // Add logout functionality
-                document.getElementById('logoutBtn').addEventListener('click', function(e) {
-                    e.preventDefault();
-                    logout();
-                });
-            }
+            // Replace login button with dropdown
+            const btnContainer = loginBtn.parentNode;
+            btnContainer.innerHTML = dropdownHtml;
+
+            // Add logout functionality
+            document.getElementById('logoutBtn').addEventListener('click', function(e) {
+                e.preventDefault();
+                logout(true); // Show logout message
+            });
         }
 
         // Update Book Service buttons
@@ -106,24 +145,24 @@ document.addEventListener('DOMContentLoaded', function() {
         // Make sure login and signup buttons are visible and correctly linked
         const loginBtn = document.querySelector('a.btn-login');
         const signupBtn = document.querySelector('a.btn-signup');
+        const userDropdown = document.querySelector('.dropdown');
 
         if (loginBtn && signupBtn) {
             loginBtn.style.display = '';
             signupBtn.style.display = '';
-
             loginBtn.href = '/authentication/login';
             signupBtn.href = '/authentication/login';
+        } else if (userDropdown) {
+            // Replace user dropdown with login/signup buttons
+            const btnContainer = userDropdown.parentNode;
+            btnContainer.innerHTML = `
+                <a href="/authentication/login" class="btn btn-login me-2">Login</a>
+                <a href="/authentication/login" class="btn btn-signup">Signup</a>
+            `;
         }
 
-        // Update Book Service buttons
+        // Update Book Service buttons to redirect to login
         updateBookServiceButtons(false);
-
-        // Remove user dropdown if it exists
-        const userDropdown = document.querySelector('.dropdown');
-        if (userDropdown && loginBtn) {
-            const loginBtnHtml = `<a href="/authentication/login" class="btn btn-login me-2">Login</a>`;
-            userDropdown.outerHTML = loginBtnHtml;
-        }
     }
 
     /**
@@ -192,49 +231,28 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /**
-     * Validate token in background to ensure it's still valid
-     */
-    function validateTokenInBackground() {
-        const token = sessionStorage.getItem('authToken');
-        if (!token) return;
-
-        fetch('/api/customer/auth/validate-token', {
-            method: 'GET',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (!data.valid) {
-                    console.warn('Token invalid, logging out');
-                    logout();
-                }
-            })
-            .catch(error => {
-                console.error('Token validation error:', error);
-                // Don't logout on network errors to prevent poor user experience
-            });
-    }
-
-    /**
      * Logout function
+     * @param {boolean} showMessage Whether to show a logout message
      */
-    function logout() {
+    function logout(showMessage = true) {
         // Clear session storage
         sessionStorage.removeItem('authToken');
         sessionStorage.removeItem('userInfo');
 
-        // Show toast notification
-        showToast('You have been logged out successfully', 'success');
+        // Show toast notification if requested
+        if (showMessage) {
+            showToast('You have been logged out successfully', 'success');
+        }
 
         // Update UI immediately
         handleNonLoggedInUser();
 
-        // Redirect to home page after short delay
-        setTimeout(() => {
-            window.location.href = '/customer';
-        }, 1000);
+        // Redirect to home page after short delay if showing message
+        if (showMessage) {
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 1000);
+        }
     }
 
     /**
@@ -303,9 +321,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (messageParam) {
         showToast(decodeURIComponent(messageParam), messageType);
-
         // Remove the parameters from URL
-        const newUrl = window.location.pathname;
-        window.history.replaceState({}, document.title, newUrl);
+        window.history.replaceState({}, document.title, window.location.pathname);
     }
 });

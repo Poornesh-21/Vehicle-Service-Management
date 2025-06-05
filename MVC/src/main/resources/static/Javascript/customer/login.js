@@ -44,9 +44,9 @@ document.addEventListener('DOMContentLoaded', function() {
      * Clear OTP errors
      */
     function clearOtpErrors() {
-        const errorContainer = document.querySelector('.otp-error');
-        if (errorContainer) {
-            errorContainer.style.display = 'none';
+        const errorElement = document.querySelector('.otp-error');
+        if (errorElement) {
+            errorElement.textContent = '';
         }
     }
 
@@ -527,9 +527,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Show success message
                 showToast('Login successful! Redirecting...', 'success');
 
-                // Redirect to the customer index page
+                // Redirect to the public index page (which will automatically redirect to customer area if authenticated)
                 setTimeout(() => {
-                    window.location.href = '/customer';
+                    window.location.href = '/';
                 }, 1000);
             })
             .catch(error => {
@@ -593,9 +593,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Show success message
                 showToast('Registration successful! Redirecting...', 'success');
 
-                // Redirect to the customer index page
+                // Redirect to the public index page (which will automatically redirect to customer area if authenticated)
                 setTimeout(() => {
-                    window.location.href = '/customer';
+                    window.location.href = '/';
                 }, 1000);
             })
             .catch(error => {

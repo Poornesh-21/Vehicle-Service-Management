@@ -12,65 +12,82 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Check if user is logged in
-    const token = sessionStorage.getItem('authToken');
-    const userInfoStr = sessionStorage.getItem('userInfo');
+    // Check if user is logged in - check on each page load
+    checkAuthAndUpdateUI();
 
-    // Elements in the header
-    const loginBtn = document.querySelector('a.btn-login');
-    const signupBtn = document.querySelector('a.btn-signup');
-    const navbarNav = document.querySelector('#navbarNav');
+    /**
+     * Check authentication status and update UI accordingly
+     */
+    function checkAuthAndUpdateUI() {
+        const token = sessionStorage.getItem('authToken');
+        const userInfoStr = sessionStorage.getItem('userInfo');
 
-    if (token && userInfoStr) {
-        try {
-            // Parse user info
-            const userInfo = JSON.parse(userInfoStr);
+        // Elements in the header
+        const loginBtn = document.querySelector('a.btn-login');
+        const signupBtn = document.querySelector('a.btn-signup');
 
-            // Handle UI changes for logged-in user
-            handleLoggedInUser(userInfo);
-        } catch (error) {
-            console.error('Error parsing user info:', error);
-            // Clear invalid session data
-            sessionStorage.removeItem('authToken');
-            sessionStorage.removeItem('userInfo');
+        if (token && userInfoStr) {
+            try {
+                // Parse user info
+                const userInfo = JSON.parse(userInfoStr);
+
+                // Handle UI changes for logged-in user
+                handleLoggedInUser(userInfo);
+
+                // Verify token validity in background
+                validateTokenInBackground();
+            } catch (error) {
+                console.error('Error parsing user info:', error);
+                // Clear invalid session data
+                sessionStorage.removeItem('authToken');
+                sessionStorage.removeItem('userInfo');
+                handleNonLoggedInUser();
+            }
+        } else {
+            // Handle UI for non-logged-in user
+            handleNonLoggedInUser();
         }
-    } else {
-        // Handle UI for non-logged-in user
-        handleNonLoggedInUser();
     }
 
     /**
      * Handle UI changes for logged-in user
      */
     function handleLoggedInUser(userInfo) {
+        const loginBtn = document.querySelector('a.btn-login');
+        const signupBtn = document.querySelector('a.btn-signup');
+
         if (loginBtn && signupBtn) {
             // Hide signup button
             signupBtn.style.display = 'none';
 
-            // Replace login button with user dropdown
-            const dropdownHtml = `
-                <div class="dropdown">
-                    <button class="btn btn-user dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-person-circle me-1"></i> ${userInfo.firstName}
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                        <li><a class="dropdown-item" href="/customer/profile">My Profile</a></li>
-                        <li><a class="dropdown-item" href="/customer/myVehicles">My Vehicles</a></li>
-                        <li><a class="dropdown-item" href="/customer/serviceHistory">Service History</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="#" id="logoutBtn">Logout</a></li>
-                    </ul>
-                </div>
-            `;
+            // Check if user dropdown already exists
+            const existingDropdown = document.querySelector('.dropdown #userDropdown');
+            if (!existingDropdown) {
+                // Replace login button with user dropdown
+                const dropdownHtml = `
+                    <div class="dropdown">
+                        <button class="btn btn-user dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle me-1"></i> ${userInfo.firstName}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item" href="/customer/profile">My Profile</a></li>
+                            <li><a class="dropdown-item" href="/customer/myVehicles">My Vehicles</a></li>
+                            <li><a class="dropdown-item" href="/customer/serviceHistory">Service History</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="logoutBtn">Logout</a></li>
+                        </ul>
+                    </div>
+                `;
 
-            // Replace login button with dropdown
-            loginBtn.parentNode.innerHTML = dropdownHtml;
+                // Replace login button with dropdown
+                loginBtn.parentNode.innerHTML = dropdownHtml;
 
-            // Add logout functionality
-            document.getElementById('logoutBtn').addEventListener('click', function(e) {
-                e.preventDefault();
-                logout();
-            });
+                // Add logout functionality
+                document.getElementById('logoutBtn').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    logout();
+                });
+            }
         }
 
         // Update Book Service buttons
@@ -80,9 +97,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (userInfo.membershipType === 'PREMIUM') {
             addPremiumBadge();
         }
-
-        // Validate token in background
-        validateTokenInBackground();
     }
 
     /**
@@ -90,6 +104,9 @@ document.addEventListener('DOMContentLoaded', function() {
      */
     function handleNonLoggedInUser() {
         // Make sure login and signup buttons are visible and correctly linked
+        const loginBtn = document.querySelector('a.btn-login');
+        const signupBtn = document.querySelector('a.btn-signup');
+
         if (loginBtn && signupBtn) {
             loginBtn.style.display = '';
             signupBtn.style.display = '';
@@ -100,6 +117,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Update Book Service buttons
         updateBookServiceButtons(false);
+
+        // Remove user dropdown if it exists
+        const userDropdown = document.querySelector('.dropdown');
+        if (userDropdown && loginBtn) {
+            const loginBtnHtml = `<a href="/authentication/login" class="btn btn-login me-2">Login</a>`;
+            userDropdown.outerHTML = loginBtnHtml;
+        }
     }
 
     /**
@@ -110,23 +134,25 @@ document.addEventListener('DOMContentLoaded', function() {
         const bookServiceBtns = document.querySelectorAll('.btn-hero, .btn-cta');
 
         bookServiceBtns.forEach(btn => {
-            if (!btn.dataset.listenerAdded) {
-                btn.dataset.listenerAdded = 'true';
-
-                btn.addEventListener('click', function(e) {
-                    e.preventDefault();
-
-                    if (isLoggedIn) {
-                        // Redirect to book service page
-                        window.location.href = '/customer/bookService';
-                    } else {
-                        // Redirect to login page with a message
-                        window.location.href = '/authentication/login?message=' +
-                            encodeURIComponent('Please login to book a service') +
-                            '&type=info';
-                    }
-                });
+            // Remove existing event listeners by cloning the node
+            const newBtn = btn.cloneNode(true);
+            if (btn.parentNode) {
+                btn.parentNode.replaceChild(newBtn, btn);
             }
+
+            newBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+
+                if (isLoggedIn) {
+                    // Redirect to book service page
+                    window.location.href = '/customer/bookService';
+                } else {
+                    // Redirect to login page with a message
+                    window.location.href = '/authentication/login?message=' +
+                        encodeURIComponent('Please login to book a service') +
+                        '&type=info';
+                }
+            });
         });
     }
 
@@ -135,7 +161,7 @@ document.addEventListener('DOMContentLoaded', function() {
      */
     function addPremiumBadge() {
         const userDropdown = document.getElementById('userDropdown');
-        if (userDropdown) {
+        if (userDropdown && !userDropdown.querySelector('.badge')) {
             // Add premium badge next to username
             const premiumBadge = document.createElement('span');
             premiumBadge.className = 'badge bg-warning text-dark ms-1';
@@ -145,17 +171,21 @@ document.addEventListener('DOMContentLoaded', function() {
             // Also add to dropdown menu
             const dropdownMenu = userDropdown.nextElementSibling;
             if (dropdownMenu) {
-                const firstItem = dropdownMenu.querySelector('.dropdown-item');
-                if (firstItem) {
-                    // Add premium item in dropdown
-                    const premiumItem = document.createElement('li');
-                    premiumItem.innerHTML = `
-                        <a class="dropdown-item d-flex align-items-center" href="/customer/membership">
-                            <span class="badge bg-warning text-dark me-2">PREMIUM</span>
-                            Membership Benefits
-                        </a>
-                    `;
-                    dropdownMenu.insertBefore(premiumItem, firstItem);
+                // Check if premium item already exists
+                if (!dropdownMenu.querySelector('.premium-item')) {
+                    const firstItem = dropdownMenu.querySelector('.dropdown-item');
+                    if (firstItem) {
+                        // Add premium item in dropdown
+                        const premiumItem = document.createElement('li');
+                        premiumItem.className = 'premium-item';
+                        premiumItem.innerHTML = `
+                            <a class="dropdown-item d-flex align-items-center" href="/customer/membership">
+                                <span class="badge bg-warning text-dark me-2">PREMIUM</span>
+                                Membership Benefits
+                            </a>
+                        `;
+                        dropdownMenu.insertBefore(premiumItem, firstItem);
+                    }
                 }
             }
         }
@@ -198,9 +228,12 @@ document.addEventListener('DOMContentLoaded', function() {
         // Show toast notification
         showToast('You have been logged out successfully', 'success');
 
+        // Update UI immediately
+        handleNonLoggedInUser();
+
         // Redirect to home page after short delay
         setTimeout(() => {
-            window.location.href = '/';
+            window.location.href = '/customer';
         }, 1000);
     }
 

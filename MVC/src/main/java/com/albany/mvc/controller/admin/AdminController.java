@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Controller
 public class AdminController {
 
-    @GetMapping({"/", "/admin/login"})
+    @GetMapping({"/admin/login"})
     public String loginPage() {
         return "admin/login";
     }

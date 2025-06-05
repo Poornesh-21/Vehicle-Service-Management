@@ -290,9 +290,6 @@ public class CustomerAuthService {
         }, 5, TimeUnit.MINUTES);
     }
 
-    /**
-     * Send OTP via email
-     */
     private void sendOtpEmail(String email, String otp, String action) {
         String subject = "Albany Vehicle Service - Your " + action + " OTP";
         String content = buildOtpEmailTemplate(otp, action);

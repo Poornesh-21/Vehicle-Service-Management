@@ -845,31 +845,459 @@
             color: rgba(255, 255, 255, 0.5);
         }
 
+        .fade-up {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+
+        .fade-up.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .stagger-delay-1 {
+            transition-delay: 0.1s;
+        }
+
+        .stagger-delay-2 {
+            transition-delay: 0.2s;
+        }
+
+        .stagger-delay-3 {
+            transition-delay: 0.3s;
+        }
+
+        /* ========== BOOKING MODAL STYLES ========== */
+        .modal-dialog {
+            max-width: 700px;
+        }
+
         .modal-content {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         }
 
         .modal-header {
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            background-color: #722F37;
+            color: white;
+            border-radius: 15px 15px 0 0;
+            padding: 1.25rem;
+        }
+
+        .modal-title {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+
+        .modal-title i {
+            margin-right: 10px;
+            font-size: 1.5rem;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
         }
 
         .modal-footer {
-            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            border-top: 1px solid #e9ecef;
+            padding: 1rem 1.5rem;
         }
 
-        .form-control, .form-select {
+        /* Booking Steps */
+        .booking-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .booking-steps:after {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 10%;
+            width: 80%;
+            height: 2px;
+            background-color: #e9ecef;
+            z-index: 1;
+        }
+
+        .booking-steps .step {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            width: 25%;
+        }
+
+        .step .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 5px;
+            font-weight: 600;
+            border: 2px solid white;
+            transition: all 0.3s ease;
+        }
+
+        .step.active .step-number {
+            background-color: #722F37;
+            color: white;
+            transform: scale(1.2);
+        }
+
+        .step.completed .step-number {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .step .step-label {
+            font-size: 0.85rem;
+            color: #6c757d;
+            transition: all 0.3s ease;
+        }
+
+        .step.active .step-label {
+            color: #722F37;
+            font-weight: 600;
+        }
+
+        .step.completed .step-label {
+            color: #28a745;
+        }
+
+        /* Vehicle Cards */
+        .vehicles-grid {
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .vehicle-card {
+            display: flex;
+            align-items: center;
+            padding: 1.25rem;
             border-radius: 10px;
-            padding: 0.75rem 1rem;
-            border: 1px solid rgba(0, 0, 0, 0.1);
-            background-color: rgba(255, 255, 255, 0.9);
+            background-color: white;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+            margin-bottom: 15px;
+            animation: fadeInUp 0.5s ease forwards;
         }
 
-        .form-control:focus, .form-select:focus {
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
-            border-color: var(--primary);
+        .vehicle-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: #ced4da;
+        }
+
+        .vehicle-card.selected {
+            border-color: #722F37;
+            background-color: rgba(114, 47, 55, 0.05);
+        }
+
+        .vehicle-icon {
+            width: 50px;
+            height: 50px;
+            background: #722F37;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            margin-right: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .vehicle-info {
+            flex: 1;
+        }
+
+        .vehicle-info h5 {
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #343a40;
+        }
+
+        .vehicle-info p {
+            margin: 0;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .vehicle-select {
+            color: #ccc;
+            font-size: 1.5rem;
+            margin-left: 10px;
+        }
+
+        .vehicle-card.selected .vehicle-select {
+            color: #722F37;
+        }
+
+        /* Service Options */
+        .service-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            grid-gap: 1.25rem;
+            margin-top: 1.5rem;
+        }
+
+        .service-option {
+            background-color: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .service-option:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: #ced4da;
+        }
+
+        .service-option.selected {
+            border-color: #722F37;
+            background-color: rgba(114, 47, 55, 0.05);
+        }
+
+        .service-option .service-icon {
+            position: static;
+            width: 50px;
+            height: 50px;
+            background: #722F37;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            margin-right: 1.25rem;
+            flex-shrink: 0;
+            box-shadow: none;
+        }
+
+        .service-option .service-info {
+            flex: 1;
+        }
+
+        .service-option .service-info h5 {
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #343a40;
+        }
+
+        .service-option .service-info p {
+            margin: 0;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        /* New Vehicle Form */
+        #newVehicleForm {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        #newVehicleForm h5 {
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            color: #343a40;
+            display: flex;
+            align-items: center;
+        }
+
+        #newVehicleForm h5 i {
+            margin-right: 10px;
+            color: #722F37;
+        }
+
+        #newVehicleForm .form-label {
+            font-weight: 500;
+            color: #495057;
+        }
+
+        #newVehicleForm .form-control,
+        #newVehicleForm .form-select {
+            border-radius: 8px;
+            padding: 0.6rem 1rem;
+        }
+
+        #newVehicleForm .form-control:focus,
+        #newVehicleForm .form-select:focus {
+            box-shadow: 0 0 0 0.25rem rgba(114, 47, 55, 0.25);
+            border-color: #722F37;
+        }
+
+        /* Confirmation Summary */
+        .confirmation-summary {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            border: 1px solid #e9ecef;
+        }
+
+        .summary-row {
+            display: flex;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 1rem;
+        }
+
+        .summary-row:last-child {
+            margin-bottom: 0;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .summary-label {
+            font-weight: 600;
+            width: 180px;
+            flex-shrink: 0;
+            color: #495057;
+        }
+
+        .summary-value {
+            flex: 1;
+            color: #212529;
+        }
+
+        /* Terms Agreement */
+        .terms-agreement {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.25rem;
+            margin-top: 1.5rem;
+            border: 1px solid #e9ecef;
+        }
+
+        .terms-agreement .form-check-label {
+            font-size: 0.9rem;
+            color: #495057;
+        }
+
+        .terms-agreement a {
+            color: #722F37;
+            text-decoration: none;
+        }
+
+        .terms-agreement a:hover {
+            text-decoration: underline;
+        }
+
+        /* Success Modal */
+        #bookingSuccessModal .modal-body {
+            text-align: center;
+            padding: 2.5rem;
+        }
+
+        .success-icon-container {
+            margin-bottom: 1.5rem;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: #722F37;
+            border-radius: 50%;
+            color: white;
+            font-size: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+        }
+
+        .success-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #722F37;
+        }
+
+        .success-message {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            color: #6c757d;
+        }
+
+        .booking-reference {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            border: 1px solid #e9ecef;
+        }
+
+        /* Alert Messages */
+        .alert {
+            border-radius: 10px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .alert i {
+            font-size: 1.25rem;
+            margin-right: 10px;
+        }
+
+        /* Animation for vehicle cards */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .vehicle-card:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+
+        .vehicle-card:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+
+        .vehicle-card:nth-child(4) {
+            animation-delay: 0.3s;
+        }
+
+        /* Toast Notification */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .toast {
+            min-width: 250px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         @media (max-width: 1199.98px) {
@@ -938,295 +1366,6 @@
             .cta-title {
                 font-size: 2rem;
             }
-        }
-
-        .fade-up {
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.6s ease, transform 0.6s ease;
-        }
-
-        .fade-up.active {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .stagger-delay-1 {
-            transition-delay: 0.1s;
-        }
-
-        .stagger-delay-2 {
-            transition-delay: 0.2s;
-        }
-
-        .stagger-delay-3 {
-            transition-delay: 0.3s;
-        }
-
-        .booking-steps {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 2rem;
-            position: relative;
-        }
-
-        .booking-steps:after {
-            content: '';
-            position: absolute;
-            top: 15px;
-            left: 10%;
-            width: 80%;
-            height: 2px;
-            background-color: #e9ecef;
-            z-index: 1;
-        }
-
-        .booking-steps .step {
-            position: relative;
-            z-index: 2;
-            text-align: center;
-            width: 25%;
-        }
-
-        .step .step-number {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background-color: #e9ecef;
-            color: #6c757d;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 5px;
-            font-weight: 600;
-            border: 2px solid white;
-        }
-
-        .step.active .step-number {
-            background-color: var(--primary);
-            color: white;
-        }
-
-        .step.completed .step-number {
-            background-color: #28a745;
-            color: white;
-        }
-
-        .step .step-label {
-            font-size: 0.85rem;
-            color: #6c757d;
-        }
-
-        .step.active .step-label {
-            color: var(--primary);
-            font-weight: 600;
-        }
-
-        .step.completed .step-label {
-            color: #28a745;
-        }
-
-        .vehicles-grid {
-            margin-top: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .vehicle-card {
-            display: flex;
-            align-items: center;
-            padding: 1.25rem;
-            border-radius: 10px;
-            background-color: white;
-            border: 1px solid #e9ecef;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-            transition: all 0.3s ease;
-            position: relative;
-            cursor: pointer;
-            margin-bottom: 15px;
-        }
-
-        .vehicle-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            border-color: #ced4da;
-        }
-
-        .vehicle-card.selected {
-            border-color: var(--primary);
-            background-color: rgba(114, 47, 55, 0.05);
-        }
-
-        .vehicle-icon {
-            width: 50px;
-            height: 50px;
-            background: var(--primary);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.5rem;
-            margin-right: 1.25rem;
-        }
-
-        .vehicle-info {
-            flex: 1;
-        }
-
-        .vehicle-info h5 {
-            margin-bottom: 5px;
-            font-weight: 600;
-        }
-
-        .vehicle-info p {
-            margin: 0;
-            color: #6c757d;
-            font-size: 0.9rem;
-        }
-
-        .vehicle-select {
-            color: #ccc;
-            font-size: 1.5rem;
-        }
-
-        .vehicle-card.selected .vehicle-select {
-            color: var(--primary);
-        }
-
-        .service-options {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            grid-gap: 1.25rem;
-            margin-top: 1.5rem;
-        }
-
-        .service-option {
-            background-color: white;
-            border-radius: 10px;
-            padding: 1.5rem;
-            border: 1px solid #e9ecef;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-            transition: all 0.3s ease;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-        }
-
-        .service-option:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            border-color: #ced4da;
-        }
-
-        .service-option.selected {
-            border-color: var(--primary);
-            background-color: rgba(114, 47, 55, 0.05);
-        }
-
-        .service-icon {
-            width: 50px;
-            height: 50px;
-            background: var(--primary);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 1.5rem;
-            margin-right: 1.25rem;
-        }
-
-        .service-info {
-            flex: 1;
-        }
-
-        .service-info h5 {
-            margin-bottom: 5px;
-            font-weight: 600;
-        }
-
-        .service-info p {
-            margin: 0;
-            color: #6c757d;
-            font-size: 0.9rem;
-        }
-
-        .confirmation-summary {
-            background-color: #f8f9fa;
-            border-radius: 10px;
-            padding: 1.5rem;
-            margin-top: 1.5rem;
-        }
-
-        .summary-row {
-            display: flex;
-            margin-bottom: 1rem;
-            border-bottom: 1px solid #e9ecef;
-            padding-bottom: 1rem;
-        }
-
-        .summary-row:last-child {
-            margin-bottom: 0;
-            border-bottom: none;
-            padding-bottom: 0;
-        }
-
-        .summary-label {
-            font-weight: 600;
-            width: 180px;
-            flex-shrink: 0;
-        }
-
-        .summary-value {
-            flex: 1;
-        }
-
-        .terms-agreement {
-            background-color: #f8f9fa;
-            border-radius: 10px;
-            padding: 1.25rem;
-        }
-
-        #bookingSuccessModal .modal-body {
-            text-align: center;
-            padding: 2.5rem;
-        }
-
-        .success-icon-container {
-            margin-bottom: 1.5rem;
-        }
-
-        .success-icon {
-            width: 80px;
-            height: 80px;
-            background: var(--primary);
-            border-radius: 50%;
-            color: white;
-            font-size: 2.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto;
-        }
-
-        .success-title {
-            font-size: 1.75rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            color: var(--primary);
-        }
-
-        .success-message {
-            font-size: 1.1rem;
-            margin-bottom: 1.5rem;
-            color: #6c757d;
-        }
-
-        .booking-reference {
-            background-color: #f8f9fa;
-            padding: 1rem;
-            border-radius: 10px;
-            font-size: 1.1rem;
         }
     </style>
 </head>
@@ -1297,7 +1436,7 @@
                     <h1 class="hero-title" data-aos="fade-up">Premium Vehicle Service Management</h1>
                     <p class="hero-subtitle" data-aos="fade-up" data-aos-delay="100">Experience exceptional care for your vehicle with our expert technicians and state-of-the-art facilities.</p>
                     <div data-aos="fade-up" data-aos-delay="200">
-                        <button class="btn btn-hero" data-bs-toggle="modal" data-bs-target="#bookServiceModal">Book Service</button>
+                        <button class="btn btn-hero" id="bookServiceBtn">Book Service</button>
                     </div>
                 </div>
             </div>
@@ -1417,7 +1556,6 @@
             <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="500">
                 <div class="service-card">
                     <img th:src="@{/assets/generalService.jpg}" class="service-img" alt="General Service">
-
                     <div class="service-content">
                         <div class="service-icon">
                             <i class="bi bi-wrench-adjustable"></i>
@@ -1557,13 +1695,13 @@
             <div class="col-lg-8 mx-auto text-center">
                 <h2 class="cta-title" data-aos="fade-up">Ready to Experience Premium Vehicle Service?</h2>
                 <p class="cta-text mx-auto" data-aos="fade-up" data-aos-delay="100">Join thousands of satisfied customers who trust Albany for their vehicle service needs. Book your appointment today and experience the difference.</p>
-                <button class="btn btn-cta" data-aos="fade-up" data-aos-delay="200" data-bs-toggle="modal" data-bs-target="#bookServiceModal">Book Your Service Now</button>
+                <button class="btn btn-cta" data-aos="fade-up" data-aos-delay="200" id="ctaBookServiceBtn">Book Your Service Now</button>
             </div>
         </div>
     </div>
 </section>
 
-<section class="contact-section" id="contactUs">
+<section class="contact-section" id="contact">
     <div class="container">
         <div class="text-center mb-5">
             <h2 class="section-title" data-aos="fade-up">Get In Touch</h2>
@@ -1864,6 +2002,7 @@
                 </div>
 
                 <form id="bookServiceForm">
+                    <!-- Step 1: Vehicle Selection -->
                     <div class="booking-step-content active" id="step-1">
                         <h4 class="step-title">Select Your Vehicle</h4>
 
@@ -1880,26 +2019,26 @@
                             </button>
                         </div>
 
-                        <div id="newVehicleForm" class="mt-4 p-4 rounded bg-light" style="display: none;">
+                        <div id="newVehicleForm" class="mt-4" style="display: none;">
                             <h5 class="mb-3">
                                 <i class="bi bi-car-front me-2"></i>New Vehicle Details
                             </h5>
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label for="vehicleBrand" class="form-label">Brand <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="vehicleBrand" name="vehicleBrand" required>
+                                    <input type="text" class="form-control" id="vehicleBrand" name="vehicleBrand" placeholder="e.g. Toyota" required>
                                 </div>
                                 <div class="col-md-6">
                                     <label for="vehicleModel" class="form-label">Model <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="vehicleModel" name="vehicleModel" required>
+                                    <input type="text" class="form-control" id="vehicleModel" name="vehicleModel" placeholder="e.g. Corolla" required>
                                 </div>
                                 <div class="col-md-6">
                                     <label for="vehicleRegNumber" class="form-label">Registration Number <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="vehicleRegNumber" name="vehicleRegNumber" required>
+                                    <input type="text" class="form-control" id="vehicleRegNumber" name="vehicleRegNumber" placeholder="e.g. KA01AB1234" required>
                                 </div>
                                 <div class="col-md-6">
                                     <label for="vehicleYear" class="form-label">Year <span class="text-danger">*</span></label>
-                                    <input type="number" class="form-control" id="vehicleYear" name="vehicleYear" min="1990" max="2025" required>
+                                    <input type="number" class="form-control" id="vehicleYear" name="vehicleYear" placeholder="e.g. 2022" min="1990" max="2025" required>
                                 </div>
                                 <div class="col-md-6">
                                     <label for="vehicleCategory" class="form-label">Category <span class="text-danger">*</span></label>
@@ -1918,6 +2057,7 @@
                         </div>
                     </div>
 
+                    <!-- Step 2: Service Selection -->
                     <div class="booking-step-content" id="step-2" style="display: none;">
                         <h4 class="step-title">Select Service Type</h4>
 
@@ -1981,21 +2121,12 @@
                                     <p>Battery check, charging and replacement</p>
                                 </div>
                             </div>
-
-                            <div class="service-option" data-service="Other">
-                                <div class="service-icon">
-                                    <i class="bi bi-three-dots"></i>
-                                </div>
-                                <div class="service-info">
-                                    <h5>Other Service</h5>
-                                    <p>Specify your service needs in the next step</p>
-                                </div>
-                            </div>
                         </div>
 
                         <input type="hidden" id="selectedService" name="serviceType">
                     </div>
 
+                    <!-- Step 3: Service Details -->
                     <div class="booking-step-content" id="step-3" style="display: none;">
                         <h4 class="step-title">Service Details</h4>
 
@@ -2022,6 +2153,7 @@
                         </div>
                     </div>
 
+                    <!-- Step 4: Confirmation -->
                     <div class="booking-step-content" id="step-4" style="display: none;">
                         <h4 class="step-title">Confirm Your Booking</h4>
 
@@ -2056,7 +2188,7 @@
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id="termsCheck" required>
                                 <label class="form-check-label" for="termsCheck">
-                                    I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">terms and conditions</a>
+                                    I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">terms and conditions</a> for vehicle service
                                 </label>
                             </div>
                         </div>
@@ -2073,6 +2205,27 @@
                 </button>
                 <button type="button" class="btn btn-primary" id="submitBookingBtn" style="display: none;">
                     <i class="bi bi-check-circle me-1"></i> Confirm Booking
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Booking Success Modal -->
+<div class="modal fade" id="bookingSuccessModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center p-5">
+                <div class="success-icon-container mb-4">
+                    <div class="success-icon">
+                        <i class="bi bi-check-lg"></i>
+                    </div>
+                </div>
+                <h3 class="success-title mb-3">Booking Successful!</h3>
+                <p class="success-message mb-4">Your service has been booked successfully. You will receive a confirmation email shortly.</p>
+                <p class="booking-reference mb-4">Booking Reference: <strong id="bookingReference">ALB-2506-2025</strong></p>
+                <button type="button" class="btn btn-primary btn-lg" data-bs-dismiss="modal">
+                    <i class="bi bi-check-circle me-2"></i>Continue
                 </button>
             </div>
         </div>
@@ -2114,308 +2267,157 @@
     </div>
 </div>
 
-<!-- Booking Success Modal -->
-<div class="modal fade" id="bookingSuccessModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-body text-center p-5">
-                <div class="success-icon-container mb-4">
-                    <div class="success-icon">
-                        <i class="bi bi-check-lg"></i>
-                    </div>
-                </div>
-                <h3 class="success-title mb-3">Booking Successful!</h3>
-                <p class="success-message mb-4">Your service has been booked successfully. You will receive a confirmation email shortly.</p>
-                <p class="booking-reference mb-4">Booking Reference: <strong id="bookingReference">ALB-2506-2025</strong></p>
-                <button type="button" class="btn btn-primary btn-lg" data-bs-dismiss="modal">
-                    <i class="bi bi-check-circle me-2"></i>Continue
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        if (typeof AOS !== 'undefined') {
-            AOS.init({
-                duration: 800,
-                easing: 'ease-in-out',
-                once: true
-            });
+    /**
+     * Vehicle Service Booking System
+     * Complete solution for Albany Vehicle Service Booking
+     */
+    class BookingSystem {
+        constructor() {
+            this.state = {
+                currentStep: 1,
+                totalSteps: 4,
+                selectedVehicleId: null,
+                vehicles: [],
+                newVehicle: null,
+                selectedService: null,
+                formData: {}
+            };
+
+            this.elements = {};
+            this.apiEndpoints = {
+                vehicles: '/customer/api/vehicles',
+                newVehicle: '/customer/api/vehicles/add',
+                bookService: '/customer/api/service-requests'
+            };
+
+            this.init();
         }
 
-        updateAuthUI();
-        handleUrlParams();
-        setActiveNavItem();
-        window.addEventListener('scroll', handleNavbarScroll);
-        handleNavbarScroll();
-        updateBookServiceButtons();
-        updateMembershipLinks();
-    });
-
-    function setActiveNavItem() {
-        const currentPath = window.location.pathname;
-        const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
-
-        navLinks.forEach(link => {
-            link.classList.remove('active');
-        });
-
-        navLinks.forEach(link => {
-            const href = link.getAttribute('href');
-
-            if (href && href.startsWith('#') && currentPath === '/') {
-                return;
-            }
-
-            if (href && href.startsWith('/')) {
-                if (currentPath === href || currentPath.startsWith(href) && href !== '/') {
-                    link.classList.add('active');
-                }
-            }
-        });
-
-        if (currentPath === '/' || currentPath === '') {
-            const homeLink = document.querySelector('.navbar-nav .nav-link[href="/"]');
-            if (homeLink) {
-                homeLink.classList.add('active');
-            }
-        }
-    }
-
-    function updateAuthUI() {
-        const token = sessionStorage.getItem('authToken');
-        const userInfoStr = sessionStorage.getItem('userInfo');
-
-        if (token && userInfoStr) {
-            try {
-                const userInfo = JSON.parse(userInfoStr);
-                updateNavbarForLoggedInUser(userInfo);
-                validateToken(token);
-            } catch (error) {
-                sessionStorage.removeItem('authToken');
-                sessionStorage.removeItem('userInfo');
-                updateNavbarForLoggedOutUser();
-            }
-        } else {
-            updateNavbarForLoggedOutUser();
-        }
-    }
-
-    function updateNavbarForLoggedInUser(userInfo) {
-        const loginBtn = document.querySelector('.btn-login');
-        const signupBtn = document.querySelector('.btn-signup');
-        const authContainer = loginBtn ? loginBtn.parentElement : document.querySelector('.ms-lg-3');
-
-        if (!authContainer) {
-            return;
+        /**
+         * Initialize the booking system
+         */
+        init() {
+            this.cacheElements();
+            this.setupEventListeners();
+            this.setupBookingSteps();
+            this.initializeDateInputs();
+            this.initUI();
         }
 
-        const dropdownHtml = `
-                <div class="dropdown">
-                    <button class="btn btn-primary dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-person-circle me-1"></i> ${userInfo.firstName}
-                        ${userInfo.membershipType === 'PREMIUM' ? '<span class="badge bg-warning text-dark ms-1">PREMIUM</span>' : ''}
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                        <li><a class="dropdown-item" href="/customer/profile">My Profile</a></li>
-                        <li><a class="dropdown-item" href="/customer/myVehicles">My Vehicles</a></li>
-                        <li><a class="dropdown-item" href="/customer/serviceHistory">Service History</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="#" id="logoutBtn">Logout</a></li>
-                    </ul>
-                </div>
-            `;
-
-        authContainer.innerHTML = dropdownHtml;
-
-        document.getElementById('logoutBtn').addEventListener('click', function(e) {
-            e.preventDefault();
-            logout();
-        });
-    }
-
-    function updateNavbarForLoggedOutUser() {
-        const authContainer = document.querySelector('.ms-lg-3') || document.querySelector('.dropdown')?.parentElement;
-
-        if (!authContainer) {
-            return;
-        }
-
-        authContainer.innerHTML = `
-                <a href="/authentication/login" class="btn btn-login me-2">Login</a>
-                <a href="/authentication/login" class="btn btn-signup">Signup</a>
-            `;
-    }
-
-    function updateBookServiceButtons() {
-        const isLoggedIn = sessionStorage.getItem('authToken') !== null;
-        const buttons = document.querySelectorAll('.btn-hero, .btn-cta');
-
-        buttons.forEach(btn => {
-            const newBtn = btn.cloneNode(true);
-            if (btn.parentNode) {
-                btn.parentNode.replaceChild(newBtn, btn);
-
-                newBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-
-                    if (isLoggedIn) {
-                        const modal = new bootstrap.Modal(document.getElementById('bookServiceModal'));
-                        modal.show();
-                    } else {
-                        window.location.href = '/authentication/login?message=' +
-                            encodeURIComponent('Please login to book a service') +
-                            '&type=info&redirect=/customer/bookService';
-                    }
+        /**
+         * Initialize UI components
+         */
+        initUI() {
+            if (typeof AOS !== 'undefined') {
+                AOS.init({
+                    duration: 800,
+                    easing: 'ease-in-out',
+                    once: true
                 });
             }
-        });
-    }
 
-    function updateMembershipLinks() {
-        const membershipLinks = document.querySelectorAll('a[href="/customer/membership"], a[href*="membership"]');
-        const token = sessionStorage.getItem('authToken');
+            // Handle main navigation
+            this.setupNavigation();
 
-        membershipLinks.forEach(link => {
-            if (link.dataset.processed) return;
+            // Set up book service buttons
+            this.setupBookServiceButtons();
+        }
 
-            link.dataset.processed = "true";
+        /**
+         * Setup navigation and scroll behavior
+         */
+        setupNavigation() {
+            // Handle navbar scroll effect
+            window.addEventListener('scroll', this.handleNavbarScroll);
+            this.handleNavbarScroll();
 
-            const originalClickHandler = link.onclick;
+            // Set active nav item based on current page
+            this.setActiveNavItem();
+        }
 
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
+        /**
+         * Handle navbar scroll effect
+         */
+        handleNavbarScroll() {
+            const navbar = document.querySelector('.navbar');
+            if (navbar) {
+                navbar.classList.toggle('scrolled', window.scrollY > 50);
+            }
+        }
 
-                if (token) {
-                    window.location.href = '/customer/membership';
-                } else {
-                    window.location.href = '/authentication/login?message=' +
-                        encodeURIComponent('Please login to view membership options') +
-                        '&type=info&redirect=/customer/membership';
-                }
+        /**
+         * Set active navigation item
+         */
+        setActiveNavItem() {
+            const currentPath = window.location.pathname;
+            const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
 
-                if (originalClickHandler) {
-                    originalClickHandler.call(this, e);
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+            });
+
+            navLinks.forEach(link => {
+                const href = link.getAttribute('href');
+
+                if (href && href.startsWith('#') && currentPath === '/') {
+                    return;} else if (href && href.startsWith('/')) {
+                    if (currentPath === href || currentPath.startsWith(href) && href !== '/') {
+                        link.classList.add('active');
+                    }
                 }
             });
-        });
-    }
 
-    function validateToken(token) {
-        fetch('/authentication/validate-token?token=' + token)
-            .then(response => response.json())
-            .then(data => {
-                if (!data.valid) {
-                    logout(false);
+            if (currentPath === '/' || currentPath === '') {
+                const homeLink = document.querySelector('.navbar-nav .nav-link[href="/"]');
+                if (homeLink) {
+                    homeLink.classList.add('active');
                 }
-            })
-            .catch(error => {
-                console.error("Token validation error:", error);
+            }
+        }
+
+        /**
+         * Setup book service buttons
+         */
+        setupBookServiceButtons() {
+            const bookButtons = document.querySelectorAll('#bookServiceBtn, #ctaBookServiceBtn');
+
+            bookButtons.forEach(btn => {
+                btn.addEventListener('click', this.showBookingModal.bind(this));
             });
-    }
-
-    function logout(showMessage = true) {
-        sessionStorage.removeItem('authToken');
-        sessionStorage.removeItem('userInfo');
-
-        if (showMessage) {
-            showToast('You have been logged out successfully', 'success');
         }
 
-        updateNavbarForLoggedOutUser();
+        /**
+         * Show booking modal
+         */
+        showBookingModal() {
+            const isLoggedIn = this.isUserLoggedIn();
 
-        if (showMessage) {
-            setTimeout(() => {
-                window.location.href = '/';
-            }, 1000);
-        }
-    }
-
-    function handleNavbarScroll() {
-        const navbar = document.querySelector('.navbar');
-        if (navbar) {
-            navbar.classList.toggle('scrolled', window.scrollY > 50);
-        }
-    }
-
-    function handleUrlParams() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const messageParam = urlParams.get('message');
-        const messageType = urlParams.get('type') || 'info';
-
-        if (messageParam) {
-            showToast(decodeURIComponent(messageParam), messageType);
-            window.history.replaceState({}, document.title, window.location.pathname);
-        }
-    }
-
-    function showToast(message, type = 'info') {
-        let toastContainer = document.querySelector('.toast-container');
-
-        if (!toastContainer) {
-            toastContainer = document.createElement('div');
-            toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
-            document.body.appendChild(toastContainer);
+            if (isLoggedIn) {
+                const bookServiceModal = new bootstrap.Modal(document.getElementById('bookServiceModal'));
+                bookServiceModal.show();
+            } else {
+                window.location.href = '/authentication/login?message=' +
+                    encodeURIComponent('Please login to book a service') +
+                    '&type=info&redirect=/customer';
+            }
         }
 
-        const toastId = 'toast-' + Date.now();
-        const toastHtml = `
-                <div id="${toastId}" class="toast align-items-center text-white bg-${type === 'error' ? 'danger' : type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
-                    <div class="d-flex">
-                        <div class="toast-body">${message}</div>
-                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                    </div>
-                </div>
-            `;
-
-        toastContainer.insertAdjacentHTML('beforeend', toastHtml);
-
-        const toastElement = document.getElementById(toastId);
-        const toast = new bootstrap.Toast(toastElement, {
-            autohide: true,
-            delay: 5000
-        });
-
-        toast.show();
-
-        toastElement.addEventListener('hidden.bs.toast', function() {
-            toastElement.remove();
-        });
-    }
-
-    const BookingService = (() => {
-        const state = {
-            currentStep: 1,
-            totalSteps: 4,
-            selectedVehicleId: null,
-            vehicles: [],
-            newVehicle: null,
-            selectedService: null,
-            formData: {}
-        };
-
-        let elements = {};
-
-        const API_ENDPOINTS = {
-            vehicles: '/api/customer/vehicles',
-            newVehicle: '/api/customer/vehicles/add',
-            bookService: '/api/customer/service-requests'
-        };
-
-        function init() {
-            cacheElements();
-            setupEventListeners();
-            setupBookingSteps();
-            initializeDateInputs();
+        /**
+         * Check if user is logged in
+         */
+        isUserLoggedIn() {
+            return sessionStorage.getItem('authToken') !== null;
         }
 
-        function cacheElements() {
-            elements = {
+        /**
+         * Cache DOM elements for better performance
+         */
+        cacheElements() {
+            this.elements = {
                 modal: document.getElementById('bookServiceModal'),
                 form: document.getElementById('bookServiceForm'),
                 steps: document.querySelectorAll('.booking-steps .step'),
@@ -2446,83 +2448,131 @@
             };
         }
 
-        function setupEventListeners() {
-            elements.modal.addEventListener('show.bs.modal', onModalShow);
+        /**
+         * Set up event listeners
+         */
+        setupEventListeners() {
+            if (this.elements.modal) {
+                this.elements.modal.addEventListener('show.bs.modal', this.onModalShow.bind(this));
+            }
 
-            elements.nextBtn.addEventListener('click', goToNextStep);
-            elements.prevBtn.addEventListener('click', goToPreviousStep);
-            elements.submitBtn.addEventListener('click', submitBooking);
+            if (this.elements.nextBtn) {
+                this.elements.nextBtn.addEventListener('click', this.goToNextStep.bind(this));
+            }
 
-            elements.showAddVehicleBtn.addEventListener('click', showAddVehicleForm);
-            elements.saveVehicleBtn.addEventListener('click', saveNewVehicle);
-            elements.cancelVehicleBtn.addEventListener('click', hideAddVehicleForm);
+            if (this.elements.prevBtn) {
+                this.elements.prevBtn.addEventListener('click', this.goToPreviousStep.bind(this));
+            }
 
-            elements.serviceOptions.forEach(option => {
-                option.addEventListener('click', selectService);
-            });
-        }
+            if (this.elements.submitBtn) {
+                this.elements.submitBtn.addEventListener('click', this.submitBooking.bind(this));
+            }
 
-        function setupBookingSteps() {
-            const today = new Date();
-            const formattedDate = today.toISOString().split('T')[0];
-            if (elements.deliveryDate) {
-                elements.deliveryDate.min = formattedDate;
+            if (this.elements.showAddVehicleBtn) {
+                this.elements.showAddVehicleBtn.addEventListener('click', this.showAddVehicleForm.bind(this));
+            }
+
+            if (this.elements.saveVehicleBtn) {
+                this.elements.saveVehicleBtn.addEventListener('click', this.saveNewVehicle.bind(this));
+            }
+
+            if (this.elements.cancelVehicleBtn) {
+                this.elements.cancelVehicleBtn.addEventListener('click', this.hideAddVehicleForm.bind(this));
+            }
+
+            if (this.elements.serviceOptions) {
+                this.elements.serviceOptions.forEach(option => {
+                    option.addEventListener('click', () => this.selectService(option));
+                });
             }
         }
 
-        function initializeDateInputs() {
-            if (elements.deliveryDate) {
+        /**
+         * Set up booking steps
+         */
+        setupBookingSteps() {
+            const today = new Date();
+            const formattedDate = today.toISOString().split('T')[0];
+            if (this.elements.deliveryDate) {
+                this.elements.deliveryDate.min = formattedDate;
+            }
+        }
+
+        /**
+         * Initialize date inputs
+         */
+        initializeDateInputs() {
+            if (this.elements.deliveryDate) {
                 const today = new Date();
-                elements.deliveryDate.min = today.toISOString().split('T')[0];
+                this.elements.deliveryDate.min = today.toISOString().split('T')[0];
 
                 const tomorrow = new Date();
                 tomorrow.setDate(today.getDate() + 1);
-                elements.deliveryDate.value = tomorrow.toISOString().split('T')[0];
+                this.elements.deliveryDate.value = tomorrow.toISOString().split('T')[0];
             }
         }
 
-        function onModalShow() {
-            resetForm();
-            loadUserVehicles();
+        /**
+         * Handle modal show event
+         */
+        onModalShow() {
+            this.resetForm();
+            this.loadUserVehicles();
         }
 
-        function resetForm() {
-            state.currentStep = 1;
-            state.selectedVehicleId = null;
-            state.selectedService = null;
-            state.formData = {};
+        /**
+         * Reset form to initial state
+         */
+        resetForm() {
+            this.state.currentStep = 1;
+            this.state.selectedVehicleId = null;
+            this.state.selectedService = null;
+            this.state.formData = {};
 
-            elements.form.reset();
-            updateStepsUI();
-            hideAddVehicleForm();
+            if (this.elements.form) {
+                this.elements.form.reset();
+            }
 
-            elements.serviceOptions.forEach(option => {
-                option.classList.remove('selected');
-            });
-            elements.selectedServiceInput.value = '';
+            this.updateStepsUI();
+            this.hideAddVehicleForm();
 
-            elements.summaryVehicle.textContent = '';
-            elements.summaryService.textContent = '';
-            elements.summaryDate.textContent = '';
-            elements.summaryTime.textContent = '';
-            elements.summaryDescription.textContent = '';
+            if (this.elements.serviceOptions) {
+                this.elements.serviceOptions.forEach(option => {
+                    option.classList.remove('selected');
+                });
+            }
+
+            if (this.elements.selectedServiceInput) {
+                this.elements.selectedServiceInput.value = '';
+            }
+
+            if (this.elements.summaryVehicle) this.elements.summaryVehicle.textContent = '';
+            if (this.elements.summaryService) this.elements.summaryService.textContent = '';
+            if (this.elements.summaryDate) this.elements.summaryDate.textContent = '';
+            if (this.elements.summaryTime) this.elements.summaryTime.textContent = '';
+            if (this.elements.summaryDescription) this.elements.summaryDescription.textContent = '';
         }
 
-        function loadUserVehicles() {
+        /**
+         * Load user vehicles from API
+         */
+        loadUserVehicles() {
             const token = sessionStorage.getItem('authToken');
             if (!token) {
-                showVehiclesError('Authentication required');
+                this.showVehiclesError('Authentication required');
                 return;
             }
 
-            elements.vehiclesList.innerHTML = `
+            if (this.elements.vehiclesList) {
+                this.elements.vehiclesList.innerHTML = `
                     <div class="loading-vehicles text-center py-4">
                         <div class="spinner-border text-primary mb-2" role="status"></div>
                         <p>Loading your vehicles...</p>
                     </div>
                 `;
+            }
 
-            fetch(API_ENDPOINTS.vehicles, {
+            fetch(this.apiEndpoints.vehicles, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
@@ -2535,81 +2585,95 @@
                     return response.json();
                 })
                 .then(data => {
-                    state.vehicles = data || [];
-                    renderVehiclesList();
+                    this.state.vehicles = Array.isArray(data) ? data : [];
+                    this.renderVehiclesList();
                 })
                 .catch(error => {
                     console.error('Error loading vehicles:', error);
-                    showVehiclesError(error.message);
+                    this.showVehiclesError(error.message);
                 });
         }
 
-        function renderVehiclesList() {
-            if (!state.vehicles || state.vehicles.length === 0) {
-                elements.vehiclesList.innerHTML = `
-                        <div class="no-vehicles text-center py-4">
-                            <div class="mb-3">
-                                <i class="bi bi-car-front text-muted" style="font-size: 3rem;"></i>
-                            </div>
-                            <h5>No vehicles found</h5>
-                            <p class="text-muted">Add a vehicle to continue</p>
+        /**
+         * Render the list of vehicles
+         */
+        renderVehiclesList() {
+            if (!this.elements.vehiclesList) return;
+
+            if (!this.state.vehicles || this.state.vehicles.length === 0) {
+                this.elements.vehiclesList.innerHTML = `
+                    <div class="no-vehicles text-center py-4">
+                        <div class="mb-3">
+                            <i class="bi bi-car-front text-muted" style="font-size: 3rem;"></i>
                         </div>
-                    `;
+                        <h5>No vehicles found</h5>
+                        <p class="text-muted">Add a vehicle to continue</p>
+                    </div>
+                `;
                 return;
             }
 
             let html = '<div class="row g-3">';
 
-            state.vehicles.forEach(vehicle => {
+            this.state.vehicles.forEach(vehicle => {
                 const vehicleId = vehicle.vehicleId;
                 const vehicleName = `${vehicle.brand} ${vehicle.model}`;
                 const vehicleYear = vehicle.year || '';
                 const vehicleReg = vehicle.registrationNumber || '';
 
                 html += `
-                        <div class="col-md-6">
-                            <div class="vehicle-card ${state.selectedVehicleId === vehicleId ? 'selected' : ''}"
-                                 data-vehicle-id="${vehicleId}">
-                                <div class="vehicle-icon">
-                                    <i class="bi bi-${vehicle.category === 'Bike' ? 'bicycle' : 'car-front'}"></i>
-                                </div>
-                                <div class="vehicle-info">
-                                    <h5>${escapeHtml(vehicleName)}</h5>
-                                    <p>${vehicleYear} · ${escapeHtml(vehicleReg)}</p>
-                                </div>
-                                <div class="vehicle-select">
-                                    <i class="bi bi-check-circle-fill"></i>
-                                </div>
+                    <div class="col-md-6">
+                        <div class="vehicle-card ${this.state.selectedVehicleId === vehicleId ? 'selected' : ''}"
+                             data-vehicle-id="${vehicleId}">
+                            <div class="vehicle-icon">
+                                <i class="bi bi-${vehicle.category === 'Bike' ? 'bicycle' : 'car-front'}"></i>
+                            </div>
+                            <div class="vehicle-info">
+                                <h5>${this.escapeHtml(vehicleName)}</h5>
+                                <p>${vehicleYear} · ${this.escapeHtml(vehicleReg)}</p>
+                            </div>
+                            <div class="vehicle-select">
+                                <i class="bi bi-check-circle-fill"></i>
                             </div>
                         </div>
-                    `;
+                    </div>
+                `;
             });
 
             html += '</div>';
-            elements.vehiclesList.innerHTML = html;
+            this.elements.vehiclesList.innerHTML = html;
 
+            // Add event listeners to vehicle cards
             document.querySelectorAll('.vehicle-card').forEach(card => {
-                card.addEventListener('click', function() {
-                    const vehicleId = parseInt(this.getAttribute('data-vehicle-id'), 10);
-                    selectVehicle(vehicleId);
+                card.addEventListener('click', () => {
+                    const vehicleId = parseInt(card.getAttribute('data-vehicle-id'), 10);
+                    this.selectVehicle(vehicleId);
                 });
             });
         }
 
-        function showVehiclesError(message) {
-            elements.vehiclesList.innerHTML = `
-                    <div class="alert alert-danger">
-                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                        ${message || 'Failed to load vehicles'}
-                    </div>
-                    <div class="text-center">
-                        <p>Please try adding a new vehicle instead</p>
-                    </div>
-                `;
+        /**
+         * Show error message when loading vehicles fails
+         */
+        showVehiclesError(message) {
+            if (!this.elements.vehiclesList) return;
+
+            this.elements.vehiclesList.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    ${message || 'Failed to load vehicles'}
+                </div>
+                <div class="text-center">
+                    <p>Please try adding a new vehicle instead</p>
+                </div>
+            `;
         }
 
-        function selectVehicle(vehicleId) {
-            state.selectedVehicleId = vehicleId;
+        /**
+         * Select a vehicle
+         */
+        selectVehicle(vehicleId) {
+            this.state.selectedVehicleId = vehicleId;
 
             document.querySelectorAll('.vehicle-card').forEach(card => {
                 card.classList.remove('selected');
@@ -2620,20 +2684,41 @@
                 selectedCard.classList.add('selected');
             }
 
-            elements.nextBtn.disabled = false;
+            if (this.elements.nextBtn) {
+                this.elements.nextBtn.disabled = false;
+            }
         }
 
-        function showAddVehicleForm() {
-            elements.newVehicleForm.style.display = 'block';
-            elements.showAddVehicleBtn.style.display = 'none';
+        /**
+         * Show the add vehicle form
+         */
+        showAddVehicleForm() {
+            if (this.elements.newVehicleForm) {
+                this.elements.newVehicleForm.style.display = 'block';
+            }
+
+            if (this.elements.showAddVehicleBtn) {
+                this.elements.showAddVehicleBtn.style.display = 'none';
+            }
         }
 
-        function hideAddVehicleForm() {
-            elements.newVehicleForm.style.display = 'none';
-            elements.showAddVehicleBtn.style.display = 'block';
+        /**
+         * Hide the add vehicle form
+         */
+        hideAddVehicleForm() {
+            if (this.elements.newVehicleForm) {
+                this.elements.newVehicleForm.style.display = 'none';
+            }
+
+            if (this.elements.showAddVehicleBtn) {
+                this.elements.showAddVehicleBtn.style.display = 'block';
+            }
         }
 
-        function saveNewVehicle() {
+        /**
+         * Save a new vehicle
+         */
+        saveNewVehicle() {
             const brand = document.getElementById('vehicleBrand').value.trim();
             const model = document.getElementById('vehicleModel').value.trim();
             const regNumber = document.getElementById('vehicleRegNumber').value.trim();
@@ -2641,7 +2726,7 @@
             const category = document.getElementById('vehicleCategory').value;
 
             if (!brand || !model || !regNumber || !year || !category) {
-                showToast('Please fill all required fields', 'error');
+                this.showToast('Please fill all required fields', 'error');
                 return;
             }
 
@@ -2655,14 +2740,16 @@
 
             const token = sessionStorage.getItem('authToken');
             if (!token) {
-                showToast('Authentication required', 'error');
+                this.showToast('Authentication required', 'error');
                 return;
             }
 
-            elements.saveVehicleBtn.disabled = true;
-            elements.saveVehicleBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving...';
+            if (this.elements.saveVehicleBtn) {
+                this.elements.saveVehicleBtn.disabled = true;
+                this.elements.saveVehicleBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving...';
+            }
 
-            fetch(API_ENDPOINTS.newVehicle, {
+            fetch(this.apiEndpoints.newVehicle, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -2677,123 +2764,161 @@
                     return response.json();
                 })
                 .then(data => {
-                    state.vehicles.push(data);
-                    state.selectedVehicleId = data.vehicleId;
-                    renderVehiclesList();
-                    hideAddVehicleForm();
+                    this.state.vehicles.push(data);
+                    this.state.selectedVehicleId = data.vehicleId;
+                    this.renderVehiclesList();
+                    this.hideAddVehicleForm();
 
-                    document.getElementById('vehicleBrand').value = '';
-                    document.getElementById('vehicleModel').value = '';
-                    document.getElementById('vehicleRegNumber').value = '';
-                    document.getElementById('vehicleYear').value = '';
-                    document.getElementById('vehicleCategory').value = '';
+                    // Reset form fields
+                    if (document.getElementById('vehicleBrand')) document.getElementById('vehicleBrand').value = '';
+                    if (document.getElementById('vehicleModel')) document.getElementById('vehicleModel').value = '';
+                    if (document.getElementById('vehicleRegNumber')) document.getElementById('vehicleRegNumber').value = '';
+                    if (document.getElementById('vehicleYear')) document.getElementById('vehicleYear').value = '';
+                    if (document.getElementById('vehicleCategory')) document.getElementById('vehicleCategory').value = '';
 
-                    showToast('Vehicle added successfully', 'success');
+                    this.showToast('Vehicle added successfully', 'success');
                 })
                 .catch(error => {
                     console.error('Error saving vehicle:', error);
-                    showToast(error.message || 'Failed to save vehicle', 'error');
+                    this.showToast(error.message || 'Failed to save vehicle', 'error');
                 })
                 .finally(() => {
-                    elements.saveVehicleBtn.disabled = false;
-                    elements.saveVehicleBtn.innerHTML = 'Save Vehicle';
+                    if (this.elements.saveVehicleBtn) {
+                        this.elements.saveVehicleBtn.disabled = false;
+                        this.elements.saveVehicleBtn.innerHTML = 'Save Vehicle';
+                    }
                 });
         }
 
-        function selectService(event) {
-            const serviceOption = event.currentTarget;
+        /**
+         * Select a service type
+         */
+        selectService(serviceOption) {
             const serviceType = serviceOption.getAttribute('data-service');
+            this.state.selectedService = serviceType;
 
-            state.selectedService = serviceType;
+            if (this.elements.serviceOptions) {
+                this.elements.serviceOptions.forEach(option => {
+                    option.classList.remove('selected');
+                });
+            }
 
-            elements.serviceOptions.forEach(option => {
-                option.classList.remove('selected');
-            });
             serviceOption.classList.add('selected');
 
-            elements.selectedServiceInput.value = serviceType;
-            elements.nextBtn.disabled = false;
+            if (this.elements.selectedServiceInput) {
+                this.elements.selectedServiceInput.value = serviceType;
+            }
+
+            if (this.elements.nextBtn) {
+                this.elements.nextBtn.disabled = false;
+            }
         }
 
-        function goToNextStep() {
-            if (!validateCurrentStep()) {
+        /**
+         * Go to the next step
+         */
+        goToNextStep() {
+            if (!this.validateCurrentStep()) {
                 return;
             }
 
-            if (state.currentStep < state.totalSteps) {
-                state.currentStep++;
-                updateStepsUI();
+            if (this.state.currentStep < this.state.totalSteps) {
+                this.state.currentStep++;
+                this.updateStepsUI();
 
-                if (state.currentStep === 4) {
-                    updateConfirmationSummary();
+                if (this.state.currentStep === 4) {
+                    this.updateConfirmationSummary();
                 }
             }
         }
 
-        function goToPreviousStep() {
-            if (state.currentStep > 1) {
-                state.currentStep--;
-                updateStepsUI();
+        /**
+         * Go to the previous step
+         */
+        goToPreviousStep() {
+            if (this.state.currentStep > 1) {
+                this.state.currentStep--;
+                this.updateStepsUI();
             }
         }
 
-        function updateStepsUI() {
-            elements.steps.forEach((step, index) => {
-                const stepNum = index + 1;
-                step.classList.remove('active', 'completed');
+        /**
+         * Update the UI to reflect the current step
+         */
+        updateStepsUI() {
+            if (this.elements.steps) {
+                this.elements.steps.forEach((step, index) => {
+                    const stepNum = index + 1;
+                    step.classList.remove('active', 'completed');
 
-                if (stepNum < state.currentStep) {
-                    step.classList.add('completed');
-                } else if (stepNum === state.currentStep) {
-                    step.classList.add('active');
-                }
-            });
+                    if (stepNum < this.state.currentStep) {
+                        step.classList.add('completed');
+                    } else if (stepNum === this.state.currentStep) {
+                        step.classList.add('active');
+                    }
+                });
+            }
 
-            elements.stepContents.forEach((content, index) => {
-                const stepNum = index + 1;
-                content.style.display = stepNum === state.currentStep ? 'block' : 'none';
-            });
+            if (this.elements.stepContents) {
+                this.elements.stepContents.forEach((content, index) => {
+                    const stepNum = index + 1;
+                    content.style.display = stepNum === this.state.currentStep ? 'block' : 'none';
+                });
+            }
 
-            elements.prevBtn.style.display = state.currentStep > 1 ? 'block' : 'none';
-            elements.nextBtn.style.display = state.currentStep < state.totalSteps ? 'block' : 'none';
-            elements.submitBtn.style.display = state.currentStep === state.totalSteps ? 'block' : 'none';
+            if (this.elements.prevBtn) {
+                this.elements.prevBtn.style.display = this.state.currentStep > 1 ? 'block' : 'none';
+            }
+
+            if (this.elements.nextBtn) {
+                this.elements.nextBtn.style.display = this.state.currentStep < this.state.totalSteps ? 'block' : 'none';
+            }
+
+            if (this.elements.submitBtn) {
+                this.elements.submitBtn.style.display = this.state.currentStep === this.state.totalSteps ? 'block' : 'none';
+            }
         }
 
-        function validateCurrentStep() {
-            switch (state.currentStep) {
+        /**
+         * Validate the current step
+         */
+        validateCurrentStep() {
+            switch (this.state.currentStep) {
                 case 1:
-                    if (!state.selectedVehicleId && elements.newVehicleForm.style.display === 'none') {
-                        showToast('Please select a vehicle or add a new one', 'error');
+                    if (!this.state.selectedVehicleId &&
+                        this.elements.newVehicleForm &&
+                        this.elements.newVehicleForm.style.display === 'none') {
+                        this.showToast('Please select a vehicle or add a new one', 'error');
                         return false;
                     }
                     return true;
 
                 case 2:
-                    if (!state.selectedService) {
-                        showToast('Please select a service type', 'error');
+                    if (!this.state.selectedService) {
+                        this.showToast('Please select a service type', 'error');
                         return false;
                     }
                     return true;
 
                 case 3:
-                    if (!elements.deliveryDate.value) {
-                        showToast('Please select a preferred service date', 'error');
+                    if (this.elements.deliveryDate && !this.elements.deliveryDate.value) {
+                        this.showToast('Please select a preferred service date', 'error');
                         return false;
                     }
 
-                    state.formData = {
-                        vehicleId: state.selectedVehicleId,
-                        serviceType: state.selectedService,
-                        deliveryDate: elements.deliveryDate.value,
-                        preferredTime: elements.preferredTime.value,
-                        additionalDescription: elements.serviceDescription.value
+                    this.state.formData = {
+                        vehicleId: this.state.selectedVehicleId,
+                        serviceType: this.state.selectedService,
+                        deliveryDate: this.elements.deliveryDate ? this.elements.deliveryDate.value : null,
+                        preferredTime: this.elements.preferredTime ? this.elements.preferredTime.value : null,
+                        additionalDescription: this.elements.serviceDescription ? this.elements.serviceDescription.value : null
                     };
 
                     return true;
 
                 case 4:
-                    if (!elements.termsCheck.checked) {
-                        showToast('Please agree to the terms and conditions', 'error');
+                    if (this.elements.termsCheck && !this.elements.termsCheck.checked) {
+                        this.showToast('Please agree to the terms and conditions', 'error');
                         return false;
                     }
                     return true;
@@ -2802,53 +2927,71 @@
             return true;
         }
 
-        function updateConfirmationSummary() {
-            const selectedVehicle = state.vehicles.find(v => v.vehicleId === state.selectedVehicleId);
-            if (selectedVehicle) {
-                elements.summaryVehicle.textContent = `${selectedVehicle.brand} ${selectedVehicle.model} (${selectedVehicle.registrationNumber})`;
+        /**
+         * Update the confirmation summary
+         */
+        updateConfirmationSummary() {
+            const selectedVehicle = this.state.vehicles.find(v => v.vehicleId === this.state.selectedVehicleId);
+
+            if (selectedVehicle && this.elements.summaryVehicle) {
+                this.elements.summaryVehicle.textContent = `${selectedVehicle.brand} ${selectedVehicle.model} (${selectedVehicle.registrationNumber})`;
             }
 
-            elements.summaryService.textContent = state.selectedService || 'N/A';
-
-            const deliveryDate = elements.deliveryDate.value;
-            if (deliveryDate) {
-                const formattedDate = new Date(deliveryDate).toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                });
-                elements.summaryDate.textContent = formattedDate;
-            } else {
-                elements.summaryDate.textContent = 'N/A';
+            if (this.elements.summaryService) {
+                this.elements.summaryService.textContent = this.state.selectedService || 'N/A';
             }
 
-            elements.summaryTime.textContent = elements.preferredTime.value || 'Any time';
-            elements.summaryDescription.textContent = elements.serviceDescription.value || 'No additional information provided';
+            if (this.elements.deliveryDate && this.elements.summaryDate) {
+                const deliveryDate = this.elements.deliveryDate.value;
+                if (deliveryDate) {
+                    const formattedDate = new Date(deliveryDate).toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                    this.elements.summaryDate.textContent = formattedDate;
+                } else {
+                    this.elements.summaryDate.textContent = 'N/A';
+                }
+            }
+
+            if (this.elements.preferredTime && this.elements.summaryTime) {
+                this.elements.summaryTime.textContent = this.elements.preferredTime.value || 'Any time';
+            }
+
+            if (this.elements.serviceDescription && this.elements.summaryDescription) {
+                this.elements.summaryDescription.textContent = this.elements.serviceDescription.value || 'No additional information provided';
+            }
         }
 
-        function submitBooking() {
-            if (!validateCurrentStep()) {
+        /**
+         * Submit the booking
+         */
+        submitBooking() {
+            if (!this.validateCurrentStep()) {
                 return;
             }
 
             const token = sessionStorage.getItem('authToken');
             if (!token) {
-                showToast('Authentication required', 'error');
+                this.showToast('Authentication required', 'error');
                 return;
             }
 
-            elements.submitBtn.disabled = true;
-            elements.submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Processing...';
+            if (this.elements.submitBtn) {
+                this.elements.submitBtn.disabled = true;
+                this.elements.submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Processing...';
+            }
 
             const requestData = {
-                vehicleId: state.selectedVehicleId,
-                serviceType: state.selectedService,
-                deliveryDate: elements.deliveryDate.value,
-                additionalDescription: elements.serviceDescription.value
+                vehicleId: this.state.selectedVehicleId,
+                serviceType: this.state.selectedService,
+                deliveryDate: this.elements.deliveryDate ? this.elements.deliveryDate.value : null,
+                additionalDescription: this.elements.serviceDescription ? this.elements.serviceDescription.value : null
             };
 
-            fetch(API_ENDPOINTS.bookService, {
+            fetch(this.apiEndpoints.bookService, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -2863,34 +3006,89 @@
                     return response.json();
                 })
                 .then(data => {
-                    const bookingModal = bootstrap.Modal.getInstance(elements.modal);
-                    bookingModal.hide();
+                    if (this.elements.modal) {
+                        const bookingModal = bootstrap.Modal.getInstance(this.elements.modal);
+                        if (bookingModal) {
+                            bookingModal.hide();
+                        }
+                    }
 
-                    showBookingSuccess(data);
+                    this.showBookingSuccess(data);
                 })
                 .catch(error => {
                     console.error('Error booking service:', error);
-                    showToast(error.message || 'Failed to book service', 'error');
+                    this.showToast(error.message || 'Failed to book service', 'error');
                 })
                 .finally(() => {
-                    elements.submitBtn.disabled = false;
-                    elements.submitBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i> Confirm Booking';
+                    if (this.elements.submitBtn) {
+                        this.elements.submitBtn.disabled = false;
+                        this.elements.submitBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i> Confirm Booking';
+                    }
                 });
         }
 
-        function showBookingSuccess(bookingData) {
+        /**
+         * Show booking success modal
+         */
+        showBookingSuccess(bookingData) {
             const bookingReference = bookingData.requestId ?
                 `ALB-${bookingData.requestId}-${new Date().getFullYear()}` :
                 `ALB-${Math.floor(Math.random() * 10000)}-${new Date().getFullYear()}`;
 
             const successModal = new bootstrap.Modal(document.getElementById('bookingSuccessModal'));
 
-            document.getElementById('bookingReference').textContent = bookingReference;
+            if (document.getElementById('bookingReference')) {
+                document.getElementById('bookingReference').textContent = bookingReference;
+            }
 
-            successModal.show();
+            if (successModal) {
+                successModal.show();
+            }
         }
 
-        function escapeHtml(text) {
+        /**
+         * Show toast notification
+         */
+        showToast(message, type = 'info') {
+            let toastContainer = document.querySelector('.toast-container');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+                document.body.appendChild(toastContainer);
+            }
+
+            const toastId = 'toast-' + Date.now();
+            const toastHTML = `
+                <div id="${toastId}" class="toast align-items-center text-white bg-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'info'} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">
+                            ${message}
+                        </div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `;
+
+            toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+
+            const toastElement = document.getElementById(toastId);
+            if (toastElement) {
+                const toast = new bootstrap.Toast(toastElement, {
+                    autohide: true,
+                    delay: 5000
+                });
+                toast.show();
+
+                toastElement.addEventListener('hidden.bs.toast', function() {
+                    toastElement.remove();
+                });
+            }
+        }
+
+        /**
+         * Helper method to escape HTML special characters
+         */
+        escapeHtml(text) {
             if (!text) return '';
             return text
                 .replace(/&/g, "&amp;")
@@ -2899,22 +3097,11 @@
                 .replace(/"/g, "&quot;")
                 .replace(/'/g, "&#039;");
         }
+    }
 
-        return {
-            init,
-            selectVehicle,
-            goToNextStep,
-            goToPreviousStep,
-            showAddVehicleForm,
-            hideAddVehicleForm,
-            saveNewVehicle,
-            selectService,
-            submitBooking
-        };
-    })();
-
+    // Initialize the system when the page loads
     document.addEventListener('DOMContentLoaded', function() {
-        BookingService.init();
+        window.bookingSystem = new BookingSystem();
     });
 </script>
 </body>

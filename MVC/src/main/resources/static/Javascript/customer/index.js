@@ -24,6 +24,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Navbar scroll effect
     window.addEventListener('scroll', handleNavbarScroll);
     handleNavbarScroll();
+
+    // Handle book service buttons and membership links
+    updateBookServiceButtons();
+    updateMembershipLinks();
 });
 
 /**
@@ -46,14 +50,14 @@ function setActiveNavItem() {
         const href = link.getAttribute('href');
 
         // Skip hash links when on homepage
-        if (href.startsWith('#') && currentPath === '/') {
+        if (href && href.startsWith('#') && currentPath === '/') {
             // For homepage, leave hash links as is
             return;
         }
 
         // For absolute paths, check if current path matches
-        if (href.startsWith('/')) {
-            if (currentPath === href) {
+        if (href && href.startsWith('/')) {
+            if (currentPath === href || currentPath.startsWith(href) && href !== '/') {
                 link.classList.add('active');
             }
         }
@@ -141,9 +145,6 @@ function updateNavbarForLoggedInUser(userInfo) {
         e.preventDefault();
         logout();
     });
-
-    // Update any book service buttons
-    updateBookServiceButtons(true);
 }
 
 /**
@@ -161,15 +162,13 @@ function updateNavbarForLoggedOutUser() {
         <a href="/authentication/login" class="btn btn-login me-2">Login</a>
         <a href="/authentication/login" class="btn btn-signup">Signup</a>
     `;
-
-    // Update book service buttons
-    updateBookServiceButtons(false);
 }
 
 /**
  * Update book service buttons based on auth status
  */
-function updateBookServiceButtons(isLoggedIn) {
+function updateBookServiceButtons() {
+    const isLoggedIn = sessionStorage.getItem('authToken') !== null;
     const buttons = document.querySelectorAll('.btn-hero, .btn-cta');
 
     buttons.forEach(btn => {
@@ -185,10 +184,70 @@ function updateBookServiceButtons(isLoggedIn) {
                 } else {
                     window.location.href = '/authentication/login?message=' +
                         encodeURIComponent('Please login to book a service') +
-                        '&type=info';
+                        '&type=info&redirect=/customer/bookService';
                 }
             });
         }
+    });
+}
+
+/**
+ * Update membership links to preserve auth state
+ */
+function updateMembershipLinks() {
+    const membershipLinks = document.querySelectorAll('a[href="/customer/membership"], a[href*="membership"]');
+    const token = sessionStorage.getItem('authToken');
+
+    membershipLinks.forEach(link => {
+        // Skip if already processed
+        if (link.dataset.processed) return;
+
+        link.dataset.processed = "true";
+
+        // Store original click handler if it exists
+        const originalClickHandler = link.onclick;
+
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            // If user is logged in, send directly to membership page
+            if (token) {
+                // Create a form to maintain the token through the request
+                const form = document.createElement('form');
+                form.method = 'GET';
+                form.action = '/customer/membership';
+
+                // Add the auth token as a hidden field
+                const authInput = document.createElement('input');
+                authInput.type = 'hidden';
+                authInput.name = 'auth';
+                authInput.value = 'true';
+                form.appendChild(authInput);
+
+                // Add to body and submit
+                document.body.appendChild(form);
+
+                // Set Authorization header in session storage for the next request
+                if (window.sessionStorage) {
+                    console.log("Redirecting to membership page with token");
+                    // No need to add auth token here as it's already in sessionStorage
+                    window.location.href = '/customer/membership';
+                } else {
+                    // Submit form if sessionStorage is not available
+                    form.submit();
+                }
+            } else {
+                // If not logged in, redirect to login with return to membership
+                window.location.href = '/authentication/login?message=' +
+                    encodeURIComponent('Please login to view membership options') +
+                    '&type=info&redirect=/customer/membership';
+            }
+
+            // Call original handler if it exists
+            if (originalClickHandler) {
+                originalClickHandler.call(this, e);
+            }
+        });
     });
 }
 

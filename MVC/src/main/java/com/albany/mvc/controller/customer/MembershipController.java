@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,16 +37,26 @@ public class MembershipController {
      * Display membership plans page
      */
     @GetMapping
-    public String membershipPage(HttpSession session, Model model,
+    public String membershipPage(HttpServletRequest request, HttpSession session, Model model,
                                  @RequestParam(required = false) String success,
                                  @RequestParam(required = false) String error,
-                                 @RequestParam(required = false) boolean showSuccess) {
+                                 @RequestParam(required = false) Boolean showSuccess,
+                                 @RequestParam(required = false) String redirect,
+                                 @RequestParam(required = false) Boolean auth) {
 
-        // Always set isPremium to false by default to avoid null values
-        model.addAttribute("isPremium", false);
-
-        // Get authentication token from session
+        // Get authentication token from session AND header
         String token = (String) session.getAttribute("authToken");
+
+        // Check for token in request header (for client-side authentication)
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
+            // Store in session for future requests
+            session.setAttribute("authToken", token);
+        }
+
+        // Default to standard plan if no user data is available
+        model.addAttribute("isPremium", false);
 
         if (token != null && !token.isEmpty()) {
             try {
@@ -53,7 +64,7 @@ public class MembershipController {
                 HttpHeaders headers = new HttpHeaders();
                 headers.set("Authorization", "Bearer " + token);
 
-                // Fetch user data
+                // Fetch user profile data from API
                 ResponseEntity<Map> response = restTemplate.exchange(
                         apiBaseUrl + "/api/customer/profile",
                         HttpMethod.GET,
@@ -63,37 +74,58 @@ public class MembershipController {
 
                 if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
                     Map<String, Object> userData = response.getBody();
+
+                    // Add user data to model
                     model.addAttribute("user", userData);
 
-                    // Check if user has premium membership
+                    // Check if user has premium membership - IMPORTANT: This must match the database value
                     String membershipType = (String) userData.get("membershipType");
                     boolean isPremium = "PREMIUM".equalsIgnoreCase(membershipType);
+
+                    logger.info("User membership type from database: {}, isPremium: {}", membershipType, isPremium);
+
+                    // Set isPremium flag to control UI display
                     model.addAttribute("isPremium", isPremium);
+
+                    // Add membership expiration info if available
+                    if (userData.containsKey("membershipEndDate")) {
+                        model.addAttribute("membershipEndDate", userData.get("membershipEndDate"));
+                    }
+
+                    if (userData.containsKey("membershipDaysRemaining")) {
+                        model.addAttribute("daysRemaining", userData.get("membershipDaysRemaining"));
+                    }
                 }
             } catch (HttpClientErrorException e) {
                 logger.error("Error fetching user data: {}", e.getMessage());
-                // If unauthorized, don't add user data to model
                 if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
-                    model.addAttribute("error", "Your session has expired. Please login again.");
-                    return "redirect:/authentication/login";
+                    // Clear invalid session token
+                    session.removeAttribute("authToken");
+
+                    // Redirect to login page with error message
+                    String redirectParam = redirect != null ? "&redirect=" + redirect : "";
+                    return "redirect:/authentication/login?message=Your session has expired. Please login again.&type=error" + redirectParam;
                 }
             } catch (Exception e) {
                 logger.error("Unexpected error fetching user data: {}", e.getMessage());
-                // Log the error but continue with the default isPremium = false
+                // Continue with default values
             }
+        } else if (Boolean.TRUE.equals(auth)) {
+            // If auth=true parameter was passed but no token found, redirect to login
+            return "redirect:/authentication/login?message=Please login to view membership options&type=info&redirect=/customer/membership";
         }
 
-        // Add any success/error messages
-        if (success != null) {
+        // Add any success/error messages to model
+        if (success != null && !success.isEmpty()) {
             model.addAttribute("success", success);
         }
 
-        if (error != null) {
+        if (error != null && !error.isEmpty()) {
             model.addAttribute("error", error);
         }
 
         // Show success modal if payment was successful
-        model.addAttribute("showSuccessModal", showSuccess);
+        model.addAttribute("showSuccessModal", Boolean.TRUE.equals(showSuccess));
 
         return "customer/membership";
     }
@@ -102,16 +134,53 @@ public class MembershipController {
      * Initiate payment for premium membership
      */
     @PostMapping("/initiate-payment")
-    public String initiatePayment(HttpSession session, Model model) {
-        // Get authentication token from session
+    public String initiatePayment(HttpServletRequest request, HttpSession session, Model model) {
+        // Get authentication token from session or header
         String token = (String) session.getAttribute("authToken");
 
+        // Check for token in request header
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
+            // Store in session for future requests
+            session.setAttribute("authToken", token);
+        }
+
         if (token == null || token.isEmpty()) {
-            return "redirect:/authentication/login?message=Please login to upgrade membership&type=info";
+            // Redirect to login if user is not authenticated
+            return "redirect:/authentication/login?message=Please login to upgrade membership&type=info&redirect=/customer/membership";
         }
 
         try {
-            // Set up headers with authentication token
+            // First, check if user is already a premium member
+            HttpHeaders profileHeaders = new HttpHeaders();
+            profileHeaders.set("Authorization", "Bearer " + token);
+
+            // Get user profile to check current membership
+            ResponseEntity<Map> profileResponse = restTemplate.exchange(
+                    apiBaseUrl + "/api/customer/profile",
+                    HttpMethod.GET,
+                    new HttpEntity<>(profileHeaders),
+                    Map.class
+            );
+
+            if (profileResponse.getStatusCode() == HttpStatus.OK && profileResponse.getBody() != null) {
+                Map<String, Object> userData = profileResponse.getBody();
+                String membershipType = (String) userData.get("membershipType");
+
+                logger.info("Checking membership before payment: {}", membershipType);
+
+                // If already premium, return with message
+                if ("PREMIUM".equalsIgnoreCase(membershipType)) {
+                    return "redirect:/customer/membership?error=You already have a Premium membership";
+                }
+
+                // Add user data to model for displaying in the membership page
+                model.addAttribute("user", userData);
+                model.addAttribute("isPremium", false);
+            }
+
+            // Set up headers for payment API request
             HttpHeaders headers = new HttpHeaders();
             headers.set("Authorization", "Bearer " + token);
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -132,7 +201,7 @@ public class MembershipController {
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
                 Map<String, Object> responseData = response.getBody();
 
-                // Add data for Razorpay integration
+                // Add Razorpay data to model
                 model.addAttribute("razorpayKey", responseData.get("razorpayKey"));
                 model.addAttribute("orderId", responseData.get("orderId"));
                 model.addAttribute("amount", responseData.get("amount"));
@@ -141,8 +210,8 @@ public class MembershipController {
                 model.addAttribute("userName", responseData.get("name"));
                 model.addAttribute("userPhone", responseData.get("phone"));
 
-                // Set default isPremium to false
-                model.addAttribute("isPremium", false);
+                // Store auth token in session for the rendered page
+                session.setAttribute("authToken", token);
 
                 return "customer/membership";
             } else {
@@ -152,10 +221,25 @@ public class MembershipController {
             logger.error("Error initiating payment: {}, Status: {}", e.getMessage(), e.getStatusCode());
 
             if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
-                return "redirect:/authentication/login?message=Your session has expired. Please login again.&type=error";
+                // Clear invalid session token
+                session.removeAttribute("authToken");
+
+                return "redirect:/authentication/login?message=Your session has expired. Please login again.&type=error&redirect=/customer/membership";
             }
 
-            return "redirect:/customer/membership?error=Payment initiation failed: " + e.getMessage();
+            String errorMsg = e.getMessage();
+            // Extract message from response body if possible
+            try {
+                String responseBody = e.getResponseBodyAsString();
+                if (responseBody.contains("message")) {
+                    // Simple extraction, could use JSON parsing in a more robust implementation
+                    errorMsg = responseBody.split("message")[1].split("\"")[2];
+                }
+            } catch (Exception ex) {
+                // Fallback to default error message
+            }
+
+            return "redirect:/customer/membership?error=" + encodeErrorMessage(errorMsg);
         } catch (Exception e) {
             logger.error("Unexpected error initiating payment: {}", e.getMessage());
             return "redirect:/customer/membership?error=An unexpected error occurred. Please try again.";
@@ -166,15 +250,23 @@ public class MembershipController {
      * Verify payment and update membership
      */
     @PostMapping("/verify-payment")
-    public String verifyPayment(HttpSession session,
+    public String verifyPayment(HttpServletRequest request, HttpSession session,
                                 @RequestParam String paymentId,
                                 @RequestParam String razorpayOrderId) {
 
         // Get authentication token from session
         String token = (String) session.getAttribute("authToken");
 
+        // Check for token in request header
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            token = authHeader.substring(7);
+            // Store in session for future requests
+            session.setAttribute("authToken", token);
+        }
+
         if (token == null || token.isEmpty()) {
-            return "redirect:/authentication/login?message=Please login to verify payment&type=info";
+            return "redirect:/authentication/login?message=Please login to verify payment&type=info&redirect=/customer/membership";
         }
 
         try {
@@ -201,10 +293,11 @@ public class MembershipController {
                 boolean success = (boolean) responseData.getOrDefault("success", false);
 
                 if (success) {
+                    // Update the session userInfo to reflect the premium status
                     return "redirect:/customer/membership?success=Congratulations! Your membership has been upgraded to Premium.&showSuccess=true";
                 } else {
                     String message = (String) responseData.getOrDefault("message", "Payment verification failed");
-                    return "redirect:/customer/membership?error=" + message;
+                    return "redirect:/customer/membership?error=" + encodeErrorMessage(message);
                 }
             } else {
                 return "redirect:/customer/membership?error=Failed to verify payment. Please contact support.";
@@ -213,13 +306,43 @@ public class MembershipController {
             logger.error("Error verifying payment: {}, Status: {}", e.getMessage(), e.getStatusCode());
 
             if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
-                return "redirect:/authentication/login?message=Your session has expired. Please login again.&type=error";
+                // Clear invalid session token
+                session.removeAttribute("authToken");
+
+                return "redirect:/authentication/login?message=Your session has expired. Please login again.&type=error&redirect=/customer/membership";
             }
 
-            return "redirect:/customer/membership?error=Payment verification failed: " + e.getMessage();
+            String errorMsg = e.getMessage();
+            // Extract message from response body if possible
+            try {
+                String responseBody = e.getResponseBodyAsString();
+                if (responseBody.contains("message")) {
+                    errorMsg = responseBody.split("message")[1].split("\"")[2];
+                }
+            } catch (Exception ex) {
+                // Fallback to default error message
+            }
+
+            return "redirect:/customer/membership?error=" + encodeErrorMessage(errorMsg);
         } catch (Exception e) {
             logger.error("Unexpected error verifying payment: {}", e.getMessage());
             return "redirect:/customer/membership?error=An unexpected error occurred during payment verification. Please contact support.";
         }
+    }
+
+    /**
+     * Helper method to encode error messages for URL parameters
+     */
+    private String encodeErrorMessage(String message) {
+        if (message == null) {
+            return "Unknown error";
+        }
+
+        // Simple encoding to avoid URL issues
+        return message.replace(" ", "%20")
+                .replace("&", "%26")
+                .replace("=", "%3D")
+                .replace("?", "%3F")
+                .replace("#", "%23");
     }
 }

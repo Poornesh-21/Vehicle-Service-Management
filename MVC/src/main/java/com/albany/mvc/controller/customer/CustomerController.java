@@ -44,11 +44,4 @@ public class CustomerController {
         return "customer/serviceHistory";
     }
 
-    /**
-     * Customer book service page
-     */
-    @GetMapping("/bookService")
-    public String bookService(Model model) {
-        return "customer/bookService";
-    }
 }

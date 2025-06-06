@@ -1108,6 +1108,313 @@ body {
         </div>
     </section>
 
+    <!-- Book Service Modal -->
+    <div class="modal fade" id="bookServiceModal" tabindex="-1" aria-labelledby="bookServiceModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bookServiceModalLabel">
+                        <i class="bi bi-calendar-check me-2"></i>Book a Service
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="booking-steps">
+                        <div class="booking-step active" data-step="1">
+                            <div class="step-number">1</div>
+                            <div class="step-label">Vehicle</div>
+                        </div>
+                        <div class="booking-step" data-step="2">
+                            <div class="step-number">2</div>
+                            <div class="step-label">Service</div>
+                        </div>
+                        <div class="booking-step" data-step="3">
+                            <div class="step-number">3</div>
+                            <div class="step-label">Details</div>
+                        </div>
+                        <div class="booking-step" data-step="4">
+                            <div class="step-number">4</div>
+                            <div class="step-label">Confirm</div>
+                        </div>
+                    </div>
+
+                    <form id="bookServiceForm">
+                        <!-- Step 1: Vehicle Selection -->
+                        <div class="booking-step-content active" id="step-1">
+                            <h4 class="step-title">Select Your Vehicle</h4>
+
+                            <div id="vehiclesList" class="vehicles-grid mb-4">
+                                <!-- This will be populated by JavaScript with user's vehicles -->
+                                <div class="loading-vehicles text-center py-4">
+                                    <div class="spinner-border text-wine mb-2" role="status"></div>
+                                    <p>Loading your vehicles...</p>
+                                </div>
+                            </div>
+
+                            <div class="add-vehicle-section">
+                                <button type="button" class="btn btn-outline-secondary w-100" id="showAddVehicleBtn">
+                                    <i class="bi bi-plus-circle me-2"></i>Add a New Vehicle
+                                </button>
+                            </div>
+
+                            <div id="newVehicleForm" class="mt-4 p-4 rounded bg-light" style="display: none;">
+                                <h5 class="mb-3">
+                                    <i class="bi bi-car-front me-2"></i>New Vehicle Details
+                                </h5>
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="vehicleBrand" class="form-label">Brand <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="vehicleBrand" name="vehicleBrand" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="vehicleModel" class="form-label">Model <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="vehicleModel" name="vehicleModel" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="vehicleRegNumber" class="form-label">Registration Number <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="vehicleRegNumber" name="vehicleRegNumber" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="vehicleYear" class="form-label">Year <span class="text-danger">*</span></label>
+                                        <input type="number" class="form-control" id="vehicleYear" name="vehicleYear" min="1990" max="2025" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="vehicleCategory" class="form-label">Category <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="vehicleCategory" name="vehicleCategory" required>
+                                            <option value="">Select Category</option>
+                                            <option value="Car">Car</option>
+                                            <option value="Bike">Bike</option>
+                                            <option value="Truck">Truck</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mt-3 text-end">
+                                    <button type="button" class="btn btn-outline-secondary me-2" id="cancelNewVehicleBtn">Cancel</button>
+                                    <button type="button" class="btn btn-primary" id="saveNewVehicleBtn">Save Vehicle</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Service Selection -->
+                        <div class="booking-step-content" id="step-2" style="display: none;">
+                            <h4 class="step-title">Select Service Type</h4>
+
+                            <div class="service-options">
+                                <div class="service-option" data-service="General Service">
+                                    <div class="service-icon">
+                                        <i class="bi bi-tools"></i>
+                                    </div>
+                                    <div class="service-info">
+                                        <h5>General Service</h5>
+                                        <p>Complete check-up and maintenance for your vehicle</p>
+                                    </div>
+                                </div>
+
+                                <div class="service-option" data-service="Oil Change">
+                                    <div class="service-icon">
+                                        <i class="bi bi-droplet-fill"></i>
+                                    </div>
+                                    <div class="service-info">
+                                        <h5>Oil Change</h5>
+                                        <p>Oil change and filter replacement service</p>
+                                    </div>
+                                </div>
+
+                                <div class="service-option" data-service="Brake Service">
+                                    <div class="service-icon">
+                                        <i class="bi bi-disc"></i>
+                                    </div>
+                                    <div class="service-info">
+                                        <h5>Brake Service</h5>
+                                        <p>Brake inspection, pad replacement and repair</p>
+                                    </div>
+                                </div>
+
+                                <div class="service-option" data-service="Engine Diagnostics">
+                                    <div class="service-icon">
+                                        <i class="bi bi-cpu"></i>
+                                    </div>
+                                    <div class="service-info">
+                                        <h5>Engine Diagnostics</h5>
+                                        <p>Complete engine diagnostics and troubleshooting</p>
+                                    </div>
+                                </div>
+
+                                <div class="service-option" data-service="Wheel Alignment">
+                                    <div class="service-icon">
+                                        <i class="bi bi-hexagon"></i>
+                                    </div>
+                                    <div class="service-info">
+                                        <h5>Wheel Alignment</h5>
+                                        <p>Precision wheel alignment for optimal handling</p>
+                                    </div>
+                                </div>
+
+                                <div class="service-option" data-service="Battery Service">
+                                    <div class="service-icon">
+                                        <i class="bi bi-battery-charging"></i>
+                                    </div>
+                                    <div class="service-info">
+                                        <h5>Battery Service</h5>
+                                        <p>Battery check, charging and replacement</p>
+                                    </div>
+                                </div>
+
+                                <div class="service-option" data-service="Other">
+                                    <div class="service-icon">
+                                        <i class="bi bi-three-dots"></i>
+                                    </div>
+                                    <div class="service-info">
+                                        <h5>Other Service</h5>
+                                        <p>Specify your service needs in the next step</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <input type="hidden" id="selectedService" name="serviceType">
+                        </div>
+
+                        <!-- Step 3: Service Details -->
+                        <div class="booking-step-content" id="step-3" style="display: none;">
+                            <h4 class="step-title">Service Details</h4>
+
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="deliveryDate" class="form-label">Preferred Service Date <span class="text-danger">*</span></label>
+                                    <input type="date" class="form-control" id="deliveryDate" name="deliveryDate" required>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="preferredTime" class="form-label">Preferred Time</label>
+                                    <select class="form-select" id="preferredTime" name="preferredTime">
+                                        <option value="">Select Time</option>
+                                        <option value="Morning (9-12)">Morning (9:00 AM - 12:00 PM)</option>
+                                        <option value="Afternoon (12-3)">Afternoon (12:00 PM - 3:00 PM)</option>
+                                        <option value="Evening (3-6)">Evening (3:00 PM - 6:00 PM)</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-12">
+                                    <label for="serviceDescription" class="form-label">Additional Information</label>
+                                    <textarea class="form-control" id="serviceDescription" name="additionalDescription" rows="4" placeholder="Please describe any specific issues or service requirements"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Step 4: Confirmation -->
+                        <div class="booking-step-content" id="step-4" style="display: none;">
+                            <h4 class="step-title">Confirm Your Booking</h4>
+
+                            <div class="confirmation-summary">
+                                <div class="summary-row">
+                                    <div class="summary-label">Vehicle:</div>
+                                    <div class="summary-value" id="summaryVehicle">Honda City (KA01AB1234)</div>
+                                </div>
+
+                                <div class="summary-row">
+                                    <div class="summary-label">Service Type:</div>
+                                    <div class="summary-value" id="summaryService">General Service</div>
+                                </div>
+
+                                <div class="summary-row">
+                                    <div class="summary-label">Service Date:</div>
+                                    <div class="summary-value" id="summaryDate">June 15, 2025</div>
+                                </div>
+
+                                <div class="summary-row">
+                                    <div class="summary-label">Preferred Time:</div>
+                                    <div class="summary-value" id="summaryTime">Morning (9:00 AM - 12:00 PM)</div>
+                                </div>
+
+                                <div class="summary-row">
+                                    <div class="summary-label">Additional Information:</div>
+                                    <div class="summary-value" id="summaryDescription">Vehicle is making unusual noise when accelerating.</div>
+                                </div>
+                            </div>
+
+                            <div class="terms-agreement mt-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="termsCheck" required>
+                                    <label class="form-check-label" for="termsCheck">
+                                        I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">terms and conditions</a>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" id="prevStepBtn" style="display: none;">
+                        <i class="bi bi-arrow-left me-1"></i> Previous
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="nextStepBtn">
+                        Next <i class="bi bi-arrow-right ms-1"></i>
+                    </button>
+                    <button type="button" class="btn btn-primary" id="submitBookingBtn" style="display: none;">
+                        <i class="bi bi-check-circle me-1"></i> Confirm Booking
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Terms and Conditions Modal -->
+    <div class="modal fade" id="termsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Terms and Conditions</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h6>Service Booking Terms</h6>
+                    <p>By booking a service with Albany, you agree to the following terms and conditions:</p>
+                    <ul>
+                        <li>All service bookings are subject to availability and confirmation</li>
+                        <li>The final cost will be determined after vehicle inspection</li>
+                        <li>Cancellations must be made at least 24 hours before the scheduled service</li>
+                        <li>Albany reserves the right to use genuine or equivalent quality parts</li>
+                        <li>The service timeline may vary based on the actual condition of the vehicle</li>
+                    </ul>
+
+                    <h6>Payment Terms</h6>
+                    <p>Payment terms for our services include:</p>
+                    <ul>
+                        <li>A diagnostic fee may be applicable before the full service</li>
+                        <li>Final payment is due upon completion of the service</li>
+                        <li>We accept credit/debit cards, UPI payments, and net banking</li>
+                        <li>Premium members may be eligible for special payment options</li>
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">I Understand</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Success Modal -->
+    <div class="modal fade" id="bookingSuccessModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center p-5">
+                    <div class="success-icon-container mb-4">
+                        <div class="success-icon">
+                            <i class="bi bi-check-lg"></i>
+                        </div>
+                    </div>
+                    <h3 class="success-title mb-3">Booking Successful!</h3>
+                    <p class="success-message mb-4">Your service has been booked successfully. You will receive a confirmation email shortly.</p>
+                    <p class="booking-reference mb-4">Booking Reference: <strong id="bookingReference">ALB-2506-2025</strong></p>
+                    <button type="button" class="btn btn-primary btn-lg" data-bs-dismiss="modal">
+                        <i class="bi bi-check-circle me-2"></i>Continue
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Services Section -->
     <section class="services-section" id="services">
         <div class="container">

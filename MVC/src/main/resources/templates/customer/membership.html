@@ -3,10 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Membership - Albany</title>
+    <title>Membership Plans - Albany Service</title>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;500;600;700&family=Russo+One&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap" rel="stylesheet">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <style>
         :root {
             --primary: #722F37;
@@ -31,6 +38,7 @@
             overflow-x: hidden;
         }
 
+        /* Navbar Styles */
         .navbar {
             background-color: rgba(255, 255, 255, 0.95);
             box-shadow: var(--shadow-md);
@@ -38,55 +46,158 @@
             padding: 1rem 0;
         }
 
+        .navbar.scrolled {
+            padding: 0.5rem 0;
+            background-color: rgba(255, 255, 255, 0.98);
+            box-shadow: var(--shadow-lg);
+        }
+
         .navbar-brand {
             font-family: 'Russo One', sans-serif;
-            font-size: 1.75rem;
+            font-size: 1.8rem;
             color: var(--primary);
             letter-spacing: 1px;
         }
 
-        .page-header {
+        .nav-link {
+            color: var(--dark);
+            font-weight: 500;
+            padding: 0.5rem 1rem !important;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary);
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after, .nav-link.active::after {
+            width: 70%;
+        }
+
+        .btn-login {
+            background-color: transparent;
+            border: 1.5px solid var(--primary);
+            color: var(--primary);
+            border-radius: 50px;
+            padding: 0.5rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-login:hover {
+            background-color: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-signup {
             background: var(--gradient-primary);
             color: white;
-            padding: 4rem 0 2.5rem;
-            margin-bottom: 3rem;
-            text-align: center;
+            border: none;
+            border-radius: 50px;
+            padding: 0.5rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-signup:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Page Header */
+        .page-header {
+            position: relative;
+            background: var(--gradient-primary);
+            color: white;
+            padding: 8rem 0 6rem;
+            overflow: hidden;
+        }
+
+        .page-header-bg {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('/assets/membership-bg.jpg');
+            background-size: cover;
+            background-position: center;
+            opacity: 0.15;
+        }
+
+        .page-title {
+            font-weight: 800;
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
             position: relative;
         }
 
-        .page-header::after {
-            content: '';
-            position: absolute;
-            bottom: -20px;
-            left: 0;
-            right: 0;
-            height: 40px;
-            background-color: var(--light);
-            clip-path: polygon(0 0, 100% 0, 50% 100%);
+        .page-subtitle {
+            font-size: 1.25rem;
+            max-width: 700px;
+            margin-bottom: 2rem;
+            position: relative;
+            opacity: 0.9;
         }
 
-        .membership-container {
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 2rem;
+        /* Membership Section */
+        .membership-section {
+            padding: 6rem 0;
+            background-color: white;
+        }
+
+        .section-title {
+            font-weight: 700;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--dark);
+            text-align: center;
+        }
+
+        .section-subtitle {
+            color: var(--gray);
+            font-size: 1.1rem;
+            margin-bottom: 3rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            text-align: center;
         }
 
         .membership-card {
             background: white;
-            border-radius: 12px;
-            box-shadow: var(--shadow-lg);
+            border-radius: 20px;
             overflow: hidden;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s ease;
+            height: 100%;
+            position: relative;
         }
 
         .membership-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-10px);
             box-shadow: var(--shadow-xl);
         }
 
         .card-header {
-            padding: 1.5rem;
+            padding: 2rem 1.5rem;
             text-align: center;
+            position: relative;
         }
 
         .standard-header {
@@ -101,8 +212,30 @@
 
         .membership-type {
             font-family: 'Russo One', sans-serif;
-            font-size: 1.5rem;
+            font-size: 2rem;
             margin-bottom: 0.5rem;
+        }
+
+        .card-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .price-tag {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 1.5rem 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .price-period {
+            font-size: 1rem;
+            opacity: 0.7;
+            font-weight: 400;
+            margin-left: 0.5rem;
+            margin-top: 0.5rem;
         }
 
         .card-body {
@@ -126,290 +259,597 @@
             border-bottom: none;
         }
 
-        .feature-list li:before {
-            content: '✓';
-            margin-right: 10px;
+        .feature-list li i {
             color: var(--primary);
-            font-weight: bold;
+            margin-right: 0.75rem;
+            font-size: 1.2rem;
         }
 
-        .price-tag {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 1rem;
-            text-align: center;
+        .current-plan-badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            z-index: 1;
         }
 
-        .price-period {
-            font-size: 1rem;
-            color: var(--gray);
-            display: block;
-            margin-top: 0.25rem;
-        }
-
-        .btn-upgrade {
+        .btn-membership {
             background: var(--gradient-primary);
             color: white;
             border: none;
-            padding: 1rem 2rem;
             border-radius: 50px;
+            padding: 1rem 2rem;
             font-weight: 600;
             width: 100%;
             transition: all 0.3s ease;
-        }
-
-        .btn-upgrade:hover {
-            transform: translateY(-2px);
             box-shadow: var(--shadow-md);
         }
 
-        .btn-disabled {
-            background: var(--gray);
-            cursor: not-allowed;
+        .btn-membership:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
         }
 
-        .current-badge {
-            background-color: var(--primary);
-            color: white;
-            border-radius: 20px;
-            padding: 0.5rem 1rem;
-            font-size: 0.9rem;
-            font-weight: 600;
-            display: inline-block;
-            margin-bottom: 1rem;
+        .btn-membership.disabled {
+            background: var(--gray);
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .btn-membership.disabled:hover {
+            transform: none;
+            box-shadow: var(--shadow-md);
+        }
+
+        .benefit-section {
+            margin-top: 5rem;
+            padding: 4rem 0;
+            background: linear-gradient(135deg, rgba(114, 47, 55, 0.05) 0%, rgba(239, 251, 187, 0.1) 100%);
+        }
+
+        .benefit-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            height: 100%;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .benefit-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
         }
 
         .benefit-icon {
-            width: 24px;
-            height: 24px;
-            margin-right: 10px;
+            width: 70px;
+            height: 70px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            color: white;
+            font-size: 2rem;
+        }
+
+        .benefit-title {
+            font-weight: 700;
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+
+        .benefit-text {
+            color: var(--gray);
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        /* FAQ Section */
+        .faq-section {
+            padding: 6rem 0;
+            background-color: white;
+        }
+
+        .accordion-item {
+            border: none;
+            margin-bottom: 1rem;
+        }
+
+        .accordion-button {
+            background-color: white;
+            border-radius: 10px !important;
+            box-shadow: var(--shadow-sm);
+            font-weight: 600;
+            padding: 1.25rem 1.5rem;
+            color: var(--dark);
+        }
+
+        .accordion-button:not(.collapsed) {
+            background-color: var(--primary);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .accordion-button:focus {
+            box-shadow: none;
+            border: none;
+        }
+
+        .accordion-body {
+            padding: 1.5rem;
+            background-color: #f9fafb;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+
+        /* Modal Styles */
+        .modal-content {
+            border-radius: 15px;
+            border: none;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-header {
+            background: var(--gradient-primary);
+            color: white;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+            border-bottom: none;
+            padding: 1.5rem;
+        }
+
+        .modal-title {
+            font-weight: 700;
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .modal-footer {
+            border-top: none;
+            padding: 1.5rem;
+        }
+
+        .close-modal {
+            color: white;
+            opacity: 0.8;
+            transition: all 0.3s ease;
+        }
+
+        .close-modal:hover {
+            opacity: 1;
+            color: white;
+        }
+
+        .form-control, .form-select {
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .form-control:focus, .form-select:focus {
+            box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.2);
+            border-color: var(--primary);
+        }
+
+        /* Alert Styles */
+        .alert {
+            border-radius: 10px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Footer Styles */
+        .footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 5rem 0 2rem;
+        }
+
+        .footer-logo {
+            font-family: 'Russo One', sans-serif;
+            font-size: 2rem;
+            color: white;
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-text {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 1.5rem;
+            max-width: 300px;
+        }
+
+        .footer-social {
+            display: flex;
+            margin-bottom: 2rem;
+        }
+
+        .social-link {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin-right: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .social-link:hover {
+            background: var(--primary);
+            transform: translateY(-3px);
+        }
+
+        .footer-title {
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            color: white;
+        }
+
+        .footer-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: white;
+            padding-left: 5px;
+        }
+
+        .footer-contact {
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .footer-contact i {
+            margin-right: 1rem;
             color: var(--primary);
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 2rem;
+            margin-top: 3rem;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
         }
 
-        .animate-fadeIn {
-            animation: fadeIn 0.5s ease-in-out;
-        }
-
-        @media (max-width: 768px) {
-            .membership-container {
-                padding: 1rem;
+        /* Responsive adjustments */
+        @media (max-width: 991.98px) {
+            .page-title {
+                font-size: 3rem;
             }
-            
-            .page-header {
-                padding: 3rem 0 2rem;
+
+            .membership-card {
+                margin-bottom: 2rem;
             }
         }
-        
-        #payment-status {
-            font-weight: 500;
-            padding: 8px;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-        }
-        
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1050;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.4);
-        }
-        
-        .modal-content {
-            background-color: white;
-            margin: 15% auto;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: var(--shadow-lg);
-            max-width: 500px;
-        }
-        
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 15px;
-            margin-bottom: 15px;
-        }
-        
-        .modal-header h2 {
-            margin: 0;
-            font-size: 1.5rem;
-        }
-        
-        .close-modal {
-            cursor: pointer;
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-        
-        .modal-body {
-            margin-bottom: 20px;
-        }
-        
-        .modal-footer {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-        }
-        
-        .btn-secondary {
-            background: #f1f5f9;
-            color: var(--dark);
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 50px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-secondary:hover {
-            background: #e2e8f0;
+
+        @media (max-width: 767.98px) {
+            .page-title {
+                font-size: 2.5rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
         }
 
-        .alert {
-            margin-top: 1rem;
+        @media (max-width: 575.98px) {
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .card-header {
+                padding: 1.5rem 1rem;
+            }
+
+            .membership-type {
+                font-size: 1.75rem;
+            }
+
+            .price-tag {
+                font-size: 2rem;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg">
-        <div class="container">
-            <a class="navbar-brand" href="#">Albany</a>
-        </div>
-    </nav>
-
-    <!-- Page Header -->
-    <div class="page-header">
-        <div class="container">
-            <h1>Membership Plans</h1>
-            <p>Choose the right membership plan for your vehicle service needs</p>
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container">
+        <a class="navbar-brand" th:href="@{/}">ALBANY</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" th:href="@{/customer/aboutUs}">About Us</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#services">Services</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" th:href="@{/customer/membership}">Membership</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#contact">Contact Us</a>
+                </li>
+            </ul>
+            <div class="ms-lg-3 mt-3 mt-lg-0 d-flex" id="auth-buttons">
+                <!-- Auth buttons will be replaced by JavaScript based on login status -->
+                <a th:href="@{/authentication/login}" class="btn btn-login me-2">Login</a>
+                <a th:href="@{/authentication/login}" class="btn btn-signup">Signup</a>
+            </div>
         </div>
     </div>
+</nav>
 
-    <!-- Membership Section -->
-    <div class="membership-container">
-        <!-- Display Success/Error Messages -->
-        <div th:if="${success}" class="alert alert-success text-center" role="alert">
+<!-- Page Header -->
+<section class="page-header">
+    <div class="page-header-bg"></div>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8" data-aos="fade-up">
+                <h1 class="page-title">Membership Plans</h1>
+                <p class="page-subtitle">Choose the right membership plan for your vehicle service needs and enjoy exclusive benefits.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Membership Section -->
+<section class="membership-section">
+    <div class="container">
+        <!-- Alerts for messages -->
+        <div th:if="${success}" class="alert alert-success text-center" role="alert" data-aos="fade-up">
+            <i class="bi bi-check-circle me-2"></i>
             <span th:text="${success}"></span>
         </div>
-        <div th:if="${error}" class="alert alert-danger text-center" role="alert">
+        <div th:if="${error}" class="alert alert-danger text-center" role="alert" data-aos="fade-up">
+            <i class="bi bi-exclamation-triangle me-2"></i>
             <span th:text="${error}"></span>
         </div>
 
-        <div class="row">
-            <!-- Current Membership Status -->
-            <div class="col-12 text-center mb-4">
-                <div class="current-badge animate-fadeIn">
-                    <span>Current Membership: </span>
+        <div class="text-center mb-5">
+            <h2 class="section-title" data-aos="fade-up">Select Your Plan</h2>
+            <p class="section-subtitle" data-aos="fade-up" data-aos-delay="100">
+                Our membership plans are designed to give you the best service experience for your vehicle
+            </p>
+
+            <!-- Current Membership Status Badge -->
+            <div class="d-inline-block mb-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="current-plan-badge" style="position: relative; top: 0; right: 0;">
+                    <i class="bi bi-stars me-2"></i>
+                    <span>Current Plan: </span>
                     <span id="current-membership-type" th:text="${user != null ? user.membershipType : 'STANDARD'}">STANDARD</span>
                 </div>
             </div>
+        </div>
 
+        <div class="row">
             <!-- Standard Membership Card -->
-            <div class="col-md-6 mb-4">
-                <div class="membership-card animate-fadeIn">
+            <div class="col-lg-6 mb-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="membership-card" th:classappend="${isPremium != null && !isPremium} ? 'border border-3 border-primary' : ''">
+                    <div th:if="${isPremium != null && !isPremium}" class="current-plan-badge">
+                        <i class="bi bi-check-circle me-1"></i> Current Plan
+                    </div>
                     <div class="card-header standard-header">
                         <h2 class="membership-type">STANDARD</h2>
-                        <p>Basic membership for all customers</p>
+                        <p class="card-subtitle">Basic membership for all customers</p>
                     </div>
                     <div class="card-body">
-                        <div class="price-tag">
-                            ₹0
-                            <span class="price-period">Free</span>
+                        <div class="price-tag text-primary">
+                            Free <span class="price-period">forever</span>
                         </div>
                         <ul class="feature-list">
-                            <li>Basic service booking</li>
-                            <li>Regular service rates</li>
-                            <li>Standard waiting times</li>
-                            <li>Online booking system access</li>
+                            <li><i class="bi bi-check-circle-fill"></i> Basic service booking</li>
+                            <li><i class="bi bi-check-circle-fill"></i> Regular service rates</li>
+                            <li><i class="bi bi-check-circle-fill"></i> Standard waiting times</li>
+                            <li><i class="bi bi-check-circle-fill"></i> Online booking system access</li>
+                            <li><i class="bi bi-check-circle-fill"></i> Service tracking portal</li>
                         </ul>
-                        <button class="btn btn-upgrade btn-disabled" disabled>Current Plan</button>
+                        <button class="btn btn-membership disabled" disabled>Default Plan</button>
                     </div>
                 </div>
             </div>
 
             <!-- Premium Membership Card -->
-            <div class="col-md-6 mb-4">
-                <div class="membership-card animate-fadeIn" id="premium-card" th:classappend="${isPremium} ? 'border border-3 border-primary' : ''">
+            <div class="col-lg-6 mb-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="membership-card" th:classappend="${isPremium != null && isPremium} ? 'border border-3 border-primary' : ''">
+                    <div th:if="${isPremium != null && isPremium}" class="current-plan-badge">
+                        <i class="bi bi-check-circle me-1"></i> Current Plan
+                    </div>
                     <div class="card-header premium-header">
                         <h2 class="membership-type">PREMIUM</h2>
-                        <p>Enhanced benefits for frequent customers</p>
+                        <p class="card-subtitle">Enhanced benefits for frequent customers</p>
                     </div>
                     <div class="card-body">
-                        <div class="price-tag">
-                            ₹1200
-                            <span class="price-period">for 2 years</span>
+                        <div class="price-tag text-primary">
+                            ₹1,200 <span class="price-period">for 2 years</span>
                         </div>
                         <ul class="feature-list">
-                            <li><strong>30% discount</strong> on all services</li>
-                            <li><strong>Priority service</strong> during peak hours</li>
-                            <li>Premium customer support</li>
-                            <li>Exclusive seasonal offers</li>
-                            <li>Free basic vehicle inspection twice a year</li>
+                            <li><i class="bi bi-check-circle-fill"></i> <strong>30% discount</strong> on all labor charges</li>
+                            <li><i class="bi bi-check-circle-fill"></i> <strong>Priority service</strong> during peak hours</li>
+                            <li><i class="bi bi-check-circle-fill"></i> Premium customer support</li>
+                            <li><i class="bi bi-check-circle-fill"></i> Exclusive seasonal offers</li>
+                            <li><i class="bi bi-check-circle-fill"></i> Free basic vehicle inspection twice a year</li>
+                            <li><i class="bi bi-check-circle-fill"></i> Extended warranty on service parts</li>
                         </ul>
                         <div id="premium-button-container">
-                            <button th:if="${isPremium}" class="btn btn-upgrade btn-disabled" disabled>Active Plan</button>
-                            <button th:unless="${isPremium}" class="btn btn-upgrade" onclick="showPaymentModal()">Upgrade Now</button>
+                            <button th:if="${isPremium != null && isPremium}" class="btn btn-membership disabled" disabled>
+                                <i class="bi bi-check-circle me-2"></i> Active Plan
+                            </button>
+                            <button th:unless="${isPremium != null && isPremium}" class="btn btn-membership" onclick="showPaymentModal()">
+                                <i class="bi bi-arrow-up-circle me-2"></i> Upgrade Now
+                            </button>
                         </div>
                         <div id="payment-status" class="mt-3 text-center"></div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+</section>
 
-        <!-- Additional Information -->
-        <div class="row mt-4">
-            <div class="col-12">
-                <div class="card p-4 shadow-sm">
-                    <h3>Membership FAQs</h3>
-                    <div class="accordion" id="membershipFaq">
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqOne">
-                                    How do I upgrade to Premium?
-                                </button>
-                            </h2>
-                            <div id="faqOne" class="accordion-collapse collapse" data-bs-parent="#membershipFaq">
-                                <div class="accordion-body">
-                                    Simply click the "Upgrade Now" button and complete the secure payment process. Your membership will be upgraded instantly after successful payment.
-                                </div>
+<!-- Benefits Section -->
+<section class="benefit-section">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="section-title" data-aos="fade-up">Premium Benefits</h2>
+            <p class="section-subtitle" data-aos="fade-up" data-aos-delay="100">
+                Enjoy these exclusive benefits when you upgrade to our Premium membership
+            </p>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="bi bi-cash-coin"></i>
+                    </div>
+                    <h3 class="benefit-title">30% Discount</h3>
+                    <p class="benefit-text">Save 30% on all labor charges for your vehicle services throughout your membership period.</p>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="bi bi-speedometer"></i>
+                    </div>
+                    <h3 class="benefit-title">Priority Service</h3>
+                    <p class="benefit-text">Skip the queue and get your vehicle serviced on priority, even during peak hours.</p>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="bi bi-wrench-adjustable"></i>
+                    </div>
+                    <h3 class="benefit-title">Free Inspections</h3>
+                    <p class="benefit-text">Get two free comprehensive vehicle inspections every year to ensure optimal performance.</p>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="400">
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="bi bi-headset"></i>
+                    </div>
+                    <h3 class="benefit-title">Premium Support</h3>
+                    <p class="benefit-text">Access dedicated customer support line with priority response for all your queries.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="faq-section">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="section-title" data-aos="fade-up">Frequently Asked Questions</h2>
+            <p class="section-subtitle" data-aos="fade-up" data-aos-delay="100">
+                Find answers to common questions about our membership plans
+            </p>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8" data-aos="fade-up" data-aos-delay="200">
+                <div class="accordion" id="membershipFaq">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1" aria-expanded="true" aria-controls="faq1">
+                                How do I upgrade to Premium membership?
+                            </button>
+                        </h2>
+                        <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#membershipFaq">
+                            <div class="accordion-body">
+                                <p>Upgrading to Premium is simple - just click the "Upgrade Now" button on the Premium plan card and complete the secure payment process. Your membership will be upgraded instantly after successful payment.</p>
                             </div>
                         </div>
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqTwo">
-                                    When does my Premium membership expire?
-                                </button>
-                            </h2>
-                            <div id="faqTwo" class="accordion-collapse collapse" data-bs-parent="#membershipFaq">
-                                <div class="accordion-body">
-                                    Premium membership is valid for 2 years from the date of purchase. You'll receive a notification before it expires with renewal options.
-                                </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2" aria-expanded="false" aria-controls="faq2">
+                                How long is the Premium membership valid?
+                            </button>
+                        </h2>
+                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#membershipFaq">
+                            <div class="accordion-body">
+                                <p>The Premium membership is valid for 2 years from the date of purchase. You'll receive a notification before it expires with options to renew your membership.</p>
                             </div>
                         </div>
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqThree">
-                                    Is there a refund policy?
-                                </button>
-                            </h2>
-                            <div id="faqThree" class="accordion-collapse collapse" data-bs-parent="#membershipFaq">
-                                <div class="accordion-body">
-                                    We offer a 7-day money-back guarantee if you haven't used any Premium benefits. Contact our customer support for assistance.
-                                </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3" aria-expanded="false" aria-controls="faq3">
+                                Can I apply the 30% discount to parts and materials?
+                            </button>
+                        </h2>
+                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#membershipFaq">
+                            <div class="accordion-body">
+                                <p>The 30% discount applies to labor charges only. Parts and materials are charged at regular rates to ensure we can provide genuine high-quality components for your vehicle.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4" aria-expanded="false" aria-controls="faq4">
+                                Is there a refund policy for Premium membership?
+                            </button>
+                        </h2>
+                        <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#membershipFaq">
+                            <div class="accordion-body">
+                                <p>We offer a 7-day money-back guarantee if you haven't used any Premium benefits. Contact our customer support team for assistance with the refund process. After 7 days or if benefits have been used, the membership fee is non-refundable.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq5" aria-expanded="false" aria-controls="faq5">
+                                Can I upgrade to Premium at any time?
+                            </button>
+                        </h2>
+                        <div id="faq5" class="accordion-collapse collapse" data-bs-parent="#membershipFaq">
+                            <div class="accordion-body">
+                                <p>Yes, you can upgrade to Premium membership at any time. Once upgraded, you'll immediately have access to all Premium benefits for the full 2-year period.</p>
                             </div>
                         </div>
                     </div>
@@ -417,13 +857,15 @@
             </div>
         </div>
     </div>
+</section>
 
-    <!-- Payment Modal -->
-    <div id="paymentModal" class="modal">
+<!-- Payment Modal -->
+<div class="modal fade" id="paymentModal" tabindex="-1" aria-labelledby="paymentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Premium Membership</h2>
-                <span class="close-modal" onclick="closePaymentModal()">×</span>
+                <h5 class="modal-title" id="paymentModalLabel">Premium Membership Upgrade</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <p>Confirm your details to upgrade to Premium membership:</p>
@@ -441,148 +883,361 @@
                         <input type="tel" class="form-control" id="user-phone" th:value="${user != null ? user.phoneNumber : ''}" readonly>
                     </div>
                     <div class="form-check mb-3">
-                        <input class="form-check-input" type="checkbox" id="terms-checkbox" name="termsAccepted">
+                        <input class="form-check-input" type="checkbox" id="terms-checkbox" name="termsAccepted" required>
                         <label class="form-check-label" for="terms-checkbox">
-                            I agree to the terms and conditions
+                            I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">terms and conditions</a>
                         </label>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closePaymentModal()">Cancel</button>
-                <button type="button" class="btn btn-upgrade" onclick="submitPaymentForm()">Pay ₹1200</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-membership" onclick="submitPaymentForm()">
+                    <i class="bi bi-credit-card me-2"></i> Pay ₹1,200
+                </button>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Payment Status Modal -->
-    <div id="paymentStatusModal" class="modal" th:classappend="${showSuccessModal} ? 'd-block' : ''">
+<!-- Payment Status Modal -->
+<div class="modal fade" id="paymentStatusModal" tabindex="-1" aria-labelledby="paymentStatusModalLabel" aria-hidden="true" th:classappend="${showSuccessModal} ? 'show' : ''">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="paymentStatusTitle" th:text="${showSuccessModal} ? 'Payment Successful' : 'Payment Status'"></h2>
-                <span class="close-modal" onclick="closeStatusModal()">×</span>
+            <div class="modal-header" th:classappend="${showSuccessModal} ? 'bg-success' : ''">
+                <h5 class="modal-title" id="paymentStatusTitle" th:text="${showSuccessModal} ? 'Payment Successful' : 'Payment Status'">Payment Status</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p id="paymentStatusMessage" th:text="${showSuccessModal} ? 'Your Premium membership has been activated successfully!' : 'Payment status unknown.'"></p>
+                <div class="text-center mb-3">
+                    <i th:if="${showSuccessModal}" class="bi bi-check-circle text-success" style="font-size: 3rem;"></i>
+                </div>
+                <p id="paymentStatusMessage" class="text-center" th:text="${showSuccessModal} ? 'Your Premium membership has been activated successfully!' : 'Payment status unknown.'">
+                    Payment status unknown.
+                </p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeStatusModal()">Close</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Hidden Form for Payment Verification -->
-    <form id="verifyPaymentForm" action="/customer/membership/verify-payment" method="post" style="display: none;">
-        <input type="hidden" name="paymentId" id="paymentIdInput">
-        <input type="hidden" name="razorpayOrderId" id="razorpayOrderIdInput">
-    </form>
+<!-- Terms and Conditions Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="termsModalLabel">Terms and Conditions</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h6>Premium Membership Terms</h6>
+                <p>By upgrading to Premium membership, you agree to the following terms and conditions:</p>
+                <ol>
+                    <li>Premium membership is valid for 2 years from the date of purchase.</li>
+                    <li>The 30% discount applies to labor charges only, not parts or materials.</li>
+                    <li>Free inspections are limited to twice per year and must be scheduled in advance.</li>
+                    <li>Priority service is subject to availability and current workload.</li>
+                    <li>Membership fees are non-refundable after 7 days or if benefits have been used.</li>
+                    <li>Albany Service reserves the right to modify benefits with prior notice.</li>
+                    <li>Premium membership is linked to your account and cannot be transferred.</li>
+                </ol>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-    <script th:inline="javascript">
-        document.addEventListener('DOMContentLoaded', function() {
-            let membershipType = /*[[${user != null ? user.membershipType : 'STANDARD'}]]*/ 'STANDARD';
-            if (!membershipType || membershipType.includes('${')) {
-                membershipType = 'STANDARD';
-                document.getElementById('current-membership-type').textContent = membershipType;
-            }
+<!-- Hidden Form for Payment Verification -->
+<form id="verifyPaymentForm" action="/customer/membership/verify-payment" method="post" style="display: none;">
+    <input type="hidden" name="paymentId" id="paymentIdInput">
+    <input type="hidden" name="razorpayOrderId" id="razorpayOrderIdInput">
+</form>
 
-            const razorpayKey = /*[[${razorpayKey}]]*/ '';
-            const orderId = /*[[${orderId}]]*/ '';
-            const amount = /*[[${amount}]]*/ '';
-            const currency = /*[[${currency}]]*/ '';
-            const userEmail = /*[[${userEmail}]]*/ '';
-            const userName = /*[[${userName}]]*/ '';
-            const userPhone = /*[[${userPhone}]]*/ '';
+<!-- Footer -->
+<footer class="footer" id="contact">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-4 mb-5 mb-lg-0">
+                <div class="footer-logo">ALBANY</div>
+                <p class="footer-text">Premium vehicle service management system providing exceptional care for your vehicles.</p>
+                <div class="footer-social">
+                    <a href="#" class="social-link"><i class="bi bi-facebook"></i></a>
+                    <a href="#" class="social-link"><i class="bi bi-twitter"></i></a>
+                    <a href="#" class="social-link"><i class="bi bi-instagram"></i></a>
+                    <a href="#" class="social-link"><i class="bi bi-linkedin"></i></a>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-4 mb-5 mb-md-0">
+                <h3 class="footer-title">Quick Links</h3>
+                <ul class="footer-links">
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/customer/aboutUs">About Us</a></li>
+                    <li><a href="#services">Services</a></li>
+                    <li><a href="/customer/membership">Membership</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div>
+            <div class="col-lg-2 col-md-4 mb-5 mb-md-0">
+                <h3 class="footer-title">Services</h3>
+                <ul class="footer-links">
+                    <li><a href="#">Regular Maintenance</a></li>
+                    <li><a href="#">Engine Diagnostics</a></li>
+                    <li><a href="#">Brake Service</a></li>
+                    <li><a href="#">Oil Change</a></li>
+                    <li><a href="#">Battery Service</a></li>
+                </ul>
+            </div>
+            <div class="col-lg-4 col-md-4">
+                <h3 class="footer-title">Contact Us</h3>
+                <div class="footer-contact">
+                    <i class="bi bi-geo-alt"></i>
+                    <span>123 Albany Street, Chennai, India</span>
+                </div>
+                <div class="footer-contact">
+                    <i class="bi bi-envelope"></i>
+                    <span>support@albanyservice.com</span>
+                </div>
+                <div class="footer-contact">
+                    <i class="bi bi-telephone"></i>
+                    <span>+91 98765 43210</span>
+                </div>
+                <div class="footer-contact">
+                    <i class="bi bi-clock"></i>
+                    <span>Mon-Sat: 8:00 AM - 8:00 PM</span>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 Albany Service. All Rights Reserved.</p>
+        </div>
+    </div>
+</footer>
 
-            if (razorpayKey && orderId && amount && currency) {
-                document.getElementById('payment-status').innerText = 'Initiating payment...';
-                document.getElementById('payment-status').style.backgroundColor = '#f8f9fa';
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize AOS animation if available
+        if (typeof AOS !== 'undefined') {
+            AOS.init({
+                duration: 800,
+                easing: 'ease-in-out',
+                once: true
+            });
+        }
 
-                var options = {
-                    "key": razorpayKey,
-                    "amount": amount,
-                    "currency": currency,
-                    "name": "Albany Vehicle Service",
-                    "description": "Premium Membership Upgrade",
-                    "order_id": orderId,
-                    "handler": function (response) {
-                        document.getElementById('payment-status').innerText = 'Payment successful! Updating membership...';
-                        document.getElementById('payment-status').style.backgroundColor = '#d1e7dd';
+        // Update navbar based on authentication status
+        updateAuthUI();
 
-                        // Submit both paymentId and razorpayOrderId
-                        document.getElementById('paymentIdInput').value = response.razorpay_payment_id;
-                        document.getElementById('razorpayOrderIdInput').value = response.razorpay_order_id;
-                        document.getElementById('verifyPaymentForm').submit();
-                    },
-                    "prefill": {
-                        "email": userEmail,
-                        "name": userName,
-                        "contact": userPhone
-                    },
-                    "theme": {
-                        "color": "#722F37"
-                    },
-                    "modal": {
-                        "ondismiss": function() {
-                            document.getElementById('payment-status').innerText = 'Payment cancelled.';
-                            document.getElementById('payment-status').style.backgroundColor = '#f8d7da';
-                            document.getElementById('paymentStatusModal').style.display = 'block';
-                            document.getElementById('paymentStatusTitle').textContent = 'Payment Cancelled';
-                            document.getElementById('paymentStatusMessage').textContent = 'The payment was cancelled. Please try again.';
-                        }
-                    }
-                };
+        // Handle navbar scroll effect
+        window.addEventListener('scroll', handleNavbarScroll);
+        handleNavbarScroll();
 
-                if (typeof Razorpay === 'undefined') {
-                    document.getElementById('payment-status').innerText = 'Error: Razorpay SDK not loaded';
-                    document.getElementById('payment-status').style.backgroundColor = '#f8d7da';
-                    return;
-                }
-
-                var rzp = new Razorpay(options);
-                rzp.open();
-            }
+        // Initialize Modals
+        var modals = document.querySelectorAll('.modal');
+        modals.forEach(function(modal) {
+            new bootstrap.Modal(modal);
         });
 
-        function showPaymentModal() {
-            var userEmail = /*[[${user != null ? user.email : ''}]]*/ '';
-            if (!userEmail || userEmail.includes('${')) {
-                window.location.href = '/authentication/login';
+        // Show payment status modal if needed
+        var showSuccessModal = /*[[${showSuccessModal}]]*/ false;
+        if (showSuccessModal) {
+            var paymentStatusModal = new bootstrap.Modal(document.getElementById('paymentStatusModal'));
+            paymentStatusModal.show();
+        }
+
+        // Handle razorpay integration if payment is initiated
+        const razorpayKey = /*[[${razorpayKey}]]*/ '';
+        const orderId = /*[[${orderId}]]*/ '';
+        const amount = /*[[${amount}]]*/ '';
+        const currency = /*[[${currency}]]*/ '';
+        const userEmail = /*[[${userEmail}]]*/ '';
+        const userName = /*[[${userName}]]*/ '';
+        const userPhone = /*[[${userPhone}]]*/ '';
+
+        if (razorpayKey && orderId && amount && currency) {
+            document.getElementById('payment-status').innerText = 'Initiating payment...';
+            document.getElementById('payment-status').style.backgroundColor = '#f8f9fa';
+            document.getElementById('payment-status').style.padding = '0.5rem';
+            document.getElementById('payment-status').style.borderRadius = '5px';
+
+            var options = {
+                "key": razorpayKey,
+                "amount": amount,
+                "currency": currency,
+                "name": "Albany Vehicle Service",
+                "description": "Premium Membership Upgrade",
+                "order_id": orderId,
+                "handler": function (response) {
+                    document.getElementById('payment-status').innerText = 'Payment successful! Updating membership...';
+                    document.getElementById('payment-status').style.backgroundColor = '#d1e7dd';
+
+                    // Submit both paymentId and razorpayOrderId
+                    document.getElementById('paymentIdInput').value = response.razorpay_payment_id;
+                    document.getElementById('razorpayOrderIdInput').value = response.razorpay_order_id;
+                    document.getElementById('verifyPaymentForm').submit();
+                },
+                "prefill": {
+                    "email": userEmail,
+                    "name": userName,
+                    "contact": userPhone
+                },
+                "theme": {
+                    "color": "#722F37"
+                },
+                "modal": {
+                    "ondismiss": function() {
+                        document.getElementById('payment-status').innerText = 'Payment cancelled.';
+                        document.getElementById('payment-status').style.backgroundColor = '#f8d7da';
+
+                        // Show payment cancelled modal
+                        var paymentStatusModal = new bootstrap.Modal(document.getElementById('paymentStatusModal'));
+                        document.getElementById('paymentStatusTitle').textContent = 'Payment Cancelled';
+                        document.getElementById('paymentStatusMessage').textContent = 'The payment was cancelled. Please try again.';
+                        paymentStatusModal.show();
+                    }
+                }
+            };
+
+            if (typeof Razorpay === 'undefined') {
+                document.getElementById('payment-status').innerText = 'Error: Razorpay SDK not loaded';
+                document.getElementById('payment-status').style.backgroundColor = '#f8d7da';
                 return;
             }
-            document.getElementById('paymentModal').style.display = 'block';
-        }
 
-        function closePaymentModal() {
-            document.getElementById('paymentModal').style.display = 'none';
+            var rzp = new Razorpay(options);
+            rzp.open();
         }
+    });
 
-        function submitPaymentForm() {
-            const termsAccepted = document.getElementById('terms-checkbox').checked;
-            if (!termsAccepted) {
-                alert('Please accept the terms and conditions.');
-                return;
+    // Show payment modal
+    function showPaymentModal() {
+        var userEmail = /*[[${user != null ? user.email : ''}]]*/ '';
+        if (!userEmail || userEmail.includes('${')) {
+            window.location.href = '/authentication/login?message=' + encodeURIComponent('Please login to upgrade your membership') + '&type=info';
+            return;
+        }
+        var paymentModal = new bootstrap.Modal(document.getElementById('paymentModal'));
+        paymentModal.show();
+    }
+
+    // Submit payment form
+    function submitPaymentForm() {
+        const termsAccepted = document.getElementById('terms-checkbox').checked;
+        if (!termsAccepted) {
+            alert('Please accept the terms and conditions to continue.');
+            return;
+        }
+        document.getElementById('paymentForm').submit();
+    }
+
+    // Update navbar based on auth status
+    function updateAuthUI() {
+        const authContainer = document.getElementById('auth-buttons');
+        const token = sessionStorage.getItem('authToken');
+        const userInfoStr = sessionStorage.getItem('userInfo');
+
+        if (token && userInfoStr) {
+            try {
+                const userInfo = JSON.parse(userInfoStr);
+
+                // Create user dropdown HTML
+                const dropdownHtml = `
+                        <div class="dropdown">
+                            <button class="btn btn-primary dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="bi bi-person-circle me-1"></i> ${userInfo.firstName}
+                                ${userInfo.membershipType === 'PREMIUM' ? '<span class="badge bg-warning text-dark ms-1">PREMIUM</span>' : ''}
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                                <li><a class="dropdown-item" href="/customer/profile">My Profile</a></li>
+                                <li><a class="dropdown-item" href="/customer/myVehicles">My Vehicles</a></li>
+                                <li><a class="dropdown-item" href="/customer/serviceHistory">Service History</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="#" id="logoutBtn">Logout</a></li>
+                            </ul>
+                        </div>
+                    `;
+
+                // Replace auth container content
+                authContainer.innerHTML = dropdownHtml;
+
+                // Add logout handler
+                document.getElementById('logoutBtn').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    logout();
+                });
+
+            } catch (error) {
+                console.error("Error processing auth data:", error);
+                sessionStorage.removeItem('authToken');
+                sessionStorage.removeItem('userInfo');
             }
-            document.getElementById('paymentForm').submit();
+        }
+    }
+
+    // Logout function
+    function logout() {
+        sessionStorage.removeItem('authToken');
+        sessionStorage.removeItem('userInfo');
+
+        // Show success message
+        showToast('You have been logged out successfully', 'success');
+
+        // Redirect after a short delay
+        setTimeout(() => {
+            window.location.href = '/';
+        }, 1000);
+    }
+
+    // Handle navbar scroll effect
+    function handleNavbarScroll() {
+        const navbar = document.querySelector('.navbar');
+        if (navbar) {
+            navbar.classList.toggle('scrolled', window.scrollY > 50);
+        }
+    }
+
+    // Show toast notification
+    function showToast(message, type = 'info') {
+        let toastContainer = document.querySelector('.toast-container');
+
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+            document.body.appendChild(toastContainer);
         }
 
-        function closeStatusModal() {
-            document.getElementById('paymentStatusModal').style.display = 'none';
-            if (document.getElementById('paymentStatusTitle').textContent.includes('Success')) {
-                window.location.reload();
-            }
-        }
+        const toastId = 'toast-' + Date.now();
+        const toastHtml = `
+                <div id="${toastId}" class="toast align-items-center text-white bg-${type === 'error' ? 'danger' : type} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="d-flex">
+                        <div class="toast-body">${message}</div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                </div>
+            `;
 
-        window.onclick = function(event) {
-            var paymentModal = document.getElementById('paymentModal');
-            var statusModal = document.getElementById('paymentStatusModal');
-            if (event.target == paymentModal) {
-                closePaymentModal();
-            } else if (event.target == statusModal) {
-                closeStatusModal();
-            }
-        };
-    </script>
+        toastContainer.insertAdjacentHTML('beforeend', toastHtml);
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+        const toastElement = document.getElementById(toastId);
+        const toast = new bootstrap.Toast(toastElement, {
+            autohide: true,
+            delay: 5000
+        });
+
+        toast.show();
+
+        toastElement.addEventListener('hidden.bs.toast', function() {
+            toastElement.remove();
+        });
+    }
+</script>
+
+<!-- Bootstrap JS Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- AOS Animation JS -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 </body>
 </html>

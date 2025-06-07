@@ -14,24 +14,24 @@
             --primary: #722F37;
             --primary-dark: #5a252c;
             --secondary: #722F37;
-            --accent: #EFFBB;
+            --accent: #EFFBBB;
             --dark: #2c1518;
             --light: #f8fff0;
             --gray: #64748b;
             --gradient-primary: linear-gradient(135deg, #722F37 0%, #8a3a44 100%);
             --gradient-secondary: linear-gradient(135deg, rgba(114, 47, 55, 0.1) 0%, rgba(239, 251, 187, 0.1) 100%);
-            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1);
         }
 
-          body {
-              font-family: 'Baloo Bhaijaan 2', sans-serif;
-              color: var(--dark);
-              background-color: var(--light);
-              overflow-x: hidden;
-          }
+        body {
+            font-family: 'Baloo Bhaijaan 2', sans-serif;
+            color: var(--dark);
+            background-color: var(--light);
+            overflow-x: hidden;
+        }
 
         /* ========== NAVBAR STYLES ========== */
         .navbar {
@@ -177,6 +177,17 @@
             height: 1px;
             margin: 0.5rem 0;
             background-color: rgba(0,0,0,0.1);
+        }
+
+        .badge-premium {
+            background-color: #FFD700;
+            color: #000;
+            font-size: 0.7rem;
+            padding: 0.25em 0.5em;
+            border-radius: 0.25rem;
+            margin-left: 0.25rem;
+            font-weight: 600;
+            text-transform: uppercase;
         }
 
         /* ========== HERO SECTION ========== */
@@ -725,29 +736,6 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
-        /* Animations */
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes fadeInDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
         /* Other sections styling */
         .section-title {
             font-size: 2.5rem;
@@ -811,6 +799,21 @@
             margin-bottom: 1.5rem;
         }
 
+        .btn-feature {
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            background-color: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-feature:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
         .services-section {
             padding: 6rem 0;
             background: linear-gradient(135deg, rgba(114, 47, 55, 0.05) 0%, rgba(239, 251, 187, 0.1) 100%);
@@ -842,6 +845,34 @@
             position: relative;
         }
 
+        .service-title {
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--dark);
+        }
+
+        .service-text {
+            color: var(--gray);
+            margin-bottom: 1.5rem;
+        }
+
+        .service-content .service-icon {
+            position: absolute;
+            right: 20px;
+            top: -25px;
+            width: 50px;
+            height: 50px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            box-shadow: var(--shadow-lg);
+        }
+
         .how-it-works {
             padding: 6rem 0;
             background-color: white;
@@ -859,9 +890,108 @@
             text-align: center;
         }
 
+        .step-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: var(--gradient-primary);
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin: 0 auto 1.5rem;
+        }
+
+        .step-icon {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+        }
+
+        .step-title {
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+
+        .step-text {
+            color: var(--gray);
+        }
+
         .testimonials-section {
             padding: 6rem 0;
             background: linear-gradient(135deg, rgba(114, 47, 55, 0.05) 0%, rgba(239, 251, 187, 0.1) 100%);
+        }
+
+        .testimonial-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+            height: 100%;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .testimonial-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .testimonial-text {
+            font-size: 1.1rem;
+            color: var(--dark);
+            margin-bottom: 2rem;
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .testimonial-text:before {
+            content: '"';
+            position: absolute;
+            left: 0;
+            top: -10px;
+            font-size: 3rem;
+            color: var(--primary);
+            opacity: 0.3;
+            font-family: serif;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+        }
+
+        .testimonial-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 1rem;
+            border: 3px solid var(--primary);
+        }
+
+        .testimonial-name {
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+            color: var(--dark);
+        }
+
+        .testimonial-role {
+            color: var(--gray);
+            margin-bottom: 0.5rem;
+        }
+
+        .testimonial-rating {
+            color: #FFD700;
         }
 
         .cta-section {
@@ -872,10 +1002,247 @@
             color: white;
         }
 
+        .cta-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1.5rem;
+        }
+
+        .cta-text {
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .btn-cta {
+            background: white;
+            color: var(--primary);
+            border: none;
+            border-radius: 50px;
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-cta:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .contact-section {
+            padding: 6rem 0;
+            background-color: white;
+        }
+
+        .contact-info-card {
+            background: var(--gradient-primary);
+            color: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            height: 100%;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .contact-info-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .contact-info-subtitle {
+            opacity: 0.8;
+            margin-bottom: 2rem;
+        }
+
+        .contact-info-items {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .contact-info-item {
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .contact-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .contact-details h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .contact-details p {
+            opacity: 0.8;
+            margin-bottom: 0;
+        }
+
+        .contact-form-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            height: 100%;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .contact-form .form-control,
+        .contact-form .form-select {
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e9ecef;
+        }
+
+        .contact-form .form-control:focus,
+        .contact-form .form-select:focus {
+            box-shadow: 0 0 0 0.25rem rgba(114, 47, 55, 0.25);
+            border-color: var(--primary);
+        }
+
+        .contact-form textarea {
+            min-height: 120px;
+        }
+
         .footer {
             background-color: var(--dark);
             color: white;
             padding: 5rem 0 2rem;
+        }
+
+        .footer-logo {
+            font-family: 'Russo One', sans-serif;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .footer-text {
+            opacity: 0.7;
+            margin-bottom: 1.5rem;
+            max-width: 300px;
+        }
+
+        .footer-social {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .social-link {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+
+        .social-link:hover {
+            background: var(--primary);
+            transform: translateY(-3px);
+        }
+
+        .footer-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+
+        .footer-title:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 2px;
+            background: var(--primary);
+        }
+
+        .footer-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: white;
+            padding-left: 5px;
+        }
+
+        .footer-contact {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .footer-contact i {
+            width: 30px;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        .footer-contact span {
+            opacity: 0.7;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 2rem;
+            margin-top: 2rem;
+            text-align: center;
+            opacity: 0.6;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* Responsive styles */
@@ -953,7 +1320,7 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="/">Home</a>
+                    <a class="nav-link active" href="/">Home</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="/customer/aboutUs">About Us</a>
@@ -1733,11 +2100,6 @@
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    /**
-     * Albany Vehicle Service Booking System
-     *
-     * A comprehensive solution for vehicle service management
-     */
     class BookingSystem {
         constructor() {
             this.state = {
@@ -1754,28 +2116,21 @@
             this.apiEndpoints = {
                 vehicles: '/customer/api/vehicles',
                 newVehicle: '/customer/api/vehicles/add',
-                bookService: '/customer/api/service-requests',
-                profile: '/api/customer/profile'
+                bookService: '/customer/api/service-requests'
             };
 
             this.init();
         }
 
-        /**
-         * Initialize the booking system
-         */
         init() {
             this.cacheElements();
             this.setupEventListeners();
             this.setupBookingSteps();
             this.initializeDateInputs();
             this.initUI();
-            this.initializeAuthentication();
+            this.checkAuthentication();
         }
 
-        /**
-         * Initialize UI components
-         */
         initUI() {
             if (typeof AOS !== 'undefined') {
                 AOS.init({
@@ -1785,220 +2140,105 @@
                 });
             }
 
-            // Handle main navigation
             this.setupNavigation();
-
-            // Set up book service buttons
             this.setupBookServiceButtons();
         }
 
-        /**
-         * Initialize authentication state
-         */
-        initializeAuthentication() {
-            const token = this.getAuthToken();
-            const userData = this.getUserData();
+        checkAuthentication() {
+            const authToken = sessionStorage.getItem('authToken');
+            const userInfoStr = sessionStorage.getItem('userInfo');
 
-            if (token && userData) {
-                this.updateNavbarForAuthenticatedUser(userData);
-            }
-        }
-
-        /**
-         * Get authentication token from session storage
-         */
-        getAuthToken() {
-            return sessionStorage.getItem('authToken');
-        }
-
-        /**
-         * Get user data from session storage
-         */
-        getUserData() {
-            const userDataStr = sessionStorage.getItem('userData');
-            if (userDataStr) {
+            if (authToken && userInfoStr) {
                 try {
-                    return JSON.parse(userDataStr);
+                    const userInfo = JSON.parse(userInfoStr);
+                    this.updateAuthUI(userInfo);
                 } catch (e) {
-                    console.error('Error parsing user data', e);
-                    return null;
+                    console.error('Error parsing user info:', e);
                 }
             }
-            return null;
         }
 
-        /**
-         * Update navbar for authenticated user
-         */
-        updateNavbarForAuthenticatedUser(userData) {
+        updateAuthUI(userData) {
             const authContainer = document.getElementById('auth-container');
             if (!authContainer) return;
 
-            // Create user profile dropdown
-            const dropdownHtml = `
-            <div class="user-profile-dropdown">
-                <button class="profile-toggle" id="profileDropdownToggle">
-                    <span>Hi, ${this.escapeHtml(userData.firstName || 'User')}</span>
-                    <i class="bi bi-chevron-down"></i>
+            const isPremium = userData.membershipType === 'PREMIUM';
+
+            authContainer.innerHTML = `
+            <div class="dropdown">
+                <button class="btn btn-primary dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="bi bi-person-circle me-1"></i>
+                    <span>${this.escapeHtml(userData.firstName || 'User')}</span>
+                    ${isPremium ? '<span class="badge badge-premium">PREMIUM</span>' : ''}
                 </button>
-                <div class="profile-dropdown-menu" id="profileDropdownMenu">
-                    <a href="/customer/profile" class="profile-dropdown-item">
-                        <i class="bi bi-person"></i> My Profile
-                    </a>
-                    <a href="/customer/myVehicles" class="profile-dropdown-item">
-                        <i class="bi bi-car-front"></i> My Vehicles
-                    </a>
-                    <a href="/customer/serviceHistory" class="profile-dropdown-item">
-                        <i class="bi bi-clock-history"></i> Service History
-                    </a>
-                    <div class="profile-dropdown-divider"></div>
-                    <a href="#" class="profile-dropdown-item" id="logoutBtn">
-                        <i class="bi bi-box-arrow-right"></i> Logout
-                    </a>
-                </div>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                    <li><a class="dropdown-item" href="/customer/profile">My Profile</a></li>
+                    <li><a class="dropdown-item" href="/customer/myVehicles">My Vehicles</a></li>
+                    <li><a class="dropdown-item" href="/customer/serviceHistory">Service History</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="#" id="logoutBtn">Logout</a></li>
+                </ul>
             </div>
         `;
 
-            // Replace login/signup buttons with user dropdown
-            authContainer.innerHTML = dropdownHtml;
-
-            // Add event listeners for dropdown
-            const dropdownToggle = document.getElementById('profileDropdownToggle');
-            const dropdownMenu = document.getElementById('profileDropdownMenu');
-            const logoutBtn = document.getElementById('logoutBtn');
-
-            if (dropdownToggle && dropdownMenu) {
-                dropdownToggle.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    dropdownToggle.classList.toggle('show');
-                    dropdownMenu.classList.toggle('show');
-                });
-
-                // Close dropdown when clicking outside
-                document.addEventListener('click', (e) => {
-                    if (!dropdownToggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
-                        dropdownToggle.classList.remove('show');
-                        dropdownMenu.classList.remove('show');
-                    }
-                });
-            }
-
-            // Add logout functionality
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    this.logout();
-                });
-            }
+            document.getElementById('logoutBtn').addEventListener('click', (e) => {
+                e.preventDefault();
+                this.logout();
+            });
         }
 
-        /**
-         * Handle user logout
-         */
         logout() {
-            // Clear authentication data
             sessionStorage.removeItem('authToken');
-            sessionStorage.removeItem('userData');
-
-            // Show success message
-            this.showToast('You have been logged out successfully', 'success');
-
-            // Redirect to home page after a short delay
-            setTimeout(() => {
-                window.location.href = '/';
-            }, 1000);
+            sessionStorage.removeItem('userInfo');
+            window.location.href = '/';
         }
 
-        /**
-         * Setup navigation and scroll behavior
-         */
         setupNavigation() {
-            // Handle navbar scroll effect
-            window.addEventListener('scroll', this.handleNavbarScroll);
-            this.handleNavbarScroll();
+            window.addEventListener('scroll', () => {
+                const navbar = document.querySelector('.navbar');
+                if (navbar) {
+                    navbar.classList.toggle('scrolled', window.scrollY > 50);
+                }
+            });
 
-            // Set active nav item based on current page
             this.setActiveNavItem();
         }
 
-        /**
-         * Handle navbar scroll effect
-         */
-        handleNavbarScroll() {
-            const navbar = document.querySelector('.navbar');
-            if (navbar) {
-                navbar.classList.toggle('scrolled', window.scrollY > 50);
-            }
-        }
-
-        /**
-         * Set active navigation item
-         */
         setActiveNavItem() {
             const currentPath = window.location.pathname;
             const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
 
             navLinks.forEach(link => {
                 link.classList.remove('active');
-            });
 
-            navLinks.forEach(link => {
                 const href = link.getAttribute('href');
-
-                if (href && href.startsWith('#') && currentPath === '/') {
-                    return;
-                } else if (href && href.startsWith('/')) {
-                    if (currentPath === href || (currentPath.startsWith(href) && href !== '/')) {
-                        link.classList.add('active');
-                    }
+                if (href && ((href === '/' && (currentPath === '/' || currentPath === '')) ||
+                    (href !== '/' && currentPath.startsWith(href)))) {
+                    link.classList.add('active');
                 }
             });
-
-            if (currentPath === '/' || currentPath === '') {
-                const homeLink = document.querySelector('.navbar-nav .nav-link[href="/"]');
-                if (homeLink) {
-                    homeLink.classList.add('active');
-                }
-            }
         }
 
-        /**
-         * Setup book service buttons
-         */
         setupBookServiceButtons() {
             const bookButtons = document.querySelectorAll('#bookServiceBtn, #ctaBookServiceBtn');
-
             bookButtons.forEach(btn => {
-                btn.addEventListener('click', this.showBookingModal.bind(this));
+                btn.addEventListener('click', () => this.showBookingModal());
             });
         }
 
-        /**
-         * Show booking modal
-         */
         showBookingModal() {
-            const isLoggedIn = this.isUserLoggedIn();
+            const authToken = sessionStorage.getItem('authToken');
 
-            if (isLoggedIn) {
+            if (authToken) {
                 const bookServiceModal = new bootstrap.Modal(document.getElementById('bookServiceModal'));
                 bookServiceModal.show();
             } else {
                 window.location.href = '/authentication/login?message=' +
                     encodeURIComponent('Please login to book a service') +
-                    '&type=info&redirect=/customer';
+                    '&type=info&redirect=/';
             }
         }
 
-        /**
-         * Check if user is logged in
-         */
-        isUserLoggedIn() {
-            return this.getAuthToken() !== null;
-        }
-
-        /**
-         * Cache DOM elements for better performance
-         */
         cacheElements() {
             this.elements = {
                 modal: document.getElementById('bookServiceModal'),
@@ -2008,20 +2248,16 @@
                 nextBtn: document.getElementById('nextStepBtn'),
                 prevBtn: document.getElementById('prevStepBtn'),
                 submitBtn: document.getElementById('submitBookingBtn'),
-
                 vehiclesList: document.getElementById('vehiclesList'),
                 showAddVehicleBtn: document.getElementById('showAddVehicleBtn'),
                 newVehicleForm: document.getElementById('newVehicleForm'),
                 saveVehicleBtn: document.getElementById('saveNewVehicleBtn'),
                 cancelVehicleBtn: document.getElementById('cancelNewVehicleBtn'),
-
                 serviceOptions: document.querySelectorAll('.service-option'),
                 selectedServiceInput: document.getElementById('selectedService'),
-
                 deliveryDate: document.getElementById('deliveryDate'),
                 preferredTime: document.getElementById('preferredTime'),
                 serviceDescription: document.getElementById('serviceDescription'),
-
                 summaryVehicle: document.getElementById('summaryVehicle'),
                 summaryService: document.getElementById('summaryService'),
                 summaryDate: document.getElementById('summaryDate'),
@@ -2031,36 +2267,33 @@
             };
         }
 
-        /**
-         * Set up event listeners
-         */
         setupEventListeners() {
             if (this.elements.modal) {
-                this.elements.modal.addEventListener('show.bs.modal', this.onModalShow.bind(this));
+                this.elements.modal.addEventListener('show.bs.modal', () => this.onModalShow());
             }
 
             if (this.elements.nextBtn) {
-                this.elements.nextBtn.addEventListener('click', this.goToNextStep.bind(this));
+                this.elements.nextBtn.addEventListener('click', () => this.goToNextStep());
             }
 
             if (this.elements.prevBtn) {
-                this.elements.prevBtn.addEventListener('click', this.goToPreviousStep.bind(this));
+                this.elements.prevBtn.addEventListener('click', () => this.goToPreviousStep());
             }
 
             if (this.elements.submitBtn) {
-                this.elements.submitBtn.addEventListener('click', this.submitBooking.bind(this));
+                this.elements.submitBtn.addEventListener('click', () => this.submitBooking());
             }
 
             if (this.elements.showAddVehicleBtn) {
-                this.elements.showAddVehicleBtn.addEventListener('click', this.showAddVehicleForm.bind(this));
+                this.elements.showAddVehicleBtn.addEventListener('click', () => this.showAddVehicleForm());
             }
 
             if (this.elements.saveVehicleBtn) {
-                this.elements.saveVehicleBtn.addEventListener('click', this.saveNewVehicle.bind(this));
+                this.elements.saveVehicleBtn.addEventListener('click', () => this.saveNewVehicle());
             }
 
             if (this.elements.cancelVehicleBtn) {
-                this.elements.cancelVehicleBtn.addEventListener('click', this.hideAddVehicleForm.bind(this));
+                this.elements.cancelVehicleBtn.addEventListener('click', () => this.hideAddVehicleForm());
             }
 
             if (this.elements.serviceOptions) {
@@ -2070,42 +2303,27 @@
             }
         }
 
-        /**
-         * Set up booking steps
-         */
         setupBookingSteps() {
             const today = new Date();
-            const formattedDate = today.toISOString().split('T')[0];
             if (this.elements.deliveryDate) {
-                this.elements.deliveryDate.min = formattedDate;
+                this.elements.deliveryDate.min = today.toISOString().split('T')[0];
             }
         }
 
-        /**
-         * Initialize date inputs
-         */
         initializeDateInputs() {
             if (this.elements.deliveryDate) {
                 const today = new Date();
-                this.elements.deliveryDate.min = today.toISOString().split('T')[0];
-
-                const tomorrow = new Date();
+                const tomorrow = new Date(today);
                 tomorrow.setDate(today.getDate() + 1);
                 this.elements.deliveryDate.value = tomorrow.toISOString().split('T')[0];
             }
         }
 
-        /**
-         * Handle modal show event
-         */
         onModalShow() {
             this.resetForm();
             this.loadUserVehicles();
         }
 
-        /**
-         * Reset form to initial state
-         */
         resetForm() {
             this.state.currentStep = 1;
             this.state.selectedVehicleId = null;
@@ -2136,11 +2354,8 @@
             if (this.elements.summaryDescription) this.elements.summaryDescription.textContent = '';
         }
 
-        /**
-         * Load user vehicles from API
-         */
         loadUserVehicles() {
-            const token = this.getAuthToken();
+            const token = sessionStorage.getItem('authToken');
             if (!token) {
                 this.showVehiclesError('Authentication required');
                 return;
@@ -2177,9 +2392,6 @@
                 });
         }
 
-        /**
-         * Render the list of vehicles
-         */
         renderVehiclesList() {
             if (!this.elements.vehiclesList) return;
 
@@ -2226,7 +2438,6 @@
             html += '</div>';
             this.elements.vehiclesList.innerHTML = html;
 
-            // Add event listeners to vehicle cards
             document.querySelectorAll('.vehicle-card').forEach(card => {
                 card.addEventListener('click', () => {
                     const vehicleId = parseInt(card.getAttribute('data-vehicle-id'), 10);
@@ -2235,9 +2446,6 @@
             });
         }
 
-        /**
-         * Show error message when loading vehicles fails
-         */
         showVehiclesError(message) {
             if (!this.elements.vehiclesList) return;
 
@@ -2252,9 +2460,6 @@
         `;
         }
 
-        /**
-         * Select a vehicle
-         */
         selectVehicle(vehicleId) {
             this.state.selectedVehicleId = vehicleId;
 
@@ -2272,9 +2477,6 @@
             }
         }
 
-        /**
-         * Show the add vehicle form
-         */
         showAddVehicleForm() {
             if (this.elements.newVehicleForm) {
                 this.elements.newVehicleForm.style.display = 'block';
@@ -2285,9 +2487,6 @@
             }
         }
 
-        /**
-         * Hide the add vehicle form
-         */
         hideAddVehicleForm() {
             if (this.elements.newVehicleForm) {
                 this.elements.newVehicleForm.style.display = 'none';
@@ -2298,9 +2497,6 @@
             }
         }
 
-        /**
-         * Save a new vehicle
-         */
         saveNewVehicle() {
             const brand = document.getElementById('vehicleBrand').value.trim();
             const model = document.getElementById('vehicleModel').value.trim();
@@ -2321,7 +2517,7 @@
                 category
             };
 
-            const token = this.getAuthToken();
+            const token = sessionStorage.getItem('authToken');
             if (!token) {
                 this.showToast('Authentication required', 'error');
                 return;
@@ -2352,7 +2548,6 @@
                     this.renderVehiclesList();
                     this.hideAddVehicleForm();
 
-                    // Reset form fields
                     if (document.getElementById('vehicleBrand')) document.getElementById('vehicleBrand').value = '';
                     if (document.getElementById('vehicleModel')) document.getElementById('vehicleModel').value = '';
                     if (document.getElementById('vehicleRegNumber')) document.getElementById('vehicleRegNumber').value = '';
@@ -2373,9 +2568,6 @@
                 });
         }
 
-        /**
-         * Select a service type
-         */
         selectService(serviceOption) {
             const serviceType = serviceOption.getAttribute('data-service');
             this.state.selectedService = serviceType;
@@ -2397,9 +2589,6 @@
             }
         }
 
-        /**
-         * Go to the next step
-         */
         goToNextStep() {
             if (!this.validateCurrentStep()) {
                 return;
@@ -2415,9 +2604,6 @@
             }
         }
 
-        /**
-         * Go to the previous step
-         */
         goToPreviousStep() {
             if (this.state.currentStep > 1) {
                 this.state.currentStep--;
@@ -2425,9 +2611,6 @@
             }
         }
 
-        /**
-         * Update the UI to reflect the current step
-         */
         updateStepsUI() {
             if (this.elements.steps) {
                 this.elements.steps.forEach((step, index) => {
@@ -2462,9 +2645,6 @@
             }
         }
 
-        /**
-         * Validate the current step
-         */
         validateCurrentStep() {
             switch (this.state.currentStep) {
                 case 1:
@@ -2510,9 +2690,6 @@
             return true;
         }
 
-        /**
-         * Update the confirmation summary
-         */
         updateConfirmationSummary() {
             const selectedVehicle = this.state.vehicles.find(v => v.vehicleId === this.state.selectedVehicleId);
 
@@ -2548,15 +2725,12 @@
             }
         }
 
-        /**
-         * Submit the booking
-         */
         submitBooking() {
             if (!this.validateCurrentStep()) {
                 return;
             }
 
-            const token = this.getAuthToken();
+            const token = sessionStorage.getItem('authToken');
             if (!token) {
                 this.showToast('Authentication required', 'error');
                 return;
@@ -2610,9 +2784,6 @@
                 });
         }
 
-        /**
-         * Show booking success modal
-         */
         showBookingSuccess(bookingData) {
             const bookingReference = bookingData.requestId ?
                 `ALB-${bookingData.requestId}-${new Date().getFullYear()}` :
@@ -2629,9 +2800,6 @@
             }
         }
 
-        /**
-         * Show toast notification
-         */
         showToast(message, type = 'info') {
             let toastContainer = document.querySelector('.toast-container');
             if (!toastContainer) {
@@ -2668,9 +2836,6 @@
             }
         }
 
-        /**
-         * Helper method to escape HTML special characters
-         */
         escapeHtml(text) {
             if (!text) return '';
             return text
@@ -2682,26 +2847,71 @@
         }
     }
 
-    // Initialize the system when the page loads
+    // DOM Ready handler
     document.addEventListener('DOMContentLoaded', function() {
+        // Initialize the booking system
         window.bookingSystem = new BookingSystem();
 
-        // Check for authentication redirect
+        // Check for authentication from URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const token = urlParams.get('token');
-        const userData = urlParams.get('user');
+        const userData = urlParams.get('userData');
 
+        // Store token from URL if available
         if (token) {
             sessionStorage.setItem('authToken', token);
+            // Clean up URL parameters
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
 
-            if (userData) {
-                try {
-                    const parsedUserData = JSON.parse(atob(userData));
-                    sessionStorage.setItem('userData', JSON.stringify(parsedUserData));
-                    window.location.href = window.location.pathname; // Reload without query params
-                } catch (e) {
-                    console.error('Error parsing user data from URL', e);
+        // Parse and store user data if available
+        if (userData) {
+            try {
+                const parsedUserData = JSON.parse(atob(userData));
+                sessionStorage.setItem('userInfo', JSON.stringify(parsedUserData));
+            } catch (e) {
+                console.error('Error parsing user data:', e);
+            }
+        }
+
+        // Additional check for authentication state (backup mechanism)
+        const authToken = sessionStorage.getItem('authToken');
+        const userInfoStr = sessionStorage.getItem('userInfo');
+
+        if (authToken && userInfoStr) {
+            try {
+                const userInfo = JSON.parse(userInfoStr);
+                const authContainer = document.getElementById('auth-container');
+
+                if (authContainer) {
+                    const isPremium = userInfo.membershipType === 'PREMIUM';
+
+                    authContainer.innerHTML = `
+                    <div class="dropdown">
+                        <button class="btn btn-primary dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle me-1"></i>
+                            <span>${userInfo.firstName || 'User'}</span>
+                            ${isPremium ? '<span class="badge badge-premium">PREMIUM</span>' : ''}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item" href="/customer/profile">My Profile</a></li>
+                            <li><a class="dropdown-item" href="/customer/myVehicles">My Vehicles</a></li>
+                            <li><a class="dropdown-item" href="/customer/serviceHistory">Service History</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="logoutBtn">Logout</a></li>
+                        </ul>
+                    </div>
+                `;
+
+                    document.getElementById('logoutBtn').addEventListener('click', function(e) {
+                        e.preventDefault();
+                        sessionStorage.removeItem('authToken');
+                        sessionStorage.removeItem('userInfo');
+                        window.location.href = '/';
+                    });
                 }
+            } catch (e) {
+                console.error('Error updating auth UI:', e);
             }
         }
     });

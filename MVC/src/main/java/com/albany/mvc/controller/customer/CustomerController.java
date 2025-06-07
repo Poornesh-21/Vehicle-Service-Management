@@ -20,13 +20,13 @@ public class CustomerController {
         return "customer/aboutUs";
     }
 
-    /**
-     * Customer profile page
-     */
-    @GetMapping("/profile")
-    public String profile(Model model) {
-        return "customer/profile";
-    }
+//    /**
+//     * Customer profile page
+//     */
+//    @GetMapping("/profile")
+//    public String profile(Model model) {
+//        return "customer/profile";
+//    }
 
     /**
      * Customer vehicles page

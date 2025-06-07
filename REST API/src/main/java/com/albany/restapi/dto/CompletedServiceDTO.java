@@ -38,6 +38,10 @@ public class CompletedServiceDTO {
     private Integer invoiceId;
     private boolean paid;
     private boolean delivered;
+    
+    // These fields were missing and caused the compilation errors
+    private String serviceType;
+    private String serviceAdvisorName;
 
     // Invoice related fields
     private BigDecimal calculatedMaterialsTotal;
@@ -58,5 +62,4 @@ public class CompletedServiceDTO {
     public boolean getIsDelivered() {
         return delivered;
     }
-
 }

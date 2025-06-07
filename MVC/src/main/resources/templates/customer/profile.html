@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AutoServe - User Profile</title>
+    <title>Albany - User Profile</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
-    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
     <style>
         /* Root variables */
         :root {
@@ -34,9 +33,9 @@
             --info: #3b82f6;
             --error: #ef4444;
         }
-    
+
         body {
-            font-family: 'Baloo Bhaijaan 2', sans-serif;
+            font-family: 'Urbanist', sans-serif;
             color: var(--dark);
             background-color: var(--light);
             overflow-x: hidden;
@@ -44,13 +43,13 @@
             padding: 0;
             line-height: 1.6;
         }
-    
+
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
-    
+
         /* Header Styles */
         .header {
             background: var(--white);
@@ -63,20 +62,21 @@
             top: 0;
             z-index: 100;
         }
-    
+
         .logo {
             font-family: 'Russo One', sans-serif;
             font-size: 1.8rem;
             color: var(--primary);
             letter-spacing: 1px;
+            text-decoration: none;
         }
-    
+
         .nav-links {
             display: flex;
             gap: 1.5rem;
             align-items: center;
         }
-    
+
         .nav-links a {
             text-decoration: none;
             color: var(--dark-gray);
@@ -86,18 +86,18 @@
             gap: 0.5rem;
             transition: all 0.3s ease;
         }
-    
+
         .nav-links a:hover {
             color: var(--primary);
         }
-    
+
         /* Main Container */
         .container {
             max-width: 1400px;
             margin: 0 auto;
             padding: 2rem;
         }
-    
+
         .page-title {
             font-size: 2rem;
             font-weight: 700;
@@ -106,7 +106,7 @@
             position: relative;
             padding-bottom: 0.5rem;
         }
-    
+
         .page-title::after {
             content: '';
             position: absolute;
@@ -117,7 +117,7 @@
             background: var(--gradient-primary);
             border-radius: 3px;
         }
-    
+
         /* Profile Grid Layout */
         .profile-grid {
             display: grid;
@@ -125,7 +125,7 @@
             gap: 2rem;
             margin-top: 1rem;
         }
-    
+
         /* Sidebar Styles */
         .profile-sidebar {
             background-color: var(--white);
@@ -134,7 +134,7 @@
             padding: 2rem;
             height: fit-content;
         }
-    
+
         .profile-avatar {
             display: flex;
             flex-direction: column;
@@ -142,7 +142,7 @@
             gap: 1rem;
             margin-bottom: 2rem;
         }
-    
+
         .avatar-wrapper {
             width: 150px;
             height: 150px;
@@ -152,13 +152,13 @@
             border: 4px solid var(--primary);
             box-shadow: var(--shadow-md);
         }
-    
+
         .avatar-wrapper img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
-    
+
         .change-avatar {
             position: absolute;
             bottom: 0;
@@ -174,18 +174,18 @@
             cursor: pointer;
             transition: all 0.3s ease;
         }
-    
+
         .change-avatar:hover {
             background-color: var(--primary-dark);
             transform: scale(1.1);
         }
-    
+
         .profile-name {
             font-size: 1.5rem;
             font-weight: 700;
             color: var(--primary);
         }
-    
+
         .membership-status {
             font-size: 0.9rem;
             color: var(--gray);
@@ -194,13 +194,18 @@
             border-radius: 20px;
             font-weight: 500;
         }
-    
+
+        .membership-premium {
+            background-color: rgba(245, 158, 11, 0.2);
+            color: #92400e;
+        }
+
         .profile-menu {
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
         }
-    
+
         .menu-item {
             display: flex;
             align-items: center;
@@ -210,26 +215,27 @@
             text-decoration: none;
             color: var(--dark-gray);
             transition: all 0.3s ease;
+            cursor: pointer;
         }
-    
+
         .menu-item i {
             width: 20px;
             text-align: center;
             font-size: 1.1rem;
         }
-    
+
         .menu-item:hover {
             background-color: rgba(114, 47, 55, 0.05);
             color: var(--primary);
             transform: translateX(5px);
         }
-    
+
         .menu-item.active {
             background-color: var(--primary);
             color: var(--white);
             font-weight: 600;
         }
-    
+
         /* Content Area Styles */
         .profile-content {
             background-color: var(--white);
@@ -237,16 +243,16 @@
             box-shadow: var(--shadow-lg);
             overflow: hidden;
         }
-    
+
         .tab-content {
             display: none;
         }
-    
+
         .tab-content.active {
             display: block;
             animation: fadeIn 0.3s ease-in-out;
         }
-    
+
         .content-header {
             background: var(--gradient-primary);
             color: var(--white);
@@ -254,11 +260,11 @@
             font-size: 1.3rem;
             font-weight: 600;
         }
-    
+
         .content-body {
             padding: 2rem;
         }
-    
+
         /* Form Styles */
         .section-title {
             font-size: 1.2rem;
@@ -269,29 +275,29 @@
             align-items: center;
             justify-content: space-between;
         }
-    
+
         .section-title:first-child {
             margin-top: 0;
         }
-    
+
         .form-row {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 1.5rem;
             margin-bottom: 1.5rem;
         }
-    
+
         .form-group {
             margin-bottom: 1.5rem;
         }
-    
+
         .form-label {
             display: block;
             margin-bottom: 0.5rem;
             font-weight: 500;
             color: var(--dark-gray);
         }
-    
+
         .form-control {
             width: 100%;
             padding: 0.75rem 1rem;
@@ -301,18 +307,18 @@
             font-size: 1rem;
             transition: all 0.3s ease;
         }
-    
+
         .form-control:focus {
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(114, 47, 55, 0.1);
         }
-    
+
         .form-control:disabled {
             background-color: var(--light-gray);
             cursor: not-allowed;
         }
-    
+
         /* Button Styles */
         .btn {
             display: inline-flex;
@@ -327,33 +333,33 @@
             font-family: inherit;
             font-size: 1rem;
         }
-    
+
         .btn-sm {
             padding: 0.5rem 1rem;
             font-size: 0.9rem;
         }
-    
+
         .btn-primary {
             background: var(--gradient-primary);
             color: var(--white);
         }
-    
+
         .btn-primary:hover {
             box-shadow: var(--shadow-md);
             transform: translateY(-2px);
         }
-    
+
         .btn-outline {
             background-color: transparent;
             border: 1px solid currentColor;
             color: var(--primary);
         }
-    
+
         .btn-outline:hover {
             background-color: rgba(114, 47, 56, 0.1);
             transform: translateY(-2px);
         }
-    
+
         /* Alert Styles */
         .alert {
             padding: 1rem;
@@ -363,38 +369,38 @@
             align-items: center;
             gap: 0.75rem;
         }
-    
+
         .alert-info {
             background-color: rgba(59, 130, 246, 0.1);
             color: #1e40af;
             border-left: 4px solid #3b82f6;
         }
-    
+
         /* Service Status Styles */
         .service-status {
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
         }
-    
+
         .status-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-    
+
         .status-title {
             font-size: 1.2rem;
             font-weight: 600;
             color: var(--primary);
         }
-    
+
         .vehicle-status {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 1.5rem;
         }
-    
+
         .vehicle-card {
             border-radius: 12px;
             overflow: hidden;
@@ -402,12 +408,12 @@
             transition: all 0.3s ease;
             background-color: var(--white);
         }
-    
+
         .vehicle-card:hover {
             box-shadow: var(--shadow-lg);
             transform: translateY(-5px);
         }
-    
+
         .vehicle-header {
             padding: 1.25rem;
             background: var(--gradient-primary);
@@ -416,57 +422,67 @@
             justify-content: space-between;
             align-items: center;
         }
-    
+
         .vehicle-name {
             font-weight: 600;
             font-size: 1.1rem;
         }
-    
+
         .status-badge {
             padding: 0.25rem 0.75rem;
             border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 600;
         }
-    
+
         .in-progress {
             background-color: var(--warning);
             color: var(--dark);
         }
-    
+
         .completed {
             background-color: var(--success);
             color: var(--white);
         }
-    
-        .awaiting {
+
+        .received {
             background-color: var(--info);
             color: var(--white);
         }
-    
+
+        .diagnosis {
+            background-color: #8b5cf6;
+            color: var(--white);
+        }
+
+        .repair {
+            background-color: #ec4899;
+            color: var(--white);
+        }
+
         .vehicle-details {
             padding: 1.25rem;
             display: flex;
             flex-direction: column;
             gap: 1rem;
         }
-    
+
         .detail-row {
             display: flex;
             justify-content: space-between;
             font-size: 1rem;
         }
-    
+
         .detail-label {
             color: var(--dark-gray);
             font-weight: 500;
         }
-    
+
         .detail-value {
             font-weight: 600;
             color: var(--dark);
         }
-    
+
         /* Progress Steps */
         .progress-steps {
             display: grid;
@@ -474,7 +490,7 @@
             padding: 1.25rem 0;
             margin-top: 0.5rem;
         }
-    
+
         .step {
             display: flex;
             flex-direction: column;
@@ -482,7 +498,7 @@
             gap: 0.5rem;
             position: relative;
         }
-    
+
         .step::after {
             content: '';
             position: absolute;
@@ -493,11 +509,11 @@
             background-color: var(--medium-gray);
             z-index: 1;
         }
-    
+
         .step:last-child::after {
             display: none;
         }
-    
+
         .step-icon {
             width: 30px;
             height: 30px;
@@ -510,34 +526,34 @@
             position: relative;
             z-index: 2;
         }
-    
+
         .step.completed .step-icon {
             background-color: var(--success);
         }
-    
+
         .step.current .step-icon {
             background-color: var(--warning);
         }
-    
+
         .step-label {
             font-size: 0.8rem;
             text-align: center;
             color: var(--dark-gray);
         }
-    
+
         .step.completed .step-label,
         .step.current .step-label {
             font-weight: 600;
             color: var(--dark);
         }
-    
+
         /* History List Styles */
         .history-list {
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
         }
-    
+
         .history-item {
             border-radius: 12px;
             overflow: hidden;
@@ -545,12 +561,12 @@
             transition: all 0.3s ease;
             background-color: var(--white);
         }
-    
+
         .history-item:hover {
             box-shadow: var(--shadow-lg);
             transform: translateY(-3px);
         }
-    
+
         .history-header {
             background-color: var(--light-gray);
             padding: 1.25rem;
@@ -558,23 +574,23 @@
             justify-content: space-between;
             align-items: center;
         }
-    
+
         .history-body {
             padding: 1.25rem;
         }
-    
+
         .service-details {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1.25rem;
         }
-    
+
         .service-list {
             margin-top: 1.25rem;
             border-top: 1px solid var(--medium-gray);
             padding-top: 1rem;
         }
-    
+
         .service-list-item {
             display: flex;
             justify-content: space-between;
@@ -582,25 +598,25 @@
             border-bottom: 1px solid var(--medium-gray);
             font-size: 1rem;
         }
-    
+
         .service-list-item:last-child {
             border-bottom: none;
         }
-    
+
         .action-buttons {
             display: flex;
             justify-content: flex-end;
             gap: 0.75rem;
             margin-top: 1.25rem;
         }
-    
+
         /* Vehicles Grid */
         .vehicles-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 1.5rem;
         }
-    
+
         .vehicle-item {
             border-radius: 12px;
             overflow: hidden;
@@ -608,38 +624,37 @@
             transition: all 0.3s ease;
             background-color: var(--white);
         }
-    
+
         .vehicle-item:hover {
             box-shadow: var(--shadow-lg);
             transform: translateY(-5px);
         }
-    
+
         .vehicle-image {
             height: 180px;
             overflow: hidden;
+            background-color: var(--primary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 3rem;
         }
-    
-        .vehicle-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: all 0.5s ease;
+
+        .vehicle-image i {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
-    
-        .vehicle-item:hover .vehicle-image img {
-            transform: scale(1.05);
-        }
-    
+
         .vehicle-info {
             padding: 1.25rem;
         }
-    
+
         .vehicle-info h4 {
             color: var(--primary);
             margin-bottom: 1rem;
             font-size: 1.2rem;
         }
-    
+
         .add-vehicle-card {
             border: 2px dashed var(--medium-gray);
             border-radius: 12px;
@@ -654,13 +669,13 @@
             height: 100%;
             background-color: var(--white);
         }
-    
+
         .add-vehicle-card:hover {
             border-color: var(--primary);
             background-color: rgba(114, 47, 56, 0.05);
             transform: translateY(-5px);
         }
-    
+
         .add-icon {
             width: 70px;
             height: 70px;
@@ -673,7 +688,74 @@
             font-size: 1.75rem;
             box-shadow: var(--shadow-md);
         }
-    
+
+        /* Invoice List Styles */
+        .invoice-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .invoice-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            background-color: var(--white);
+            box-shadow: var(--shadow-md);
+        }
+
+        .invoice-item:hover {
+            background-color: var(--light-gray);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .invoice-details {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+        }
+
+        .invoice-id {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        .invoice-date, .invoice-amount {
+            font-size: 0.9rem;
+            color: var(--dark-gray);
+        }
+
+        .invoice-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .icon-button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--light-gray);
+            color: var(--dark-gray);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .icon-button:hover {
+            background-color: var(--primary);
+            color: var(--white);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+
         /* Modal Styles */
         .modal-overlay {
             position: fixed;
@@ -690,15 +772,15 @@
             opacity: 0;
             transition: all 0.3s ease;
         }
-    
+
         .modal-overlay.active {
             visibility: visible;
             opacity: 1;
         }
-    
+
         .modal-container {
             background-color: var(--white);
-            border-radius: 12px;
+            border-radius: 15px;
             width: min(90%, 500px);
             max-height: 90vh;
             overflow-y: auto;
@@ -706,11 +788,11 @@
             transform: translateY(-20px);
             transition: all 0.3s ease;
         }
-    
+
         .modal-overlay.active .modal-container {
             transform: translateY(0);
         }
-    
+
         .modal-header {
             padding: 1.25rem;
             display: flex;
@@ -718,13 +800,13 @@
             align-items: center;
             border-bottom: 1px solid var(--medium-gray);
         }
-    
+
         .modal-title {
             font-size: 1.3rem;
             font-weight: 600;
             color: var(--primary);
         }
-    
+
         .modal-close {
             background: none;
             border: none;
@@ -733,30 +815,30 @@
             color: var(--dark-gray);
             transition: all 0.2s ease;
         }
-    
+
         .modal-close:hover {
             color: var(--primary);
         }
-    
+
         .modal-body {
             padding: 1.5rem;
         }
-    
+
         .modal-footer {
-            padding: 1.25rem;
-            display: flex;
+            border-top: 1px solid #e9ecef;
+            padding: 1rem 1.5rem;
             justify-content: flex-end;
+            display: flex;
             gap: 1rem;
-            border-top: 1px solid var(--medium-gray);
         }
-    
+
         /* OTP Input Styles */
         .otp-input-container {
             display: flex;
             justify-content: space-between;
             margin: 1.5rem 0;
         }
-    
+
         .otp-input {
             width: 50px;
             height: 60px;
@@ -766,102 +848,35 @@
             text-align: center;
             transition: all 0.3s ease;
         }
-    
+
         .otp-input:focus {
             outline: none;
             border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(114, 47, 56, 0.2);
         }
-    
+
         .resend-otp {
             text-align: right;
             margin-top: 1rem;
         }
-    
+
         .resend-otp a {
             color: var(--primary);
             text-decoration: none;
             font-size: 0.9rem;
             transition: all 0.3s ease;
         }
-    
+
         .resend-otp a:hover {
             text-decoration: underline;
         }
-    
-        /* Invoice List Styles */
-        .invoice-list {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        
-        .invoice-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1.25rem;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            background-color: var(--white);
-            box-shadow: var(--shadow-md);
-        }
-        
-        .invoice-item:hover {
-            background-color: var(--light-gray);
-            transform: translateY(-3px);
-            box-shadow: var(--shadow-lg);
-        }
-        
-        .invoice-details {
-            display: flex;
-            flex-direction: column;
-            gap: 0.35rem;
-        }
-        
-        .invoice-id {
-            font-weight: 600;
-            color: var(--primary);
-            font-size: 1.1rem;
-        }
-        
-        .invoice-date, .invoice-amount {
-            font-size: 0.9rem;
-            color: var(--dark-gray);
-        }
-        
-        .invoice-actions {
-            display: flex;
-            gap: 0.75rem;
-        }
-        
-        .icon-button {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: var(--light-gray);
-            color: var(--dark-gray);
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .icon-button:hover {
-            background-color: var(--primary);
-            color: var(--white);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-sm);
-        }
-    
+
         /* Tooltip Styles */
         .tooltip {
             position: relative;
             display: inline-block;
         }
-    
+
         .tooltip .tooltiptext {
             visibility: hidden;
             width: 120px;
@@ -879,7 +894,7 @@
             transition: opacity 0.3s;
             font-size: 0.8rem;
         }
-    
+
         .tooltip .tooltiptext::after {
             content: "";
             position: absolute;
@@ -890,105 +905,217 @@
             border-style: solid;
             border-color: var(--dark) transparent transparent transparent;
         }
-    
+
         .tooltip:hover .tooltiptext {
             visibility: visible;
             opacity: 1;
         }
-    
+
+        /* Toast Notification */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .toast {
+            background-color: var(--white);
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            padding: 0;
+            margin-bottom: 1rem;
+            min-width: 280px;
+            max-width: 350px;
+            overflow: hidden;
+            animation: toast-in-right 0.3s ease forwards;
+            opacity: 0;
+            transform: translateX(100%);
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .toast.success .toast-header {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border-left: 4px solid var(--success);
+        }
+
+        .toast.error .toast-header {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+            border-left: 4px solid var(--error);
+        }
+
+        .toast.info .toast-header {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: var(--info);
+            border-left: 4px solid var(--info);
+        }
+
+        .toast-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+        }
+
+        .toast-body {
+            padding: 0.75rem 1rem;
+            color: var(--dark-gray);
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            cursor: pointer;
+            color: var(--dark-gray);
+            opacity: 0.7;
+            transition: all 0.2s ease;
+        }
+
+        .toast-close:hover {
+            opacity: 1;
+        }
+
+        /* Loading Styles */
+        .loading-spinner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            color: var(--primary);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(114, 47, 55, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--dark-gray);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--medium-gray);
+            margin-bottom: 1rem;
+        }
+
         /* Animation Classes */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-    
+
+        @keyframes toast-in-right {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
         .fade-in {
             animation: fadeIn 0.3s ease-in-out;
         }
-    
+
         /* Responsive Styles */
         @media (max-width: 1200px) {
             .profile-grid {
                 grid-template-columns: minmax(250px, 300px) 1fr;
             }
         }
-    
+
         @media (max-width: 992px) {
             .profile-grid {
                 grid-template-columns: 1fr;
             }
-    
+
             .profile-sidebar {
                 padding: 1.5rem;
             }
-    
+
             .profile-menu {
                 flex-direction: row;
                 flex-wrap: wrap;
                 justify-content: center;
                 gap: 0.5rem;
             }
-    
+
             .menu-item {
                 padding: 0.75rem;
                 flex: 1;
                 text-align: center;
             }
-    
+
             .form-row {
                 grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             }
         }
-    
+
         @media (max-width: 768px) {
             .container {
                 padding: 1.5rem;
             }
-    
+
             .header {
                 flex-direction: column;
                 padding: 1rem;
                 gap: 1rem;
             }
-    
+
             .nav-links {
                 width: 100%;
                 justify-content: space-around;
                 flex-wrap: wrap;
             }
-    
+
             .nav-links a {
                 padding: 0.5rem;
             }
-    
+
             .page-title {
                 font-size: 1.75rem;
             }
-    
+
             .avatar-wrapper {
                 width: 120px;
                 height: 120px;
             }
-    
+
             .progress-steps {
                 grid-template-columns: repeat(2, 1fr);
                 gap: 1rem;
             }
-    
+
             .step::after {
                 display: none;
             }
-    
+
             .vehicles-grid {
                 grid-template-columns: 1fr;
             }
         }
-    
+
         @media (max-width: 576px) {
             .nav-links a span {
                 display: none;
             }
-    
+
             .nav-links a {
                 width: 40px;
                 height: 40px;
@@ -996,1134 +1123,1260 @@
                 align-items: center;
                 justify-content: center;
             }
-    
+
             .profile-menu {
                 gap: 0.25rem;
             }
-            
+
             .menu-item {
                 padding: 0.5rem;
                 flex: 0 0 auto;
             }
-    
+
             .menu-item span {
                 display: none;
             }
-    
+
             .menu-item i {
                 width: auto;
             }
-    
+
             .form-row {
                 grid-template-columns: 1fr;
             }
-    
+
             .progress-steps {
                 grid-template-columns: 1fr;
             }
-    
+
             .vehicle-status {
                 grid-template-columns: 1fr;
             }
-    
+
             .service-details {
                 grid-template-columns: 1fr;
             }
-    
+
             .otp-input {
                 width: 45px;
                 height: 55px;
                 font-size: 1.2rem;
             }
-    
+
             .modal-container {
                 width: 95%;
             }
         }
-    
+
         @media (max-width: 400px) {
             .profile-menu {
                 flex-direction: column;
                 align-items: center;
             }
-    
+
             .menu-item {
                 width: 100%;
                 justify-content: center;
             }
-    
+
             .invoice-item {
                 flex-direction: column;
                 gap: 1rem;
                 align-items: flex-start;
             }
-    
+
             .invoice-actions {
                 width: 100%;
                 justify-content: flex-end;
             }
         }
-
-         /* Toast Notification Styles */
-            .toast {
-                position: fixed;
-                bottom: 30px;
-                right: 30px;
-                width: 350px;
-                background-color: white;
-                border-radius: 8px;
-                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-                overflow: hidden;
-                z-index: 1100;
-                opacity: 0;
-                transform: translateY(20px);
-                transition: all 0.3s ease;
-            }
-            
-            .toast.show {
-                opacity: 1;
-                transform: translateY(0);
-            }
-            
-            .toast.success {
-                border-left: 4px solid var(--success);
-            }
-            
-            .toast.error {
-                border-left: 4px solid var(--danger);
-            }
-            
-            .toast-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 0.75rem 1rem;
-                background-color: rgba(0, 0, 0, 0.03);
-                border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-            }
-            
-            .toast-body {
-                padding: 0.75rem 1rem;
-            }
-            
-            .toast-close {
-                background: none;
-                border: none;
-                font-size: 1.25rem;
-                cursor: pointer;
-                color: var(--dark-gray);
-            }
-            
-            /* Avatar Selection Styles */
-            .avatar-grid {
-                display: grid;
-                grid-template-columns: repeat(3, 1fr);
-                gap: 1rem;
-                margin-bottom: 1.5rem;
-            }
-            
-            .avatar-option {
-                border-radius: 8px;
-                overflow: hidden;
-                cursor: pointer;
-                border: 3px solid transparent;
-                transition: all 0.3s ease;
-            }
-            
-            .avatar-option.selected {
-                border-color: var(--primary);
-                transform: scale(1.05);
-            }
-            
-            .avatar-option img {
-                width: 100%;
-                height: auto;
-                display: block;
-            }
-            
-            .upload-avatar {
-                text-align: center;
-                margin-bottom: 1.5rem;
-            }
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <div class="header">
-        <div class="logo">Albany</div>
-        <div class="nav-links">
-            <a href="#" class="tooltip"><i class="fas fa-home"></i><span class="tooltiptext">Home</span><span>Home</span></a>
-            <a href="#" class="tooltip"><i class="fas fa-car-alt"></i><span class="tooltiptext">Services</span><span>Services</span></a>
-            <a href="#" class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltiptext">About</span><span>About</span></a>
-            <a href="#" class="tooltip"><i class="fas fa-phone"></i><span class="tooltiptext">Contact</span><span>Contact</span></a>
-            <a href="#" class="tooltip"><i class="fas fa-user"></i><span class="tooltiptext">Profile</span></a>
-        </div>
+<!-- Header -->
+<div class="header">
+    <a href="/" class="logo">Albany</a>
+    <div class="nav-links">
+        <a href="/" class="tooltip"><i class="fas fa-home"></i><span class="tooltiptext">Home</span><span>Home</span></a>
+        <a href="/services" class="tooltip"><i class="fas fa-car"></i><span class="tooltiptext">Services</span><span>Services</span></a>
+        <a href="/about" class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltiptext">About</span><span>About</span></a>
+        <a href="/contact" class="tooltip"><i class="fas fa-phone"></i><span class="tooltiptext">Contact</span><span>Contact</span></a>
+        <a href="/customer/profile" class="tooltip"><i class="fas fa-user"></i><span class="tooltiptext">Profile</span><span>Profile</span></a>
     </div>
-    
-    <!-- Main Content -->
-    <div class="container">
-        <h1 class="page-title">Your Profile</h1>
-        
-        <div class="profile-grid">
-            <!-- Sidebar -->
-            <div class="profile-sidebar">
-                <div class="profile-avatar">
-                    <div id="profileAvatarWrapper" class="avatar-wrapper">
-                        <img src="/api/placeholder/300/300" alt="User Avatar">
-                        <div class="change-avatar" onclick="openAvatarModal()">
-                            <i class="fas fa-camera"></i>
-                        </div>
+</div>
+
+<!-- Main Content -->
+<div class="container">
+    <h1 class="page-title">Your Profile</h1>
+
+    <div class="profile-grid">
+        <!-- Sidebar -->
+        <div class="profile-sidebar">
+            <div class="profile-avatar">
+                <div id="profileAvatarWrapper" class="avatar-wrapper">
+                    <img src="" alt="User Avatar" id="profileAvatar">
+                    <div class="change-avatar" id="changeAvatarBtn">
+                        <i class="fas fa-camera"></i>
                     </div>
-                    <div class="profile-name">John Smith</div>
-                    <div class="membership-status">Premium Member</div>
                 </div>
-                
-                <div class="profile-menu">
-                    <a href="#" class="menu-item active" onclick="showTab('profile')">
-                        <i class="fas fa-user"></i>
-                        <span>Profile Information</span>
-                    </a>
-                    <a href="#" class="menu-item" onclick="showTab('services')">
-                        <i class="fas fa-car"></i>
-                        <span>Current Services</span>
-                    </a>
-                    <a href="#" class="menu-item" onclick="showTab('history')">
-                        <i class="fas fa-history"></i>
-                        <span>Service History</span>
-                    </a>
-                    <a href="#" class="menu-item" onclick="showTab('invoices')">
-                        <i class="fas fa-file-invoice-dollar"></i>
-                        <span>Invoices</span>
-                    </a>
-                    <a href="#" class="menu-item" onclick="showTab('vehicles')">
-                        <i class="fas fa-car-alt"></i>
-                        <span>Your Vehicles</span>
-                    </a>
-                    <a href="#" class="menu-item">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span>Logout</span>
-                    </a>
+                <div class="profile-name" id="profileName">Loading...</div>
+                <div class="membership-status" id="membershipStatus">...</div>
+            </div>
+
+            <div class="profile-menu">
+                <div class="menu-item active" data-tab="profile">
+                    <i class="fas fa-user"></i>
+                    <span>Profile Information</span>
+                </div>
+                <div class="menu-item" data-tab="services">
+                    <i class="fas fa-car"></i>
+                    <span>Current Services</span>
+                </div>
+                <div class="menu-item" data-tab="history">
+                    <i class="fas fa-history"></i>
+                    <span>Service History</span>
+                </div>
+                <div class="menu-item" data-tab="invoices">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    <span>Invoices</span>
+                </div>
+                <div class="menu-item" data-tab="vehicles">
+                    <i class="fas fa-car-alt"></i>
+                    <span>Your Vehicles</span>
+                </div>
+                <div class="menu-item" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
                 </div>
             </div>
-            
-            <!-- Content Area -->
-            <div class="profile-content">
-                <!-- Profile Tab -->
-                <div class="tab-content active" id="profile-tab">
-                    <div class="content-header">
-                        <span>Profile Information</span>
-                    </div>
-                    <div class="content-body">
-                        <h3 class="section-title">Personal Information</h3>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">First Name</label>
-                                <input type="text" class="form-control" value="John">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Last Name</label>
-                                <input type="text" class="form-control" value="Smith">
-                            </div>
-                        </div>
-                        
-                        <h3 class="section-title">Contact Information <button class="btn btn-outline btn-sm" onclick="openVerifyModal('email')">Update Email</button></h3>
+        </div>
+
+        <!-- Content Area -->
+        <div class="profile-content">
+            <!-- Profile Tab -->
+            <div class="tab-content active" id="profile-tab">
+                <div class="content-header">
+                    <span>Profile Information</span>
+                </div>
+                <div class="content-body">
+                    <h3 class="section-title">Personal Information</h3>
+                    <div class="form-row">
                         <div class="form-group">
-                            <label class="form-label">Email Address</label>
-                            <input type="email" class="form-control" value="john.smith@example.com" disabled>
+                            <label class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="firstName" name="firstName">
                         </div>
-                        
-                        <div class="section-title">Phone Number <button class="btn btn-outline btn-sm" onclick="openVerifyModal('phone')">Update Phone</button></div>
                         <div class="form-group">
-                            <label class="form-label">Phone Number</label>
-                            <input type="tel" class="form-control" value="+1 (555) 123-4567" disabled>
+                            <label class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="lastName" name="lastName">
                         </div>
-                        
-                        <h3 class="section-title">Address Information</h3>
+                    </div>
+
+                    <h3 class="section-title">Contact Information <button class="btn btn-outline btn-sm" id="updateEmailBtn">Update Email</button></h3>
+                    <div class="form-group">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" class="form-control" id="email" name="email" disabled>
+                    </div>
+
+                    <div class="section-title">Phone Number <button class="btn btn-outline btn-sm" id="updatePhoneBtn">Update Phone</button></div>
+                    <div class="form-group">
+                        <label class="form-label">Phone Number</label>
+                        <input type="tel" class="form-control" id="phoneNumber" name="phoneNumber" disabled>
+                    </div>
+
+                    <h3 class="section-title">Address Information</h3>
+                    <div class="form-group">
+                        <label class="form-label">Street Address</label>
+                        <input type="text" class="form-control" id="street" name="street">
+                    </div>
+
+                    <div class="form-row">
                         <div class="form-group">
-                            <label class="form-label">Street Address</label>
-                            <input type="text" class="form-control" value="123 Main Street">
+                            <label class="form-label">City</label>
+                            <input type="text" class="form-control" id="city" name="city">
                         </div>
-                        
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label class="form-label">City</label>
-                                <input type="text" class="form-control" value="Anytown">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">State</label>
-                                <input type="text" class="form-control" value="California">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">ZIP Code</label>
-                                <input type="text" class="form-control" value="90210">
-                            </div>
+                        <div class="form-group">
+                            <label class="form-label">State</label>
+                            <input type="text" class="form-control" id="state" name="state">
                         </div>
-                        
-                        <div style="text-align: right; margin-top: 2rem;">
-                            <button class="btn btn-primary">Save Changes</button>
+                        <div class="form-group">
+                            <label class="form-label">ZIP Code</label>
+                            <input type="text" class="form-control" id="postalCode" name="postalCode">
                         </div>
+                    </div>
+
+                    <div style="text-align: right; margin-top: 2rem;">
+                        <button class="btn btn-primary" id="saveProfileBtn">Save Changes</button>
                     </div>
                 </div>
-                
-                <!-- Current Services Tab -->
-                <div class="tab-content" id="services-tab">
-                    <div class="content-header">
-                        <span>Current Services</span>
+            </div>
+
+            <!-- Current Services Tab -->
+            <div class="tab-content" id="services-tab">
+                <div class="content-header">
+                    <span>Current Services</span>
+                </div>
+                <div class="content-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> Track your vehicle's service status in real-time
                     </div>
-                    <div class="content-body">
-                        <div class="alert alert-info">
-                            <i class="fas fa-info-circle"></i> Track your vehicle's service status in real-time
+
+                    <div class="service-status">
+                        <div class="status-header">
+                            <div class="status-title">Your Vehicles in Service</div>
                         </div>
-                        
-                        <div class="service-status">
-                            <div class="status-header">
-                                <div class="status-title">Your Vehicles in Service</div>
-                            </div>
-                            
-                            <div class="vehicle-status">
-                                <div class="vehicle-card">
-                                    <div class="vehicle-header">
-                                        <div class="vehicle-name">Tesla Model 3</div>
-                                        <div class="status-badge in-progress">In Progress</div>
-                                    </div>
-                                    <div class="vehicle-details">
-                                        <div class="detail-row">
-                                            <div class="detail-label">Service Type</div>
-                                            <div class="detail-value">Full Maintenance</div>
-                                        </div>
-                                        <div class="detail-row">
-                                            <div class="detail-label">Drop-off Date</div>
-                                            <div class="detail-value">Mar 22, 2025</div>
-                                        </div>
-                                        <div class="detail-row">
-                                            <div class="detail-label">Estimated Pickup</div>
-                                            <div class="detail-value">Mar 24, 2025</div>
-                                        </div>
-                                        <div class="progress-steps">
-                                            <div class="step completed">
-                                                <div class="step-icon"><i class="fas fa-check"></i></div>
-                                                <div class="step-label">Received</div>
-                                            </div>
-                                            <div class="step completed">
-                                                <div class="step-icon"><i class="fas fa-check"></i></div>
-                                                <div class="step-label">Diagnostic</div>
-                                            </div>
-                                            <div class="step current">
-                                                <div class="step-icon"><i class="fas fa-wrench"></i></div>
-                                                <div class="step-label">Repair</div>
-                                            </div>
-                                            <div class="step">
-                                                <div class="step-icon"><i class="fas fa-flag-checkered"></i></div>
-                                                <div class="step-label">Completed</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+
+                        <div class="vehicle-status" id="currentServicesContainer">
+                            <!-- Current services will be loaded here -->
+                            <div class="loading-spinner">
+                                <div class="spinner"></div>
+                                <p>Loading your active services...</p>
                             </div>
                         </div>
                     </div>
                 </div>
-                
-                <!-- Service History Tab -->
-                <div class="tab-content" id="history-tab">
-                    <div class="content-header">
-                        <span>Service History</span>
-                    </div>
-                    <div class="content-body">
-                        <div class="history-list">
-                            <div class="history-item">
-                                <div class="history-header">
-                                    <div class="vehicle-name">Toyota Camry</div>
-                                    <div class="status-badge completed">Completed</div>
-                                </div>
-                                <div class="history-body">
-                                    <div class="service-details">
-                                        <div class="detail-row">
-                                            <div class="detail-label">Service Date</div>
-                                            <div class="detail-value">Jan 15, 2025</div>
-                                        </div>
-                                        <div class="detail-row">
-                                            <div class="detail-label">Service Type</div>
-                                            <div class="detail-value">Oil Change & Inspection</div>
-                                        </div>
-                                        <div class="detail-row">
-                                            <div class="detail-label">Total Cost</div>
-                                            <div class="detail-value">$157.50</div>
-                                        </div>
-                                    </div>
-                                    <div class="service-list">
-                                        <div class="service-list-item">
-                                            <span>Engine Oil Replacement</span>
-                                            <span>$45.00</span>
-                                        </div>
-                                        <div class="service-list-item">
-                                            <span>Oil Filter</span>
-                                            <span>$15.50</span>
-                                        </div>
-                                        <div class="service-list-item">
-                                            <span>Comprehensive Vehicle Inspection</span>
-                                            <span>$97.00</span>
-                                        </div>
-                                    </div>
-                                    <div class="action-buttons">
-                                        <button class="btn btn-outline btn-sm">View Details</button>
-                                        <button class="btn btn-primary btn-sm">Download Invoice</button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="history-item">
-                                <div class="history-header">
-                                    <div class="vehicle-name">Honda Civic</div>
-                                    <div class="status-badge completed">Completed</div>
-                                </div>
-                                <div class="history-body">
-                                    <div class="service-details">
-                                        <div class="detail-row">
-                                            <div class="detail-label">Service Date</div>
-                                            <div class="detail-value">Dec 5, 2024</div>
-                                        </div>
-                                        <div class="detail-row">
-                                            <div class="detail-label">Service Type</div>
-                                            <div class="detail-value">Brake System Service</div>
-                                        </div>
-                                        <div class="detail-row">
-                                            <div class="detail-label">Total Cost</div>
-                                            <div class="detail-value">$345.75</div>
-                                        </div>
-                                    </div>
-                                    <div class="service-list">
-                                        <div class="service-list-item">
-                                            <span>Brake Pad Replacement</span>
-                                            <span>$220.00</span>
-                                        </div>
-                                        <div class="service-list-item">
-                                            <span>Brake Fluid Flush</span>
-                                            <span>$85.75</span>
-                                        </div>
-                                        <div class="service-list-item">
-                                            <span>Rotor Inspection</span>
-                                            <span>$40.00</span>
-                                        </div>
-                                    </div>
-                                    <div class="action-buttons">
-                                        <button class="btn btn-outline btn-sm">View Details</button>
-                                        <button class="btn btn-primary btn-sm">Download Invoice</button>
-                                    </div>
-                                </div>
-                            </div>
+            </div>
+
+            <!-- Service History Tab -->
+            <div class="tab-content" id="history-tab">
+                <div class="content-header">
+                    <span>Service History</span>
+                </div>
+                <div class="content-body">
+                    <div class="history-list" id="serviceHistoryContainer">
+                        <!-- Service history will be loaded here -->
+                        <div class="loading-spinner">
+                            <div class="spinner"></div>
+                            <p>Loading your service history...</p>
                         </div>
                     </div>
                 </div>
-                
-                <!-- Invoices Tab -->
-                <div class="tab-content" id="invoices-tab">
-                    <div class="content-header">
-                        <span>Invoices</span>
-                    </div>
-                    <div class="content-body">
-                        <div class="invoice-list">
-                            <div class="invoice-item">
-                                <div class="invoice-details">
-                                    <div class="invoice-id">#INV-2025-0315</div>
-                                    <div class="invoice-date">March 22, 2025</div>
-                                    <div class="invoice-amount">$487.50</div>
-                                </div>
-                                <div class="invoice-actions">
-                                    <button class="icon-button" title="View Invoice">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="icon-button" title="Download Invoice">
-                                        <i class="fas fa-download"></i>
-                                    </button>
-                                    <button class="icon-button" title="Print Invoice">
-                                        <i class="fas fa-print"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <div class="invoice-item">
-                                <div class="invoice-details">
-                                    <div class="invoice-id">#INV-2025-0214</div>
-                                    <div class="invoice-date">February 14, 2025</div>
-                                    <div class="invoice-amount">$157.50</div>
-                                </div>
-                                <div class="invoice-actions">
-                                    <button class="icon-button" title="View Invoice">
-                                        <i class="fas fa-eye"></i>
-                                    </button>
-                                    <button class="icon-button" title="Download Invoice">
-                                        <i class="fas fa-download"></i>
-                                    </button>
-                                    <button class="icon-button" title="Print Invoice">
-                                        <i class="fas fa-print"></i>
-                                    </button>
-                                </div>
-                            </div>
+            </div>
+
+            <!-- Invoices Tab -->
+            <div class="tab-content" id="invoices-tab">
+                <div class="content-header">
+                    <span>Invoices</span>
+                </div>
+                <div class="content-body">
+                    <div class="invoice-list" id="invoicesContainer">
+                        <!-- Invoices will be loaded here -->
+                        <div class="loading-spinner">
+                            <div class="spinner"></div>
+                            <p>Loading your invoices...</p>
                         </div>
                     </div>
                 </div>
-                
-                <!-- Vehicles Tab -->
-                <div class="tab-content" id="vehicles-tab">
-                    <div class="content-header">
-                        <span>Your Vehicles</span>
-                    </div>
-                    <div class="content-body">
-                        <div class="vehicles-grid">
-                            <div class="vehicle-item">
-                                <div class="vehicle-image">
-                                    <img src="/api/placeholder/400/250" alt="Tesla Model 3">
-                                </div>
-                                <div class="vehicle-info">
-                                    <h4>Tesla Model 3</h4>
-                                    <div class="detail-row">
-                                        <div class="detail-label">Registration</div>
-                                        <div class="detail-value">ABC-1234</div>
-                                    </div>
-                                    <div class="detail-row">
-                                        <div class="detail-label">Year</div>
-                                        <div class="detail-value">2022</div>
-                                    </div>
-                                    <div class="detail-row">
-                                        <div class="detail-label">Mileage</div>
-                                        <div class="detail-value">22,500 miles</div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="vehicle-item">
-                                <div class="vehicle-image">
-                                    <img src="/api/placeholder/400/250" alt="Toyota Camry">
-                                </div>
-                                <div class="vehicle-info">
-                                    <h4>Toyota Camry</h4>
-                                    <div class="detail-row">
-                                        <div class="detail-label">Registration</div>
-                                        <div class="detail-value">XYZ-5678</div>
-                                    </div>
-                                    <div class="detail-row">
-                                        <div class="detail-label">Year</div>
-                                        <div class="detail-value">2020</div>
-                                    </div>
-                                    <div class="detail-row">
-                                        <div class="detail-label">Mileage</div>
-                                        <div class="detail-value">45,200 miles</div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="add-vehicle-card" onclick="openAddVehicleModal()">
-                                <div class="add-icon">
-                                    <i class="fas fa-plus"></i>
-                                </div>
-                                <div>Add New Vehicle</div>
-                            </div>
+            </div>
+
+            <!-- Vehicles Tab -->
+            <div class="tab-content" id="vehicles-tab">
+                <div class="content-header">
+                    <span>Your Vehicles</span>
+                </div>
+                <div class="content-body">
+                    <div class="vehicles-grid" id="vehiclesContainer">
+                        <!-- Vehicles will be loaded here -->
+                        <div class="loading-spinner">
+                            <div class="spinner"></div>
+                            <p>Loading your vehicles...</p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Modals -->
-    <!-- Avatar Selection Modal -->
-    <div class="modal-overlay" id="avatarModal">
-        <div class="modal-container">
-            <div class="modal-header">
-                <div class="modal-title">Choose Avatar</div>
-                <button class="modal-close" onclick="closeModal('avatarModal')" aria-label="Close Avatar Modal">×</button>
+<!-- OTP Verification Modal -->
+<div class="modal-overlay" id="otpModal">
+    <div class="modal-container">
+        <div class="modal-header">
+            <div class="modal-title">Verify OTP</div>
+            <button class="modal-close" id="closeOtpModalBtn" aria-label="Close OTP Modal">×</button>
+        </div>
+        <div class="modal-body">
+            <p>Enter the 4-digit verification code sent to your <span id="verificationChannel"></span></p>
+            <div class="otp-input-container">
+                <input type="text" maxlength="1" class="otp-input">
+                <input type="text" maxlength="1" class="otp-input">
+                <input type="text" maxlength="1" class="otp-input">
+                <input type="text" maxlength="1" class="otp-input">
             </div>
-            <div class="modal-body">
-                <!-- Avatar Selection Content Goes Here -->
+            <div class="resend-otp">
+                <a href="#" id="resendOtpBtn">Resend OTP</a>
             </div>
         </div>
-    </div>
-
-    <!-- OTP Verification Modal -->
-    <div class="modal-overlay" id="otpModal">
-        <div class="modal-container">
-            <div class="modal-header">
-                <div class="modal-title">Verify OTP</div>
-                <button class="modal-close" onclick="closeModal('otpModal')" aria-label="Close OTP Modal">×</button>
-            </div>
-            <div class="modal-body">
-                <p>Enter the 4-digit verification code sent to your <span id="verificationChannel"></span></p>
-                <div class="otp-input-container">
-                    <input type="text" maxlength="1" class="otp-input">
-                    <input type="text" maxlength="1" class="otp-input">
-                    <input type="text" maxlength="1" class="otp-input">
-                    <input type="text" maxlength="1" class="otp-input">
-                </div>
-                <div class="resend-otp">
-                    <a href="#">Resend OTP</a>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-outline" onclick="closeModal('otpModal')">Cancel</button>
-                <button class="btn btn-primary">Verify</button>
-            </div>
+        <div class="modal-footer">
+            <button class="btn btn-outline" id="cancelOtpBtn">Cancel</button>
+            <button class="btn btn-primary" id="verifyOtpBtn">Verify</button>
         </div>
     </div>
+</div>
 
-    <script>
-        function showTab(tabName) {
-            // Hide all tab contents
-            const tabs = document.querySelectorAll('.tab-content');
-            tabs.forEach(tab => tab.classList.remove('active'));
+<!-- Toast container for notifications -->
+<div class="toast-container"></div>
 
-            // Hide all menu items
-            const menuItems = document.querySelectorAll('.menu-item');
-            menuItems.forEach(item => item.classList.remove('active'));
+<script>
+    /**
+     * ProfileManager - Handles all user profile functionality
+     */
+    class ProfileManager {
+        constructor() {
+            this.userData = null;
+            this.vehicles = [];
+            this.activeServices = [];
+            this.serviceHistory = [];
+            this.invoices = [];
 
-            // Show selected tab
+            this.apiEndpoints = {
+                profile: '/customer/api/profile',
+                updateProfile: '/customer/api/profile/update',
+                vehicles: '/customer/api/vehicles',
+                activeServices: '/customer/api/services/active',
+                serviceHistory: '/customer/api/service-history',
+                serviceDetails: '/customer/api/service-history/', // + requestId
+                serviceTracking: '/customer/api/services/' // + requestId + '/tracking'
+            };
+
+            this.currentTab = 'profile';
+
+            this.initEventListeners();
+            this.loadUserProfile();
+            this.setRandomAvatar();
+        }
+
+        /**
+         * Initialize all event listeners
+         */
+        initEventListeners() {
+            // Tab navigation
+            document.querySelectorAll('.menu-item').forEach(item => {
+                if (item.id !== 'logoutBtn') {
+                    item.addEventListener('click', () => {
+                        this.switchTab(item.dataset.tab);
+                    });
+                }
+            });
+
+            // Logout button
+            document.getElementById('logoutBtn').addEventListener('click', () => this.logout());
+
+            // Profile update buttons
+            document.getElementById('saveProfileBtn').addEventListener('click', () => this.saveProfileChanges());
+            document.getElementById('updateEmailBtn').addEventListener('click', () => this.openVerifyModal('email'));
+            document.getElementById('updatePhoneBtn').addEventListener('click', () => this.openVerifyModal('phone'));
+
+            // Avatar change button
+            document.getElementById('changeAvatarBtn').addEventListener('click', () => this.setRandomAvatar());
+
+            // OTP modal events
+            document.getElementById('closeOtpModalBtn').addEventListener('click', () => this.closeModal('otpModal'));
+            document.getElementById('cancelOtpBtn').addEventListener('click', () => this.closeModal('otpModal'));
+            document.getElementById('verifyOtpBtn').addEventListener('click', () => this.verifyOtp());
+            document.getElementById('resendOtpBtn').addEventListener('click', (e) => {
+                e.preventDefault();
+                this.resendOtp();
+            });
+
+            // OTP input handling
+            const otpInputs = document.querySelectorAll('.otp-input');
+            otpInputs.forEach((input, index) => {
+                input.addEventListener('input', (e) => {
+                    if (e.target.value.length === 1 && index < otpInputs.length - 1) {
+                        otpInputs[index + 1].focus();
+                    }
+                });
+
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Backspace' && e.target.value.length === 0 && index > 0) {
+                        otpInputs[index - 1].focus();
+                    }
+                });
+            });
+        }
+
+        /**
+         * Switch between tabs
+         */
+        switchTab(tabName) {
+            if (!tabName || tabName === this.currentTab) return;
+
+            // Update active tab
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            document.querySelector(`.menu-item[data-tab="${tabName}"]`).classList.add('active');
+
+            // Show selected tab content
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
             document.getElementById(`${tabName}-tab`).classList.add('active');
 
-            // Highlight selected menu item
-            const activeMenuItem = document.querySelector(`.menu-item[onclick="showTab('${tabName}')"]`);
-            activeMenuItem.classList.add('active');
+            // Update current tab
+            this.currentTab = tabName;
+
+            // Load tab-specific data if needed
+            switch(tabName) {
+                case 'vehicles':
+                    this.loadVehicles();
+                    break;
+                case 'services':
+                    this.loadActiveServices();
+                    break;
+                case 'history':
+                    this.loadServiceHistory();
+                    break;
+                case 'invoices':
+                    this.loadInvoices();
+                    break;
+            }
         }
 
-        function openAvatarModal() {
-            document.getElementById('avatarModal').classList.add('active');
-        }
+        /**
+         * Load user profile data
+         */
+        loadUserProfile() {
+            const token = this.getAuthToken();
 
-        function openVerifyModal(channel) {
-            document.getElementById('verificationChannel').textContent = channel;
-            document.getElementById('otpModal').classList.add('active');
-        }
+            if (!token) {
+                window.location.href = '/authentication/login?message=Please login to view your profile&type=info&redirect=/customer/profile';
+                return;
+            }
 
-        function openAddVehicleModal() {
-            // Placeholder for add vehicle modal functionality
-            alert('Add Vehicle Modal - To be implemented');
-        }
-
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
-        }
-
-        // OTP Input Auto Focus
-        const otpInputs = document.querySelectorAll('.otp-input');
-        otpInputs.forEach((input, index) => {
-            input.addEventListener('input', (e) => {
-                if (e.target.value.length === 1 && index < otpInputs.length - 1) {
-                    otpInputs[index + 1].focus();
+            fetch(this.apiEndpoints.profile, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
                 }
-            });
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            this.handleUnauthorized();
+                            return null;
+                        }
+                        throw new Error('Failed to load profile data');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data) return;
 
-            input.addEventListener('keydown', (e) => {
-                if (e.key === 'Backspace' && e.target.value.length === 0 && index > 0) {
-                    otpInputs[index - 1].focus();
-                }
-            });
-        });
-    </script>
+                    this.userData = data;
+                    this.updateProfileUI();
+                })
+                .catch(error => {
+                    console.error('Error loading profile:', error);
+                    this.showToast('Failed to load profile data. Please try again.', 'error');
+                });
+        }
 
-        <!-- Add this before the closing body tag -->
-        <script>
-            // Mock user data - in a real application, this would come from an API
-            const userData = {
-                id: "USR12345",
-                firstName: "John",
-                lastName: "Smith",
-                email: "john.smith@example.com",
-                phone: "+1 (555) 123-4567",
-                address: {
-                    street: "123 Main Street",
-                    city: "Anytown",
-                    state: "California",
-                    zipCode: "90210"
-                },
-                membershipStatus: "Premium Member",
-                avatar: "/api/placeholder/300/300"
+        /**
+         * Update the profile UI with user data
+         */
+        updateProfileUI() {
+            if (!this.userData) return;
+
+            // Update profile sidebar
+            document.getElementById('profileName').textContent = `${this.userData.firstName || ''} ${this.userData.lastName || ''}`.trim();
+
+            const membershipStatus = document.getElementById('membershipStatus');
+            if (this.userData.membershipType === 'PREMIUM') {
+                membershipStatus.textContent = 'Premium Member';
+                membershipStatus.classList.add('membership-premium');
+            } else {
+                membershipStatus.textContent = 'Standard Member';
+                membershipStatus.classList.remove('membership-premium');
+            }
+
+            // Update form fields
+            document.getElementById('firstName').value = this.userData.firstName || '';
+            document.getElementById('lastName').value = this.userData.lastName || '';
+            document.getElementById('email').value = this.userData.email || '';
+            document.getElementById('phoneNumber').value = this.userData.phoneNumber || '';
+            document.getElementById('street').value = this.userData.street || '';
+            document.getElementById('city').value = this.userData.city || '';
+            document.getElementById('state').value = this.userData.state || '';
+            document.getElementById('postalCode').value = this.userData.postalCode || '';
+        }
+
+        /**
+         * Save profile changes
+         */
+        saveProfileChanges() {
+            const token = this.getAuthToken();
+
+            if (!token) {
+                this.handleUnauthorized();
+                return;
+            }
+
+            const profileData = {
+                firstName: document.getElementById('firstName').value,
+                lastName: document.getElementById('lastName').value,
+                street: document.getElementById('street').value,
+                city: document.getElementById('city').value,
+                state: document.getElementById('state').value,
+                postalCode: document.getElementById('postalCode').value
             };
-    
-            // Mock vehicles data
-            const vehiclesData = [
-                {
-                    id: "VEH001",
-                    name: "Tesla Model 3",
-                    registration: "ABC-1234",
-                    year: 2022,
-                    mileage: "22,500 miles",
-                    image: "/api/placeholder/400/250"
+
+            // Show loading state
+            const saveBtn = document.getElementById('saveProfileBtn');
+            const originalText = saveBtn.textContent;
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+
+            fetch(this.apiEndpoints.updateProfile, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 },
-                {
-                    id: "VEH002",
-                    name: "Toyota Camry",
-                    registration: "XYZ-5678",
-                    year: 2020,
-                    mileage: "45,200 miles",
-                    image: "/api/placeholder/400/250"
-                }
-            ];
-    
-            // Mock service history data
-            const serviceHistoryData = [
-                {
-                    id: "SRV001",
-                    vehicleName: "Toyota Camry",
-                    status: "completed",
-                    date: "Jan 15, 2025",
-                    type: "Oil Change & Inspection",
-                    totalCost: "$157.50",
-                    services: [
-                        { name: "Engine Oil Replacement", cost: "$45.00" },
-                        { name: "Oil Filter", cost: "$15.50" },
-                        { name: "Comprehensive Vehicle Inspection", cost: "$97.00" }
-                    ]
-                },
-                {
-                    id: "SRV002",
-                    vehicleName: "Honda Civic",
-                    status: "completed",
-                    date: "Dec 5, 2024",
-                    type: "Brake System Service",
-                    totalCost: "$345.75",
-                    services: [
-                        { name: "Brake Pad Replacement", cost: "$220.00" },
-                        { name: "Brake Fluid Flush", cost: "$85.75" },
-                        { name: "Rotor Inspection", cost: "$40.00" }
-                    ]
-                }
-            ];
-    
-            // Mock current services data
-            const currentServicesData = [
-                {
-                    id: "SRV003",
-                    vehicleName: "Tesla Model 3",
-                    status: "in-progress",
-                    serviceType: "Full Maintenance",
-                    dropOffDate: "Mar 22, 2025",
-                    estimatedPickup: "Mar 24, 2025",
-                    progress: {
-                        received: true,
-                        diagnostic: true,
-                        repair: true,
-                        completed: false
-                    }
-                }
-            ];
-    
-            // Mock invoices data
-            const invoicesData = [
-                {
-                    id: "INV-2025-0315",
-                    date: "March 22, 2025",
-                    amount: "$487.50"
-                },
-                {
-                    id: "INV-2025-0214",
-                    date: "February 14, 2025",
-                    amount: "$157.50"
-                }
-            ];
-    
-            // Initialize page on load
-            document.addEventListener('DOMContentLoaded', function() {
-                loadUserProfile();
-                setupEventListeners();
-            });
-    
-            // Load user profile data
-            function loadUserProfile() {
-                // Set user profile information
-                document.querySelector('.profile-name').textContent = `${userData.firstName} ${userData.lastName}`;
-                document.querySelector('.membership-status').textContent = userData.membershipStatus;
-                document.querySelector('.avatar-wrapper img').src = userData.avatar;
-                
-                // Set form values
-                document.querySelector('input[value="John"]').value = userData.firstName;
-                document.querySelector('input[value="Smith"]').value = userData.lastName;
-                document.querySelector('input[value="john.smith@example.com"]').value = userData.email;
-                document.querySelector('input[value="+1 (555) 123-4567"]').value = userData.phone;
-                document.querySelector('input[value="123 Main Street"]').value = userData.address.street;
-                document.querySelector('input[value="Anytown"]').value = userData.address.city;
-                document.querySelector('input[value="California"]').value = userData.address.state;
-                document.querySelector('input[value="90210"]').value = userData.address.zipCode;
-            }
-    
-            // Setup event listeners for all interactive elements
-            function setupEventListeners() {
-                // Save profile changes button
-                const saveChangesBtn = document.querySelector('.btn-primary');
-                saveChangesBtn.addEventListener('click', saveProfileChanges);
-                
-                // Setup OTP input auto-navigation
-                setupOtpInputs();
-                
-                // Setup modal close buttons
-                document.querySelectorAll('.modal-close').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const modalId = this.closest('.modal-overlay').id;
-                        closeModal(modalId);
-                    });
-                });
-                
-                // Setup view details buttons in service history
-                document.querySelectorAll('.history-item .btn-outline').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const historyItem = this.closest('.history-item');
-                        const vehicleName = historyItem.querySelector('.vehicle-name').textContent;
-                        alert(`Viewing details for ${vehicleName} service`);
-                        // In a real app, this would open a detailed view or modal
-                    });
-                });
-                
-                // Setup download invoice buttons
-                document.querySelectorAll('.history-item .btn-primary').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const historyItem = this.closest('.history-item');
-                        const vehicleName = historyItem.querySelector('.vehicle-name').textContent;
-                        downloadInvoice(vehicleName);
-                    });
-                });
-                
-                // Setup invoice action buttons
-                document.querySelectorAll('.invoice-actions .icon-button').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const action = this.getAttribute('title');
-                        const invoiceId = this.closest('.invoice-item').querySelector('.invoice-id').textContent;
-                        handleInvoiceAction(action, invoiceId);
-                    });
-                });
-            }
-    
-            // Save profile changes
-            function saveProfileChanges() {
-                // Get updated values
-                const updatedUserData = {
-                    firstName: document.querySelector('input[value="John"]').value,
-                    lastName: document.querySelector('input[value="Smith"]').value,
-                    address: {
-                        street: document.querySelector('input[value="123 Main Street"]').value,
-                        city: document.querySelector('input[value="Anytown"]').value,
-                        state: document.querySelector('input[value="California"]').value,
-                        zipCode: document.querySelector('input[value="90210"]').value
-                    }
-                };
-                
-                // In a real app, this would be an API call
-                console.log('Saving profile changes:', updatedUserData);
-                
-                // Show success message
-                showToast('Profile Updated', 'Your profile information has been updated successfully.');
-            }
-    
-            // Show toast notification
-            function showToast(title, message, type = 'success') {
-                // Create toast element
-                const toast = document.createElement('div');
-                toast.className = `toast ${type}`;
-                toast.innerHTML = `
-                    <div class="toast-header">
-                        <strong>${title}</strong>
-                        <button type="button" class="toast-close">×</button>
-                    </div>
-                    <div class="toast-body">${message}</div>
-                `;
-                
-                // Add to document
-                document.body.appendChild(toast);
-                
-                // Show toast
-                setTimeout(() => {
-                    toast.classList.add('show');
-                }, 100);
-                
-                // Auto hide after 5 seconds
-                setTimeout(() => {
-                    toast.classList.remove('show');
-                    setTimeout(() => {
-                        document.body.removeChild(toast);
-                    }, 300);
-                }, 5000);
-                
-                // Close button functionality
-                toast.querySelector('.toast-close').addEventListener('click', () => {
-                    toast.classList.remove('show');
-                    setTimeout(() => {
-                        document.body.removeChild(toast);
-                    }, 300);
-                });
-            }
-    
-            // Setup OTP inputs
-            function setupOtpInputs() {
-                const otpInputs = document.querySelectorAll('.otp-input');
-                otpInputs.forEach((input, index) => {
-                    input.addEventListener('input', (e) => {
-                        if (e.target.value.length === 1 && index < otpInputs.length - 1) {
-                            otpInputs[index + 1].focus();
+                body: JSON.stringify(profileData)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            this.handleUnauthorized();
+                            return null;
                         }
-                    });
-    
-                    input.addEventListener('keydown', (e) => {
-                        if (e.key === 'Backspace' && e.target.value.length === 0 && index > 0) {
-                            otpInputs[index - 1].focus();
-                        }
-                    });
+                        throw new Error('Failed to update profile');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data) return;
+
+                    // Update local user data
+                    Object.assign(this.userData, profileData);
+
+                    // Update UI
+                    this.updateProfileUI();
+
+                    // Show success message
+                    this.showToast('Profile updated successfully!', 'success');
+                })
+                .catch(error => {
+                    console.error('Error updating profile:', error);
+                    this.showToast('Failed to update profile. Please try again.', 'error');
+                })
+                .finally(() => {
+                    // Restore button state
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = originalText;
                 });
-                
-                // Add verify OTP button functionality
-                const verifyBtn = document.querySelector('#otpModal .btn-primary');
-                verifyBtn.addEventListener('click', verifyOtp);
-                
-                // Add resend OTP functionality
-                const resendLink = document.querySelector('.resend-otp a');
-                resendLink.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const channel = document.getElementById('verificationChannel').textContent;
-                    resendOtp(channel);
-                });
+        }
+
+        /**
+         * Load user vehicles
+         */
+        loadVehicles() {
+            // Check if already loaded
+            if (this.vehicles.length > 0) {
+                this.renderVehicles();
+                return;
             }
-    
-            // Verify OTP
-            function verifyOtp() {
-                const otpInputs = document.querySelectorAll('.otp-input');
-                let otp = '';
-                otpInputs.forEach(input => {
-                    otp += input.value;
-                });
-                
-                if (otp.length === 4) {
-                    // In a real app, this would be an API call
-                    console.log('Verifying OTP:', otp);
-                    
-                    // Simulate successful verification
-                    const channel = document.getElementById('verificationChannel').textContent;
-                    showToast('Verification Successful', `Your ${channel} has been verified successfully.`);
-                    
-                    // Close modal
-                    closeModal('otpModal');
-                    
-                    // Reset OTP inputs
-                    otpInputs.forEach(input => {
-                        input.value = '';
-                    });
-                } else {
-                    showToast('Verification Failed', 'Please enter a valid 4-digit OTP.', 'error');
-                }
+
+            const token = this.getAuthToken();
+
+            if (!token) {
+                this.handleUnauthorized();
+                return;
             }
-    
-            // Resend OTP
-            function resendOtp(channel) {
-                // In a real app, this would be an API call
-                console.log('Resending OTP to:', channel);
-                
-                // Show success message
-                showToast('OTP Sent', `A new verification code has been sent to your ${channel}.`);
-            }
-    
-            // Open verification modal
-            function openVerifyModal(channel) {
-                document.getElementById('verificationChannel').textContent = channel;
-                document.getElementById('otpModal').classList.add('active');
-                
-                // Focus first OTP input
-                setTimeout(() => {
-                    document.querySelector('.otp-input').focus();
-                }, 300);
-            }
-    
-            // Open avatar modal
-            function openAvatarModal() {
-                document.getElementById('avatarModal').classList.add('active');
-                
-                // In a real app, this would load avatar options
-                const modalBody = document.querySelector('#avatarModal .modal-body');
-                modalBody.innerHTML = `
-                    <div class="avatar-grid">
-                        <div class="avatar-option selected">
-                            <img src="/api/placeholder/100/100?text=1" alt="Avatar 1">
-                        </div>
-                        <div class="avatar-option">
-                            <img src="/api/placeholder/100/100?text=2" alt="Avatar 2">
-                        </div>
-                        <div class="avatar-option">
-                            <img src="/api/placeholder/100/100?text=3" alt="Avatar 3">
-                        </div>
-                        <div class="avatar-option">
-                            <img src="/api/placeholder/100/100?text=4" alt="Avatar 4">
-                        </div>
-                        <div class="avatar-option">
-                            <img src="/api/placeholder/100/100?text=5" alt="Avatar 5">
-                        </div>
-                        <div class="avatar-option">
-                            <img src="/api/placeholder/100/100?text=6" alt="Avatar 6">
-                        </div>
-                    </div>
-                    <div class="upload-avatar">
-                        <button class="btn btn-outline">Upload Custom Avatar</button>
-                    </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-outline" onclick="closeModal('avatarModal')">Cancel</button>
-                        <button class="btn btn-primary" onclick="saveAvatar()">Save</button>
+
+            // Show loading state
+            const container = document.getElementById('vehiclesContainer');
+            container.innerHTML = `
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                        <p>Loading your vehicles...</p>
                     </div>
                 `;
-                
-                // Add click event to avatar options
-                const avatarOptions = document.querySelectorAll('.avatar-option');
-                avatarOptions.forEach(option => {
-                    option.addEventListener('click', function() {
-                        avatarOptions.forEach(opt => opt.classList.remove('selected'));
-                        this.classList.add('selected');
-                    });
-                });
-            }
-    
-            // Save selected avatar
-            function saveAvatar() {
-                const selectedAvatar = document.querySelector('.avatar-option.selected img');
-                if (selectedAvatar) {
-                    document.querySelector('.avatar-wrapper img').src = selectedAvatar.src;
-                    showToast('Avatar Updated', 'Your profile avatar has been updated successfully.');
-                    closeModal('avatarModal');
+
+            fetch(this.apiEndpoints.vehicles, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
                 }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            this.handleUnauthorized();
+                            return null;
+                        }
+                        throw new Error('Failed to load vehicles');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data) return;
+
+                    this.vehicles = Array.isArray(data) ? data : [];
+                    this.renderVehicles();
+                })
+                .catch(error => {
+                    console.error('Error loading vehicles:', error);
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <h4>Failed to load vehicles</h4>
+                            <p>${error.message || 'Please try again later'}</p>
+                        </div>
+                    `;
+                });
+        }
+
+        /**
+         * Render vehicles in the UI
+         */
+        renderVehicles() {
+            const container = document.getElementById('vehiclesContainer');
+
+            if (!this.vehicles || this.vehicles.length === 0) {
+                container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-car"></i>
+                            <h4>No vehicles found</h4>
+                            <p>Add your first vehicle to get started.</p>
+                        </div>
+
+                        <div class="add-vehicle-card" id="addVehicleBtn">
+                            <div class="add-icon">
+                                <i class="fas fa-plus"></i>
+                            </div>
+                            <div>Add New Vehicle</div>
+                        </div>
+                    `;
+
+                // Add event listener for add vehicle button
+                document.getElementById('addVehicleBtn').addEventListener('click', () => this.showAddVehicleModal());
+                return;
             }
-    
-            // Open add vehicle modal
-            function openAddVehicleModal() {
-                // Create modal if it doesn't exist
-                if (!document.getElementById('addVehicleModal')) {
-                    const modal = document.createElement('div');
-                    modal.className = 'modal-overlay';
-                    modal.id = 'addVehicleModal';
-                    modal.innerHTML = `
-                        <div class="modal-container">
-                            <div class="modal-header">
-                                <div class="modal-title">Add New Vehicle</div>
-                                <button class="modal-close" onclick="closeModal('addVehicleModal')" aria-label="Close Add Vehicle Modal">×</button>
+
+            let html = '';
+
+            // Add all vehicles
+            this.vehicles.forEach(vehicle => {
+                const vehicleIcon = vehicle.category === 'Bike' ? 'motorcycle' :
+                    (vehicle.category === 'Truck' ? 'truck' : 'car');
+
+                html += `
+                        <div class="vehicle-item">
+                            <div class="vehicle-image">
+                                <i class="fas fa-${vehicleIcon}"></i>
                             </div>
-                            <div class="modal-body">
-                                <div class="form-group">
-                                    <label class="form-label">Vehicle Make</label>
-                                    <input type="text" class="form-control" id="vehicleMake" placeholder="e.g. Toyota, Honda">
+                            <div class="vehicle-info">
+                                <h4>${vehicle.brand} ${vehicle.model}</h4>
+                                <div class="detail-row">
+                                    <div class="detail-label">Registration</div>
+                                    <div class="detail-value">${vehicle.registrationNumber || 'N/A'}</div>
                                 </div>
-                                <div class="form-group">
-                                    <label class="form-label">Vehicle Model</label>
-                                    <input type="text" class="form-control" id="vehicleModel" placeholder="e.g. Camry, Civic">
+                                <div class="detail-row">
+                                    <div class="detail-label">Year</div>
+                                    <div class="detail-value">${vehicle.year || 'N/A'}</div>
                                 </div>
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label class="form-label">Year</label>
-                                        <input type="number" class="form-control" id="vehicleYear" placeholder="e.g. 2023">
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="form-label">Registration Number</label>
-                                        <input type="text" class="form-control" id="vehicleRegistration" placeholder="e.g. ABC-1234">
-                                    </div>
+                                <div class="detail-row">
+                                    <div class="detail-label">Category</div>
+                                    <div class="detail-value">${vehicle.category || 'Car'}</div>
                                 </div>
-                                <div class="form-group">
-                                    <label class="form-label">Current Mileage</label>
-                                    <input type="text" class="form-control" id="vehicleMileage" placeholder="e.g. 25000">
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button class="btn btn-outline" onclick="closeModal('addVehicleModal')">Cancel</button>
-                                <button class="btn btn-primary" onclick="addNewVehicle()">Add Vehicle</button>
                             </div>
                         </div>
                     `;
-                    document.body.appendChild(modal);
-                }
-                
-                // Show modal
-                document.getElementById('addVehicleModal').classList.add('active');
-            }
-    
-            // Add new vehicle
-            function addNewVehicle() {
-                const make = document.getElementById('vehicleMake').value;
-                const model = document.getElementById('vehicleModel').value;
-                const year = document.getElementById('vehicleYear').value;
-                const registration = document.getElementById('vehicleRegistration').value;
-                const mileage = document.getElementById('vehicleMileage').value;
-                
-                if (!make || !model || !year || !registration || !mileage) {
-                    showToast('Validation Error', 'Please fill in all vehicle details.', 'error');
-                    return;
-                }
-                
-                // In a real app, this would be an API call
-                console.log('Adding new vehicle:', { make, model, year, registration, mileage });
-                
-                // Add to vehicles grid
-                const vehiclesGrid = document.querySelector('.vehicles-grid');
-                const addVehicleCard = document.querySelector('.add-vehicle-card');
-                
-                const newVehicleCard = document.createElement('div');
-                newVehicleCard.className = 'vehicle-item';
-                newVehicleCard.innerHTML = `
-                    <div class="vehicle-image">
-                        <img src="/api/placeholder/400/250?text=${make}" alt="${make} ${model}">
-                    </div>
-                    <div class="vehicle-info">
-                        <h4>${make} ${model}</h4>
-                        <div class="detail-row">
-                            <div class="detail-label">Registration</div>
-                            <div class="detail-value">${registration}</div>
+            });
+
+            // Add "Add Vehicle" card
+            html += `
+                    <div class="add-vehicle-card" id="addVehicleBtn">
+                        <div class="add-icon">
+                            <i class="fas fa-plus"></i>
                         </div>
-                        <div class="detail-row">
-                            <div class="detail-label">Year</div>
-                            <div class="detail-value">${year}</div>
-                        </div>
-                        <div class="detail-row">
-                            <div class="detail-label">Mileage</div>
-                            <div class="detail-value">${mileage} miles</div>
-                        </div>
+                        <div>Add New Vehicle</div>
                     </div>
                 `;
-                
-                vehiclesGrid.insertBefore(newVehicleCard, addVehicleCard);
-                
-                // Show success message
-                showToast('Vehicle Added', `Your ${make} ${model} has been added successfully.`);
-                
-                // Close modal
-                closeModal('addVehicleModal');
-                
-                // Reset form
-                document.getElementById('vehicleMake').value = '';
-                document.getElementById('vehicleModel').value = '';
-                document.getElementById('vehicleYear').value = '';
-                document.getElementById('vehicleRegistration').value = '';
-                document.getElementById('vehicleMileage').value = '';
+
+            container.innerHTML = html;
+
+            // Add event listener for add vehicle button
+            document.getElementById('addVehicleBtn').addEventListener('click', () => this.showAddVehicleModal());
+        }
+
+        /**
+         * Load active services
+         */
+        loadActiveServices() {
+            const token = this.getAuthToken();
+
+            if (!token) {
+                this.handleUnauthorized();
+                return;
             }
-    
-            // Download invoice
-            function downloadInvoice(vehicleName) {
-                // In a real app, this would generate and download a PDF
-                console.log('Downloading invoice for:', vehicleName);
-                showToast('Invoice Downloaded', `The invoice for ${vehicleName} has been downloaded.`);
+
+            // Show loading state
+            const container = document.getElementById('currentServicesContainer');
+            container.innerHTML = `
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                        <p>Loading your active services...</p>
+                    </div>
+                `;
+
+            fetch(this.apiEndpoints.activeServices, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            this.handleUnauthorized();
+                            return null;
+                        }
+                        throw new Error('Failed to load active services');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data) return;
+
+                    this.activeServices = Array.isArray(data) ? data : [];
+                    this.renderActiveServices();
+                })
+                .catch(error => {
+                    console.error('Error loading active services:', error);
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <h4>Failed to load active services</h4>
+                            <p>${error.message || 'Please try again later'}</p>
+                        </div>
+                    `;
+                });
+        }
+
+        /**
+         * Render active services in the UI
+         */
+        renderActiveServices() {
+            const container = document.getElementById('currentServicesContainer');
+
+            if (!this.activeServices || this.activeServices.length === 0) {
+                container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-check-circle"></i>
+                            <h4>No active services</h4>
+                            <p>You don't have any vehicles in service at the moment.</p>
+                        </div>
+                    `;
+                return;
             }
-    
-            // Handle invoice actions
-            function handleInvoiceAction(action, invoiceId) {
-                switch(action) {
-                    case 'View Invoice':
-                        // In a real app, this would open a detailed view
-                        console.log('Viewing invoice:', invoiceId);
-                        alert(`Viewing invoice ${invoiceId}`);
-                        break;
-                    case 'Download Invoice':
-                        // In a real app, this would download a PDF
-                        console.log('Downloading invoice:', invoiceId);
-                        showToast('Invoice Downloaded', `The invoice ${invoiceId} has been downloaded.`);
-                        break;
-                    case 'Print Invoice':
-                        // In a real app, this would open print dialog
-                        console.log('Printing invoice:', invoiceId);
-                        showToast('Print Prepared', `The invoice ${invoiceId} is ready to print.`);
-                        break;
+
+            let html = '';
+
+            this.activeServices.forEach(service => {
+                const statusClass = service.status.toLowerCase();
+                const statusLabel = service.status.charAt(0) + service.status.slice(1).toLowerCase();
+
+                // Format dates
+                const startDate = service.startDate ? new Date(service.startDate).toLocaleDateString() : 'N/A';
+                const estimatedDate = service.estimatedCompletionDate ?
+                    new Date(service.estimatedCompletionDate).toLocaleDateString() : 'N/A';
+
+                html += `
+                        <div class="vehicle-card">
+                            <div class="vehicle-header">
+                                <div class="vehicle-name">${service.vehicleBrand} ${service.vehicleModel}</div>
+                                <div class="status-badge ${statusClass}">${statusLabel}</div>
+                            </div>
+                            <div class="vehicle-details">
+                                <div class="detail-row">
+                                    <div class="detail-label">Service Type</div>
+                                    <div class="detail-value">${service.serviceType || 'General Service'}</div>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="detail-label">Drop-off Date</div>
+                                    <div class="detail-value">${startDate}</div>
+                                </div>
+                                <div class="detail-row">
+                                    <div class="detail-label">Estimated Pickup</div>
+                                    <div class="detail-value">${estimatedDate}</div>
+                                </div>
+
+                                <div class="progress-steps">
+                                    ${this.renderServiceSteps(service.status)}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        /**
+         * Render service progress steps based on status
+         */
+        renderServiceSteps(status) {
+            const steps = ['Received', 'Diagnosis', 'Repair', 'Completed'];
+            const currentIndex = steps.findIndex(step => step.toLowerCase() === status.toLowerCase());
+
+            let stepsHtml = '';
+
+            steps.forEach((step, index) => {
+                let stepClass = '';
+                let stepIcon = '';
+
+                if (index < currentIndex) {
+                    stepClass = 'completed';
+                    stepIcon = '<i class="fas fa-check"></i>';
+                } else if (index === currentIndex) {
+                    stepClass = 'current';
+                    stepIcon = index === 3 ? '<i class="fas fa-flag-checkered"></i>' : '<i class="fas fa-wrench"></i>';
+                } else {
+                    stepIcon = index === 3 ? '<i class="fas fa-flag-checkered"></i>' : '<i class="fas fa-wrench"></i>';
+                }
+
+                stepsHtml += `
+                        <div class="step ${stepClass}">
+                            <div class="step-icon">${stepIcon}</div>
+                            <div class="step-label">${step}</div>
+                        </div>
+                    `;
+            });
+
+            return stepsHtml;
+        }
+
+        /**
+         * Load service history
+         */
+        loadServiceHistory() {
+            const token = this.getAuthToken();
+
+            if (!token) {
+                this.handleUnauthorized();
+                return;
+            }
+
+            // Show loading state
+            const container = document.getElementById('serviceHistoryContainer');
+            container.innerHTML = `
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                        <p>Loading your service history...</p>
+                    </div>
+                `;
+
+            fetch(this.apiEndpoints.serviceHistory, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            this.handleUnauthorized();
+                            return null;
+                        }
+                        throw new Error('Failed to load service history');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data) return;
+
+                    this.serviceHistory = Array.isArray(data) ? data : [];
+                    this.renderServiceHistory();
+                })
+                .catch(error => {
+                    console.error('Error loading service history:', error);
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <h4>Failed to load service history</h4>
+                            <p>${error.message || 'Please try again later'}</p>
+                        </div>
+                    `;
+                });
+        }
+
+        /**
+         * Render service history in the UI
+         */
+        renderServiceHistory() {
+            const container = document.getElementById('serviceHistoryContainer');
+
+            if (!this.serviceHistory || this.serviceHistory.length === 0) {
+                container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-history"></i>
+                            <h4>No service history</h4>
+                            <p>You don't have any completed services yet.</p>
+                        </div>
+                    `;
+                return;
+            }
+
+            let html = '';
+
+            this.serviceHistory.forEach(service => {
+                // Format date
+                const serviceDate = service.formattedCompletedDate ||
+                    (service.completedDate ? new Date(service.completedDate).toLocaleDateString() : 'N/A');
+
+                // Calculate material costs if available
+                let materialsList = '';
+                let totalCost = service.totalAmount || 0;
+
+                if (service.materials && service.materials.length > 0) {
+                    materialsList = `
+                            <div class="service-list">
+                                ${service.materials.map(material => `
+                                    <div class="service-list-item">
+                                        <span>${material.name}</span>
+                                        <span>₹${this.formatCurrency(material.quantity * material.unitPrice)}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        `;
+                }
+
+                html += `
+                        <div class="history-item">
+                            <div class="history-header">
+                                <div class="vehicle-name">${service.vehicleBrand} ${service.vehicleModel}</div>
+                                <div class="status-badge completed">Completed</div>
+                            </div>
+                            <div class="history-body">
+                                <div class="service-details">
+                                    <div class="detail-row">
+                                        <div class="detail-label">Service Date</div>
+                                        <div class="detail-value">${serviceDate}</div>
+                                    </div>
+                                    <div class="detail-row">
+                                        <div class="detail-label">Service Type</div>
+                                        <div class="detail-value">${service.serviceType || 'General Service'}</div>
+                                    </div>
+                                    <div class="detail-row">
+                                        <div class="detail-label">Total Cost</div>
+                                        <div class="detail-value">₹${this.formatCurrency(totalCost)}</div>
+                                    </div>
+                                </div>
+                                ${materialsList}
+                                <div class="action-buttons">
+                                    <button class="btn btn-outline btn-sm" data-request-id="${service.requestId}">View Details</button>
+                                    ${service.hasInvoice ?
+                    `<button class="btn btn-primary btn-sm" data-invoice-id="${service.invoiceId}">Download Invoice</button>` :
+                    ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+            });
+
+            container.innerHTML = html;
+
+            // Add event listeners for buttons
+            document.querySelectorAll('#serviceHistoryContainer .btn-outline').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const requestId = btn.dataset.requestId;
+                    this.viewServiceDetails(requestId);
+                });
+            });
+
+            document.querySelectorAll('#serviceHistoryContainer .btn-primary').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const invoiceId = btn.dataset.invoiceId;
+                    this.downloadInvoice(invoiceId);
+                });
+            });
+        }
+
+        /**
+         * View service details
+         */
+        viewServiceDetails(requestId) {
+            // Implement service details view
+            this.showToast('Service details feature coming soon!', 'info');
+        }
+
+        /**
+         * Download invoice
+         */
+        downloadInvoice(invoiceId) {
+            // Implement invoice download
+            this.showToast('Invoice download feature coming soon!', 'info');
+        }
+
+        /**
+         * Load invoices
+         */
+        loadInvoices() {
+            // For now, use service history data to show invoices
+            if (this.serviceHistory.length === 0) {
+                this.loadServiceHistory();
+                return;
+            }
+
+            this.renderInvoices();
+        }
+
+        /**
+         * Render invoices in the UI
+         */
+        renderInvoices() {
+            const container = document.getElementById('invoicesContainer');
+
+            // Filter service history to only show those with invoices
+            const invoices = this.serviceHistory.filter(service => service.hasInvoice);
+
+            if (!invoices || invoices.length === 0) {
+                container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-file-invoice"></i>
+                            <h4>No invoices</h4>
+                            <p>You don't have any invoices yet.</p>
+                        </div>
+                    `;
+                return;
+            }
+
+            let html = '';
+
+            invoices.forEach(invoice => {
+                // Format date
+                const invoiceDate = invoice.formattedCompletedDate ||
+                    (invoice.completedDate ? new Date(invoice.completedDate).toLocaleDateString() : 'N/A');
+
+                html += `
+                        <div class="invoice-item">
+                            <div class="invoice-details">
+                                <div class="invoice-id">#INV-${invoice.invoiceId}</div>
+                                <div class="invoice-date">${invoiceDate}</div>
+                                <div class="invoice-amount">₹${this.formatCurrency(invoice.totalAmount)}</div>
+                            </div>
+                            <div class="invoice-actions">
+                                <button class="icon-button" title="View Invoice" data-invoice-id="${invoice.invoiceId}">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="icon-button" title="Download Invoice" data-invoice-id="${invoice.invoiceId}">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                                <button class="icon-button" title="Print Invoice" data-invoice-id="${invoice.invoiceId}">
+                                    <i class="fas fa-print"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+            });
+
+            container.innerHTML = html;
+
+            // Add event listeners for invoice action buttons
+            document.querySelectorAll('#invoicesContainer .icon-button').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const invoiceId = btn.dataset.invoiceId;
+                    const action = btn.getAttribute('title');
+
+                    switch (action) {
+                        case 'View Invoice':
+                            this.viewInvoice(invoiceId);
+                            break;
+                        case 'Download Invoice':
+                            this.downloadInvoice(invoiceId);
+                            break;
+                        case 'Print Invoice':
+                            this.printInvoice(invoiceId);
+                            break;
+                    }
+                });
+            });
+        }
+
+        /**
+         * View invoice details
+         */
+        viewInvoice(invoiceId) {
+            // Implement invoice viewing
+            this.showToast('Invoice view feature coming soon!', 'info');
+        }
+
+        /**
+         * Print invoice
+         */
+        printInvoice(invoiceId) {
+            // Implement invoice printing
+            this.showToast('Invoice printing feature coming soon!', 'info');
+        }
+
+        /**
+         * Show Add Vehicle modal
+         */
+        showAddVehicleModal() {
+            // Implement add vehicle modal
+            this.showToast('Add vehicle feature coming soon!', 'info');
+        }
+
+        /**
+         * Open OTP verification modal
+         */
+        openVerifyModal(channel) {
+            document.getElementById('verificationChannel').textContent = channel;
+            document.getElementById('otpModal').classList.add('active');
+
+            // Clear OTP inputs
+            document.querySelectorAll('.otp-input').forEach(input => {
+                input.value = '';
+            });
+
+            // Focus first input
+            document.querySelector('.otp-input').focus();
+
+            // Simulate OTP sent notification
+            this.showToast(`Verification code sent to your ${channel}`, 'info');
+        }
+
+        /**
+         * Verify OTP
+         */
+        verifyOtp() {
+            // Get OTP from inputs
+            const otpInputs = document.querySelectorAll('.otp-input');
+            let otp = '';
+
+            otpInputs.forEach(input => {
+                otp += input.value;
+            });
+
+            if (otp.length !== 4) {
+                this.showToast('Please enter a valid 4-digit OTP', 'error');
+                return;
+            }
+
+            // For demo, any 4-digit code works
+            const channel = document.getElementById('verificationChannel').textContent;
+
+            // Close modal
+            this.closeModal('otpModal');
+
+            // Show success message
+            this.showToast(`${channel.charAt(0).toUpperCase() + channel.slice(1)} verified successfully!`, 'success');
+        }
+
+        /**
+         * Resend OTP
+         */
+        resendOtp() {
+            const channel = document.getElementById('verificationChannel').textContent;
+            this.showToast(`New verification code sent to your ${channel}`, 'info');
+        }
+
+        /**
+         * Close modal
+         */
+        closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        /**
+         * Get authentication token from storage
+         */
+        getAuthToken() {
+            return sessionStorage.getItem('authToken') || localStorage.getItem('authToken');
+        }
+
+        /**
+         * Handle unauthorized access
+         */
+        handleUnauthorized() {
+            sessionStorage.removeItem('authToken');
+            localStorage.removeItem('authToken');
+            window.location.href = '/authentication/login?message=Your session has expired. Please login again.&type=error&redirect=/customer/profile';
+        }
+
+        /**
+         * Logout user
+         */
+        logout() {
+            sessionStorage.removeItem('authToken');
+            localStorage.removeItem('authToken');
+            window.location.href = '/authentication/login';
+        }
+
+        /**
+         * Set a random avatar
+         */
+        setRandomAvatar() {
+            const avatarTypes = ['adventurer', 'bottts', 'avataaars', 'jdenticon', 'identicon', 'gridy', 'micah'];
+            const randomType = avatarTypes[Math.floor(Math.random() * avatarTypes.length)];
+            const seed = Math.random().toString(36).substring(2, 10);
+
+            const avatarUrl = `https://api.dicebear.com/7.x/${randomType}/svg?seed=${seed}`;
+            document.getElementById('profileAvatar').src = avatarUrl;
+        }
+
+        /**
+         * Format currency
+         */
+        formatCurrency(amount) {
+            if (!amount) return '0.00';
+            return parseFloat(amount).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+        }
+
+        /**
+         * Show a toast notification
+         */
+        showToast(message, type = 'success') {
+            const toastContainer = document.querySelector('.toast-container');
+            const toastId = `toast-${Date.now()}`;
+
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.id = toastId;
+
+            toast.innerHTML = `
+                    <div class="toast-header">
+                        <strong>${type.charAt(0).toUpperCase() + type.slice(1)}</strong>
+                        <button class="toast-close">&times;</button>
+                    </div>
+                    <div class="toast-body">${message}</div>
+                `;
+
+            toastContainer.appendChild(toast);
+
+            // Show toast
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10);
+
+            // Auto hide after 5 seconds
+            const hideTimeout = setTimeout(() => {
+                removeToast(toastId);
+            }, 5000);
+
+            // Close button functionality
+            toast.querySelector('.toast-close').addEventListener('click', () => {
+                clearTimeout(hideTimeout);
+                removeToast(toastId);
+            });
+
+            function removeToast(id) {
+                const toastElement = document.getElementById(id);
+                if (toastElement) {
+                    toastElement.classList.remove('show');
+                    setTimeout(() => {
+                        toastElement.remove();
+                    }, 300);
                 }
             }
-    
-            // Close modal
-            function closeModal(modalId) {
-                document.getElementById(modalId).classList.remove('active');
-            }
-        </script>
+        }
+    }
+
+    // Initialize the profile manager when the page loads
+    document.addEventListener('DOMContentLoaded', () => {
+        window.profileManager = new ProfileManager();
+    });
+</script>
 </body>
 </html>

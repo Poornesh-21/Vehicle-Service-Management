@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,38 +8,969 @@
     <link href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">\
-    <link href="/CSS/customer/index.css" rel="stylesheet">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #722F37;
+            --primary-dark: #5a252c;
+            --secondary: #722F37;
+            --accent: #EFFBB;
+            --dark: #2c1518;
+            --light: #f8fff0;
+            --gray: #64748b;
+            --gradient-primary: linear-gradient(135deg, #722F37 0%, #8a3a44 100%);
+            --gradient-secondary: linear-gradient(135deg, rgba(114, 47, 55, 0.1) 0%, rgba(239, 251, 187, 0.1) 100%);
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
 
+          body {
+              font-family: 'Baloo Bhaijaan 2', sans-serif;
+              color: var(--dark);
+              background-color: var(--light);
+              overflow-x: hidden;
+          }
+
+        /* ========== NAVBAR STYLES ========== */
+        .navbar {
+            background-color: rgba(255, 255, 255, 0.95);
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+            padding: 1rem 0;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1030;
+        }
+
+        .navbar.scrolled {
+            padding: 0.5rem 0;
+            background-color: rgba(255, 255, 255, 0.98);
+        }
+
+        .navbar-brand {
+            font-family: 'Russo One', sans-serif;
+            font-size: 1.75rem;
+            color: var(--primary);
+            letter-spacing: 1px;
+        }
+
+        .nav-link {
+            font-weight: 500;
+            color: var(--dark);
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary);
+        }
+
+        .btn-login, .btn-signup {
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-login {
+            background-color: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-signup {
+            background: var(--gradient-primary);
+            border: none;
+            color: white;
+        }
+
+        .btn-login:hover {
+            background-color: rgba(114, 47, 55, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .btn-signup:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* User profile dropdown */
+        .user-profile-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .profile-toggle {
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .profile-toggle:hover {
+            background-color: rgba(114, 47, 55, 0.1);
+        }
+
+        .profile-toggle i {
+            margin-left: 8px;
+            font-size: 0.8rem;
+            transition: transform 0.3s ease;
+        }
+
+        .profile-toggle.show i {
+            transform: rotate(180deg);
+        }
+
+        .profile-dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            z-index: 1000;
+            min-width: 200px;
+            padding: 0.5rem 0;
+            margin: 0.5rem 0 0;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .profile-dropdown-menu.show {
+            display: block;
+            animation: fadeInDown 0.3s ease forwards;
+        }
+
+        .profile-dropdown-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            color: var(--dark);
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .profile-dropdown-item:hover {
+            background-color: rgba(114, 47, 55, 0.05);
+            color: var(--primary);
+        }
+
+        .profile-dropdown-item i {
+            margin-right: 10px;
+            font-size: 1.1rem;
+            color: var(--primary);
+            width: 20px;
+            text-align: center;
+        }
+
+        .profile-dropdown-divider {
+            height: 1px;
+            margin: 0.5rem 0;
+            background-color: rgba(0,0,0,0.1);
+        }
+
+        /* ========== HERO SECTION ========== */
+        .hero-section {
+            position: relative;
+            height: 100vh;
+            min-height: 600px;
+            overflow: hidden;
+            margin-top: 70px;
+        }
+
+        .carousel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .carousel-item {
+            height: 100vh;
+            min-height: 600px;
+            background-color: #000;
+        }
+
+        .carousel-item img {
+            object-fit: cover;
+            height: 100%;
+            opacity: 0.7;
+            width: 100%;
+        }
+
+        .hero-content {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 100%;
+            z-index: 2;
+        }
+
+        .hero-title {
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            font-size: 1.25rem;
+            font-weight: 500;
+            margin-bottom: 2rem;
+            max-width: 500px;
+        }
+
+        .carousel-indicators {
+            z-index: 3;
+            bottom: 40px;
+        }
+
+        .carousel-indicators [data-bs-target] {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            margin: 0 6px;
+            transition: all 0.3s ease;
+        }
+
+        .carousel-indicators .active {
+            background-color: var(--primary);
+            border-color: white;
+            transform: scale(1.2);
+        }
+
+        .carousel-control-prev, .carousel-control-next {
+            z-index: 3;
+            width: 45px;
+            height: 45px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            top: 50%;
+            transform: translateY(-50%);
+            margin: 0 30px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .carousel-control-prev-icon, .carousel-control-next-icon {
+            width: 20px;
+            height: 20px;
+            opacity: 0.9;
+        }
+
+        .hero-section:hover .carousel-control-prev,
+        .hero-section:hover .carousel-control-next {
+            opacity: 1;
+        }
+
+        .carousel-control-prev:hover, .carousel-control-next:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-50%) scale(1.05);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-hero, .btn-hero-secondary {
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-hero {
+            background: var(--gradient-primary);
+            border: none;
+            color: white;
+        }
+
+        .btn-hero:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* ========== MODAL STYLES ========== */
+        .modal-backdrop {
+            z-index: 1040;
+        }
+
+        .modal {
+            z-index: 1050;
+        }
+
+        .modal-dialog {
+            max-width: 700px;
+            margin: 1.75rem auto;
+        }
+
+        .modal-content {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .modal-header {
+            background-color: #722F37;
+            color: white;
+            border-radius: 15px 15px 0 0;
+            padding: 1.25rem;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            margin: 0;
+        }
+
+        .modal-title i {
+            margin-right: 10px;
+            font-size: 1.5rem;
+        }
+
+        .btn-close {
+            color: white;
+            opacity: 0.8;
+            box-shadow: none;
+            padding: 1rem;
+            margin: -1rem -1rem -1rem auto;
+        }
+
+        .btn-close:hover {
+            opacity: 1;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            border-top: 1px solid #e9ecef;
+            padding: 1rem 1.5rem;
+            justify-content: space-between;
+        }
+
+        /* Booking Steps */
+        .booking-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .booking-steps:after {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 10%;
+            width: 80%;
+            height: 2px;
+            background-color: #e9ecef;
+            z-index: 1;
+        }
+
+        .booking-steps .step {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            width: 25%;
+        }
+
+        .step .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #e9ecef;
+            color: #6c757d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 5px;
+            font-weight: 600;
+            border: 2px solid white;
+            transition: all 0.3s ease;
+        }
+
+        .step.active .step-number {
+            background-color: #722F37;
+            color: white;
+            transform: scale(1.2);
+        }
+
+        .step.completed .step-number {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .step .step-label {
+            font-size: 0.85rem;
+            color: #6c757d;
+            transition: all 0.3s ease;
+        }
+
+        .step.active .step-label {
+            color: #722F37;
+            font-weight: 600;
+        }
+
+        .step.completed .step-label {
+            color: #28a745;
+        }
+
+        /* Vehicle Cards */
+        .vehicles-grid {
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .vehicle-card {
+            display: flex;
+            align-items: center;
+            padding: 1.25rem;
+            border-radius: 10px;
+            background-color: white;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+            margin-bottom: 15px;
+            animation: fadeInUp 0.5s ease forwards;
+        }
+
+        .vehicle-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: #ced4da;
+        }
+
+        .vehicle-card.selected {
+            border-color: #722F37;
+            background-color: rgba(114, 47, 55, 0.05);
+        }
+
+        .vehicle-icon {
+            width: 50px;
+            height: 50px;
+            background: #722F37;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            margin-right: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .vehicle-info {
+            flex: 1;
+        }
+
+        .vehicle-info h5 {
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #343a40;
+        }
+
+        .vehicle-info p {
+            margin: 0;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .vehicle-select {
+            color: #ccc;
+            font-size: 1.5rem;
+            margin-left: 10px;
+        }
+
+        .vehicle-card.selected .vehicle-select {
+            color: #722F37;
+        }
+
+        /* Service Options */
+        .service-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            grid-gap: 1.25rem;
+            margin-top: 1.5rem;
+        }
+
+        .service-option {
+            background-color: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .service-option:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: #ced4da;
+        }
+
+        .service-option.selected {
+            border-color: #722F37;
+            background-color: rgba(114, 47, 55, 0.05);
+        }
+
+        .service-option .service-icon {
+            width: 50px;
+            height: 50px;
+            background: #722F37;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            margin-right: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        .service-option .service-info {
+            flex: 1;
+        }
+
+        .service-option .service-info h5 {
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #343a40;
+        }
+
+        .service-option .service-info p {
+            margin: 0;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        /* New Vehicle Form */
+        #newVehicleForm {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+
+        #newVehicleForm h5 {
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            color: #343a40;
+            display: flex;
+            align-items: center;
+        }
+
+        #newVehicleForm h5 i {
+            margin-right: 10px;
+            color: #722F37;
+        }
+
+        #newVehicleForm .form-label {
+            font-weight: 500;
+            color: #495057;
+        }
+
+        #newVehicleForm .form-control,
+        #newVehicleForm .form-select {
+            border-radius: 8px;
+            padding: 0.6rem 1rem;
+        }
+
+        #newVehicleForm .form-control:focus,
+        #newVehicleForm .form-select:focus {
+            box-shadow: 0 0 0 0.25rem rgba(114, 47, 55, 0.25);
+            border-color: #722F37;
+        }
+
+        /* Confirmation Summary */
+        .confirmation-summary {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            border: 1px solid #e9ecef;
+        }
+
+        .summary-row {
+            display: flex;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid #e9ecef;
+            padding-bottom: 1rem;
+        }
+
+        .summary-row:last-child {
+            margin-bottom: 0;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .summary-label {
+            font-weight: 600;
+            width: 180px;
+            flex-shrink: 0;
+            color: #495057;
+        }
+
+        .summary-value {
+            flex: 1;
+            color: #212529;
+        }
+
+        /* Terms Agreement */
+        .terms-agreement {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.25rem;
+            margin-top: 1.5rem;
+            border: 1px solid #e9ecef;
+        }
+
+        .terms-agreement .form-check-label {
+            font-size: 0.9rem;
+            color: #495057;
+        }
+
+        .terms-agreement a {
+            color: #722F37;
+            text-decoration: none;
+        }
+
+        .terms-agreement a:hover {
+            text-decoration: underline;
+        }
+
+        /* Success Modal */
+        #bookingSuccessModal .modal-body {
+            text-align: center;
+            padding: 2.5rem;
+        }
+
+        .success-icon-container {
+            margin-bottom: 1.5rem;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: #722F37;
+            border-radius: 50%;
+            color: white;
+            font-size: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+        }
+
+        .success-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: #722F37;
+        }
+
+        .success-message {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            color: #6c757d;
+        }
+
+        .booking-reference {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            border: 1px solid #e9ecef;
+        }
+
+        /* Toast Notification */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+
+        .toast {
+            min-width: 250px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Other sections styling */
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+
+        .section-subtitle {
+            font-size: 1.1rem;
+            color: var(--gray);
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .features-section {
+            padding: 6rem 0;
+            background-color: white;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            height: 100%;
+            box-shadow: var(--shadow-md);
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            background: var(--gradient-primary);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            color: white;
+            font-size: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .feature-title {
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+
+        .feature-text {
+            color: var(--gray);
+            margin-bottom: 1.5rem;
+        }
+
+        .services-section {
+            padding: 6rem 0;
+            background: linear-gradient(135deg, rgba(114, 47, 55, 0.05) 0%, rgba(239, 251, 187, 0.1) 100%);
+        }
+
+        .service-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+            height: 100%;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        .service-card:hover {
+            transform: translateY(-10px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .service-img {
+            height: 200px;
+            width: 100%;
+            object-fit: cover;
+        }
+
+        .service-content {
+            padding: 2rem;
+            position: relative;
+        }
+
+        .how-it-works {
+            padding: 6rem 0;
+            background-color: white;
+        }
+
+        .step-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            height: 100%;
+            box-shadow: var(--shadow-md);
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            position: relative;
+            text-align: center;
+        }
+
+        .testimonials-section {
+            padding: 6rem 0;
+            background: linear-gradient(135deg, rgba(114, 47, 55, 0.05) 0%, rgba(239, 251, 187, 0.1) 100%);
+        }
+
+        .cta-section {
+            padding: 6rem 0;
+            position: relative;
+            overflow: hidden;
+            background: var(--gradient-primary);
+            color: white;
+        }
+
+        .footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 5rem 0 2rem;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 991.98px) {
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .btn-hero, .btn-hero-secondary {
+                padding: 0.75rem 1.5rem;
+            }
+
+            .modal-dialog {
+                max-width: 90%;
+            }
+
+            .service-options {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .hero-section {
+                height: auto;
+                padding: 6rem 0;
+            }
+
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .modal-dialog {
+                margin: 0.5rem;
+                max-width: calc(100% - 1rem);
+            }
+
+            .service-options {
+                grid-template-columns: 1fr;
+            }
+
+            .booking-steps .step-label {
+                font-size: 0.7rem;
+            }
+        }
+
+        @media (max-width: 575.98px) {
+            .modal-body {
+                padding: 1rem;
+            }
+
+            .modal-footer {
+                padding: 0.75rem 1rem;
+                flex-direction: column;
+            }
+
+            .modal-footer button {
+                width: 100%;
+                margin: 0.25rem 0;
+            }
+
+            .booking-steps:after {
+                left: 15%;
+                width: 70%;
+            }
+        }
+    </style>
 </head>
 <body>
 <nav class="navbar navbar-expand-lg fixed-top">
     <div class="container">
-        <a class="navbar-brand" th:href="@{/}">ALBANY</a>
+        <a class="navbar-brand" href="/">ALBANY</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
-                    <a class="nav-link" th:href="@{/}">Home</a>
+                    <a class="nav-link" href="/">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" th:href="@{/customer/aboutUs}">About Us</a>
+                    <a class="nav-link" href="/customer/aboutUs">About Us</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#services">Services</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" th:href="@{/customer/membership}">Membership</a>
+                    <a class="nav-link" href="/customer/membership">Membership</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#contact">Contact Us</a>
                 </li>
             </ul>
-            <div class="ms-lg-3 mt-3 mt-lg-0 d-flex">
-                <a th:href="@{/authentication/login}" class="btn btn-login me-2">Login</a>
-                <a th:href="@{/authentication/login}" class="btn btn-signup">Signup</a>
+            <div class="ms-lg-3 mt-3 mt-lg-0 d-flex" id="auth-container">
+                <a href="/authentication/login" class="btn btn-login me-2">Login</a>
+                <a href="/authentication/login" class="btn btn-signup">Signup</a>
             </div>
         </div>
     </div>
@@ -54,13 +985,13 @@
         </div>
         <div class="carousel-inner">
             <div class="carousel-item active">
-                <img th:src="@{/assets/vehicleBanner1.jpg}" class="d-block w-100" alt="Premium Service">
+                <img src="/assets/vehicleBanner1.jpg" class="d-block w-100" alt="Premium Service">
             </div>
             <div class="carousel-item">
-                <img th:src="@{/assets/vehicleBanner1.jpg}" class="d-block w-100" alt="Expert Technicians">
+                <img src="/assets/vehicleBanner1.jpg" class="d-block w-100" alt="Expert Technicians">
             </div>
             <div class="carousel-item">
-                <img th:src="@{/assets/vehicleBanner1.jpg}" class="d-block w-100" alt="Quality Service">
+                <img src="/assets/vehicleBanner1.jpg" class="d-block w-100" alt="Quality Service">
             </div>
         </div>
         <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
@@ -138,7 +1069,7 @@
         <div class="row">
             <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up">
                 <div class="service-card">
-                    <img th:src="@{/assets/EngineDiagnosis.jpg}" class="service-img" alt="Engine Diagnostics">
+                    <img src="/assets/EngineDiagnosis.jpg" class="service-img" alt="Engine Diagnostics">
                     <div class="service-content">
                         <div class="service-icon">
                             <i class="bi bi-tools"></i>
@@ -150,7 +1081,7 @@
             </div>
             <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="100">
                 <div class="service-card">
-                    <img th:src="@{/assets/oilAndFilter.jpg}" class="service-img" alt="Oil and Filters">
+                    <img src="/assets/oilAndFilter.jpg" class="service-img" alt="Oil and Filters">
                     <div class="service-content">
                         <div class="service-icon">
                             <i class="bi bi-droplet-fill"></i>
@@ -162,7 +1093,7 @@
             </div>
             <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="200">
                 <div class="service-card">
-                    <img th:src="@{/assets/BrakeRepair.jpg}" class="service-img" alt="Brake Repair">
+                    <img src="/assets/BrakeRepair.jpg" class="service-img" alt="Brake Repair">
                     <div class="service-content">
                         <div class="service-icon">
                             <i class="bi bi-car-front-fill"></i>
@@ -174,7 +1105,7 @@
             </div>
             <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="300">
                 <div class="service-card">
-                    <img th:src="@{/assets/wheelAlignment.jpg}" class="service-img" alt="Wheel Alignment">
+                    <img src="/assets/wheelAlignment.jpg" class="service-img" alt="Wheel Alignment">
                     <div class="service-content">
                         <div class="service-icon">
                             <i class="bi bi-gear-wide-connected"></i>
@@ -186,7 +1117,7 @@
             </div>
             <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="400">
                 <div class="service-card">
-                    <img th:src="@{/assets/battery.jpg}" class="service-img" alt="Battery Checking">
+                    <img src="/assets/battery.jpg" class="service-img" alt="Battery Checking">
                     <div class="service-content">
                         <div class="service-icon">
                             <i class="bi bi-battery-charging"></i>
@@ -198,7 +1129,7 @@
             </div>
             <div class="col-lg-4 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="500">
                 <div class="service-card">
-                    <img th:src="@{/assets/generalService.jpg}" class="service-img" alt="General Service">
+                    <img src="/assets/generalService.jpg" class="service-img" alt="General Service">
                     <div class="service-content">
                         <div class="service-icon">
                             <i class="bi bi-wrench-adjustable"></i>
@@ -274,7 +1205,7 @@
                 <div class="testimonial-card">
                     <p class="testimonial-text">Albany Service has been taking care of my car for years. Their attention to detail and quality of service is unmatched. I wouldn't trust my vehicle with anyone else.</p>
                     <div class="testimonial-author">
-                        <img th:src="@{/assets/customer4.jpg}" alt="Rajesh Kumar" class="testimonial-avatar">
+                        <img src="/assets/customer4.jpg" alt="Rajesh Kumar" class="testimonial-avatar">
                         <div>
                             <h4 class="testimonial-name">Rajesh Kumar</h4>
                             <p class="testimonial-role">Business Owner</p>
@@ -293,7 +1224,7 @@
                 <div class="testimonial-card">
                     <p class="testimonial-text">The real-time tracking feature is amazing! I could see exactly what was happening with my car during the service. The transparency and communication are excellent.</p>
                     <div class="testimonial-author">
-                        <img th:src="@{/assets/customer3.jpg}" alt="Priya Sharma" class="testimonial-avatar">
+                        <img src="/assets/customer3.jpg" alt="Priya Sharma" class="testimonial-avatar">
                         <div>
                             <h4 class="testimonial-name">Priya Sharma</h4>
                             <p class="testimonial-role">Software Engineer</p>
@@ -312,7 +1243,7 @@
                 <div class="testimonial-card">
                     <p class="testimonial-text">I've been a premium member for over a year now, and the benefits are worth every penny. Priority service, discounts, and the dedicated customer support make it a great value.</p>
                     <div class="testimonial-author">
-                        <img th:src="@{/assets/customer6.jpg}" alt="Vikram Singh" class="testimonial-avatar">
+                        <img src="/assets/customer6.jpg" alt="Vikram Singh" class="testimonial-avatar">
                         <div>
                             <h4 class="testimonial-name">Vikram Singh</h4>
                             <p class="testimonial-role">Marketing Director</p>
@@ -397,7 +1328,7 @@
             </div>
             <div class="col-lg-7" data-aos="fade-left">
                 <div class="contact-form-card">
-                    <form class="contact-form" th:action="@{/contact/submit}" method="post">
+                    <form class="contact-form" action="/contact/submit" method="post">
                         <div class="row g-4">
                             <div class="col-md-6">
                                 <div class="form-group">
@@ -441,121 +1372,7 @@
     </div>
 </section>
 
-<section class="faq-section" id="faq">
-    <div class="container">
-        <div class="text-center mb-5">
-            <h2 class="section-title" data-aos="fade-up">Frequently Asked Questions</h2>
-            <p class="section-subtitle" data-aos="fade-up" data-aos-delay="100">Find answers to the most common questions about our services</p>
-        </div>
-
-        <div class="row justify-content-center">
-            <div class="col-lg-10" data-aos="fade-up" data-aos-delay="200">
-                <div class="accordion faq-accordion" id="faqAccordion">
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="headingOne">
-                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                                How do I schedule a service appointment?
-                            </button>
-                        </h2>
-                        <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body">
-                                <p>You can schedule a service appointment in multiple ways:</p>
-                                <ul>
-                                    <li>Use our online booking system on this website</li>
-                                    <li>Call our customer service at +91 98765 43210</li>
-                                    <li>Visit our service center in person</li>
-                                    <li>Use the Albany mobile app</li>
-                                </ul>
-                                <p>We recommend booking at least 2-3 days in advance to ensure availability for your preferred time slot.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="headingTwo">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                                What types of vehicles do you service?
-                            </button>
-                        </h2>
-                        <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body">
-                                <p>At Albany, we service a wide range of vehicles including:</p>
-                                <ul>
-                                    <li>Passenger cars of all makes and models</li>
-                                    <li>SUVs and crossovers</li>
-                                    <li>Luxury vehicles</li>
-                                    <li>Light commercial vehicles</li>
-                                </ul>
-                                <p>Our technicians are certified and trained to work on both domestic and imported vehicles, ensuring high-quality service regardless of your vehicle type.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="headingThree">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-                                How long does a typical service take?
-                            </button>
-                        </h2>
-                        <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body">
-                                <p>Service duration depends on the type of service your vehicle needs:</p>
-                                <ul>
-                                    <li>Regular maintenance: 1-2 hours</li>
-                                    <li>Oil change and filter replacement: 30-45 minutes</li>
-                                    <li>Comprehensive service: 3-4 hours</li>
-                                    <li>Major repairs: May take 1-2 days depending on complexity</li>
-                                </ul>
-                                <p>We provide estimated completion times when you book your service, and you can track the progress in real-time through our customer portal.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="headingFour">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
-                                Do you offer pickup and drop-off services?
-                            </button>
-                        </h2>
-                        <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body">
-                                <p>Yes, we offer convenient pickup and drop-off services for our customers:</p>
-                                <ul>
-                                    <li>Free pickup and drop-off within a 5km radius of our service center</li>
-                                    <li>Nominal fee for locations beyond 5km</li>
-                                    <li>Premium members enjoy extended radius benefits</li>
-                                </ul>
-                                <p>You can request this service while booking your appointment online or by calling our customer service.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="accordion-item">
-                        <h2 class="accordion-header" id="headingFive">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
-                                What payment methods do you accept?
-                            </button>
-                        </h2>
-                        <div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body">
-                                <p>We accept various payment methods for your convenience:</p>
-                                <ul>
-                                    <li>Credit and debit cards (Visa, Mastercard, American Express)</li>
-                                    <li>UPI payments</li>
-                                    <li>Net banking</li>
-                                    <li>Cash</li>
-                                </ul>
-                                <p>You can also save your payment information securely in your account for faster checkout in the future.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<footer class="footer" id="contact">
+<footer class="footer" id="footer">
     <div class="container">
         <div class="row">
             <div class="col-lg-4 mb-5 mb-lg-0">
@@ -910,9 +1727,984 @@
     </div>
 </div>
 
+<!-- Toast container for notifications -->
+<div class="toast-container position-fixed top-0 end-0 p-3"></div>
+
 <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="/static/Javascript/customer/index.js"></script>
+<script>
+    /**
+     * Albany Vehicle Service Booking System
+     *
+     * A comprehensive solution for vehicle service management
+     */
+    class BookingSystem {
+        constructor() {
+            this.state = {
+                currentStep: 1,
+                totalSteps: 4,
+                selectedVehicleId: null,
+                vehicles: [],
+                newVehicle: null,
+                selectedService: null,
+                formData: {}
+            };
 
+            this.elements = {};
+            this.apiEndpoints = {
+                vehicles: '/customer/api/vehicles',
+                newVehicle: '/customer/api/vehicles/add',
+                bookService: '/customer/api/service-requests',
+                profile: '/api/customer/profile'
+            };
+
+            this.init();
+        }
+
+        /**
+         * Initialize the booking system
+         */
+        init() {
+            this.cacheElements();
+            this.setupEventListeners();
+            this.setupBookingSteps();
+            this.initializeDateInputs();
+            this.initUI();
+            this.initializeAuthentication();
+        }
+
+        /**
+         * Initialize UI components
+         */
+        initUI() {
+            if (typeof AOS !== 'undefined') {
+                AOS.init({
+                    duration: 800,
+                    easing: 'ease-in-out',
+                    once: true
+                });
+            }
+
+            // Handle main navigation
+            this.setupNavigation();
+
+            // Set up book service buttons
+            this.setupBookServiceButtons();
+        }
+
+        /**
+         * Initialize authentication state
+         */
+        initializeAuthentication() {
+            const token = this.getAuthToken();
+            const userData = this.getUserData();
+
+            if (token && userData) {
+                this.updateNavbarForAuthenticatedUser(userData);
+            }
+        }
+
+        /**
+         * Get authentication token from session storage
+         */
+        getAuthToken() {
+            return sessionStorage.getItem('authToken');
+        }
+
+        /**
+         * Get user data from session storage
+         */
+        getUserData() {
+            const userDataStr = sessionStorage.getItem('userData');
+            if (userDataStr) {
+                try {
+                    return JSON.parse(userDataStr);
+                } catch (e) {
+                    console.error('Error parsing user data', e);
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        /**
+         * Update navbar for authenticated user
+         */
+        updateNavbarForAuthenticatedUser(userData) {
+            const authContainer = document.getElementById('auth-container');
+            if (!authContainer) return;
+
+            // Create user profile dropdown
+            const dropdownHtml = `
+            <div class="user-profile-dropdown">
+                <button class="profile-toggle" id="profileDropdownToggle">
+                    <span>Hi, ${this.escapeHtml(userData.firstName || 'User')}</span>
+                    <i class="bi bi-chevron-down"></i>
+                </button>
+                <div class="profile-dropdown-menu" id="profileDropdownMenu">
+                    <a href="/customer/profile" class="profile-dropdown-item">
+                        <i class="bi bi-person"></i> My Profile
+                    </a>
+                    <a href="/customer/myVehicles" class="profile-dropdown-item">
+                        <i class="bi bi-car-front"></i> My Vehicles
+                    </a>
+                    <a href="/customer/serviceHistory" class="profile-dropdown-item">
+                        <i class="bi bi-clock-history"></i> Service History
+                    </a>
+                    <div class="profile-dropdown-divider"></div>
+                    <a href="#" class="profile-dropdown-item" id="logoutBtn">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </a>
+                </div>
+            </div>
+        `;
+
+            // Replace login/signup buttons with user dropdown
+            authContainer.innerHTML = dropdownHtml;
+
+            // Add event listeners for dropdown
+            const dropdownToggle = document.getElementById('profileDropdownToggle');
+            const dropdownMenu = document.getElementById('profileDropdownMenu');
+            const logoutBtn = document.getElementById('logoutBtn');
+
+            if (dropdownToggle && dropdownMenu) {
+                dropdownToggle.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    dropdownToggle.classList.toggle('show');
+                    dropdownMenu.classList.toggle('show');
+                });
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', (e) => {
+                    if (!dropdownToggle.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                        dropdownToggle.classList.remove('show');
+                        dropdownMenu.classList.remove('show');
+                    }
+                });
+            }
+
+            // Add logout functionality
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    this.logout();
+                });
+            }
+        }
+
+        /**
+         * Handle user logout
+         */
+        logout() {
+            // Clear authentication data
+            sessionStorage.removeItem('authToken');
+            sessionStorage.removeItem('userData');
+
+            // Show success message
+            this.showToast('You have been logged out successfully', 'success');
+
+            // Redirect to home page after a short delay
+            setTimeout(() => {
+                window.location.href = '/';
+            }, 1000);
+        }
+
+        /**
+         * Setup navigation and scroll behavior
+         */
+        setupNavigation() {
+            // Handle navbar scroll effect
+            window.addEventListener('scroll', this.handleNavbarScroll);
+            this.handleNavbarScroll();
+
+            // Set active nav item based on current page
+            this.setActiveNavItem();
+        }
+
+        /**
+         * Handle navbar scroll effect
+         */
+        handleNavbarScroll() {
+            const navbar = document.querySelector('.navbar');
+            if (navbar) {
+                navbar.classList.toggle('scrolled', window.scrollY > 50);
+            }
+        }
+
+        /**
+         * Set active navigation item
+         */
+        setActiveNavItem() {
+            const currentPath = window.location.pathname;
+            const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+            });
+
+            navLinks.forEach(link => {
+                const href = link.getAttribute('href');
+
+                if (href && href.startsWith('#') && currentPath === '/') {
+                    return;
+                } else if (href && href.startsWith('/')) {
+                    if (currentPath === href || (currentPath.startsWith(href) && href !== '/')) {
+                        link.classList.add('active');
+                    }
+                }
+            });
+
+            if (currentPath === '/' || currentPath === '') {
+                const homeLink = document.querySelector('.navbar-nav .nav-link[href="/"]');
+                if (homeLink) {
+                    homeLink.classList.add('active');
+                }
+            }
+        }
+
+        /**
+         * Setup book service buttons
+         */
+        setupBookServiceButtons() {
+            const bookButtons = document.querySelectorAll('#bookServiceBtn, #ctaBookServiceBtn');
+
+            bookButtons.forEach(btn => {
+                btn.addEventListener('click', this.showBookingModal.bind(this));
+            });
+        }
+
+        /**
+         * Show booking modal
+         */
+        showBookingModal() {
+            const isLoggedIn = this.isUserLoggedIn();
+
+            if (isLoggedIn) {
+                const bookServiceModal = new bootstrap.Modal(document.getElementById('bookServiceModal'));
+                bookServiceModal.show();
+            } else {
+                window.location.href = '/authentication/login?message=' +
+                    encodeURIComponent('Please login to book a service') +
+                    '&type=info&redirect=/customer';
+            }
+        }
+
+        /**
+         * Check if user is logged in
+         */
+        isUserLoggedIn() {
+            return this.getAuthToken() !== null;
+        }
+
+        /**
+         * Cache DOM elements for better performance
+         */
+        cacheElements() {
+            this.elements = {
+                modal: document.getElementById('bookServiceModal'),
+                form: document.getElementById('bookServiceForm'),
+                steps: document.querySelectorAll('.booking-steps .step'),
+                stepContents: document.querySelectorAll('.booking-step-content'),
+                nextBtn: document.getElementById('nextStepBtn'),
+                prevBtn: document.getElementById('prevStepBtn'),
+                submitBtn: document.getElementById('submitBookingBtn'),
+
+                vehiclesList: document.getElementById('vehiclesList'),
+                showAddVehicleBtn: document.getElementById('showAddVehicleBtn'),
+                newVehicleForm: document.getElementById('newVehicleForm'),
+                saveVehicleBtn: document.getElementById('saveNewVehicleBtn'),
+                cancelVehicleBtn: document.getElementById('cancelNewVehicleBtn'),
+
+                serviceOptions: document.querySelectorAll('.service-option'),
+                selectedServiceInput: document.getElementById('selectedService'),
+
+                deliveryDate: document.getElementById('deliveryDate'),
+                preferredTime: document.getElementById('preferredTime'),
+                serviceDescription: document.getElementById('serviceDescription'),
+
+                summaryVehicle: document.getElementById('summaryVehicle'),
+                summaryService: document.getElementById('summaryService'),
+                summaryDate: document.getElementById('summaryDate'),
+                summaryTime: document.getElementById('summaryTime'),
+                summaryDescription: document.getElementById('summaryDescription'),
+                termsCheck: document.getElementById('termsCheck')
+            };
+        }
+
+        /**
+         * Set up event listeners
+         */
+        setupEventListeners() {
+            if (this.elements.modal) {
+                this.elements.modal.addEventListener('show.bs.modal', this.onModalShow.bind(this));
+            }
+
+            if (this.elements.nextBtn) {
+                this.elements.nextBtn.addEventListener('click', this.goToNextStep.bind(this));
+            }
+
+            if (this.elements.prevBtn) {
+                this.elements.prevBtn.addEventListener('click', this.goToPreviousStep.bind(this));
+            }
+
+            if (this.elements.submitBtn) {
+                this.elements.submitBtn.addEventListener('click', this.submitBooking.bind(this));
+            }
+
+            if (this.elements.showAddVehicleBtn) {
+                this.elements.showAddVehicleBtn.addEventListener('click', this.showAddVehicleForm.bind(this));
+            }
+
+            if (this.elements.saveVehicleBtn) {
+                this.elements.saveVehicleBtn.addEventListener('click', this.saveNewVehicle.bind(this));
+            }
+
+            if (this.elements.cancelVehicleBtn) {
+                this.elements.cancelVehicleBtn.addEventListener('click', this.hideAddVehicleForm.bind(this));
+            }
+
+            if (this.elements.serviceOptions) {
+                this.elements.serviceOptions.forEach(option => {
+                    option.addEventListener('click', () => this.selectService(option));
+                });
+            }
+        }
+
+        /**
+         * Set up booking steps
+         */
+        setupBookingSteps() {
+            const today = new Date();
+            const formattedDate = today.toISOString().split('T')[0];
+            if (this.elements.deliveryDate) {
+                this.elements.deliveryDate.min = formattedDate;
+            }
+        }
+
+        /**
+         * Initialize date inputs
+         */
+        initializeDateInputs() {
+            if (this.elements.deliveryDate) {
+                const today = new Date();
+                this.elements.deliveryDate.min = today.toISOString().split('T')[0];
+
+                const tomorrow = new Date();
+                tomorrow.setDate(today.getDate() + 1);
+                this.elements.deliveryDate.value = tomorrow.toISOString().split('T')[0];
+            }
+        }
+
+        /**
+         * Handle modal show event
+         */
+        onModalShow() {
+            this.resetForm();
+            this.loadUserVehicles();
+        }
+
+        /**
+         * Reset form to initial state
+         */
+        resetForm() {
+            this.state.currentStep = 1;
+            this.state.selectedVehicleId = null;
+            this.state.selectedService = null;
+            this.state.formData = {};
+
+            if (this.elements.form) {
+                this.elements.form.reset();
+            }
+
+            this.updateStepsUI();
+            this.hideAddVehicleForm();
+
+            if (this.elements.serviceOptions) {
+                this.elements.serviceOptions.forEach(option => {
+                    option.classList.remove('selected');
+                });
+            }
+
+            if (this.elements.selectedServiceInput) {
+                this.elements.selectedServiceInput.value = '';
+            }
+
+            if (this.elements.summaryVehicle) this.elements.summaryVehicle.textContent = '';
+            if (this.elements.summaryService) this.elements.summaryService.textContent = '';
+            if (this.elements.summaryDate) this.elements.summaryDate.textContent = '';
+            if (this.elements.summaryTime) this.elements.summaryTime.textContent = '';
+            if (this.elements.summaryDescription) this.elements.summaryDescription.textContent = '';
+        }
+
+        /**
+         * Load user vehicles from API
+         */
+        loadUserVehicles() {
+            const token = this.getAuthToken();
+            if (!token) {
+                this.showVehiclesError('Authentication required');
+                return;
+            }
+
+            if (this.elements.vehiclesList) {
+                this.elements.vehiclesList.innerHTML = `
+                <div class="loading-vehicles text-center py-4">
+                    <div class="spinner-border text-primary mb-2" role="status"></div>
+                    <p>Loading your vehicles...</p>
+                </div>
+            `;
+            }
+
+            fetch(this.apiEndpoints.vehicles, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to load vehicles');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    this.state.vehicles = Array.isArray(data) ? data : [];
+                    this.renderVehiclesList();
+                })
+                .catch(error => {
+                    console.error('Error loading vehicles:', error);
+                    this.showVehiclesError(error.message);
+                });
+        }
+
+        /**
+         * Render the list of vehicles
+         */
+        renderVehiclesList() {
+            if (!this.elements.vehiclesList) return;
+
+            if (!this.state.vehicles || this.state.vehicles.length === 0) {
+                this.elements.vehiclesList.innerHTML = `
+                <div class="no-vehicles text-center py-4">
+                    <div class="mb-3">
+                        <i class="bi bi-car-front text-muted" style="font-size: 3rem;"></i>
+                    </div>
+                    <h5>No vehicles found</h5>
+                    <p class="text-muted">Add a vehicle to continue</p>
+                </div>
+            `;
+                return;
+            }
+
+            let html = '<div class="row g-3">';
+
+            this.state.vehicles.forEach(vehicle => {
+                const vehicleId = vehicle.vehicleId;
+                const vehicleName = `${vehicle.brand} ${vehicle.model}`;
+                const vehicleYear = vehicle.year || '';
+                const vehicleReg = vehicle.registrationNumber || '';
+
+                html += `
+                <div class="col-md-6">
+                    <div class="vehicle-card ${this.state.selectedVehicleId === vehicleId ? 'selected' : ''}"
+                         data-vehicle-id="${vehicleId}">
+                        <div class="vehicle-icon">
+                            <i class="bi bi-${vehicle.category === 'Bike' ? 'bicycle' : 'car-front'}"></i>
+                        </div>
+                        <div class="vehicle-info">
+                            <h5>${this.escapeHtml(vehicleName)}</h5>
+                            <p>${vehicleYear} · ${this.escapeHtml(vehicleReg)}</p>
+                        </div>
+                        <div class="vehicle-select">
+                            <i class="bi bi-check-circle-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            `;
+            });
+
+            html += '</div>';
+            this.elements.vehiclesList.innerHTML = html;
+
+            // Add event listeners to vehicle cards
+            document.querySelectorAll('.vehicle-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const vehicleId = parseInt(card.getAttribute('data-vehicle-id'), 10);
+                    this.selectVehicle(vehicleId);
+                });
+            });
+        }
+
+        /**
+         * Show error message when loading vehicles fails
+         */
+        showVehiclesError(message) {
+            if (!this.elements.vehiclesList) return;
+
+            this.elements.vehiclesList.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                ${message || 'Failed to load vehicles'}
+            </div>
+            <div class="text-center">
+                <p>Please try adding a new vehicle instead</p>
+            </div>
+        `;
+        }
+
+        /**
+         * Select a vehicle
+         */
+        selectVehicle(vehicleId) {
+            this.state.selectedVehicleId = vehicleId;
+
+            document.querySelectorAll('.vehicle-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+
+            const selectedCard = document.querySelector(`.vehicle-card[data-vehicle-id="${vehicleId}"]`);
+            if (selectedCard) {
+                selectedCard.classList.add('selected');
+            }
+
+            if (this.elements.nextBtn) {
+                this.elements.nextBtn.disabled = false;
+            }
+        }
+
+        /**
+         * Show the add vehicle form
+         */
+        showAddVehicleForm() {
+            if (this.elements.newVehicleForm) {
+                this.elements.newVehicleForm.style.display = 'block';
+            }
+
+            if (this.elements.showAddVehicleBtn) {
+                this.elements.showAddVehicleBtn.style.display = 'none';
+            }
+        }
+
+        /**
+         * Hide the add vehicle form
+         */
+        hideAddVehicleForm() {
+            if (this.elements.newVehicleForm) {
+                this.elements.newVehicleForm.style.display = 'none';
+            }
+
+            if (this.elements.showAddVehicleBtn) {
+                this.elements.showAddVehicleBtn.style.display = 'block';
+            }
+        }
+
+        /**
+         * Save a new vehicle
+         */
+        saveNewVehicle() {
+            const brand = document.getElementById('vehicleBrand').value.trim();
+            const model = document.getElementById('vehicleModel').value.trim();
+            const regNumber = document.getElementById('vehicleRegNumber').value.trim();
+            const year = document.getElementById('vehicleYear').value;
+            const category = document.getElementById('vehicleCategory').value;
+
+            if (!brand || !model || !regNumber || !year || !category) {
+                this.showToast('Please fill all required fields', 'error');
+                return;
+            }
+
+            const vehicleData = {
+                brand,
+                model,
+                registrationNumber: regNumber,
+                year: parseInt(year, 10),
+                category
+            };
+
+            const token = this.getAuthToken();
+            if (!token) {
+                this.showToast('Authentication required', 'error');
+                return;
+            }
+
+            if (this.elements.saveVehicleBtn) {
+                this.elements.saveVehicleBtn.disabled = true;
+                this.elements.saveVehicleBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Saving...';
+            }
+
+            fetch(this.apiEndpoints.newVehicle, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(vehicleData)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to save vehicle');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    this.state.vehicles.push(data);
+                    this.state.selectedVehicleId = data.vehicleId;
+                    this.renderVehiclesList();
+                    this.hideAddVehicleForm();
+
+                    // Reset form fields
+                    if (document.getElementById('vehicleBrand')) document.getElementById('vehicleBrand').value = '';
+                    if (document.getElementById('vehicleModel')) document.getElementById('vehicleModel').value = '';
+                    if (document.getElementById('vehicleRegNumber')) document.getElementById('vehicleRegNumber').value = '';
+                    if (document.getElementById('vehicleYear')) document.getElementById('vehicleYear').value = '';
+                    if (document.getElementById('vehicleCategory')) document.getElementById('vehicleCategory').value = '';
+
+                    this.showToast('Vehicle added successfully', 'success');
+                })
+                .catch(error => {
+                    console.error('Error saving vehicle:', error);
+                    this.showToast(error.message || 'Failed to save vehicle', 'error');
+                })
+                .finally(() => {
+                    if (this.elements.saveVehicleBtn) {
+                        this.elements.saveVehicleBtn.disabled = false;
+                        this.elements.saveVehicleBtn.innerHTML = 'Save Vehicle';
+                    }
+                });
+        }
+
+        /**
+         * Select a service type
+         */
+        selectService(serviceOption) {
+            const serviceType = serviceOption.getAttribute('data-service');
+            this.state.selectedService = serviceType;
+
+            if (this.elements.serviceOptions) {
+                this.elements.serviceOptions.forEach(option => {
+                    option.classList.remove('selected');
+                });
+            }
+
+            serviceOption.classList.add('selected');
+
+            if (this.elements.selectedServiceInput) {
+                this.elements.selectedServiceInput.value = serviceType;
+            }
+
+            if (this.elements.nextBtn) {
+                this.elements.nextBtn.disabled = false;
+            }
+        }
+
+        /**
+         * Go to the next step
+         */
+        goToNextStep() {
+            if (!this.validateCurrentStep()) {
+                return;
+            }
+
+            if (this.state.currentStep < this.state.totalSteps) {
+                this.state.currentStep++;
+                this.updateStepsUI();
+
+                if (this.state.currentStep === 4) {
+                    this.updateConfirmationSummary();
+                }
+            }
+        }
+
+        /**
+         * Go to the previous step
+         */
+        goToPreviousStep() {
+            if (this.state.currentStep > 1) {
+                this.state.currentStep--;
+                this.updateStepsUI();
+            }
+        }
+
+        /**
+         * Update the UI to reflect the current step
+         */
+        updateStepsUI() {
+            if (this.elements.steps) {
+                this.elements.steps.forEach((step, index) => {
+                    const stepNum = index + 1;
+                    step.classList.remove('active', 'completed');
+
+                    if (stepNum < this.state.currentStep) {
+                        step.classList.add('completed');
+                    } else if (stepNum === this.state.currentStep) {
+                        step.classList.add('active');
+                    }
+                });
+            }
+
+            if (this.elements.stepContents) {
+                this.elements.stepContents.forEach((content, index) => {
+                    const stepNum = index + 1;
+                    content.style.display = stepNum === this.state.currentStep ? 'block' : 'none';
+                });
+            }
+
+            if (this.elements.prevBtn) {
+                this.elements.prevBtn.style.display = this.state.currentStep > 1 ? 'block' : 'none';
+            }
+
+            if (this.elements.nextBtn) {
+                this.elements.nextBtn.style.display = this.state.currentStep < this.state.totalSteps ? 'block' : 'none';
+            }
+
+            if (this.elements.submitBtn) {
+                this.elements.submitBtn.style.display = this.state.currentStep === this.state.totalSteps ? 'block' : 'none';
+            }
+        }
+
+        /**
+         * Validate the current step
+         */
+        validateCurrentStep() {
+            switch (this.state.currentStep) {
+                case 1:
+                    if (!this.state.selectedVehicleId &&
+                        this.elements.newVehicleForm &&
+                        this.elements.newVehicleForm.style.display === 'none') {
+                        this.showToast('Please select a vehicle or add a new one', 'error');
+                        return false;
+                    }
+                    return true;
+
+                case 2:
+                    if (!this.state.selectedService) {
+                        this.showToast('Please select a service type', 'error');
+                        return false;
+                    }
+                    return true;
+
+                case 3:
+                    if (this.elements.deliveryDate && !this.elements.deliveryDate.value) {
+                        this.showToast('Please select a preferred service date', 'error');
+                        return false;
+                    }
+
+                    this.state.formData = {
+                        vehicleId: this.state.selectedVehicleId,
+                        serviceType: this.state.selectedService,
+                        deliveryDate: this.elements.deliveryDate ? this.elements.deliveryDate.value : null,
+                        preferredTime: this.elements.preferredTime ? this.elements.preferredTime.value : null,
+                        additionalDescription: this.elements.serviceDescription ? this.elements.serviceDescription.value : null
+                    };
+
+                    return true;
+
+                case 4:
+                    if (this.elements.termsCheck && !this.elements.termsCheck.checked) {
+                        this.showToast('Please agree to the terms and conditions', 'error');
+                        return false;
+                    }
+                    return true;
+            }
+
+            return true;
+        }
+
+        /**
+         * Update the confirmation summary
+         */
+        updateConfirmationSummary() {
+            const selectedVehicle = this.state.vehicles.find(v => v.vehicleId === this.state.selectedVehicleId);
+
+            if (selectedVehicle && this.elements.summaryVehicle) {
+                this.elements.summaryVehicle.textContent = `${selectedVehicle.brand} ${selectedVehicle.model} (${selectedVehicle.registrationNumber})`;
+            }
+
+            if (this.elements.summaryService) {
+                this.elements.summaryService.textContent = this.state.selectedService || 'N/A';
+            }
+
+            if (this.elements.deliveryDate && this.elements.summaryDate) {
+                const deliveryDate = this.elements.deliveryDate.value;
+                if (deliveryDate) {
+                    const formattedDate = new Date(deliveryDate).toLocaleDateString('en-US', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                    this.elements.summaryDate.textContent = formattedDate;
+                } else {
+                    this.elements.summaryDate.textContent = 'N/A';
+                }
+            }
+
+            if (this.elements.preferredTime && this.elements.summaryTime) {
+                this.elements.summaryTime.textContent = this.elements.preferredTime.value || 'Any time';
+            }
+
+            if (this.elements.serviceDescription && this.elements.summaryDescription) {
+                this.elements.summaryDescription.textContent = this.elements.serviceDescription.value || 'No additional information provided';
+            }
+        }
+
+        /**
+         * Submit the booking
+         */
+        submitBooking() {
+            if (!this.validateCurrentStep()) {
+                return;
+            }
+
+            const token = this.getAuthToken();
+            if (!token) {
+                this.showToast('Authentication required', 'error');
+                return;
+            }
+
+            if (this.elements.submitBtn) {
+                this.elements.submitBtn.disabled = true;
+                this.elements.submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Processing...';
+            }
+
+            const requestData = {
+                vehicleId: this.state.selectedVehicleId,
+                serviceType: this.state.selectedService,
+                deliveryDate: this.elements.deliveryDate ? this.elements.deliveryDate.value : null,
+                additionalDescription: this.elements.serviceDescription ? this.elements.serviceDescription.value : null
+            };
+
+            fetch(this.apiEndpoints.bookService, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestData)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to book service');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (this.elements.modal) {
+                        const bookingModal = bootstrap.Modal.getInstance(this.elements.modal);
+                        if (bookingModal) {
+                            bookingModal.hide();
+                        }
+                    }
+
+                    this.showBookingSuccess(data);
+                })
+                .catch(error => {
+                    console.error('Error booking service:', error);
+                    this.showToast(error.message || 'Failed to book service', 'error');
+                })
+                .finally(() => {
+                    if (this.elements.submitBtn) {
+                        this.elements.submitBtn.disabled = false;
+                        this.elements.submitBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i> Confirm Booking';
+                    }
+                });
+        }
+
+        /**
+         * Show booking success modal
+         */
+        showBookingSuccess(bookingData) {
+            const bookingReference = bookingData.requestId ?
+                `ALB-${bookingData.requestId}-${new Date().getFullYear()}` :
+                `ALB-${Math.floor(Math.random() * 10000)}-${new Date().getFullYear()}`;
+
+            const successModal = new bootstrap.Modal(document.getElementById('bookingSuccessModal'));
+
+            if (document.getElementById('bookingReference')) {
+                document.getElementById('bookingReference').textContent = bookingReference;
+            }
+
+            if (successModal) {
+                successModal.show();
+            }
+        }
+
+        /**
+         * Show toast notification
+         */
+        showToast(message, type = 'info') {
+            let toastContainer = document.querySelector('.toast-container');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.className = 'toast-container position-fixed top-0 end-0 p-3';
+                document.body.appendChild(toastContainer);
+            }
+
+            const toastId = 'toast-' + Date.now();
+            const toastHTML = `
+            <div id="${toastId}" class="toast align-items-center text-white bg-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'info'} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        `;
+
+            toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+
+            const toastElement = document.getElementById(toastId);
+            if (toastElement) {
+                const toast = new bootstrap.Toast(toastElement, {
+                    autohide: true,
+                    delay: 5000
+                });
+                toast.show();
+
+                toastElement.addEventListener('hidden.bs.toast', function() {
+                    toastElement.remove();
+                });
+            }
+        }
+
+        /**
+         * Helper method to escape HTML special characters
+         */
+        escapeHtml(text) {
+            if (!text) return '';
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    }
+
+    // Initialize the system when the page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        window.bookingSystem = new BookingSystem();
+
+        // Check for authentication redirect
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const userData = urlParams.get('user');
+
+        if (token) {
+            sessionStorage.setItem('authToken', token);
+
+            if (userData) {
+                try {
+                    const parsedUserData = JSON.parse(atob(userData));
+                    sessionStorage.setItem('userData', JSON.stringify(parsedUserData));
+                    window.location.href = window.location.pathname; // Reload without query params
+                } catch (e) {
+                    console.error('Error parsing user data from URL', e);
+                }
+            }
+        }
+    });
+</script>
 </body>
 </html>

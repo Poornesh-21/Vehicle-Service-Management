@@ -1,21 +1,14 @@
 package com.albany.mvc.controller.customer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
+import jakarta.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,6 +18,8 @@ import java.util.Map;
 @Controller
 @RequestMapping("/authentication")
 public class CustomerAuthController {
+
+    private static final Logger logger = LoggerFactory.getLogger(CustomerAuthController.class);
 
     @Value("${api.base.url:http://localhost:8080}")
     private String apiBaseUrl;
@@ -40,12 +35,7 @@ public class CustomerAuthController {
      */
     @GetMapping("/login")
     public String loginPage(@RequestParam(required = false) String message,
-                            @RequestParam(required = false) String type,
-                            Model model) {
-        if (message != null) {
-            model.addAttribute("message", message);
-            model.addAttribute("messageType", type != null ? type : "info");
-        }
+                            @RequestParam(required = false) String type) {
         return "customer/login";
     }
 
@@ -64,6 +54,8 @@ public class CustomerAuthController {
 
             HttpEntity<Map<String, String>> entity = new HttpEntity<>(requestBody, headers);
 
+            logger.info("Sending OTP request to: {}", apiBaseUrl + "/api/customer/auth/login/send-otp");
+
             ResponseEntity<Map> response = restTemplate.exchange(
                     apiBaseUrl + "/api/customer/auth/login/send-otp",
                     HttpMethod.POST,
@@ -71,8 +63,10 @@ public class CustomerAuthController {
                     Map.class
             );
 
+            logger.info("Received response from API: {}", response.getStatusCode());
             return ResponseEntity.ok(response.getBody());
         } catch (Exception e) {
+            logger.error("Error sending OTP request: {}", e.getMessage(), e);
             return ResponseEntity.ok(Map.of(
                     "success", false,
                     "message", "Failed to send OTP: " + e.getMessage(),
@@ -86,7 +80,7 @@ public class CustomerAuthController {
      */
     @PostMapping("/login/verify-otp")
     @ResponseBody
-    public ResponseEntity<?> verifyLoginOtp(@RequestParam String email, @RequestParam String otp) {
+    public ResponseEntity<?> verifyLoginOtp(@RequestParam String email, @RequestParam String otp, HttpSession session) {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -104,8 +98,18 @@ public class CustomerAuthController {
                     Map.class
             );
 
+            // If login successful, store token in session
+            Map<String, Object> responseBody = response.getBody();
+            if (responseBody != null && Boolean.TRUE.equals(responseBody.get("success"))) {
+                String token = (String) responseBody.get("token");
+                if (token != null) {
+                    session.setAttribute("authToken", token);
+                }
+            }
+
             return ResponseEntity.ok(response.getBody());
         } catch (Exception e) {
+            logger.error("Error verifying OTP: {}", e.getMessage(), e);
             return ResponseEntity.ok(Map.of(
                     "success", false,
                     "message", "Failed to verify OTP: " + e.getMessage(),
@@ -135,6 +139,7 @@ public class CustomerAuthController {
 
             return ResponseEntity.ok(response.getBody());
         } catch (Exception e) {
+            logger.error("Error sending registration OTP: {}", e.getMessage(), e);
             return ResponseEntity.ok(Map.of(
                     "success", false,
                     "message", "Failed to send registration OTP: " + e.getMessage(),
@@ -148,7 +153,7 @@ public class CustomerAuthController {
      */
     @PostMapping("/register/verify-otp")
     @ResponseBody
-    public ResponseEntity<?> verifyRegistrationOtp(@RequestBody Map<String, Object> requestData) {
+    public ResponseEntity<?> verifyRegistrationOtp(@RequestBody Map<String, Object> requestData, HttpSession session) {
         try {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
@@ -162,8 +167,18 @@ public class CustomerAuthController {
                     Map.class
             );
 
+            // If registration successful, store token in session
+            Map<String, Object> responseBody = response.getBody();
+            if (responseBody != null && Boolean.TRUE.equals(responseBody.get("success"))) {
+                String token = (String) responseBody.get("token");
+                if (token != null) {
+                    session.setAttribute("authToken", token);
+                }
+            }
+
             return ResponseEntity.ok(response.getBody());
         } catch (Exception e) {
+            logger.error("Error verifying registration OTP: {}", e.getMessage(), e);
             return ResponseEntity.ok(Map.of(
                     "success", false,
                     "message", "Failed to verify registration OTP: " + e.getMessage(),
@@ -197,6 +212,7 @@ public class CustomerAuthController {
 
             return ResponseEntity.ok(response.getBody());
         } catch (Exception e) {
+            logger.error("Error validating token: {}", e.getMessage(), e);
             return ResponseEntity.ok(Map.of(
                     "valid", false,
                     "message", "Failed to validate token: " + e.getMessage()

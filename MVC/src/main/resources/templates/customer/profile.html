@@ -395,6 +395,317 @@
             color: var(--primary);
         }
 
+        /* Additional styles for vehicle management */
+        .vehicle-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            justify-content: flex-end;
+        }
+
+        .btn-danger {
+            color: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background-color: rgba(220, 53, 69, 0.1);
+        }
+
+        /* Service detail modal styles */
+        .service-detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin: 1.5rem 0 1rem;
+            border-bottom: 1px solid var(--medium-gray);
+            padding-bottom: 0.5rem;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .detail-label {
+            color: var(--dark-gray);
+            font-size: 0.9rem;
+        }
+
+        .detail-value {
+            font-weight: 600;
+        }
+
+        .materials-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem;
+        }
+
+        .materials-table th, .materials-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+
+        .materials-table th {
+            background-color: var(--light-gray);
+            font-weight: 600;
+        }
+
+        .materials-table th:last-child, .materials-table td:last-child {
+            text-align: right;
+        }
+
+        .charges-summary {
+            background-color: var(--light-gray);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .charge-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+
+        .charge-row:last-child {
+            border-bottom: none;
+        }
+
+        .charge-row.discount {
+            color: #28a745;
+        }
+
+        .charge-row.total {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--primary);
+            padding-top: 0.5rem;
+            margin-top: 0.5rem;
+            border-top: 1px solid var(--primary);
+        }
+
+        .empty-message {
+            padding: 1rem;
+            background-color: var(--light-gray);
+            border-radius: 8px;
+            color: var(--dark-gray);
+            text-align: center;
+        }
+
+        /* Invoice styles */
+        .invoice-section {
+            margin-bottom: 2rem;
+        }
+
+        .invoice-section-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            position: relative;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+
+        .invoice-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .invoice-card {
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow-md);
+            transition: all 0.3s ease;
+            background-color: var(--white);
+        }
+
+        .invoice-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .invoice-card.pending .invoice-header {
+            background-color: #f59e0b;
+        }
+
+        .invoice-card.paid .invoice-header {
+            background-color: #10b981;
+        }
+
+        .invoice-header {
+            padding: 1rem;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .invoice-title {
+            font-weight: 600;
+        }
+
+        .invoice-status {
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .invoice-body {
+            padding: 1.25rem;
+        }
+
+        .invoice-detail {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .invoice-detail:last-child {
+            margin-bottom: 1.25rem;
+        }
+
+        .invoice-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        /* Invoice detail modal styles */
+        .invoice-detail-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+
+        .company-info h3, .invoice-info h4 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .company-info p, .invoice-info p {
+            margin: 0.25rem 0;
+            font-size: 0.9rem;
+        }
+
+        .customer-vehicle-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+            background-color: var(--light-gray);
+            padding: 1.25rem;
+            border-radius: 8px;
+        }
+
+        .customer-info h4, .vehicle-info h4 {
+            margin-bottom: 0.75rem;
+            color: var(--dark-gray);
+        }
+
+        .customer-info p, .vehicle-info p {
+            margin: 0.25rem 0;
+            font-size: 0.9rem;
+        }
+
+        .invoice-items h4 {
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem;
+        }
+
+        .invoice-table th, .invoice-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+
+        .invoice-table th {
+            background-color: var(--light-gray);
+            font-weight: 600;
+        }
+
+        .invoice-table th:last-child, .invoice-table td:last-child {
+            text-align: right;
+        }
+
+        .discount-row {
+            color: #28a745;
+        }
+
+        .invoice-summary {
+            width: 300px;
+            margin-left: auto;
+            margin-bottom: 2rem;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+        }
+
+        .summary-row.total {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--primary);
+            padding-top: 0.5rem;
+            margin-top: 0.5rem;
+            border-top: 1px solid var(--primary);
+        }
+
+        .invoice-notes {
+            font-size: 0.9rem;
+            color: var(--dark-gray);
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .invoice-detail-header, .customer-vehicle-info {
+                flex-direction: column;
+                grid-template-columns: 1fr;
+            }
+
+            .company-info, .customer-info {
+                margin-bottom: 1.5rem;
+            }
+
+            .invoice-summary {
+                width: 100%;
+            }
+
+            .invoice-list {
+                grid-template-columns: 1fr;
+            }
+        }
+
         .vehicle-status {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -1417,9 +1728,6 @@
 <div class="toast-container"></div>
 
 <script>
-    /**
-     * ProfileManager - Handles all user profile functionality
-     */
     class ProfileManager {
         constructor() {
             this.userData = null;
@@ -1432,93 +1740,71 @@
                 profile: '/customer/api/profile',
                 updateProfile: '/customer/api/profile/update',
                 vehicles: '/customer/api/vehicles',
+                addVehicle: '/customer/api/vehicles/add',
+                updateVehicle: '/customer/api/vehicles/update',
+                deleteVehicle: '/customer/api/vehicles/delete',
                 activeServices: '/customer/api/services/active',
                 serviceHistory: '/customer/api/service-history',
-                serviceDetails: '/customer/api/service-history/', // + requestId
-                serviceTracking: '/customer/api/services/' // + requestId + '/tracking'
+                serviceDetails: '/customer/api/service-history/',
+                serviceTracking: '/customer/api/services/',
+                invoices: '/customer/api/invoices',
+                createPayment: '/customer/api/invoices/{id}/payment',
+                verifyPayment: '/customer/api/invoices/verify-payment'
             };
 
             this.currentTab = 'profile';
+            this.pdfGenerator = new PDFGenerator();
 
             this.initEventListeners();
             this.loadUserProfile();
             this.setRandomAvatar();
         }
 
-        /**
-         * Initialize all event listeners
-         */
         initEventListeners() {
-            // Tab navigation
             document.querySelectorAll('.menu-item').forEach(item => {
                 if (item.id !== 'logoutBtn') {
-                    item.addEventListener('click', () => {
-                        this.switchTab(item.dataset.tab);
-                    });
+                    item.addEventListener('click', () => this.switchTab(item.dataset.tab));
                 }
             });
 
-            // Logout button
             document.getElementById('logoutBtn').addEventListener('click', () => this.logout());
-
-            // Profile update buttons
             document.getElementById('saveProfileBtn').addEventListener('click', () => this.saveProfileChanges());
-            document.getElementById('updateEmailBtn').addEventListener('click', () => this.openVerifyModal('email'));
-            document.getElementById('updatePhoneBtn').addEventListener('click', () => this.openVerifyModal('phone'));
-
-            // Avatar change button
             document.getElementById('changeAvatarBtn').addEventListener('click', () => this.setRandomAvatar());
 
-            // OTP modal events
-            document.getElementById('closeOtpModalBtn').addEventListener('click', () => this.closeModal('otpModal'));
-            document.getElementById('cancelOtpBtn').addEventListener('click', () => this.closeModal('otpModal'));
-            document.getElementById('verifyOtpBtn').addEventListener('click', () => this.verifyOtp());
-            document.getElementById('resendOtpBtn').addEventListener('click', (e) => {
-                e.preventDefault();
-                this.resendOtp();
+            window.addEventListener('click', (e) => {
+                if (e.target.classList.contains('modal-overlay')) {
+                    this.closeAllModals();
+                }
             });
 
-            // OTP input handling
-            const otpInputs = document.querySelectorAll('.otp-input');
-            otpInputs.forEach((input, index) => {
-                input.addEventListener('input', (e) => {
-                    if (e.target.value.length === 1 && index < otpInputs.length - 1) {
-                        otpInputs[index + 1].focus();
-                    }
-                });
-
-                input.addEventListener('keydown', (e) => {
-                    if (e.key === 'Backspace' && e.target.value.length === 0 && index > 0) {
-                        otpInputs[index - 1].focus();
-                    }
-                });
+            document.querySelectorAll('.modal-close, .modal-cancel').forEach(btn => {
+                btn.addEventListener('click', () => this.closeAllModals());
             });
         }
 
-        /**
-         * Switch between tabs
-         */
+        closeAllModals() {
+            document.querySelectorAll('.modal-overlay').forEach(modal => {
+                modal.classList.remove('active');
+            });
+        }
+
         switchTab(tabName) {
             if (!tabName || tabName === this.currentTab) return;
 
-            // Update active tab
             document.querySelectorAll('.menu-item').forEach(item => {
                 item.classList.remove('active');
             });
 
             document.querySelector(`.menu-item[data-tab="${tabName}"]`).classList.add('active');
 
-            // Show selected tab content
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
             });
 
             document.getElementById(`${tabName}-tab`).classList.add('active');
 
-            // Update current tab
             this.currentTab = tabName;
 
-            // Load tab-specific data if needed
             switch(tabName) {
                 case 'vehicles':
                     this.loadVehicles();
@@ -1535,9 +1821,6 @@
             }
         }
 
-        /**
-         * Load user profile data
-         */
         loadUserProfile() {
             const token = this.getAuthToken();
 
@@ -1573,13 +1856,9 @@
                 });
         }
 
-        /**
-         * Update the profile UI with user data
-         */
         updateProfileUI() {
             if (!this.userData) return;
 
-            // Update profile sidebar
             document.getElementById('profileName').textContent = `${this.userData.firstName || ''} ${this.userData.lastName || ''}`.trim();
 
             const membershipStatus = document.getElementById('membershipStatus');
@@ -1591,7 +1870,6 @@
                 membershipStatus.classList.remove('membership-premium');
             }
 
-            // Update form fields
             document.getElementById('firstName').value = this.userData.firstName || '';
             document.getElementById('lastName').value = this.userData.lastName || '';
             document.getElementById('email').value = this.userData.email || '';
@@ -1600,11 +1878,11 @@
             document.getElementById('city').value = this.userData.city || '';
             document.getElementById('state').value = this.userData.state || '';
             document.getElementById('postalCode').value = this.userData.postalCode || '';
+
+            document.getElementById('email').removeAttribute('disabled');
+            document.getElementById('phoneNumber').removeAttribute('disabled');
         }
 
-        /**
-         * Save profile changes
-         */
         saveProfileChanges() {
             const token = this.getAuthToken();
 
@@ -1616,13 +1894,14 @@
             const profileData = {
                 firstName: document.getElementById('firstName').value,
                 lastName: document.getElementById('lastName').value,
+                email: document.getElementById('email').value,
+                phoneNumber: document.getElementById('phoneNumber').value,
                 street: document.getElementById('street').value,
                 city: document.getElementById('city').value,
                 state: document.getElementById('state').value,
                 postalCode: document.getElementById('postalCode').value
             };
 
-            // Show loading state
             const saveBtn = document.getElementById('saveProfileBtn');
             const originalText = saveBtn.textContent;
             saveBtn.disabled = true;
@@ -1649,13 +1928,8 @@
                 .then(data => {
                     if (!data) return;
 
-                    // Update local user data
                     Object.assign(this.userData, profileData);
-
-                    // Update UI
                     this.updateProfileUI();
-
-                    // Show success message
                     this.showToast('Profile updated successfully!', 'success');
                 })
                 .catch(error => {
@@ -1663,22 +1937,12 @@
                     this.showToast('Failed to update profile. Please try again.', 'error');
                 })
                 .finally(() => {
-                    // Restore button state
                     saveBtn.disabled = false;
                     saveBtn.textContent = originalText;
                 });
         }
 
-        /**
-         * Load user vehicles
-         */
         loadVehicles() {
-            // Check if already loaded
-            if (this.vehicles.length > 0) {
-                this.renderVehicles();
-                return;
-            }
-
             const token = this.getAuthToken();
 
             if (!token) {
@@ -1686,14 +1950,13 @@
                 return;
             }
 
-            // Show loading state
             const container = document.getElementById('vehiclesContainer');
             container.innerHTML = `
-                    <div class="loading-spinner">
-                        <div class="spinner"></div>
-                        <p>Loading your vehicles...</p>
-                    </div>
-                `;
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p>Loading your vehicles...</p>
+            </div>
+        `;
 
             fetch(this.apiEndpoints.vehicles, {
                 headers: {
@@ -1719,92 +1982,278 @@
                 .catch(error => {
                     console.error('Error loading vehicles:', error);
                     container.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-exclamation-circle"></i>
-                            <h4>Failed to load vehicles</h4>
-                            <p>${error.message || 'Please try again later'}</p>
-                        </div>
-                    `;
+                <div class="empty-state">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <h4>Failed to load vehicles</h4>
+                    <p>${error.message || 'Please try again later'}</p>
+                </div>
+            `;
                 });
         }
 
-        /**
-         * Render vehicles in the UI
-         */
         renderVehicles() {
             const container = document.getElementById('vehiclesContainer');
 
-            if (!this.vehicles || this.vehicles.length === 0) {
-                container.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-car"></i>
-                            <h4>No vehicles found</h4>
-                            <p>Add your first vehicle to get started.</p>
-                        </div>
+            let html = '';
 
-                        <div class="add-vehicle-card" id="addVehicleBtn">
-                            <div class="add-icon">
-                                <i class="fas fa-plus"></i>
+            if (this.vehicles.length === 0) {
+                html += `
+                <div class="empty-state">
+                    <i class="fas fa-car"></i>
+                    <h4>No vehicles found</h4>
+                    <p>Add your first vehicle to get started.</p>
+                </div>
+            `;
+            } else {
+                html += '<div class="vehicles-grid">';
+
+                this.vehicles.forEach(vehicle => {
+                    const vehicleIcon = vehicle.category === 'Bike' ? 'motorcycle' :
+                        (vehicle.category === 'Truck' ? 'truck' : 'car');
+
+                    html += `
+                    <div class="vehicle-item">
+                        <div class="vehicle-image">
+                            <i class="fas fa-${vehicleIcon}"></i>
+                        </div>
+                        <div class="vehicle-info">
+                            <h4>${vehicle.brand} ${vehicle.model}</h4>
+                            <div class="detail-row">
+                                <div class="detail-label">Registration</div>
+                                <div class="detail-value">${vehicle.registrationNumber || 'N/A'}</div>
                             </div>
-                            <div>Add New Vehicle</div>
+                            <div class="detail-row">
+                                <div class="detail-label">Year</div>
+                                <div class="detail-value">${vehicle.year || 'N/A'}</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Category</div>
+                                <div class="detail-value">${vehicle.category || 'Car'}</div>
+                            </div>
+                            <div class="vehicle-actions">
+                                <button class="btn btn-outline btn-sm" onclick="profileManager.editVehicle(${vehicle.vehicleId})">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                                <button class="btn btn-outline btn-sm btn-danger" onclick="profileManager.deleteVehicle(${vehicle.vehicleId})">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
                         </div>
-                    `;
+                    </div>
+                `;
+                });
 
-                // Add event listener for add vehicle button
-                document.getElementById('addVehicleBtn').addEventListener('click', () => this.showAddVehicleModal());
+                html += '</div>';
+            }
+
+            html += `
+            <div class="add-vehicle-card" id="addVehicleBtn" onclick="profileManager.showAddVehicleModal()">
+                <div class="add-icon">
+                    <i class="fas fa-plus"></i>
+                </div>
+                <div>Add New Vehicle</div>
+            </div>
+        `;
+
+            container.innerHTML = html;
+        }
+
+        showAddVehicleModal() {
+            const modalHtml = `
+            <div class="modal-overlay vehicle-modal active" id="vehicleModal">
+                <div class="modal-container">
+                    <div class="modal-header">
+                        <div class="modal-title"><i class="fas fa-car-side"></i> Add New Vehicle</div>
+                        <button class="modal-close">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="vehicleForm">
+                            <input type="hidden" id="vehicleId" value="">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Brand <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="vehicleBrand" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Model <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="vehicleModel" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label class="form-label">Registration Number <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" id="vehicleReg" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Year <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" id="vehicleYear" min="1900" max="2025" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Category <span class="text-danger">*</span></label>
+                                <select class="form-control" id="vehicleCategory" required>
+                                    <option value="Car">Car</option>
+                                    <option value="Bike">Bike</option>
+                                    <option value="Truck">Truck</option>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-outline modal-cancel">Cancel</button>
+                        <button class="btn btn-primary" id="saveVehicleBtn">Save Vehicle</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+            if (!document.querySelector('.vehicle-modal')) {
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+                document.getElementById('saveVehicleBtn').addEventListener('click', () => this.saveVehicle());
+                document.querySelectorAll('.vehicle-modal .modal-close, .vehicle-modal .modal-cancel').forEach(btn => {
+                    btn.addEventListener('click', () => document.querySelector('.vehicle-modal').classList.remove('active'));
+                });
+            } else {
+                document.querySelector('.vehicle-modal').classList.add('active');
+                document.getElementById('vehicleForm').reset();
+                document.getElementById('vehicleId').value = '';
+            }
+        }
+
+        editVehicle(vehicleId) {
+            const vehicle = this.vehicles.find(v => v.vehicleId === vehicleId);
+            if (!vehicle) return;
+
+            this.showAddVehicleModal();
+
+            document.getElementById('vehicleId').value = vehicle.vehicleId;
+            document.getElementById('vehicleBrand').value = vehicle.brand || '';
+            document.getElementById('vehicleModel').value = vehicle.model || '';
+            document.getElementById('vehicleReg').value = vehicle.registrationNumber || '';
+            document.getElementById('vehicleYear').value = vehicle.year || '';
+            document.getElementById('vehicleCategory').value = vehicle.category || 'Car';
+
+            const modalTitle = document.querySelector('.vehicle-modal .modal-title');
+            modalTitle.innerHTML = '<i class="fas fa-edit"></i> Edit Vehicle';
+
+            const saveBtn = document.getElementById('saveVehicleBtn');
+            saveBtn.textContent = 'Update Vehicle';
+        }
+
+        saveVehicle() {
+            const token = this.getAuthToken();
+            if (!token) {
+                this.handleUnauthorized();
                 return;
             }
 
-            let html = '';
+            const vehicleId = document.getElementById('vehicleId').value;
+            const isEdit = vehicleId !== '';
 
-            // Add all vehicles
-            this.vehicles.forEach(vehicle => {
-                const vehicleIcon = vehicle.category === 'Bike' ? 'motorcycle' :
-                    (vehicle.category === 'Truck' ? 'truck' : 'car');
+            const vehicleData = {
+                brand: document.getElementById('vehicleBrand').value,
+                model: document.getElementById('vehicleModel').value,
+                registrationNumber: document.getElementById('vehicleReg').value,
+                year: parseInt(document.getElementById('vehicleYear').value),
+                category: document.getElementById('vehicleCategory').value
+            };
 
-                html += `
-                        <div class="vehicle-item">
-                            <div class="vehicle-image">
-                                <i class="fas fa-${vehicleIcon}"></i>
-                            </div>
-                            <div class="vehicle-info">
-                                <h4>${vehicle.brand} ${vehicle.model}</h4>
-                                <div class="detail-row">
-                                    <div class="detail-label">Registration</div>
-                                    <div class="detail-value">${vehicle.registrationNumber || 'N/A'}</div>
-                                </div>
-                                <div class="detail-row">
-                                    <div class="detail-label">Year</div>
-                                    <div class="detail-value">${vehicle.year || 'N/A'}</div>
-                                </div>
-                                <div class="detail-row">
-                                    <div class="detail-label">Category</div>
-                                    <div class="detail-value">${vehicle.category || 'Car'}</div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-            });
+            if (isEdit) {
+                vehicleData.vehicleId = parseInt(vehicleId);
+            }
 
-            // Add "Add Vehicle" card
-            html += `
-                    <div class="add-vehicle-card" id="addVehicleBtn">
-                        <div class="add-icon">
-                            <i class="fas fa-plus"></i>
-                        </div>
-                        <div>Add New Vehicle</div>
-                    </div>
-                `;
+            const saveBtn = document.getElementById('saveVehicleBtn');
+            const originalText = saveBtn.textContent;
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
 
-            container.innerHTML = html;
+            const endpoint = isEdit ?
+                `${this.apiEndpoints.updateVehicle}/${vehicleId}` :
+                this.apiEndpoints.addVehicle;
 
-            // Add event listener for add vehicle button
-            document.getElementById('addVehicleBtn').addEventListener('click', () => this.showAddVehicleModal());
+            fetch(endpoint, {
+                method: isEdit ? 'PUT' : 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(vehicleData)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            this.handleUnauthorized();
+                            return null;
+                        }
+                        throw new Error(`Failed to ${isEdit ? 'update' : 'add'} vehicle`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data) return;
+
+                    if (isEdit) {
+                        const index = this.vehicles.findIndex(v => v.vehicleId === parseInt(vehicleId));
+                        if (index !== -1) {
+                            this.vehicles[index] = data;
+                        }
+                    } else {
+                        this.vehicles.push(data);
+                    }
+
+                    this.renderVehicles();
+                    document.querySelector('.vehicle-modal').classList.remove('active');
+                    this.showToast(`Vehicle ${isEdit ? 'updated' : 'added'} successfully!`, 'success');
+                })
+                .catch(error => {
+                    console.error(`Error ${isEdit ? 'updating' : 'adding'} vehicle:`, error);
+                    this.showToast(`Failed to ${isEdit ? 'update' : 'add'} vehicle. Please try again.`, 'error');
+                })
+                .finally(() => {
+                    saveBtn.disabled = false;
+                    saveBtn.textContent = originalText;
+                });
         }
 
-        /**
-         * Load active services
-         */
+        deleteVehicle(vehicleId) {
+            if (!confirm('Are you sure you want to delete this vehicle? This action cannot be undone.')) return;
+
+            const token = this.getAuthToken();
+            if (!token) {
+                this.handleUnauthorized();
+                return;
+            }
+
+            fetch(`${this.apiEndpoints.deleteVehicle}/${vehicleId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            this.handleUnauthorized();
+                            return null;
+                        }
+                        throw new Error('Failed to delete vehicle');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data) return;
+
+                    this.vehicles = this.vehicles.filter(v => v.vehicleId !== vehicleId);
+                    this.renderVehicles();
+                    this.showToast('Vehicle deleted successfully!', 'success');
+                })
+                .catch(error => {
+                    console.error('Error deleting vehicle:', error);
+                    this.showToast('Failed to delete vehicle. Please try again.', 'error');
+                });
+        }
+
         loadActiveServices() {
             const token = this.getAuthToken();
 
@@ -1813,14 +2262,13 @@
                 return;
             }
 
-            // Show loading state
             const container = document.getElementById('currentServicesContainer');
             container.innerHTML = `
-                    <div class="loading-spinner">
-                        <div class="spinner"></div>
-                        <p>Loading your active services...</p>
-                    </div>
-                `;
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p>Loading your active services...</p>
+            </div>
+        `;
 
             fetch(this.apiEndpoints.activeServices, {
                 headers: {
@@ -1846,29 +2294,26 @@
                 .catch(error => {
                     console.error('Error loading active services:', error);
                     container.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-exclamation-circle"></i>
-                            <h4>Failed to load active services</h4>
-                            <p>${error.message || 'Please try again later'}</p>
-                        </div>
-                    `;
+                <div class="empty-state">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <h4>Failed to load active services</h4>
+                    <p>${error.message || 'Please try again later'}</p>
+                </div>
+            `;
                 });
         }
 
-        /**
-         * Render active services in the UI
-         */
         renderActiveServices() {
             const container = document.getElementById('currentServicesContainer');
 
             if (!this.activeServices || this.activeServices.length === 0) {
                 container.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-check-circle"></i>
-                            <h4>No active services</h4>
-                            <p>You don't have any vehicles in service at the moment.</p>
-                        </div>
-                    `;
+                <div class="empty-state">
+                    <i class="fas fa-check-circle"></i>
+                    <h4>No active services</h4>
+                    <p>You don't have any vehicles in service at the moment.</p>
+                </div>
+            `;
                 return;
             }
 
@@ -1878,45 +2323,41 @@
                 const statusClass = service.status.toLowerCase();
                 const statusLabel = service.status.charAt(0) + service.status.slice(1).toLowerCase();
 
-                // Format dates
                 const startDate = service.startDate ? new Date(service.startDate).toLocaleDateString() : 'N/A';
                 const estimatedDate = service.estimatedCompletionDate ?
                     new Date(service.estimatedCompletionDate).toLocaleDateString() : 'N/A';
 
                 html += `
-                        <div class="vehicle-card">
-                            <div class="vehicle-header">
-                                <div class="vehicle-name">${service.vehicleBrand} ${service.vehicleModel}</div>
-                                <div class="status-badge ${statusClass}">${statusLabel}</div>
-                            </div>
-                            <div class="vehicle-details">
-                                <div class="detail-row">
-                                    <div class="detail-label">Service Type</div>
-                                    <div class="detail-value">${service.serviceType || 'General Service'}</div>
-                                </div>
-                                <div class="detail-row">
-                                    <div class="detail-label">Drop-off Date</div>
-                                    <div class="detail-value">${startDate}</div>
-                                </div>
-                                <div class="detail-row">
-                                    <div class="detail-label">Estimated Pickup</div>
-                                    <div class="detail-value">${estimatedDate}</div>
-                                </div>
-
-                                <div class="progress-steps">
-                                    ${this.renderServiceSteps(service.status)}
-                                </div>
-                            </div>
+                <div class="vehicle-card">
+                    <div class="vehicle-header">
+                        <div class="vehicle-name">${service.vehicleBrand} ${service.vehicleModel}</div>
+                        <div class="status-badge ${statusClass}">${statusLabel}</div>
+                    </div>
+                    <div class="vehicle-details">
+                        <div class="detail-row">
+                            <div class="detail-label">Service Type</div>
+                            <div class="detail-value">${service.serviceType || 'General Service'}</div>
                         </div>
-                    `;
+                        <div class="detail-row">
+                            <div class="detail-label">Drop-off Date</div>
+                            <div class="detail-value">${startDate}</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Estimated Pickup</div>
+                            <div class="detail-value">${estimatedDate}</div>
+                        </div>
+
+                        <div class="progress-steps">
+                            ${this.renderServiceSteps(service.status)}
+                        </div>
+                    </div>
+                </div>
+            `;
             });
 
             container.innerHTML = html;
         }
 
-        /**
-         * Render service progress steps based on status
-         */
         renderServiceSteps(status) {
             const steps = ['Received', 'Diagnosis', 'Repair', 'Completed'];
             const currentIndex = steps.findIndex(step => step.toLowerCase() === status.toLowerCase());
@@ -1938,19 +2379,16 @@
                 }
 
                 stepsHtml += `
-                        <div class="step ${stepClass}">
-                            <div class="step-icon">${stepIcon}</div>
-                            <div class="step-label">${step}</div>
-                        </div>
-                    `;
+                <div class="step ${stepClass}">
+                    <div class="step-icon">${stepIcon}</div>
+                    <div class="step-label">${step}</div>
+                </div>
+            `;
             });
 
             return stepsHtml;
         }
 
-        /**
-         * Load service history
-         */
         loadServiceHistory() {
             const token = this.getAuthToken();
 
@@ -1959,14 +2397,13 @@
                 return;
             }
 
-            // Show loading state
             const container = document.getElementById('serviceHistoryContainer');
             container.innerHTML = `
-                    <div class="loading-spinner">
-                        <div class="spinner"></div>
-                        <p>Loading your service history...</p>
-                    </div>
-                `;
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p>Loading your service history...</p>
+            </div>
+        `;
 
             fetch(this.apiEndpoints.serviceHistory, {
                 headers: {
@@ -1992,321 +2429,816 @@
                 .catch(error => {
                     console.error('Error loading service history:', error);
                     container.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-exclamation-circle"></i>
-                            <h4>Failed to load service history</h4>
-                            <p>${error.message || 'Please try again later'}</p>
-                        </div>
-                    `;
+                <div class="empty-state">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <h4>Failed to load service history</h4>
+                    <p>${error.message || 'Please try again later'}</p>
+                </div>
+            `;
                 });
         }
 
-        /**
-         * Render service history in the UI
-         */
         renderServiceHistory() {
             const container = document.getElementById('serviceHistoryContainer');
 
             if (!this.serviceHistory || this.serviceHistory.length === 0) {
                 container.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-history"></i>
-                            <h4>No service history</h4>
-                            <p>You don't have any completed services yet.</p>
-                        </div>
-                    `;
+                <div class="empty-state">
+                    <i class="fas fa-history"></i>
+                    <h4>No service history</h4>
+                    <p>You don't have any completed services yet.</p>
+                </div>
+            `;
                 return;
             }
 
             let html = '';
 
             this.serviceHistory.forEach(service => {
-                // Format date
                 const serviceDate = service.formattedCompletedDate ||
                     (service.completedDate ? new Date(service.completedDate).toLocaleDateString() : 'N/A');
 
-                // Calculate material costs if available
-                let materialsList = '';
                 let totalCost = service.totalAmount || 0;
 
-                if (service.materials && service.materials.length > 0) {
-                    materialsList = `
-                            <div class="service-list">
-                                ${service.materials.map(material => `
-                                    <div class="service-list-item">
-                                        <span>${material.name}</span>
-                                        <span>₹${this.formatCurrency(material.quantity * material.unitPrice)}</span>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        `;
-                }
-
                 html += `
-                        <div class="history-item">
-                            <div class="history-header">
-                                <div class="vehicle-name">${service.vehicleBrand} ${service.vehicleModel}</div>
-                                <div class="status-badge completed">Completed</div>
+                <div class="history-item">
+                    <div class="history-header">
+                        <div class="vehicle-name">${service.vehicleBrand} ${service.vehicleModel}</div>
+                        <div class="status-badge completed">Completed</div>
+                    </div>
+                    <div class="history-body">
+                        <div class="service-details">
+                            <div class="detail-row">
+                                <div class="detail-label">Service Date</div>
+                                <div class="detail-value">${serviceDate}</div>
                             </div>
-                            <div class="history-body">
-                                <div class="service-details">
-                                    <div class="detail-row">
-                                        <div class="detail-label">Service Date</div>
-                                        <div class="detail-value">${serviceDate}</div>
-                                    </div>
-                                    <div class="detail-row">
-                                        <div class="detail-label">Service Type</div>
-                                        <div class="detail-value">${service.serviceType || 'General Service'}</div>
-                                    </div>
-                                    <div class="detail-row">
-                                        <div class="detail-label">Total Cost</div>
-                                        <div class="detail-value">₹${this.formatCurrency(totalCost)}</div>
-                                    </div>
-                                </div>
-                                ${materialsList}
-                                <div class="action-buttons">
-                                    <button class="btn btn-outline btn-sm" data-request-id="${service.requestId}">View Details</button>
-                                    ${service.hasInvoice ?
-                    `<button class="btn btn-primary btn-sm" data-invoice-id="${service.invoiceId}">Download Invoice</button>` :
-                    ''}
-                                </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Service Type</div>
+                                <div class="detail-value">${service.serviceType || 'General Service'}</div>
+                            </div>
+                            <div class="detail-row">
+                                <div class="detail-label">Total Cost</div>
+                                <div class="detail-value">₹${this.formatCurrency(totalCost)}</div>
                             </div>
                         </div>
-                    `;
+                        <div class="action-buttons">
+                            <button class="btn btn-outline btn-sm" onclick="profileManager.viewServiceDetails(${service.requestId})">
+                                <i class="fas fa-eye"></i> View Details
+                            </button>
+                            <button class="btn btn-primary btn-sm" onclick="profileManager.downloadServicePDF(${service.requestId})">
+                                <i class="fas fa-download"></i> Download PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
             });
 
             container.innerHTML = html;
-
-            // Add event listeners for buttons
-            document.querySelectorAll('#serviceHistoryContainer .btn-outline').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const requestId = btn.dataset.requestId;
-                    this.viewServiceDetails(requestId);
-                });
-            });
-
-            document.querySelectorAll('#serviceHistoryContainer .btn-primary').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const invoiceId = btn.dataset.invoiceId;
-                    this.downloadInvoice(invoiceId);
-                });
-            });
         }
 
-        /**
-         * View service details
-         */
         viewServiceDetails(requestId) {
-            // Implement service details view
-            this.showToast('Service details feature coming soon!', 'info');
-        }
-
-        /**
-         * Download invoice
-         */
-        downloadInvoice(invoiceId) {
-            // Implement invoice download
-            this.showToast('Invoice download feature coming soon!', 'info');
-        }
-
-        /**
-         * Load invoices
-         */
-        loadInvoices() {
-            // For now, use service history data to show invoices
-            if (this.serviceHistory.length === 0) {
-                this.loadServiceHistory();
+            const token = this.getAuthToken();
+            if (!token) {
+                this.handleUnauthorized();
                 return;
             }
 
-            this.renderInvoices();
+            const service = this.serviceHistory.find(s => s.requestId === requestId);
+            if (!service) return;
+
+            fetch(`${this.apiEndpoints.serviceDetails}${requestId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            this.handleUnauthorized();
+                            return null;
+                        }
+                        throw new Error('Failed to load service details');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data) return;
+
+                    const modalHtml = `
+                <div class="modal-overlay service-detail-modal active">
+                    <div class="modal-container" style="max-width: 700px;">
+                        <div class="modal-header">
+                            <div class="modal-title">
+                                <i class="fas fa-clipboard-list"></i> Service Details
+                            </div>
+                            <button class="modal-close">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="service-detail-header">
+                                <h3>${data.vehicleBrand} ${data.vehicleModel}</h3>
+                                <div class="status-badge completed">Completed</div>
+                            </div>
+
+                            <div class="section-title">Vehicle Information</div>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <div class="detail-label">Registration</div>
+                                    <div class="detail-value">${data.registrationNumber || 'N/A'}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Year</div>
+                                    <div class="detail-value">${data.vehicleYear || 'N/A'}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Type</div>
+                                    <div class="detail-value">${data.vehicleType || 'N/A'}</div>
+                                </div>
+                            </div>
+
+                            <div class="section-title">Service Information</div>
+                            <div class="detail-grid">
+                                <div class="detail-item">
+                                    <div class="detail-label">Service Type</div>
+                                    <div class="detail-value">${data.serviceType || 'General Service'}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Service Date</div>
+                                    <div class="detail-value">${data.formattedCompletedDate || 'N/A'}</div>
+                                </div>
+                                <div class="detail-item">
+                                    <div class="detail-label">Service Advisor</div>
+                                    <div class="detail-value">${data.serviceAdvisorName || 'N/A'}</div>
+                                </div>
+                            </div>
+
+                            <div class="section-title">Materials Used</div>
+                            ${this.renderMaterialsTable(data.materials)}
+
+                            <div class="section-title">Charges</div>
+                            <div class="charges-summary">
+                                <div class="charge-row">
+                                    <div class="charge-label">Materials Total</div>
+                                    <div class="charge-value">₹${this.formatCurrency(data.calculatedMaterialsTotal)}</div>
+                                </div>
+                                <div class="charge-row">
+                                    <div class="charge-label">Labor Charges</div>
+                                    <div class="charge-value">₹${this.formatCurrency(data.calculatedLaborTotal)}</div>
+                                </div>
+                                ${data.calculatedDiscount > 0 ? `
+                                <div class="charge-row discount">
+                                    <div class="charge-label">Premium Discount</div>
+                                    <div class="charge-value">-₹${this.formatCurrency(data.calculatedDiscount)}</div>
+                                </div>` : ''}
+                                <div class="charge-row">
+                                    <div class="charge-label">Subtotal</div>
+                                    <div class="charge-value">₹${this.formatCurrency(data.calculatedSubtotal)}</div>
+                                </div>
+                                <div class="charge-row">
+                                    <div class="charge-label">Tax (18% GST)</div>
+                                    <div class="charge-value">₹${this.formatCurrency(data.calculatedTax)}</div>
+                                </div>
+                                <div class="charge-row total">
+                                    <div class="charge-label">Total Amount</div>
+                                    <div class="charge-value">₹${this.formatCurrency(data.calculatedTotal)}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-outline modal-cancel">Close</button>
+                            <button class="btn btn-primary" onclick="profileManager.downloadServicePDF(${requestId})">
+                                <i class="fas fa-download"></i> Download as PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+                    if (!document.querySelector('.service-detail-modal')) {
+                        document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+                        document.querySelectorAll('.service-detail-modal .modal-close, .service-detail-modal .modal-cancel').forEach(btn => {
+                            btn.addEventListener('click', () => document.querySelector('.service-detail-modal').classList.remove('active'));
+                        });
+                    } else {
+                        document.querySelector('.service-detail-modal').innerHTML = document.querySelector('.modal-container').outerHTML;
+                        document.querySelector('.service-detail-modal').classList.add('active');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading service details:', error);
+                    this.showToast('Failed to load service details. Please try again.', 'error');
+                });
         }
 
-        /**
-         * Render invoices in the UI
-         */
+        renderMaterialsTable(materials) {
+            if (!materials || materials.length === 0) {
+                return `
+                <div class="empty-message">
+                    <i class="fas fa-info-circle"></i> No materials were used for this service.
+                </div>
+            `;
+            }
+
+            let html = `
+            <table class="materials-table">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Quantity</th>
+                        <th>Unit Price</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+            materials.forEach(material => {
+                const quantity = material.quantity || 0;
+                const unitPrice = material.unitPrice || 0;
+                const total = quantity * unitPrice;
+
+                html += `
+                <tr>
+                    <td>${material.name || 'Unknown'}</td>
+                    <td>${quantity}</td>
+                    <td>₹${this.formatCurrency(unitPrice)}</td>
+                    <td>₹${this.formatCurrency(total)}</td>
+                </tr>
+            `;
+            });
+
+            html += `
+                </tbody>
+            </table>
+        `;
+
+            return html;
+        }
+
+        downloadServicePDF(requestId) {
+            const token = this.getAuthToken();
+            if (!token) {
+                this.handleUnauthorized();
+                return;
+            }
+
+            const service = this.serviceHistory.find(s => s.requestId === requestId);
+            if (!service) return;
+
+            fetch(`${this.apiEndpoints.serviceDetails}${requestId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            this.handleUnauthorized();
+                            return null;
+                        }
+                        throw new Error('Failed to load service details');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data) return;
+
+                    this.pdfGenerator.generateServicePDF(data);
+                })
+                .catch(error => {
+                    console.error('Error downloading service PDF:', error);
+                    this.showToast('Failed to download service PDF. Please try again.', 'error');
+                });
+        }
+
+        loadInvoices() {
+            const token = this.getAuthToken();
+
+            if (!token) {
+                this.handleUnauthorized();
+                return;
+            }
+
+            const container = document.getElementById('invoicesContainer');
+            container.innerHTML = `
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+                <p>Loading your invoices...</p>
+            </div>
+        `;
+
+            fetch(this.apiEndpoints.invoices, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            this.handleUnauthorized();
+                            return null;
+                        }
+                        throw new Error('Failed to load invoices');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data) return;
+
+                    this.invoices = Array.isArray(data) ? data : [];
+                    this.renderInvoices();
+                })
+                .catch(error => {
+                    console.error('Error loading invoices:', error);
+                    container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <h4>Failed to load invoices</h4>
+                    <p>${error.message || 'Please try again later'}</p>
+                </div>
+            `;
+                });
+        }
+
         renderInvoices() {
             const container = document.getElementById('invoicesContainer');
 
-            // Filter service history to only show those with invoices
-            const invoices = this.serviceHistory.filter(service => service.hasInvoice);
-
-            if (!invoices || invoices.length === 0) {
+            if (!this.invoices || this.invoices.length === 0) {
                 container.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-file-invoice"></i>
-                            <h4>No invoices</h4>
-                            <p>You don't have any invoices yet.</p>
-                        </div>
-                    `;
+                <div class="empty-state">
+                    <i class="fas fa-file-invoice"></i>
+                    <h4>No invoices</h4>
+                    <p>You don't have any invoices yet.</p>
+                </div>
+            `;
                 return;
             }
+
+            const pendingInvoices = this.invoices.filter(invoice => !invoice.paid);
+            const paidInvoices = this.invoices.filter(invoice => invoice.paid);
 
             let html = '';
 
-            invoices.forEach(invoice => {
-                // Format date
-                const invoiceDate = invoice.formattedCompletedDate ||
-                    (invoice.completedDate ? new Date(invoice.completedDate).toLocaleDateString() : 'N/A');
-
+            if (pendingInvoices.length > 0) {
                 html += `
-                        <div class="invoice-item">
-                            <div class="invoice-details">
-                                <div class="invoice-id">#INV-${invoice.invoiceId}</div>
-                                <div class="invoice-date">${invoiceDate}</div>
-                                <div class="invoice-amount">₹${this.formatCurrency(invoice.totalAmount)}</div>
+                <div class="invoice-section">
+                    <h3 class="invoice-section-title">Pending Invoices</h3>
+                    <div class="invoice-list">
+            `;
+
+                pendingInvoices.forEach(invoice => {
+                    const invoiceDate = invoice.formattedCompletedDate ||
+                        (invoice.completedDate ? new Date(invoice.completedDate).toLocaleDateString() : 'N/A');
+
+                    html += `
+                    <div class="invoice-card pending">
+                        <div class="invoice-header">
+                            <div class="invoice-title">Invoice #${invoice.invoiceId}</div>
+                            <div class="invoice-status">Pending</div>
+                        </div>
+                        <div class="invoice-body">
+                            <div class="invoice-detail">
+                                <div class="detail-label">Service Date:</div>
+                                <div class="detail-value">${invoiceDate}</div>
+                            </div>
+                            <div class="invoice-detail">
+                                <div class="detail-label">Vehicle:</div>
+                                <div class="detail-value">${invoice.vehicleBrand} ${invoice.vehicleModel}</div>
+                            </div>
+                            <div class="invoice-detail">
+                                <div class="detail-label">Amount:</div>
+                                <div class="detail-value">₹${this.formatCurrency(invoice.totalAmount)}</div>
                             </div>
                             <div class="invoice-actions">
-                                <button class="icon-button" title="View Invoice" data-invoice-id="${invoice.invoiceId}">
-                                    <i class="fas fa-eye"></i>
+                                <button class="btn btn-outline btn-sm" onclick="profileManager.viewInvoice(${invoice.invoiceId})">
+                                    <i class="fas fa-eye"></i> View
                                 </button>
-                                <button class="icon-button" title="Download Invoice" data-invoice-id="${invoice.invoiceId}">
-                                    <i class="fas fa-download"></i>
+                                <button class="btn btn-outline btn-sm" onclick="profileManager.downloadInvoicePDF(${invoice.invoiceId})">
+                                    <i class="fas fa-download"></i> Download
                                 </button>
-                                <button class="icon-button" title="Print Invoice" data-invoice-id="${invoice.invoiceId}">
-                                    <i class="fas fa-print"></i>
+                                <button class="btn btn-primary btn-sm" onclick="profileManager.payInvoice(${invoice.invoiceId})">
+                                    <i class="fas fa-credit-card"></i> Pay Now
                                 </button>
                             </div>
                         </div>
-                    `;
-            });
+                    </div>
+                `;
+                });
+
+                html += `
+                    </div>
+                </div>
+            `;
+            }
+
+            if (paidInvoices.length > 0) {
+                html += `
+                <div class="invoice-section">
+                    <h3 class="invoice-section-title">Paid Invoices</h3>
+                    <div class="invoice-list">
+            `;
+
+                paidInvoices.forEach(invoice => {
+                    const invoiceDate = invoice.formattedCompletedDate ||
+                        (invoice.completedDate ? new Date(invoice.completedDate).toLocaleDateString() : 'N/A');
+
+                    html += `
+                    <div class="invoice-card paid">
+                        <div class="invoice-header">
+                            <div class="invoice-title">Invoice #${invoice.invoiceId}</div>
+                            <div class="invoice-status">Paid</div>
+                        </div>
+                        <div class="invoice-body">
+                            <div class="invoice-detail">
+                                <div class="detail-label">Service Date:</div>
+                                <div class="detail-value">${invoiceDate}</div>
+                            </div>
+                            <div class="invoice-detail">
+                                <div class="detail-label">Vehicle:</div>
+                                <div class="detail-value">${invoice.vehicleBrand} ${invoice.vehicleModel}</div>
+                            </div>
+                            <div class="invoice-detail">
+                                <div class="detail-label">Amount:</div>
+                                <div class="detail-value">₹${this.formatCurrency(invoice.totalAmount)}</div>
+                            </div>
+                            <div class="invoice-actions">
+                                <button class="btn btn-outline btn-sm" onclick="profileManager.viewInvoice(${invoice.invoiceId})">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                                <button class="btn btn-outline btn-sm" onclick="profileManager.downloadInvoicePDF(${invoice.invoiceId})">
+                                    <i class="fas fa-download"></i> Download
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                });
+
+                html += `
+                    </div>
+                </div>
+            `;
+            }
 
             container.innerHTML = html;
-
-            // Add event listeners for invoice action buttons
-            document.querySelectorAll('#invoicesContainer .icon-button').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const invoiceId = btn.dataset.invoiceId;
-                    const action = btn.getAttribute('title');
-
-                    switch (action) {
-                        case 'View Invoice':
-                            this.viewInvoice(invoiceId);
-                            break;
-                        case 'Download Invoice':
-                            this.downloadInvoice(invoiceId);
-                            break;
-                        case 'Print Invoice':
-                            this.printInvoice(invoiceId);
-                            break;
-                    }
-                });
-            });
         }
 
-        /**
-         * View invoice details
-         */
         viewInvoice(invoiceId) {
-            // Implement invoice viewing
-            this.showToast('Invoice view feature coming soon!', 'info');
-        }
-
-        /**
-         * Print invoice
-         */
-        printInvoice(invoiceId) {
-            // Implement invoice printing
-            this.showToast('Invoice printing feature coming soon!', 'info');
-        }
-
-        /**
-         * Show Add Vehicle modal
-         */
-        showAddVehicleModal() {
-            // Implement add vehicle modal
-            this.showToast('Add vehicle feature coming soon!', 'info');
-        }
-
-        /**
-         * Open OTP verification modal
-         */
-        openVerifyModal(channel) {
-            document.getElementById('verificationChannel').textContent = channel;
-            document.getElementById('otpModal').classList.add('active');
-
-            // Clear OTP inputs
-            document.querySelectorAll('.otp-input').forEach(input => {
-                input.value = '';
-            });
-
-            // Focus first input
-            document.querySelector('.otp-input').focus();
-
-            // Simulate OTP sent notification
-            this.showToast(`Verification code sent to your ${channel}`, 'info');
-        }
-
-        /**
-         * Verify OTP
-         */
-        verifyOtp() {
-            // Get OTP from inputs
-            const otpInputs = document.querySelectorAll('.otp-input');
-            let otp = '';
-
-            otpInputs.forEach(input => {
-                otp += input.value;
-            });
-
-            if (otp.length !== 4) {
-                this.showToast('Please enter a valid 4-digit OTP', 'error');
+            const token = this.getAuthToken();
+            if (!token) {
+                this.handleUnauthorized();
                 return;
             }
 
-            // For demo, any 4-digit code works
-            const channel = document.getElementById('verificationChannel').textContent;
+            const invoice = this.invoices.find(i => i.invoiceId === invoiceId);
+            if (!invoice) return;
 
-            // Close modal
-            this.closeModal('otpModal');
+            fetch(`${this.apiEndpoints.serviceDetails}${invoice.requestId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            this.handleUnauthorized();
+                            return null;
+                        }
+                        throw new Error('Failed to load invoice details');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data) return;
 
-            // Show success message
-            this.showToast(`${channel.charAt(0).toUpperCase() + channel.slice(1)} verified successfully!`, 'success');
+                    const modalHtml = `
+                <div class="modal-overlay invoice-detail-modal active">
+                    <div class="modal-container" style="max-width: 700px;">
+                        <div class="modal-header">
+                            <div class="modal-title">
+                                <i class="fas fa-file-invoice-dollar"></i> Invoice #${invoiceId}
+                            </div>
+                            <button class="modal-close">&times;</button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="invoice-detail-header">
+                                <div class="company-info">
+                                    <h3>Albany Vehicle Service</h3>
+                                    <p>123 Albany Street, Chennai, India</p>
+                                    <p>Phone: +91 98765 43210</p>
+                                    <p>Email: support@albanyservice.com</p>
+                                </div>
+                                <div class="invoice-info">
+                                    <h4>INVOICE</h4>
+                                    <p><strong>Invoice #:</strong> ${invoiceId}</p>
+                                    <p><strong>Date:</strong> ${data.formattedCompletedDate || 'N/A'}</p>
+                                    <p><strong>Status:</strong> ${invoice.paid ? 'Paid' : 'Pending'}</p>
+                                </div>
+                            </div>
+
+                            <div class="customer-vehicle-info">
+                                <div class="customer-info">
+                                    <h4>Bill To:</h4>
+                                    <p><strong>${data.customerName || 'Customer'}</strong></p>
+                                    <p>${data.customerEmail || 'N/A'}</p>
+                                    <p>${data.customerPhone || 'N/A'}</p>
+                                </div>
+                                <div class="vehicle-info">
+                                    <h4>Vehicle Details:</h4>
+                                    <p><strong>${data.vehicleBrand} ${data.vehicleModel}</strong></p>
+                                    <p>Reg #: ${data.registrationNumber || 'N/A'}</p>
+                                    <p>Year: ${data.vehicleYear || 'N/A'}</p>
+                                </div>
+                            </div>
+
+                            <div class="invoice-items">
+                                <h4>Service Details</h4>
+                                <table class="invoice-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Description</th>
+                                            <th>Quantity</th>
+                                            <th>Unit Price</th>
+                                            <th>Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${this.renderInvoiceItems(data)}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="invoice-summary">
+                                <div class="summary-row">
+                                    <div class="summary-label">Subtotal:</div>
+                                    <div class="summary-value">₹${this.formatCurrency(data.calculatedSubtotal)}</div>
+                                </div>
+                                <div class="summary-row">
+                                    <div class="summary-label">GST (18%):</div>
+                                    <div class="summary-value">₹${this.formatCurrency(data.calculatedTax)}</div>
+                                </div>
+                                <div class="summary-row total">
+                                    <div class="summary-label">Total Amount:</div>
+                                    <div class="summary-value">₹${this.formatCurrency(data.calculatedTotal)}</div>
+                                </div>
+                            </div>
+
+                            <div class="invoice-notes">
+                                <p><strong>Note:</strong> This is a computer-generated invoice and does not require a signature.</p>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-outline modal-cancel">Close</button>
+                            <button class="btn btn-outline" onclick="profileManager.downloadInvoicePDF(${invoiceId})">
+                                <i class="fas fa-download"></i> Download PDF
+                            </button>
+                            ${!invoice.paid ? `
+                            <button class="btn btn-primary" onclick="profileManager.payInvoice(${invoiceId})">
+                                <i class="fas fa-credit-card"></i> Pay Now
+                            </button>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+                    if (!document.querySelector('.invoice-detail-modal')) {
+                        document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+                        document.querySelectorAll('.invoice-detail-modal .modal-close, .invoice-detail-modal .modal-cancel').forEach(btn => {
+                            btn.addEventListener('click', () => document.querySelector('.invoice-detail-modal').classList.remove('active'));
+                        });
+                    } else {
+                        document.querySelector('.invoice-detail-modal').innerHTML = document.querySelector('.modal-container').outerHTML;
+                        document.querySelector('.invoice-detail-modal').classList.add('active');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading invoice details:', error);
+                    this.showToast('Failed to load invoice details. Please try again.', 'error');
+                });
         }
 
-        /**
-         * Resend OTP
-         */
-        resendOtp() {
-            const channel = document.getElementById('verificationChannel').textContent;
-            this.showToast(`New verification code sent to your ${channel}`, 'info');
+        renderInvoiceItems(data) {
+            let html = '';
+
+            // Add materials
+            if (data.materials && data.materials.length > 0) {
+                data.materials.forEach(material => {
+                    const quantity = material.quantity || 0;
+                    const unitPrice = material.unitPrice || 0;
+                    const total = quantity * unitPrice;
+
+                    html += `
+                    <tr>
+                        <td>${material.name || 'Unknown'} (Part)</td>
+                        <td>${quantity}</td>
+                        <td>₹${this.formatCurrency(unitPrice)}</td>
+                        <td>₹${this.formatCurrency(total)}</td>
+                    </tr>
+                `;
+                });
+            }
+
+            // Add labor charges
+            if (data.laborCharges && data.laborCharges.length > 0) {
+                data.laborCharges.forEach(labor => {
+                    const hours = labor.hours || 0;
+                    const rate = labor.rate || 0;
+                    const total = hours * rate;
+
+                    html += `
+                    <tr>
+                        <td>${labor.description || 'Labor'}</td>
+                        <td>${hours} hrs</td>
+                        <td>₹${this.formatCurrency(rate)}/hr</td>
+                        <td>₹${this.formatCurrency(total)}</td>
+                    </tr>
+                `;
+                });
+            } else {
+                // Default labor charge if none specified
+                html += `
+                <tr>
+                    <td>Service Labor</td>
+                    <td>1</td>
+                    <td>₹${this.formatCurrency(data.calculatedLaborTotal)}</td>
+                    <td>₹${this.formatCurrency(data.calculatedLaborTotal)}</td>
+                </tr>
+            `;
+            }
+
+            // Add discount if applicable
+            if (data.calculatedDiscount && data.calculatedDiscount > 0) {
+                html += `
+                <tr class="discount-row">
+                    <td colspan="3">Premium Membership Discount (30% off labor)</td>
+                    <td>-₹${this.formatCurrency(data.calculatedDiscount)}</td>
+                </tr>
+            `;
+            }
+
+            return html;
         }
 
-        /**
-         * Close modal
-         */
-        closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
+        downloadInvoicePDF(invoiceId) {
+            const token = this.getAuthToken();
+            if (!token) {
+                this.handleUnauthorized();
+                return;
+            }
+
+            const invoice = this.invoices.find(i => i.invoiceId === invoiceId);
+            if (!invoice) return;
+
+            fetch(`${this.apiEndpoints.serviceDetails}${invoice.requestId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            this.handleUnauthorized();
+                            return null;
+                        }
+                        throw new Error('Failed to load invoice details');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data) return;
+
+                    data.invoiceId = invoiceId;
+                    data.isPaid = invoice.paid;
+                    this.pdfGenerator.generateInvoicePDF(data);
+                })
+                .catch(error => {
+                    console.error('Error downloading invoice PDF:', error);
+                    this.showToast('Failed to download invoice PDF. Please try again.', 'error');
+                });
         }
 
-        /**
-         * Get authentication token from storage
-         */
-        getAuthToken() {
-            return sessionStorage.getItem('authToken') || localStorage.getItem('authToken');
+        payInvoice(invoiceId) {
+            const token = this.getAuthToken();
+            if (!token) {
+                this.handleUnauthorized();
+                return;
+            }
+
+            const invoice = this.invoices.find(i => i.invoiceId === invoiceId);
+            if (!invoice || invoice.paid) return;
+
+            fetch(`${this.apiEndpoints.createPayment.replace('{id}', invoiceId)}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            this.handleUnauthorized();
+                            return null;
+                        }
+                        throw new Error('Failed to create payment');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data) return;
+
+                    this.openRazorpayModal(data);
+                })
+                .catch(error => {
+                    console.error('Error creating payment:', error);
+                    this.showToast('Failed to initiate payment. Please try again.', 'error');
+                });
         }
 
-        /**
-         * Handle unauthorized access
-         */
-        handleUnauthorized() {
-            sessionStorage.removeItem('authToken');
-            localStorage.removeItem('authToken');
-            window.location.href = '/authentication/login?message=Your session has expired. Please login again.&type=error&redirect=/customer/profile';
+        openRazorpayModal(paymentData) {
+            const options = {
+                key: paymentData.razorpayKey,
+                amount: paymentData.amount,
+                currency: paymentData.currency,
+                name: 'Albany Vehicle Service',
+                description: 'Payment for Invoice #' + paymentData.invoiceId,
+                order_id: paymentData.orderId,
+                handler: (response) => {
+                    this.handlePaymentSuccess(paymentData.paymentId, response);
+                },
+                prefill: {
+                    name: paymentData.name,
+                    email: paymentData.email,
+                    contact: paymentData.phone
+                },
+                theme: {
+                    color: '#722F37'
+                },
+                modal: {
+                    ondismiss: () => {
+                        this.showToast('Payment cancelled', 'info');
+                    }
+                }
+            };
+
+            const razorpayWindow = new Razorpay(options);
+            razorpayWindow.open();
         }
 
-        /**
-         * Logout user
-         */
-        logout() {
-            sessionStorage.removeItem('authToken');
-            localStorage.removeItem('authToken');
-            window.location.href = '/authentication/login';
+        handlePaymentSuccess(paymentId, razorpayResponse) {
+            const token = this.getAuthToken();
+            if (!token) {
+                this.handleUnauthorized();
+                return;
+            }
+
+            const paymentData = {
+                paymentId: paymentId,
+                razorpayPaymentId: razorpayResponse.razorpay_payment_id,
+                razorpayOrderId: razorpayResponse.razorpay_order_id,
+                razorpaySignature: razorpayResponse.razorpay_signature
+            };
+
+            fetch(this.apiEndpoints.verifyPayment, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(paymentData)
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            this.handleUnauthorized();
+                            return null;
+                        }
+                        throw new Error('Failed to verify payment');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data) return;
+
+                    if (data.success) {
+                        this.showToast('Payment successful!', 'success');
+                        this.loadInvoices();
+
+                        if (document.querySelector('.invoice-detail-modal')) {
+                            document.querySelector('.invoice-detail-modal').classList.remove('active');
+                        }
+                    } else {
+                        this.showToast(data.message || 'Payment verification failed', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error verifying payment:', error);
+                    this.showToast('Failed to verify payment. Please contact support.', 'error');
+                });
         }
 
-        /**
-         * Set a random avatar
-         */
         setRandomAvatar() {
             const avatarTypes = ['adventurer', 'bottts', 'avataaars', 'jdenticon', 'identicon', 'gridy', 'micah'];
             const randomType = avatarTypes[Math.floor(Math.random() * avatarTypes.length)];
@@ -2316,17 +3248,27 @@
             document.getElementById('profileAvatar').src = avatarUrl;
         }
 
-        /**
-         * Format currency
-         */
+        getAuthToken() {
+            return sessionStorage.getItem('authToken') || localStorage.getItem('authToken');
+        }
+
+        handleUnauthorized() {
+            sessionStorage.removeItem('authToken');
+            localStorage.removeItem('authToken');
+            window.location.href = '/authentication/login?message=Your session has expired. Please login again.&type=error&redirect=/customer/profile';
+        }
+
+        logout() {
+            sessionStorage.removeItem('authToken');
+            localStorage.removeItem('authToken');
+            window.location.href = '/authentication/login';
+        }
+
         formatCurrency(amount) {
             if (!amount) return '0.00';
             return parseFloat(amount).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
         }
 
-        /**
-         * Show a toast notification
-         */
         showToast(message, type = 'success') {
             const toastContainer = document.querySelector('.toast-container');
             const toastId = `toast-${Date.now()}`;
@@ -2336,46 +3278,325 @@
             toast.id = toastId;
 
             toast.innerHTML = `
-                    <div class="toast-header">
-                        <strong>${type.charAt(0).toUpperCase() + type.slice(1)}</strong>
-                        <button class="toast-close">&times;</button>
-                    </div>
-                    <div class="toast-body">${message}</div>
-                `;
+            <div class="toast-header">
+                <strong>${type.charAt(0).toUpperCase() + type.slice(1)}</strong>
+                <button class="toast-close">&times;</button>
+            </div>
+            <div class="toast-body">${message}</div>
+        `;
 
             toastContainer.appendChild(toast);
 
-            // Show toast
-            setTimeout(() => {
-                toast.classList.add('show');
-            }, 10);
+            setTimeout(() => toast.classList.add('show'), 10);
 
-            // Auto hide after 5 seconds
-            const hideTimeout = setTimeout(() => {
-                removeToast(toastId);
-            }, 5000);
+            const hideTimeout = setTimeout(() => this.removeToast(toastId), 5000);
 
-            // Close button functionality
             toast.querySelector('.toast-close').addEventListener('click', () => {
                 clearTimeout(hideTimeout);
-                removeToast(toastId);
+                this.removeToast(toastId);
             });
+        }
 
-            function removeToast(id) {
-                const toastElement = document.getElementById(id);
-                if (toastElement) {
-                    toastElement.classList.remove('show');
-                    setTimeout(() => {
-                        toastElement.remove();
-                    }, 300);
-                }
+        removeToast(id) {
+            const toast = document.getElementById(id);
+            if (toast) {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
             }
         }
     }
 
-    // Initialize the profile manager when the page loads
+    class PDFGenerator {
+        constructor() {
+            this.loadJsPDF();
+        }
+
+        loadJsPDF() {
+            if (typeof jspdf === 'undefined') {
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+                script.async = true;
+                document.head.appendChild(script);
+            }
+        }
+
+        generateServicePDF(data) {
+            if (typeof jspdf === 'undefined') {
+                setTimeout(() => this.generateServicePDF(data), 500);
+                return;
+            }
+
+            const { jsPDF } = jspdf;
+            const doc = new jsPDF();
+
+            doc.setFontSize(20);
+            doc.setTextColor(114, 47, 55);
+            doc.text('Service Report', 105, 20, { align: 'center' });
+
+            doc.setFontSize(12);
+            doc.setTextColor(0, 0, 0);
+            doc.text('Albany Vehicle Service', 105, 30, { align: 'center' });
+            doc.setFontSize(10);
+            doc.text('123 Albany Street, Chennai, India', 105, 35, { align: 'center' });
+            doc.text('Phone: +91 98765 43210 | Email: support@albanyservice.com', 105, 40, { align: 'center' });
+
+            doc.line(20, 45, 190, 45);
+
+            doc.setFontSize(12);
+            doc.text('Service Details', 20, 55);
+
+            doc.setFontSize(10);
+            doc.text(`Request ID: REQ-${data.requestId}`, 20, 65);
+            doc.text(`Service Date: ${data.formattedCompletedDate || 'N/A'}`, 20, 72);
+            doc.text(`Service Type: ${data.serviceType || 'General Service'}`, 20, 79);
+            doc.text(`Service Advisor: ${data.serviceAdvisorName || 'N/A'}`, 20, 86);
+
+            doc.text('Vehicle Information', 120, 65);
+            doc.text(`Vehicle: ${data.vehicleBrand} ${data.vehicleModel}`, 120, 72);
+            doc.text(`Registration: ${data.registrationNumber || 'N/A'}`, 120, 79);
+            doc.text(`Year: ${data.vehicleYear || 'N/A'}`, 120, 86);
+
+            doc.line(20, 95, 190, 95);
+
+            doc.setFontSize(12);
+            doc.text('Materials Used', 20, 105);
+
+            let yPos = 115;
+
+            if (data.materials && data.materials.length > 0) {
+                doc.setFontSize(10);
+                doc.text('Item', 20, yPos);
+                doc.text('Quantity', 90, yPos);
+                doc.text('Unit Price', 120, yPos);
+                doc.text('Total', 160, yPos);
+
+                yPos += 7;
+
+                data.materials.forEach(material => {
+                    const quantity = material.quantity || 0;
+                    const unitPrice = material.unitPrice || 0;
+                    const total = quantity * unitPrice;
+
+                    doc.text(material.name || 'Unknown', 20, yPos);
+                    doc.text(quantity.toString(), 90, yPos);
+                    doc.text(`₹${this.formatCurrency(unitPrice)}`, 120, yPos);
+                    doc.text(`₹${this.formatCurrency(total)}`, 160, yPos);
+
+                    yPos += 7;
+
+                    if (yPos > 270) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+                });
+            } else {
+                doc.setFontSize(10);
+                doc.text('No materials were used for this service.', 20, yPos);
+                yPos += 10;
+            }
+
+            yPos += 5;
+            doc.line(20, yPos, 190, yPos);
+            yPos += 10;
+
+            doc.setFontSize(12);
+            doc.text('Charges Summary', 20, yPos);
+            yPos += 10;
+
+            doc.setFontSize(10);
+            doc.text('Materials Total:', 120, yPos);
+            doc.text(`₹${this.formatCurrency(data.calculatedMaterialsTotal)}`, 170, yPos, { align: 'right' });
+            yPos += 7;
+
+            doc.text('Labor Charges:', 120, yPos);
+            doc.text(`₹${this.formatCurrency(data.calculatedLaborTotal)}`, 170, yPos, { align: 'right' });
+            yPos += 7;
+
+            if (data.calculatedDiscount > 0) {
+                doc.text('Premium Discount:', 120, yPos);
+                doc.text(`-₹${this.formatCurrency(data.calculatedDiscount)}`, 170, yPos, { align: 'right' });
+                yPos += 7;
+            }
+
+            doc.text('Subtotal:', 120, yPos);
+            doc.text(`₹${this.formatCurrency(data.calculatedSubtotal)}`, 170, yPos, { align: 'right' });
+            yPos += 7;
+
+            doc.text('Tax (18% GST):', 120, yPos);
+            doc.text(`₹${this.formatCurrency(data.calculatedTax)}`, 170, yPos, { align: 'right' });
+            yPos += 7;
+
+            doc.setFontSize(12);
+            doc.text('Total Amount:', 120, yPos);
+            doc.text(`₹${this.formatCurrency(data.calculatedTotal)}`, 170, yPos, { align: 'right' });
+
+            doc.setFontSize(10);
+            doc.text('This is a computer-generated document.', 105, 280, { align: 'center' });
+
+            doc.save(`Albany_Service_Report_${data.requestId}.pdf`);
+        }
+
+        generateInvoicePDF(data) {
+            if (typeof jspdf === 'undefined') {
+                setTimeout(() => this.generateInvoicePDF(data), 500);
+                return;
+            }
+
+            const { jsPDF } = jspdf;
+            const doc = new jsPDF();
+
+            doc.setFontSize(22);
+            doc.setTextColor(114, 47, 55);
+            doc.text('INVOICE', 105, 20, { align: 'center' });
+
+            doc.setFontSize(12);
+            doc.setTextColor(0, 0, 0);
+            doc.text('Albany Vehicle Service', 20, 30);
+            doc.setFontSize(10);
+            doc.text('123 Albany Street, Chennai, India', 20, 35);
+            doc.text('Phone: +91 98765 43210', 20, 40);
+            doc.text('Email: support@albanyservice.com', 20, 45);
+
+            doc.setFontSize(10);
+            doc.text('Invoice #:', 140, 30);
+            doc.text(`${data.invoiceId}`, 190, 30, { align: 'right' });
+            doc.text('Date:', 140, 35);
+            doc.text(`${data.formattedCompletedDate || 'N/A'}`, 190, 35, { align: 'right' });
+            doc.text('Status:', 140, 40);
+            doc.text(`${data.isPaid ? 'Paid' : 'Pending'}`, 190, 40, { align: 'right' });
+
+            doc.line(20, 50, 190, 50);
+
+            doc.setFontSize(11);
+            doc.text('Bill To:', 20, 60);
+
+            doc.setFontSize(10);
+            doc.text(`${data.customerName || 'Customer'}`, 20, 65);
+            doc.text(`${data.customerEmail || 'N/A'}`, 20, 70);
+            doc.text(`${data.customerPhone || 'N/A'}`, 20, 75);
+
+            doc.text('Vehicle Details:', 120, 60);
+            doc.text(`${data.vehicleBrand} ${data.vehicleModel}`, 120, 65);
+            doc.text(`Reg #: ${data.registrationNumber || 'N/A'}`, 120, 70);
+            doc.text(`Year: ${data.vehicleYear || 'N/A'}`, 120, 75);
+
+            doc.line(20, 85, 190, 85);
+
+            doc.setFontSize(11);
+            doc.text('Description', 20, 95);
+            doc.text('Quantity', 100, 95);
+            doc.text('Unit Price', 130, 95);
+            doc.text('Amount', 175, 95);
+
+            doc.line(20, 97, 190, 97);
+
+            let yPos = 105;
+
+            // Add materials
+            if (data.materials && data.materials.length > 0) {
+                data.materials.forEach(material => {
+                    const quantity = material.quantity || 0;
+                    const unitPrice = material.unitPrice || 0;
+                    const total = quantity * unitPrice;
+
+                    doc.text(`${material.name || 'Unknown'} (Part)`, 20, yPos);
+                    doc.text(`${quantity}`, 100, yPos);
+                    doc.text(`₹${this.formatCurrency(unitPrice)}`, 130, yPos);
+                    doc.text(`₹${this.formatCurrency(total)}`, 175, yPos);
+
+                    yPos += 8;
+
+                    if (yPos > 250) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+                });
+            }
+
+            // Add labor charges
+            if (data.laborCharges && data.laborCharges.length > 0) {
+                data.laborCharges.forEach(labor => {
+                    const hours = labor.hours || 0;
+                    const rate = labor.rate || 0;
+                    const total = hours * rate;
+
+                    doc.text(`${labor.description || 'Labor'}`, 20, yPos);
+                    doc.text(`${hours} hrs`, 100, yPos);
+                    doc.text(`₹${this.formatCurrency(rate)}/hr`, 130, yPos);
+                    doc.text(`₹${this.formatCurrency(total)}`, 175, yPos);
+
+                    yPos += 8;
+
+                    if (yPos > 250) {
+                        doc.addPage();
+                        yPos = 20;
+                    }
+                });
+            } else {
+                doc.text(`Service Labor`, 20, yPos);
+                doc.text(`1`, 100, yPos);
+                doc.text(`₹${this.formatCurrency(data.calculatedLaborTotal)}`, 130, yPos);
+                doc.text(`₹${this.formatCurrency(data.calculatedLaborTotal)}`, 175, yPos);
+
+                yPos += 8;
+            }
+
+            // Add discount if applicable
+            if (data.calculatedDiscount && data.calculatedDiscount > 0) {
+                doc.text(`Premium Membership Discount (30% off labor)`, 20, yPos);
+                doc.text(``, 100, yPos);
+                doc.text(``, 130, yPos);
+                doc.text(`-₹${this.formatCurrency(data.calculatedDiscount)}`, 175, yPos);
+
+                yPos += 8;
+            }
+
+            doc.line(100, yPos, 190, yPos);
+            yPos += 8;
+
+            doc.text('Subtotal:', 130, yPos);
+            doc.text(`₹${this.formatCurrency(data.calculatedSubtotal)}`, 175, yPos);
+            yPos += 8;
+
+            doc.text('GST (18%):', 130, yPos);
+            doc.text(`₹${this.formatCurrency(data.calculatedTax)}`, 175, yPos);
+            yPos += 8;
+
+            doc.line(100, yPos, 190, yPos);
+            yPos += 8;
+
+            doc.setFontSize(12);
+            doc.text('Total Amount:', 130, yPos);
+            doc.text(`₹${this.formatCurrency(data.calculatedTotal)}`, 175, yPos);
+
+            doc.line(20, 260, 190, 260);
+
+            doc.setFontSize(10);
+            doc.text('Notes:', 20, 270);
+            doc.text('This is a computer-generated invoice and does not require a signature.', 20, 275);
+
+            if (data.isPaid) {
+                doc.setFillColor(0, 128, 0);
+                doc.setTextColor(0, 128, 0);
+                doc.setFontSize(16);
+                doc.text('PAID', 105, 240, { align: 'center' });
+            }
+
+            doc.save(`Albany_Invoice_${data.invoiceId}.pdf`);
+        }
+
+        formatCurrency(amount) {
+            if (!amount) return '0.00';
+            return parseFloat(amount).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         window.profileManager = new ProfileManager();
+
+        const razorpayScript = document.createElement('script');
+        razorpayScript.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        document.head.appendChild(razorpayScript);
     });
 </script>
 </body>

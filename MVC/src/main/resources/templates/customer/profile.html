@@ -8,9 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Urbanist:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
     <style>
-        /* Root variables */
         :root {
             --primary: #722F37;
             --primary-dark: #5a252c;
@@ -50,7 +48,6 @@
             padding: 0;
         }
 
-        /* Header Styles */
         .header {
             background: var(--white);
             box-shadow: var(--shadow-md);
@@ -91,7 +88,6 @@
             color: var(--primary);
         }
 
-        /* Main Container */
         .container {
             max-width: 1400px;
             margin: 0 auto;
@@ -118,7 +114,6 @@
             border-radius: 3px;
         }
 
-        /* Profile Grid Layout */
         .profile-grid {
             display: grid;
             grid-template-columns: 300px 1fr;
@@ -126,7 +121,6 @@
             margin-top: 1rem;
         }
 
-        /* Sidebar Styles */
         .profile-sidebar {
             background-color: var(--white);
             border-radius: 12px;
@@ -236,7 +230,6 @@
             font-weight: 600;
         }
 
-        /* Content Area Styles */
         .profile-content {
             background-color: var(--white);
             border-radius: 12px;
@@ -265,7 +258,6 @@
             padding: 2rem;
         }
 
-        /* Form Styles */
         .section-title {
             font-size: 1.2rem;
             font-weight: 600;
@@ -319,7 +311,6 @@
             cursor: not-allowed;
         }
 
-        /* Button Styles */
         .btn {
             display: inline-flex;
             align-items: center;
@@ -360,7 +351,6 @@
             transform: translateY(-2px);
         }
 
-        /* Alert Styles */
         .alert {
             padding: 1rem;
             border-radius: 8px;
@@ -376,7 +366,6 @@
             border-left: 4px solid #3b82f6;
         }
 
-        /* Service Status Styles */
         .service-status {
             display: flex;
             flex-direction: column;
@@ -395,7 +384,6 @@
             color: var(--primary);
         }
 
-        /* Additional styles for vehicle management */
         .vehicle-actions {
             display: flex;
             gap: 0.5rem;
@@ -411,7 +399,6 @@
             background-color: rgba(220, 53, 69, 0.1);
         }
 
-        /* Service detail modal styles */
         .service-detail-header {
             display: flex;
             justify-content: space-between;
@@ -510,7 +497,6 @@
             text-align: center;
         }
 
-        /* Invoice styles */
         .invoice-section {
             margin-bottom: 2rem;
         }
@@ -593,7 +579,6 @@
             margin-top: 1rem;
         }
 
-        /* Invoice detail modal styles */
         .invoice-detail-header {
             display: flex;
             justify-content: space-between;
@@ -687,25 +672,6 @@
             font-style: italic;
         }
 
-        @media (max-width: 768px) {
-            .invoice-detail-header, .customer-vehicle-info {
-                flex-direction: column;
-                grid-template-columns: 1fr;
-            }
-
-            .company-info, .customer-info {
-                margin-bottom: 1.5rem;
-            }
-
-            .invoice-summary {
-                width: 100%;
-            }
-
-            .invoice-list {
-                grid-template-columns: 1fr;
-            }
-        }
-
         .vehicle-status {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -794,7 +760,6 @@
             color: var(--dark);
         }
 
-        /* Progress Steps */
         .progress-steps {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -858,7 +823,6 @@
             color: var(--dark);
         }
 
-        /* History List Styles */
         .history-list {
             display: flex;
             flex-direction: column;
@@ -921,7 +885,6 @@
             margin-top: 1.25rem;
         }
 
-        /* Vehicles Grid */
         .vehicles-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -1000,7 +963,6 @@
             box-shadow: var(--shadow-md);
         }
 
-        /* Invoice List Styles */
         .invoice-list {
             display: flex;
             flex-direction: column;
@@ -1067,7 +1029,6 @@
             box-shadow: var(--shadow-sm);
         }
 
-        /* Modal Styles */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -1082,6 +1043,7 @@
             visibility: hidden;
             opacity: 0;
             transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
         }
 
         .modal-overlay.active {
@@ -1143,86 +1105,50 @@
             gap: 1rem;
         }
 
-        /* OTP Input Styles */
-        .otp-input-container {
+        .loading-spinner {
             display: flex;
-            justify-content: space-between;
-            margin: 1.5rem 0;
-        }
-
-        .otp-input {
-            width: 50px;
-            height: 60px;
-            border: 1px solid var(--medium-gray);
-            border-radius: 8px;
-            font-size: 1.5rem;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        .otp-input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(114, 47, 56, 0.2);
-        }
-
-        .resend-otp {
-            text-align: right;
-            margin-top: 1rem;
-        }
-
-        .resend-otp a {
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
             color: var(--primary);
-            text-decoration: none;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
         }
 
-        .resend-otp a:hover {
-            text-decoration: underline;
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(114, 47, 55, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 1rem;
         }
 
-        /* Tooltip Styles */
-        .tooltip {
-            position: relative;
-            display: inline-block;
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
-        .tooltip .tooltiptext {
-            visibility: hidden;
-            width: 120px;
-            background-color: var(--dark);
-            color: var(--white);
+        .empty-state {
             text-align: center;
-            border-radius: 6px;
-            padding: 5px;
-            position: absolute;
-            z-index: 1;
-            bottom: 125%;
-            left: 50%;
-            transform: translateX(-50%);
-            opacity: 0;
-            transition: opacity 0.3s;
-            font-size: 0.8rem;
+            padding: 3rem 1rem;
+            color: var(--dark-gray);
         }
 
-        .tooltip .tooltiptext::after {
-            content: "";
-            position: absolute;
-            top: 100%;
-            left: 50%;
-            margin-left: -5px;
-            border-width: 5px;
-            border-style: solid;
-            border-color: var(--dark) transparent transparent transparent;
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--medium-gray);
+            margin-bottom: 1rem;
         }
 
-        .tooltip:hover .tooltiptext {
-            visibility: visible;
-            opacity: 1;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Toast Notification */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
         .toast-container {
             position: fixed;
             top: 20px;
@@ -1293,58 +1219,50 @@
             opacity: 1;
         }
 
-        /* Loading Styles */
-        .loading-spinner {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem;
-            color: var(--primary);
-        }
-
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(114, 47, 55, 0.3);
-            border-radius: 50%;
-            border-top-color: var(--primary);
-            animation: spin 1s ease-in-out infinite;
-            margin-bottom: 1rem;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 3rem 1rem;
-            color: var(--dark-gray);
-        }
-
-        .empty-state i {
-            font-size: 3rem;
-            color: var(--medium-gray);
-            margin-bottom: 1rem;
-        }
-
-        /* Animation Classes */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
         @keyframes toast-in-right {
             from { opacity: 0; transform: translateX(100%); }
             to { opacity: 1; transform: translateX(0); }
         }
 
-        .fade-in {
-            animation: fadeIn 0.3s ease-in-out;
+        .tooltip {
+            position: relative;
+            display: inline-block;
         }
 
-        /* Responsive Styles */
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 120px;
+            background-color: var(--dark);
+            color: var(--white);
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.8rem;
+        }
+
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: var(--dark) transparent transparent transparent;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
         @media (max-width: 1200px) {
             .profile-grid {
                 grid-template-columns: minmax(250px, 300px) 1fr;
@@ -1420,6 +1338,23 @@
             .vehicles-grid {
                 grid-template-columns: 1fr;
             }
+
+            .invoice-detail-header, .customer-vehicle-info {
+                flex-direction: column;
+                grid-template-columns: 1fr;
+            }
+
+            .company-info, .customer-info {
+                margin-bottom: 1.5rem;
+            }
+
+            .invoice-summary {
+                width: 100%;
+            }
+
+            .invoice-list {
+                grid-template-columns: 1fr;
+            }
         }
 
         @media (max-width: 576px) {
@@ -1468,12 +1403,6 @@
                 grid-template-columns: 1fr;
             }
 
-            .otp-input {
-                width: 45px;
-                height: 55px;
-                font-size: 1.2rem;
-            }
-
             .modal-container {
                 width: 95%;
             }
@@ -1504,7 +1433,6 @@
     </style>
 </head>
 <body>
-<!-- Header -->
 <div class="header">
     <a href="/" class="logo">Albany</a>
     <div class="nav-links">
@@ -1516,12 +1444,10 @@
     </div>
 </div>
 
-<!-- Main Content -->
 <div class="container">
     <h1 class="page-title">Your Profile</h1>
 
     <div class="profile-grid">
-        <!-- Sidebar -->
         <div class="profile-sidebar">
             <div class="profile-avatar">
                 <div id="profileAvatarWrapper" class="avatar-wrapper">
@@ -1562,9 +1488,7 @@
             </div>
         </div>
 
-        <!-- Content Area -->
         <div class="profile-content">
-            <!-- Profile Tab -->
             <div class="tab-content active" id="profile-tab">
                 <div class="content-header">
                     <span>Profile Information</span>
@@ -1582,16 +1506,16 @@
                         </div>
                     </div>
 
-                    <h3 class="section-title">Contact Information <button class="btn btn-outline btn-sm" id="updateEmailBtn">Update Email</button></h3>
+                    <h3 class="section-title">Contact Information</h3>
                     <div class="form-group">
                         <label class="form-label">Email Address</label>
-                        <input type="email" class="form-control" id="email" name="email" disabled>
+                        <input type="email" class="form-control" id="email" name="email">
                     </div>
 
-                    <div class="section-title">Phone Number <button class="btn btn-outline btn-sm" id="updatePhoneBtn">Update Phone</button></div>
+                    <div class="section-title">Phone Number</div>
                     <div class="form-group">
                         <label class="form-label">Phone Number</label>
-                        <input type="tel" class="form-control" id="phoneNumber" name="phoneNumber" disabled>
+                        <input type="tel" class="form-control" id="phoneNumber" name="phoneNumber">
                     </div>
 
                     <h3 class="section-title">Address Information</h3>
@@ -1621,7 +1545,6 @@
                 </div>
             </div>
 
-            <!-- Current Services Tab -->
             <div class="tab-content" id="services-tab">
                 <div class="content-header">
                     <span>Current Services</span>
@@ -1637,7 +1560,6 @@
                         </div>
 
                         <div class="vehicle-status" id="currentServicesContainer">
-                            <!-- Current services will be loaded here -->
                             <div class="loading-spinner">
                                 <div class="spinner"></div>
                                 <p>Loading your active services...</p>
@@ -1647,14 +1569,12 @@
                 </div>
             </div>
 
-            <!-- Service History Tab -->
             <div class="tab-content" id="history-tab">
                 <div class="content-header">
                     <span>Service History</span>
                 </div>
                 <div class="content-body">
                     <div class="history-list" id="serviceHistoryContainer">
-                        <!-- Service history will be loaded here -->
                         <div class="loading-spinner">
                             <div class="spinner"></div>
                             <p>Loading your service history...</p>
@@ -1663,14 +1583,12 @@
                 </div>
             </div>
 
-            <!-- Invoices Tab -->
             <div class="tab-content" id="invoices-tab">
                 <div class="content-header">
                     <span>Invoices</span>
                 </div>
                 <div class="content-body">
                     <div class="invoice-list" id="invoicesContainer">
-                        <!-- Invoices will be loaded here -->
                         <div class="loading-spinner">
                             <div class="spinner"></div>
                             <p>Loading your invoices...</p>
@@ -1679,14 +1597,12 @@
                 </div>
             </div>
 
-            <!-- Vehicles Tab -->
             <div class="tab-content" id="vehicles-tab">
                 <div class="content-header">
                     <span>Your Vehicles</span>
                 </div>
                 <div class="content-body">
                     <div class="vehicles-grid" id="vehiclesContainer">
-                        <!-- Vehicles will be loaded here -->
                         <div class="loading-spinner">
                             <div class="spinner"></div>
                             <p>Loading your vehicles...</p>
@@ -1698,33 +1614,6 @@
     </div>
 </div>
 
-<!-- OTP Verification Modal -->
-<div class="modal-overlay" id="otpModal">
-    <div class="modal-container">
-        <div class="modal-header">
-            <div class="modal-title">Verify OTP</div>
-            <button class="modal-close" id="closeOtpModalBtn" aria-label="Close OTP Modal">×</button>
-        </div>
-        <div class="modal-body">
-            <p>Enter the 4-digit verification code sent to your <span id="verificationChannel"></span></p>
-            <div class="otp-input-container">
-                <input type="text" maxlength="1" class="otp-input">
-                <input type="text" maxlength="1" class="otp-input">
-                <input type="text" maxlength="1" class="otp-input">
-                <input type="text" maxlength="1" class="otp-input">
-            </div>
-            <div class="resend-otp">
-                <a href="#" id="resendOtpBtn">Resend OTP</a>
-            </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-outline" id="cancelOtpBtn">Cancel</button>
-            <button class="btn btn-primary" id="verifyOtpBtn">Verify</button>
-        </div>
-    </div>
-</div>
-
-<!-- Toast container for notifications -->
 <div class="toast-container"></div>
 
 <script>
@@ -1878,9 +1767,6 @@
             document.getElementById('city').value = this.userData.city || '';
             document.getElementById('state').value = this.userData.state || '';
             document.getElementById('postalCode').value = this.userData.postalCode || '';
-
-            document.getElementById('email').removeAttribute('disabled');
-            document.getElementById('phoneNumber').removeAttribute('disabled');
         }
 
         saveProfileChanges() {
@@ -1952,11 +1838,11 @@
 
             const container = document.getElementById('vehiclesContainer');
             container.innerHTML = `
-            <div class="loading-spinner">
-                <div class="spinner"></div>
-                <p>Loading your vehicles...</p>
-            </div>
-        `;
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Loading your vehicles...</p>
+        </div>
+    `;
 
             fetch(this.apiEndpoints.vehicles, {
                 headers: {
@@ -1982,12 +1868,12 @@
                 .catch(error => {
                     console.error('Error loading vehicles:', error);
                     container.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <h4>Failed to load vehicles</h4>
-                    <p>${error.message || 'Please try again later'}</p>
-                </div>
-            `;
+            <div class="empty-state">
+                <i class="fas fa-exclamation-circle"></i>
+                <h4>Failed to load vehicles</h4>
+                <p>${error.message || 'Please try again later'}</p>
+            </div>
+        `;
                 });
         }
 
@@ -1998,12 +1884,12 @@
 
             if (this.vehicles.length === 0) {
                 html += `
-                <div class="empty-state">
-                    <i class="fas fa-car"></i>
-                    <h4>No vehicles found</h4>
-                    <p>Add your first vehicle to get started.</p>
-                </div>
-            `;
+            <div class="empty-state">
+                <i class="fas fa-car"></i>
+                <h4>No vehicles found</h4>
+                <p>Add your first vehicle to get started.</p>
+            </div>
+        `;
             } else {
                 html += '<div class="vehicles-grid">';
 
@@ -2012,100 +1898,100 @@
                         (vehicle.category === 'Truck' ? 'truck' : 'car');
 
                     html += `
-                    <div class="vehicle-item">
-                        <div class="vehicle-image">
-                            <i class="fas fa-${vehicleIcon}"></i>
+                <div class="vehicle-item">
+                    <div class="vehicle-image">
+                        <i class="fas fa-${vehicleIcon}"></i>
+                    </div>
+                    <div class="vehicle-info">
+                        <h4>${vehicle.brand} ${vehicle.model}</h4>
+                        <div class="detail-row">
+                            <div class="detail-label">Registration</div>
+                            <div class="detail-value">${vehicle.registrationNumber || 'N/A'}</div>
                         </div>
-                        <div class="vehicle-info">
-                            <h4>${vehicle.brand} ${vehicle.model}</h4>
-                            <div class="detail-row">
-                                <div class="detail-label">Registration</div>
-                                <div class="detail-value">${vehicle.registrationNumber || 'N/A'}</div>
-                            </div>
-                            <div class="detail-row">
-                                <div class="detail-label">Year</div>
-                                <div class="detail-value">${vehicle.year || 'N/A'}</div>
-                            </div>
-                            <div class="detail-row">
-                                <div class="detail-label">Category</div>
-                                <div class="detail-value">${vehicle.category || 'Car'}</div>
-                            </div>
-                            <div class="vehicle-actions">
-                                <button class="btn btn-outline btn-sm" onclick="profileManager.editVehicle(${vehicle.vehicleId})">
-                                    <i class="fas fa-edit"></i> Edit
-                                </button>
-                                <button class="btn btn-outline btn-sm btn-danger" onclick="profileManager.deleteVehicle(${vehicle.vehicleId})">
-                                    <i class="fas fa-trash"></i> Delete
-                                </button>
-                            </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Year</div>
+                            <div class="detail-value">${vehicle.year || 'N/A'}</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Category</div>
+                            <div class="detail-value">${vehicle.category || 'Car'}</div>
+                        </div>
+                        <div class="vehicle-actions">
+                            <button class="btn btn-outline btn-sm" onclick="profileManager.editVehicle(${vehicle.vehicleId})">
+                                <i class="fas fa-edit"></i> Edit
+                            </button>
+                            <button class="btn btn-outline btn-sm btn-danger" onclick="profileManager.deleteVehicle(${vehicle.vehicleId})">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
                         </div>
                     </div>
-                `;
+                </div>
+            `;
                 });
 
                 html += '</div>';
             }
 
             html += `
-            <div class="add-vehicle-card" id="addVehicleBtn" onclick="profileManager.showAddVehicleModal()">
-                <div class="add-icon">
-                    <i class="fas fa-plus"></i>
-                </div>
-                <div>Add New Vehicle</div>
+        <div class="add-vehicle-card" id="addVehicleBtn" onclick="profileManager.showAddVehicleModal()">
+            <div class="add-icon">
+                <i class="fas fa-plus"></i>
             </div>
-        `;
+            <div>Add New Vehicle</div>
+        </div>
+    `;
 
             container.innerHTML = html;
         }
 
         showAddVehicleModal() {
             const modalHtml = `
-            <div class="modal-overlay vehicle-modal active" id="vehicleModal">
-                <div class="modal-container">
-                    <div class="modal-header">
-                        <div class="modal-title"><i class="fas fa-car-side"></i> Add New Vehicle</div>
-                        <button class="modal-close">&times;</button>
-                    </div>
-                    <div class="modal-body">
-                        <form id="vehicleForm">
-                            <input type="hidden" id="vehicleId" value="">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label class="form-label">Brand <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="vehicleBrand" required>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Model <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="vehicleModel" required>
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label class="form-label">Registration Number <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control" id="vehicleReg" required>
-                                </div>
-                                <div class="form-group">
-                                    <label class="form-label">Year <span class="text-danger">*</span></label>
-                                    <input type="number" class="form-control" id="vehicleYear" min="1900" max="2025" required>
-                                </div>
+        <div class="modal-overlay vehicle-modal active" id="vehicleModal">
+            <div class="modal-container">
+                <div class="modal-header">
+                    <div class="modal-title"><i class="fas fa-car-side"></i> Add New Vehicle</div>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="vehicleForm">
+                        <input type="hidden" id="vehicleId" value="">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Brand <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="vehicleBrand" required>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Category <span class="text-danger">*</span></label>
-                                <select class="form-control" id="vehicleCategory" required>
-                                    <option value="Car">Car</option>
-                                    <option value="Bike">Bike</option>
-                                    <option value="Truck">Truck</option>
-                                </select>
+                                <label class="form-label">Model <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="vehicleModel" required>
                             </div>
-                        </form>
-                    </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-outline modal-cancel">Cancel</button>
-                        <button class="btn btn-primary" id="saveVehicleBtn">Save Vehicle</button>
-                    </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Registration Number <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="vehicleReg" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Year <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control" id="vehicleYear" min="1900" max="2025" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Category <span class="text-danger">*</span></label>
+                            <select class="form-control" id="vehicleCategory" required>
+                                <option value="Car">Car</option>
+                                <option value="Bike">Bike</option>
+                                <option value="Truck">Truck</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline modal-cancel">Cancel</button>
+                    <button class="btn btn-primary" id="saveVehicleBtn">Save Vehicle</button>
                 </div>
             </div>
-        `;
+        </div>
+    `;
 
             if (!document.querySelector('.vehicle-modal')) {
                 document.body.insertAdjacentHTML('beforeend', modalHtml);
@@ -2264,11 +2150,11 @@
 
             const container = document.getElementById('currentServicesContainer');
             container.innerHTML = `
-            <div class="loading-spinner">
-                <div class="spinner"></div>
-                <p>Loading your active services...</p>
-            </div>
-        `;
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Loading your active services...</p>
+        </div>
+    `;
 
             fetch(this.apiEndpoints.activeServices, {
                 headers: {
@@ -2294,12 +2180,12 @@
                 .catch(error => {
                     console.error('Error loading active services:', error);
                     container.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <h4>Failed to load active services</h4>
-                    <p>${error.message || 'Please try again later'}</p>
-                </div>
-            `;
+            <div class="empty-state">
+                <i class="fas fa-exclamation-circle"></i>
+                <h4>Failed to load active services</h4>
+                <p>${error.message || 'Please try again later'}</p>
+            </div>
+        `;
                 });
         }
 
@@ -2308,12 +2194,12 @@
 
             if (!this.activeServices || this.activeServices.length === 0) {
                 container.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-check-circle"></i>
-                    <h4>No active services</h4>
-                    <p>You don't have any vehicles in service at the moment.</p>
-                </div>
-            `;
+            <div class="empty-state">
+                <i class="fas fa-check-circle"></i>
+                <h4>No active services</h4>
+                <p>You don't have any vehicles in service at the moment.</p>
+            </div>
+        `;
                 return;
             }
 
@@ -2328,31 +2214,31 @@
                     new Date(service.estimatedCompletionDate).toLocaleDateString() : 'N/A';
 
                 html += `
-                <div class="vehicle-card">
-                    <div class="vehicle-header">
-                        <div class="vehicle-name">${service.vehicleBrand} ${service.vehicleModel}</div>
-                        <div class="status-badge ${statusClass}">${statusLabel}</div>
+            <div class="vehicle-card">
+                <div class="vehicle-header">
+                    <div class="vehicle-name">${service.vehicleBrand} ${service.vehicleModel}</div>
+                    <div class="status-badge ${statusClass}">${statusLabel}</div>
+                </div>
+                <div class="vehicle-details">
+                    <div class="detail-row">
+                        <div class="detail-label">Service Type</div>
+                        <div class="detail-value">${service.serviceType || 'General Service'}</div>
                     </div>
-                    <div class="vehicle-details">
-                        <div class="detail-row">
-                            <div class="detail-label">Service Type</div>
-                            <div class="detail-value">${service.serviceType || 'General Service'}</div>
-                        </div>
-                        <div class="detail-row">
-                            <div class="detail-label">Drop-off Date</div>
-                            <div class="detail-value">${startDate}</div>
-                        </div>
-                        <div class="detail-row">
-                            <div class="detail-label">Estimated Pickup</div>
-                            <div class="detail-value">${estimatedDate}</div>
-                        </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Drop-off Date</div>
+                        <div class="detail-value">${startDate}</div>
+                    </div>
+                    <div class="detail-row">
+                        <div class="detail-label">Estimated Pickup</div>
+                        <div class="detail-value">${estimatedDate}</div>
+                    </div>
 
-                        <div class="progress-steps">
-                            ${this.renderServiceSteps(service.status)}
-                        </div>
+                    <div class="progress-steps">
+                        ${this.renderServiceSteps(service.status)}
                     </div>
                 </div>
-            `;
+            </div>
+        `;
             });
 
             container.innerHTML = html;
@@ -2379,11 +2265,11 @@
                 }
 
                 stepsHtml += `
-                <div class="step ${stepClass}">
-                    <div class="step-icon">${stepIcon}</div>
-                    <div class="step-label">${step}</div>
-                </div>
-            `;
+            <div class="step ${stepClass}">
+                <div class="step-icon">${stepIcon}</div>
+                <div class="step-label">${step}</div>
+            </div>
+        `;
             });
 
             return stepsHtml;
@@ -2399,11 +2285,11 @@
 
             const container = document.getElementById('serviceHistoryContainer');
             container.innerHTML = `
-            <div class="loading-spinner">
-                <div class="spinner"></div>
-                <p>Loading your service history...</p>
-            </div>
-        `;
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Loading your service history...</p>
+        </div>
+    `;
 
             fetch(this.apiEndpoints.serviceHistory, {
                 headers: {
@@ -2429,12 +2315,12 @@
                 .catch(error => {
                     console.error('Error loading service history:', error);
                     container.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <h4>Failed to load service history</h4>
-                    <p>${error.message || 'Please try again later'}</p>
-                </div>
-            `;
+            <div class="empty-state">
+                <i class="fas fa-exclamation-circle"></i>
+                <h4>Failed to load service history</h4>
+                <p>${error.message || 'Please try again later'}</p>
+            </div>
+        `;
                 });
         }
 
@@ -2443,12 +2329,12 @@
 
             if (!this.serviceHistory || this.serviceHistory.length === 0) {
                 container.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-history"></i>
-                    <h4>No service history</h4>
-                    <p>You don't have any completed services yet.</p>
-                </div>
-            `;
+            <div class="empty-state">
+                <i class="fas fa-history"></i>
+                <h4>No service history</h4>
+                <p>You don't have any completed services yet.</p>
+            </div>
+        `;
                 return;
             }
 
@@ -2461,37 +2347,37 @@
                 let totalCost = service.totalAmount || 0;
 
                 html += `
-                <div class="history-item">
-                    <div class="history-header">
-                        <div class="vehicle-name">${service.vehicleBrand} ${service.vehicleModel}</div>
-                        <div class="status-badge completed">Completed</div>
+            <div class="history-item">
+                <div class="history-header">
+                    <div class="vehicle-name">${service.vehicleBrand} ${service.vehicleModel}</div>
+                    <div class="status-badge completed">Completed</div>
+                </div>
+                <div class="history-body">
+                    <div class="service-details">
+                        <div class="detail-row">
+                            <div class="detail-label">Service Date</div>
+                            <div class="detail-value">${serviceDate}</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Service Type</div>
+                            <div class="detail-value">${service.serviceType || 'General Service'}</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">Total Cost</div>
+                            <div class="detail-value">₹${this.formatCurrency(totalCost)}</div>
+                        </div>
                     </div>
-                    <div class="history-body">
-                        <div class="service-details">
-                            <div class="detail-row">
-                                <div class="detail-label">Service Date</div>
-                                <div class="detail-value">${serviceDate}</div>
-                            </div>
-                            <div class="detail-row">
-                                <div class="detail-label">Service Type</div>
-                                <div class="detail-value">${service.serviceType || 'General Service'}</div>
-                            </div>
-                            <div class="detail-row">
-                                <div class="detail-label">Total Cost</div>
-                                <div class="detail-value">₹${this.formatCurrency(totalCost)}</div>
-                            </div>
-                        </div>
-                        <div class="action-buttons">
-                            <button class="btn btn-outline btn-sm" onclick="profileManager.viewServiceDetails(${service.requestId})">
-                                <i class="fas fa-eye"></i> View Details
-                            </button>
-                            <button class="btn btn-primary btn-sm" onclick="profileManager.downloadServicePDF(${service.requestId})">
-                                <i class="fas fa-download"></i> Download PDF
-                            </button>
-                        </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-outline btn-sm" onclick="profileManager.viewServiceDetails(${service.requestId})">
+                            <i class="fas fa-eye"></i> View Details
+                        </button>
+                        <button class="btn btn-primary btn-sm" onclick="profileManager.downloadServicePDF(${service.requestId})">
+                            <i class="fas fa-download"></i> Download PDF
+                        </button>
                     </div>
                 </div>
-            `;
+            </div>
+        `;
             });
 
             container.innerHTML = html;
@@ -2526,93 +2412,93 @@
                     if (!data) return;
 
                     const modalHtml = `
-                <div class="modal-overlay service-detail-modal active">
-                    <div class="modal-container" style="max-width: 700px;">
-                        <div class="modal-header">
-                            <div class="modal-title">
-                                <i class="fas fa-clipboard-list"></i> Service Details
-                            </div>
-                            <button class="modal-close">&times;</button>
+            <div class="modal-overlay service-detail-modal active">
+                <div class="modal-container" style="max-width: 700px;">
+                    <div class="modal-header">
+                        <div class="modal-title">
+                            <i class="fas fa-clipboard-list"></i> Service Details
                         </div>
-                        <div class="modal-body">
-                            <div class="service-detail-header">
-                                <h3>${data.vehicleBrand} ${data.vehicleModel}</h3>
-                                <div class="status-badge completed">Completed</div>
+                        <button class="modal-close">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="service-detail-header">
+                            <h3>${data.vehicleBrand} ${data.vehicleModel}</h3>
+                            <div class="status-badge completed">Completed</div>
+                        </div>
+
+                        <div class="section-title">Vehicle Information</div>
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <div class="detail-label">Registration</div>
+                                <div class="detail-value">${data.registrationNumber || 'N/A'}</div>
                             </div>
-
-                            <div class="section-title">Vehicle Information</div>
-                            <div class="detail-grid">
-                                <div class="detail-item">
-                                    <div class="detail-label">Registration</div>
-                                    <div class="detail-value">${data.registrationNumber || 'N/A'}</div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">Year</div>
-                                    <div class="detail-value">${data.vehicleYear || 'N/A'}</div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">Type</div>
-                                    <div class="detail-value">${data.vehicleType || 'N/A'}</div>
-                                </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Year</div>
+                                <div class="detail-value">${data.vehicleYear || 'N/A'}</div>
                             </div>
-
-                            <div class="section-title">Service Information</div>
-                            <div class="detail-grid">
-                                <div class="detail-item">
-                                    <div class="detail-label">Service Type</div>
-                                    <div class="detail-value">${data.serviceType || 'General Service'}</div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">Service Date</div>
-                                    <div class="detail-value">${data.formattedCompletedDate || 'N/A'}</div>
-                                </div>
-                                <div class="detail-item">
-                                    <div class="detail-label">Service Advisor</div>
-                                    <div class="detail-value">${data.serviceAdvisorName || 'N/A'}</div>
-                                </div>
-                            </div>
-
-                            <div class="section-title">Materials Used</div>
-                            ${this.renderMaterialsTable(data.materials)}
-
-                            <div class="section-title">Charges</div>
-                            <div class="charges-summary">
-                                <div class="charge-row">
-                                    <div class="charge-label">Materials Total</div>
-                                    <div class="charge-value">₹${this.formatCurrency(data.calculatedMaterialsTotal)}</div>
-                                </div>
-                                <div class="charge-row">
-                                    <div class="charge-label">Labor Charges</div>
-                                    <div class="charge-value">₹${this.formatCurrency(data.calculatedLaborTotal)}</div>
-                                </div>
-                                ${data.calculatedDiscount > 0 ? `
-                                <div class="charge-row discount">
-                                    <div class="charge-label">Premium Discount</div>
-                                    <div class="charge-value">-₹${this.formatCurrency(data.calculatedDiscount)}</div>
-                                </div>` : ''}
-                                <div class="charge-row">
-                                    <div class="charge-label">Subtotal</div>
-                                    <div class="charge-value">₹${this.formatCurrency(data.calculatedSubtotal)}</div>
-                                </div>
-                                <div class="charge-row">
-                                    <div class="charge-label">Tax (18% GST)</div>
-                                    <div class="charge-value">₹${this.formatCurrency(data.calculatedTax)}</div>
-                                </div>
-                                <div class="charge-row total">
-                                    <div class="charge-label">Total Amount</div>
-                                    <div class="charge-value">₹${this.formatCurrency(data.calculatedTotal)}</div>
-                                </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Type</div>
+                                <div class="detail-value">${data.vehicleType || 'N/A'}</div>
                             </div>
                         </div>
-                        <div class="modal-footer">
-                            <button class="btn btn-outline modal-cancel">Close</button>
-                            <button class="btn btn-primary" onclick="profileManager.downloadServicePDF(${requestId})">
-                                <i class="fas fa-download"></i> Download as PDF
-                            </button>
+
+                        <div class="section-title">Service Information</div>
+                        <div class="detail-grid">
+                            <div class="detail-item">
+                                <div class="detail-label">Service Type</div>
+                                <div class="detail-value">${data.serviceType || 'General Service'}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Service Date</div>
+                                <div class="detail-value">${data.formattedCompletedDate || 'N/A'}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Service Advisor</div>
+                                <div class="detail-value">${data.serviceAdvisorName || 'N/A'}</div>
+                            </div>
+                        </div>
+
+                        <div class="section-title">Materials Used</div>
+                        ${this.renderMaterialsTable(data.materials)}
+
+                        <div class="section-title">Charges</div>
+                        <div class="charges-summary">
+                            <div class="charge-row">
+                                <div class="charge-label">Materials Total</div>
+                                <div class="charge-value">₹${this.formatCurrency(data.calculatedMaterialsTotal)}</div>
+                            </div>
+                            <div class="charge-row">
+                                <div class="charge-label">Labor Charges</div>
+                                <div class="charge-value">₹${this.formatCurrency(data.calculatedLaborTotal)}</div>
+                            </div>
+                            ${data.calculatedDiscount > 0 ? `
+                            <div class="charge-row discount">
+                                <div class="charge-label">Premium Discount</div>
+                                <div class="charge-value">-₹${this.formatCurrency(data.calculatedDiscount)}</div>
+                            </div>` : ''}
+                            <div class="charge-row">
+                                <div class="charge-label">Subtotal</div>
+                                <div class="charge-value">₹${this.formatCurrency(data.calculatedSubtotal)}</div>
+                            </div>
+                            <div class="charge-row">
+                                <div class="charge-label">Tax (18% GST)</div>
+                                <div class="charge-value">₹${this.formatCurrency(data.calculatedTax)}</div>
+                            </div>
+                            <div class="charge-row total">
+                                <div class="charge-label">Total Amount</div>
+                                <div class="charge-value">₹${this.formatCurrency(data.calculatedTotal)}</div>
+                            </div>
                         </div>
                     </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-outline modal-cancel">Close</button>
+                        <button class="btn btn-primary" onclick="profileManager.downloadServicePDF(${requestId})">
+                            <i class="fas fa-download"></i> Download as PDF
+                        </button>
+                    </div>
                 </div>
-            `;
+            </div>
+        `;
 
                     if (!document.querySelector('.service-detail-modal')) {
                         document.body.insertAdjacentHTML('beforeend', modalHtml);
@@ -2634,24 +2520,24 @@
         renderMaterialsTable(materials) {
             if (!materials || materials.length === 0) {
                 return `
-                <div class="empty-message">
-                    <i class="fas fa-info-circle"></i> No materials were used for this service.
-                </div>
-            `;
+            <div class="empty-message">
+                <i class="fas fa-info-circle"></i> No materials were used for this service.
+            </div>
+        `;
             }
 
             let html = `
-            <table class="materials-table">
-                <thead>
-                    <tr>
-                        <th>Item</th>
-                        <th>Quantity</th>
-                        <th>Unit Price</th>
-                        <th>Total</th>
-                    </tr>
-                </thead>
-                <tbody>
-        `;
+        <table class="materials-table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                    <th>Unit Price</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
 
             materials.forEach(material => {
                 const quantity = material.quantity || 0;
@@ -2659,19 +2545,19 @@
                 const total = quantity * unitPrice;
 
                 html += `
-                <tr>
-                    <td>${material.name || 'Unknown'}</td>
-                    <td>${quantity}</td>
-                    <td>₹${this.formatCurrency(unitPrice)}</td>
-                    <td>₹${this.formatCurrency(total)}</td>
-                </tr>
-            `;
+            <tr>
+                <td>${material.name || 'Unknown'}</td>
+                <td>${quantity}</td>
+                <td>₹${this.formatCurrency(unitPrice)}</td>
+                <td>₹${this.formatCurrency(total)}</td>
+            </tr>
+        `;
             });
 
             html += `
-                </tbody>
-            </table>
-        `;
+            </tbody>
+        </table>
+    `;
 
             return html;
         }
@@ -2722,11 +2608,11 @@
 
             const container = document.getElementById('invoicesContainer');
             container.innerHTML = `
-            <div class="loading-spinner">
-                <div class="spinner"></div>
-                <p>Loading your invoices...</p>
-            </div>
-        `;
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <p>Loading your invoices...</p>
+        </div>
+    `;
 
             fetch(this.apiEndpoints.invoices, {
                 headers: {
@@ -2752,12 +2638,12 @@
                 .catch(error => {
                     console.error('Error loading invoices:', error);
                     container.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <h4>Failed to load invoices</h4>
-                    <p>${error.message || 'Please try again later'}</p>
-                </div>
-            `;
+            <div class="empty-state">
+                <i class="fas fa-exclamation-circle"></i>
+                <h4>Failed to load invoices</h4>
+                <p>${error.message || 'Please try again later'}</p>
+            </div>
+        `;
                 });
         }
 
@@ -2766,12 +2652,12 @@
 
             if (!this.invoices || this.invoices.length === 0) {
                 container.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-file-invoice"></i>
-                    <h4>No invoices</h4>
-                    <p>You don't have any invoices yet.</p>
-                </div>
-            `;
+            <div class="empty-state">
+                <i class="fas fa-file-invoice"></i>
+                <h4>No invoices</h4>
+                <p>You don't have any invoices yet.</p>
+            </div>
+        `;
                 return;
             }
 
@@ -2782,103 +2668,103 @@
 
             if (pendingInvoices.length > 0) {
                 html += `
-                <div class="invoice-section">
-                    <h3 class="invoice-section-title">Pending Invoices</h3>
-                    <div class="invoice-list">
-            `;
+            <div class="invoice-section">
+                <h3 class="invoice-section-title">Pending Invoices</h3>
+                <div class="invoice-list">
+        `;
 
                 pendingInvoices.forEach(invoice => {
                     const invoiceDate = invoice.formattedCompletedDate ||
                         (invoice.completedDate ? new Date(invoice.completedDate).toLocaleDateString() : 'N/A');
 
                     html += `
-                    <div class="invoice-card pending">
-                        <div class="invoice-header">
-                            <div class="invoice-title">Invoice #${invoice.invoiceId}</div>
-                            <div class="invoice-status">Pending</div>
-                        </div>
-                        <div class="invoice-body">
-                            <div class="invoice-detail">
-                                <div class="detail-label">Service Date:</div>
-                                <div class="detail-value">${invoiceDate}</div>
-                            </div>
-                            <div class="invoice-detail">
-                                <div class="detail-label">Vehicle:</div>
-                                <div class="detail-value">${invoice.vehicleBrand} ${invoice.vehicleModel}</div>
-                            </div>
-                            <div class="invoice-detail">
-                                <div class="detail-label">Amount:</div>
-                                <div class="detail-value">₹${this.formatCurrency(invoice.totalAmount)}</div>
-                            </div>
-                            <div class="invoice-actions">
-                                <button class="btn btn-outline btn-sm" onclick="profileManager.viewInvoice(${invoice.invoiceId})">
-                                    <i class="fas fa-eye"></i> View
-                                </button>
-                                <button class="btn btn-outline btn-sm" onclick="profileManager.downloadInvoicePDF(${invoice.invoiceId})">
-                                    <i class="fas fa-download"></i> Download
-                                </button>
-                                <button class="btn btn-primary btn-sm" onclick="profileManager.payInvoice(${invoice.invoiceId})">
-                                    <i class="fas fa-credit-card"></i> Pay Now
-                                </button>
-                            </div>
-                        </div>
+                <div class="invoice-card pending">
+                    <div class="invoice-header">
+                        <div class="invoice-title">Invoice #${invoice.invoiceId}</div>
+                        <div class="invoice-status">Pending</div>
                     </div>
-                `;
-                });
-
-                html += `
+                    <div class="invoice-body">
+                        <div class="invoice-detail">
+                            <div class="detail-label">Service Date:</div>
+                            <div class="detail-value">${invoiceDate}</div>
+                        </div>
+                        <div class="invoice-detail">
+                            <div class="detail-label">Vehicle:</div>
+                            <div class="detail-value">${invoice.vehicleBrand} ${invoice.vehicleModel}</div>
+                        </div>
+                        <div class="invoice-detail">
+                            <div class="detail-label">Amount:</div>
+                            <div class="detail-value">₹${this.formatCurrency(invoice.totalAmount)}</div>
+                        </div>
+                        <div class="invoice-actions">
+                            <button class="btn btn-outline btn-sm" onclick="profileManager.viewInvoice(${invoice.invoiceId})">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button class="btn btn-outline btn-sm" onclick="profileManager.downloadInvoicePDF(${invoice.invoiceId})">
+                                <i class="fas fa-download"></i> Download
+                            </button>
+                            <button class="btn btn-primary btn-sm" onclick="profileManager.payInvoice(${invoice.invoiceId})">
+                                <i class="fas fa-credit-card"></i> Pay Now
+                            </button>
+                        </div>
                     </div>
                 </div>
             `;
+                });
+
+                html += `
+                </div>
+            </div>
+        `;
             }
 
             if (paidInvoices.length > 0) {
                 html += `
-                <div class="invoice-section">
-                    <h3 class="invoice-section-title">Paid Invoices</h3>
-                    <div class="invoice-list">
-            `;
+            <div class="invoice-section">
+                <h3 class="invoice-section-title">Paid Invoices</h3>
+                <div class="invoice-list">
+        `;
 
                 paidInvoices.forEach(invoice => {
                     const invoiceDate = invoice.formattedCompletedDate ||
                         (invoice.completedDate ? new Date(invoice.completedDate).toLocaleDateString() : 'N/A');
 
                     html += `
-                    <div class="invoice-card paid">
-                        <div class="invoice-header">
-                            <div class="invoice-title">Invoice #${invoice.invoiceId}</div>
-                            <div class="invoice-status">Paid</div>
-                        </div>
-                        <div class="invoice-body">
-                            <div class="invoice-detail">
-                                <div class="detail-label">Service Date:</div>
-                                <div class="detail-value">${invoiceDate}</div>
-                            </div>
-                            <div class="invoice-detail">
-                                <div class="detail-label">Vehicle:</div>
-                                <div class="detail-value">${invoice.vehicleBrand} ${invoice.vehicleModel}</div>
-                            </div>
-                            <div class="invoice-detail">
-                                <div class="detail-label">Amount:</div>
-                                <div class="detail-value">₹${this.formatCurrency(invoice.totalAmount)}</div>
-                            </div>
-                            <div class="invoice-actions">
-                                <button class="btn btn-outline btn-sm" onclick="profileManager.viewInvoice(${invoice.invoiceId})">
-                                    <i class="fas fa-eye"></i> View
-                                </button>
-                                <button class="btn btn-outline btn-sm" onclick="profileManager.downloadInvoicePDF(${invoice.invoiceId})">
-                                    <i class="fas fa-download"></i> Download
-                                </button>
-                            </div>
-                        </div>
+                <div class="invoice-card paid">
+                    <div class="invoice-header">
+                        <div class="invoice-title">Invoice #${invoice.invoiceId}</div>
+                        <div class="invoice-status">Paid</div>
                     </div>
-                `;
-                });
-
-                html += `
+                    <div class="invoice-body">
+                        <div class="invoice-detail">
+                            <div class="detail-label">Service Date:</div>
+                            <div class="detail-value">${invoiceDate}</div>
+                        </div>
+                        <div class="invoice-detail">
+                            <div class="detail-label">Vehicle:</div>
+                            <div class="detail-value">${invoice.vehicleBrand} ${invoice.vehicleModel}</div>
+                        </div>
+                        <div class="invoice-detail">
+                            <div class="detail-label">Amount:</div>
+                            <div class="detail-value">₹${this.formatCurrency(invoice.totalAmount)}</div>
+                        </div>
+                        <div class="invoice-actions">
+                            <button class="btn btn-outline btn-sm" onclick="profileManager.viewInvoice(${invoice.invoiceId})">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button class="btn btn-outline btn-sm" onclick="profileManager.downloadInvoicePDF(${invoice.invoiceId})">
+                                <i class="fas fa-download"></i> Download
+                            </button>
+                        </div>
                     </div>
                 </div>
             `;
+                });
+
+                html += `
+                </div>
+            </div>
+        `;
             }
 
             container.innerHTML = html;
@@ -2913,94 +2799,94 @@
                     if (!data) return;
 
                     const modalHtml = `
-                <div class="modal-overlay invoice-detail-modal active">
-                    <div class="modal-container" style="max-width: 700px;">
-                        <div class="modal-header">
-                            <div class="modal-title">
-                                <i class="fas fa-file-invoice-dollar"></i> Invoice #${invoiceId}
-                            </div>
-                            <button class="modal-close">&times;</button>
+            <div class="modal-overlay invoice-detail-modal active">
+                <div class="modal-container" style="max-width: 700px;">
+                    <div class="modal-header">
+                        <div class="modal-title">
+                            <i class="fas fa-file-invoice-dollar"></i> Invoice #${invoiceId}
                         </div>
-                        <div class="modal-body">
-                            <div class="invoice-detail-header">
-                                <div class="company-info">
-                                    <h3>Albany Vehicle Service</h3>
-                                    <p>123 Albany Street, Chennai, India</p>
-                                    <p>Phone: +91 98765 43210</p>
-                                    <p>Email: support@albanyservice.com</p>
-                                </div>
-                                <div class="invoice-info">
-                                    <h4>INVOICE</h4>
-                                    <p><strong>Invoice #:</strong> ${invoiceId}</p>
-                                    <p><strong>Date:</strong> ${data.formattedCompletedDate || 'N/A'}</p>
-                                    <p><strong>Status:</strong> ${invoice.paid ? 'Paid' : 'Pending'}</p>
-                                </div>
+                        <button class="modal-close">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="invoice-detail-header">
+                            <div class="company-info">
+                                <h3>Albany Vehicle Service</h3>
+                                <p>123 Albany Street, Chennai, India</p>
+                                <p>Phone: +91 98765 43210</p>
+                                <p>Email: support@albanyservice.com</p>
                             </div>
-
-                            <div class="customer-vehicle-info">
-                                <div class="customer-info">
-                                    <h4>Bill To:</h4>
-                                    <p><strong>${data.customerName || 'Customer'}</strong></p>
-                                    <p>${data.customerEmail || 'N/A'}</p>
-                                    <p>${data.customerPhone || 'N/A'}</p>
-                                </div>
-                                <div class="vehicle-info">
-                                    <h4>Vehicle Details:</h4>
-                                    <p><strong>${data.vehicleBrand} ${data.vehicleModel}</strong></p>
-                                    <p>Reg #: ${data.registrationNumber || 'N/A'}</p>
-                                    <p>Year: ${data.vehicleYear || 'N/A'}</p>
-                                </div>
-                            </div>
-
-                            <div class="invoice-items">
-                                <h4>Service Details</h4>
-                                <table class="invoice-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Description</th>
-                                            <th>Quantity</th>
-                                            <th>Unit Price</th>
-                                            <th>Amount</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        ${this.renderInvoiceItems(data)}
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            <div class="invoice-summary">
-                                <div class="summary-row">
-                                    <div class="summary-label">Subtotal:</div>
-                                    <div class="summary-value">₹${this.formatCurrency(data.calculatedSubtotal)}</div>
-                                </div>
-                                <div class="summary-row">
-                                    <div class="summary-label">GST (18%):</div>
-                                    <div class="summary-value">₹${this.formatCurrency(data.calculatedTax)}</div>
-                                </div>
-                                <div class="summary-row total">
-                                    <div class="summary-label">Total Amount:</div>
-                                    <div class="summary-value">₹${this.formatCurrency(data.calculatedTotal)}</div>
-                                </div>
-                            </div>
-
-                            <div class="invoice-notes">
-                                <p><strong>Note:</strong> This is a computer-generated invoice and does not require a signature.</p>
+                            <div class="invoice-info">
+                                <h4>INVOICE</h4>
+                                <p><strong>Invoice #:</strong> ${invoiceId}</p>
+                                <p><strong>Date:</strong> ${data.formattedCompletedDate || 'N/A'}</p>
+                                <p><strong>Status:</strong> ${invoice.paid ? 'Paid' : 'Pending'}</p>
                             </div>
                         </div>
-                        <div class="modal-footer">
-                            <button class="btn btn-outline modal-cancel">Close</button>
-                            <button class="btn btn-outline" onclick="profileManager.downloadInvoicePDF(${invoiceId})">
-                                <i class="fas fa-download"></i> Download PDF
-                            </button>
-                            ${!invoice.paid ? `
-                            <button class="btn btn-primary" onclick="profileManager.payInvoice(${invoiceId})">
-                                <i class="fas fa-credit-card"></i> Pay Now
-                            </button>` : ''}
+
+                        <div class="customer-vehicle-info">
+                            <div class="customer-info">
+                                <h4>Bill To:</h4>
+                                <p><strong>${data.customerName || 'Customer'}</strong></p>
+                                <p>${data.customerEmail || 'N/A'}</p>
+                                <p>${data.customerPhone || 'N/A'}</p>
+                            </div>
+                            <div class="vehicle-info">
+                                <h4>Vehicle Details:</h4>
+                                <p><strong>${data.vehicleBrand} ${data.vehicleModel}</strong></p>
+                                <p>Reg #: ${data.registrationNumber || 'N/A'}</p>
+                                <p>Year: ${data.vehicleYear || 'N/A'}</p>
+                            </div>
+                        </div>
+
+                        <div class="invoice-items">
+                            <h4>Service Details</h4>
+                            <table class="invoice-table">
+                                <thead>
+                                    <tr>
+                                        <th>Description</th>
+                                        <th>Quantity</th>
+                                        <th>Unit Price</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${this.renderInvoiceItems(data)}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="invoice-summary">
+                            <div class="summary-row">
+                                <div class="summary-label">Subtotal:</div>
+                                <div class="summary-value">₹${this.formatCurrency(data.calculatedSubtotal)}</div>
+                            </div>
+                            <div class="summary-row">
+                                <div class="summary-label">GST (18%):</div>
+                                <div class="summary-value">₹${this.formatCurrency(data.calculatedTax)}</div>
+                            </div>
+                            <div class="summary-row total">
+                                <div class="summary-label">Total Amount:</div>
+                                <div class="summary-value">₹${this.formatCurrency(data.calculatedTotal)}</div>
+                            </div>
+                        </div>
+
+                        <div class="invoice-notes">
+                            <p><strong>Note:</strong> This is a computer-generated invoice and does not require a signature.</p>
                         </div>
                     </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-outline modal-cancel">Close</button>
+                        <button class="btn btn-outline" onclick="profileManager.downloadInvoicePDF(${invoiceId})">
+                            <i class="fas fa-download"></i> Download PDF
+                        </button>
+                        ${!invoice.paid ? `
+                        <button class="btn btn-primary" onclick="profileManager.payInvoice(${invoiceId})">
+                            <i class="fas fa-credit-card"></i> Pay Now
+                        </button>` : ''}
+                    </div>
                 </div>
-            `;
+            </div>
+        `;
 
                     if (!document.querySelector('.invoice-detail-modal')) {
                         document.body.insertAdjacentHTML('beforeend', modalHtml);
@@ -3022,7 +2908,6 @@
         renderInvoiceItems(data) {
             let html = '';
 
-            // Add materials
             if (data.materials && data.materials.length > 0) {
                 data.materials.forEach(material => {
                     const quantity = material.quantity || 0;
@@ -3030,17 +2915,16 @@
                     const total = quantity * unitPrice;
 
                     html += `
-                    <tr>
-                        <td>${material.name || 'Unknown'} (Part)</td>
-                        <td>${quantity}</td>
-                        <td>₹${this.formatCurrency(unitPrice)}</td>
-                        <td>₹${this.formatCurrency(total)}</td>
-                    </tr>
-                `;
+                <tr>
+                    <td>${material.name || 'Unknown'} (Part)</td>
+                    <td>${quantity}</td>
+                    <td>₹${this.formatCurrency(unitPrice)}</td>
+                    <td>₹${this.formatCurrency(total)}</td>
+                </tr>
+            `;
                 });
             }
 
-            // Add labor charges
             if (data.laborCharges && data.laborCharges.length > 0) {
                 data.laborCharges.forEach(labor => {
                     const hours = labor.hours || 0;
@@ -3048,34 +2932,32 @@
                     const total = hours * rate;
 
                     html += `
-                    <tr>
-                        <td>${labor.description || 'Labor'}</td>
-                        <td>${hours} hrs</td>
-                        <td>₹${this.formatCurrency(rate)}/hr</td>
-                        <td>₹${this.formatCurrency(total)}</td>
-                    </tr>
-                `;
+                <tr>
+                    <td>${labor.description || 'Labor'}</td>
+                    <td>${hours} hrs</td>
+                    <td>₹${this.formatCurrency(rate)}/hr</td>
+                    <td>₹${this.formatCurrency(total)}</td>
+                </tr>
+            `;
                 });
             } else {
-                // Default labor charge if none specified
                 html += `
-                <tr>
-                    <td>Service Labor</td>
-                    <td>1</td>
-                    <td>₹${this.formatCurrency(data.calculatedLaborTotal)}</td>
-                    <td>₹${this.formatCurrency(data.calculatedLaborTotal)}</td>
-                </tr>
-            `;
+            <tr>
+                <td>Service Labor</td>
+                <td>1</td>
+                <td>₹${this.formatCurrency(data.calculatedLaborTotal)}</td>
+                <td>₹${this.formatCurrency(data.calculatedLaborTotal)}</td>
+            </tr>
+        `;
             }
 
-            // Add discount if applicable
             if (data.calculatedDiscount && data.calculatedDiscount > 0) {
                 html += `
-                <tr class="discount-row">
-                    <td colspan="3">Premium Membership Discount (30% off labor)</td>
-                    <td>-₹${this.formatCurrency(data.calculatedDiscount)}</td>
-                </tr>
-            `;
+            <tr class="discount-row">
+                <td colspan="3">Premium Membership Discount (30% off labor)</td>
+                <td>-₹${this.formatCurrency(data.calculatedDiscount)}</td>
+            </tr>
+        `;
             }
 
             return html;
@@ -3278,12 +3160,12 @@
             toast.id = toastId;
 
             toast.innerHTML = `
-            <div class="toast-header">
-                <strong>${type.charAt(0).toUpperCase() + type.slice(1)}</strong>
-                <button class="toast-close">&times;</button>
-            </div>
-            <div class="toast-body">${message}</div>
-        `;
+        <div class="toast-header">
+            <strong>${type.charAt(0).toUpperCase() + type.slice(1)}</strong>
+            <button class="toast-close">&times;</button>
+        </div>
+        <div class="toast-body">${message}</div>
+    `;
 
             toastContainer.appendChild(toast);
 
@@ -3492,7 +3374,6 @@
 
             let yPos = 105;
 
-            // Add materials
             if (data.materials && data.materials.length > 0) {
                 data.materials.forEach(material => {
                     const quantity = material.quantity || 0;
@@ -3513,7 +3394,6 @@
                 });
             }
 
-            // Add labor charges
             if (data.laborCharges && data.laborCharges.length > 0) {
                 data.laborCharges.forEach(labor => {
                     const hours = labor.hours || 0;
@@ -3541,7 +3421,6 @@
                 yPos += 8;
             }
 
-            // Add discount if applicable
             if (data.calculatedDiscount && data.calculatedDiscount > 0) {
                 doc.text(`Premium Membership Discount (30% off labor)`, 20, yPos);
                 doc.text(``, 100, yPos);

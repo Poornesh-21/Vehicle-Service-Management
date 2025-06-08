@@ -8,6 +8,9 @@ import java.util.List;
 
 @Repository
 public interface MaterialUsageRepository extends JpaRepository<MaterialUsage, Integer> {
-    // Use a list-based approach to avoid "unique result" errors
+    // List-based approach for service requests
     List<MaterialUsage> findByServiceRequest_RequestIdOrderByUsedAtDesc(Integer requestId);
+
+    // Add the missing method for inventory items
+    List<MaterialUsage> findByInventoryItem_ItemIdOrderByUsedAtDesc(Integer itemId);
 }

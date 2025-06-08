@@ -11,7 +11,7 @@ import java.util.Optional;
 public interface InvoiceRepository extends JpaRepository<Invoice, Integer> {
     // Method to find all invoices for a request ID
     List<Invoice> findAllByRequestId(Integer requestId);
-    
+
     // Safe implementation of the original method for backward compatibility
     default Optional<Invoice> findByRequestId(Integer requestId) {
         List<Invoice> invoices = findAllByRequestId(requestId);

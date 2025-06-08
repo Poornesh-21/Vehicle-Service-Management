@@ -157,7 +157,7 @@ public class CustomerServiceHistoryController {
             // Calculate financial details
             calculateFinancialDetails(serviceDTO, user);
             
-            // Add invoice information if available - FIXED: using findAllByRequestId instead
+            // Add invoice information if available - using findAllByRequestId instead
             List<Invoice> invoices = invoiceRepository.findAllByRequestId(request.getRequestId());
             if (!invoices.isEmpty()) {
                 Invoice invoice = invoices.get(0);
@@ -165,9 +165,10 @@ public class CustomerServiceHistoryController {
                 serviceDTO.setInvoiceId(invoice.getInvoiceId());
                 serviceDTO.setTotalAmount(invoice.getTotalAmount());
                 
-                // Check if payment exists - FIXED: using findAllByRequestId instead
+                // Check if payment exists - using findAllByRequestId instead
                 List<Payment> payments = paymentRepository.findAllByRequestId(request.getRequestId());
-                boolean isPaid = !payments.isEmpty() && payments.get(0).getStatus() == Payment.Status.Completed;
+                boolean isPaid = !payments.isEmpty() && payments.stream()
+                    .anyMatch(p -> p.getStatus() == Payment.Status.Completed);
                 serviceDTO.setPaid(isPaid);
             }
             
@@ -188,7 +189,7 @@ public class CustomerServiceHistoryController {
     private CompletedServiceDTO convertToCompletedServiceDTOWithExtras(ServiceRequest request) {
         CompletedServiceDTO dto = convertToCompletedServiceDTO(request);
         
-        // Check if invoice exists - FIXED: using findAllByRequestId instead
+        // Check if invoice exists - using findAllByRequestId instead
         List<Invoice> invoices = invoiceRepository.findAllByRequestId(request.getRequestId());
         if (!invoices.isEmpty()) {
             Invoice invoice = invoices.get(0);
@@ -196,9 +197,10 @@ public class CustomerServiceHistoryController {
             dto.setInvoiceId(invoice.getInvoiceId());
             dto.setTotalAmount(invoice.getTotalAmount());
             
-            // Check if payment exists - FIXED: using findAllByRequestId instead
+            // Check if payment exists - using findAllByRequestId instead
             List<Payment> payments = paymentRepository.findAllByRequestId(request.getRequestId());
-            boolean isPaid = !payments.isEmpty() && payments.get(0).getStatus() == Payment.Status.Completed;
+            boolean isPaid = !payments.isEmpty() && payments.stream()
+                .anyMatch(p -> p.getStatus() == Payment.Status.Completed);
             dto.setPaid(isPaid);
         }
         
@@ -396,18 +398,12 @@ public class CustomerServiceHistoryController {
         
         serviceDTO.setCalculatedLaborTotal(laborTotal);
         
-        // Apply discount for premium members
-        BigDecimal discount = BigDecimal.ZERO;
-        if (user.getMembershipType() == User.MembershipType.PREMIUM) {
-            // 30% discount on labor
-            discount = laborTotal.multiply(BigDecimal.valueOf(0.3))
-                    .setScale(2, RoundingMode.HALF_UP);
-        }
+        // REMOVED: Don't apply premium discount here as it's already factored into the stored prices
+        // Set discount to zero
+        serviceDTO.setCalculatedDiscount(BigDecimal.ZERO);
         
-        serviceDTO.setCalculatedDiscount(discount);
-        
-        // Calculate subtotal
-        BigDecimal subtotal = materialsTotal.add(laborTotal).subtract(discount)
+        // Calculate subtotal (without discount subtraction)
+        BigDecimal subtotal = materialsTotal.add(laborTotal)
                 .setScale(2, RoundingMode.HALF_UP);
         serviceDTO.setCalculatedSubtotal(subtotal);
         

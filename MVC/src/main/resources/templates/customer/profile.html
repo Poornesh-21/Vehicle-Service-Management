@@ -1636,6 +1636,7 @@
                 serviceHistory: '/customer/api/service-history',
                 serviceDetails: '/customer/api/service-history/',
                 serviceTracking: '/customer/api/services/',
+                // Invoice-related endpoints
                 invoices: '/customer/api/invoices',
                 createPayment: '/customer/api/invoices/{id}/payment',
                 verifyPayment: '/customer/api/invoices/verify-payment'
@@ -2431,6 +2432,11 @@
             }
 
             const container = document.getElementById('invoicesContainer');
+            if (!container) {
+                console.error('Invoice container element not found');
+                return;
+            }
+
             container.innerHTML = `
         <div class="loading-spinner">
             <div class="spinner"></div>
@@ -2438,7 +2444,12 @@
         </div>
     `;
 
-            fetch(this.apiEndpoints.invoices, {
+            // Make sure invoices property is initialized if somehow it's undefined
+            if (!this.invoices) {
+                this.invoices = [];
+            }
+
+            fetch(this.apiEndpoints.invoices || '/customer/api/invoices', {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Cache-Control': 'no-cache'
@@ -2457,7 +2468,7 @@
                 .then(data => {
                     if (!data) return;
 
-                    console.log('Invoices loaded:', data); // Debug log
+                    console.log('Invoices loaded:', data);
                     this.invoices = Array.isArray(data) ? data : [];
                     this.renderInvoices();
                 })
@@ -2476,11 +2487,29 @@
                 });
         }
 
+        // Method to render invoices in the UI
         renderInvoices() {
+            // Safety check for container
             const container = document.getElementById('invoicesContainer');
+            if (!container) {
+                console.error('Invoice container element not found');
+                return;
+            }
 
-            if (!this.invoices || this.invoices.length === 0) {
+            // Ensure invoices is initialized
+            if (!this.invoices) {
+                this.invoices = [];
+                console.warn('Invoices array was undefined, initialized to empty array');
+            }
+
+            // Handle empty invoices list
+            if (!this.invoices.length) {
                 container.innerHTML = `
+            <div style="text-align: right; margin-bottom: 20px;">
+                <button class="btn btn-outline btn-sm" onclick="profileManager.refreshInvoiceList()">
+                    <i class="fas fa-sync-alt"></i> Refresh List
+                </button>
+            </div>
             <div class="empty-state">
                 <i class="fas fa-file-invoice"></i>
                 <h4>No invoices</h4>
@@ -2490,17 +2519,47 @@
                 return;
             }
 
-            // Sort invoices by paid status and date
-            const pendingInvoices = this.invoices
-                .filter(invoice => !invoice.paid)
-                .sort((a, b) => new Date(b.completedDate || 0) - new Date(a.completedDate || 0));
+            // Safety filter to ensure we don't have any null or undefined items
+            const validInvoices = this.invoices.filter(invoice => invoice !== null && invoice !== undefined);
 
-            const paidInvoices = this.invoices
-                .filter(invoice => invoice.paid)
-                .sort((a, b) => new Date(b.completedDate || 0) - new Date(a.completedDate || 0));
+            // Sort invoices by paid status and date
+            const pendingInvoices = validInvoices
+                .filter(invoice => invoice.paid === false)
+                .sort((a, b) => {
+                    const dateA = a.completedDate ? new Date(a.completedDate) : new Date(0);
+                    const dateB = b.completedDate ? new Date(b.completedDate) : new Date(0);
+                    return dateB - dateA; // Sort newest first
+                });
+
+            const paidInvoices = validInvoices
+                .filter(invoice => invoice.paid === true)
+                .sort((a, b) => {
+                    const dateA = a.completedDate ? new Date(a.completedDate) : new Date(0);
+                    const dateB = b.completedDate ? new Date(b.completedDate) : new Date(0);
+                    return dateB - dateA; // Sort newest first
+                });
 
             let html = '';
 
+            // Add refresh button at the top
+            html += `
+        <div style="text-align: right; margin-bottom: 20px;">
+            <button class="btn btn-outline btn-sm" onclick="profileManager.refreshInvoiceList()">
+                <i class="fas fa-sync-alt"></i> Refresh List
+            </button>
+        </div>
+    `;
+
+            // If no pending invoices but there are paid ones, add a success message
+            if (pendingInvoices.length === 0 && paidInvoices.length > 0) {
+                html += `
+            <div class="alert alert-success" style="margin-bottom: 20px;">
+                <i class="fas fa-check-circle"></i> All your invoices have been paid. Thank you!
+            </div>
+        `;
+            }
+
+            // Render pending invoices section
             if (pendingInvoices.length > 0) {
                 html += `
             <div class="invoice-section">
@@ -2509,13 +2568,29 @@
         `;
 
                 pendingInvoices.forEach(invoice => {
-                    const invoiceDate = invoice.formattedCompletedDate ||
-                        (invoice.completedDate ? new Date(invoice.completedDate).toLocaleDateString() : 'N/A');
+                    // Safe access to properties with fallbacks
+                    const invoiceId = invoice.invoiceId || 'N/A';
+                    const requestId = invoice.requestId || 'N/A';
+                    const vehicleBrand = invoice.vehicleBrand || '';
+                    const vehicleModel = invoice.vehicleModel || '';
+                    const totalAmount = invoice.totalAmount || 0;
+
+                    // Handle date formatting safely
+                    let invoiceDate = 'N/A';
+                    if (invoice.formattedCompletedDate) {
+                        invoiceDate = invoice.formattedCompletedDate;
+                    } else if (invoice.completedDate) {
+                        try {
+                            invoiceDate = new Date(invoice.completedDate).toLocaleDateString();
+                        } catch (e) {
+                            console.warn('Error formatting date:', e);
+                        }
+                    }
 
                     html += `
                 <div class="invoice-card pending">
                     <div class="invoice-header">
-                        <div class="invoice-title">Invoice #${invoice.invoiceId}</div>
+                        <div class="invoice-title">Invoice #${invoiceId}</div>
                         <div class="invoice-status">Pending</div>
                     </div>
                     <div class="invoice-body">
@@ -2525,20 +2600,20 @@
                         </div>
                         <div class="invoice-detail">
                             <div class="detail-label">Vehicle:</div>
-                            <div class="detail-value">${invoice.vehicleBrand || ''} ${invoice.vehicleModel || ''}</div>
+                            <div class="detail-value">${vehicleBrand} ${vehicleModel}</div>
                         </div>
                         <div class="invoice-detail">
                             <div class="detail-label">Amount:</div>
-                            <div class="detail-value">₹${this.formatCurrency(invoice.totalAmount || 0)}</div>
+                            <div class="detail-value">₹${this.formatCurrency(totalAmount)}</div>
                         </div>
                         <div class="invoice-actions">
-                            <button class="btn btn-outline btn-sm" onclick="profileManager.viewInvoice(${invoice.invoiceId})">
+                            <button class="btn btn-outline btn-sm" onclick="profileManager.viewInvoice(${invoiceId})">
                                 <i class="fas fa-eye"></i> View
                             </button>
-                            <button class="btn btn-outline btn-sm" onclick="profileManager.downloadInvoicePDF(${invoice.invoiceId})">
+                            <button class="btn btn-outline btn-sm" onclick="profileManager.downloadInvoicePDF(${invoiceId})">
                                 <i class="fas fa-download"></i> Download
                             </button>
-                            <button class="btn btn-primary btn-sm" onclick="profileManager.payInvoice(${invoice.invoiceId})">
+                            <button class="btn btn-primary btn-sm" id="payBtn-${invoiceId}" onclick="profileManager.payInvoice(${invoiceId})">
                                 <i class="fas fa-credit-card"></i> Pay Now
                             </button>
                         </div>
@@ -2553,6 +2628,7 @@
         `;
             }
 
+            // Render paid invoices section
             if (paidInvoices.length > 0) {
                 html += `
             <div class="invoice-section">
@@ -2561,13 +2637,39 @@
         `;
 
                 paidInvoices.forEach(invoice => {
-                    const invoiceDate = invoice.formattedCompletedDate ||
-                        (invoice.completedDate ? new Date(invoice.completedDate).toLocaleDateString() : 'N/A');
+                    // Safe access to properties with fallbacks
+                    const invoiceId = invoice.invoiceId || 'N/A';
+                    const requestId = invoice.requestId || 'N/A';
+                    const vehicleBrand = invoice.vehicleBrand || '';
+                    const vehicleModel = invoice.vehicleModel || '';
+                    const totalAmount = invoice.totalAmount || 0;
+
+                    // Handle date formatting safely
+                    let invoiceDate = 'N/A';
+                    if (invoice.formattedCompletedDate) {
+                        invoiceDate = invoice.formattedCompletedDate;
+                    } else if (invoice.completedDate) {
+                        try {
+                            invoiceDate = new Date(invoice.completedDate).toLocaleDateString();
+                        } catch (e) {
+                            console.warn('Error formatting date:', e);
+                        }
+                    }
+
+                    // Payment date (optional)
+                    let paymentDate = 'N/A';
+                    if (invoice.paymentDate) {
+                        try {
+                            paymentDate = new Date(invoice.paymentDate).toLocaleDateString();
+                        } catch (e) {
+                            console.warn('Error formatting payment date:', e);
+                        }
+                    }
 
                     html += `
                 <div class="invoice-card paid">
                     <div class="invoice-header">
-                        <div class="invoice-title">Invoice #${invoice.invoiceId}</div>
+                        <div class="invoice-title">Invoice #${invoiceId}</div>
                         <div class="invoice-status">Paid</div>
                     </div>
                     <div class="invoice-body">
@@ -2577,18 +2679,27 @@
                         </div>
                         <div class="invoice-detail">
                             <div class="detail-label">Vehicle:</div>
-                            <div class="detail-value">${invoice.vehicleBrand || ''} ${invoice.vehicleModel || ''}</div>
+                            <div class="detail-value">${vehicleBrand} ${vehicleModel}</div>
                         </div>
                         <div class="invoice-detail">
                             <div class="detail-label">Amount:</div>
-                            <div class="detail-value">₹${this.formatCurrency(invoice.totalAmount || 0)}</div>
+                            <div class="detail-value">₹${this.formatCurrency(totalAmount)}</div>
                         </div>
+                        ${invoice.paymentDate ? `
+                        <div class="invoice-detail">
+                            <div class="detail-label">Payment Date:</div>
+                            <div class="detail-value">${paymentDate}</div>
+                        </div>
+                        ` : ''}
                         <div class="invoice-actions">
-                            <button class="btn btn-outline btn-sm" onclick="profileManager.viewInvoice(${invoice.invoiceId})">
+                            <button class="btn btn-outline btn-sm" onclick="profileManager.viewInvoice(${invoiceId})">
                                 <i class="fas fa-eye"></i> View
                             </button>
-                            <button class="btn btn-outline btn-sm" onclick="profileManager.downloadInvoicePDF(${invoice.invoiceId})">
+                            <button class="btn btn-outline btn-sm" onclick="profileManager.downloadInvoicePDF(${invoiceId})">
                                 <i class="fas fa-download"></i> Download
+                            </button>
+                            <button class="btn btn-success btn-sm" disabled title="This invoice has been paid">
+                                <i class="fas fa-check-circle"></i> Paid
                             </button>
                         </div>
                     </div>
@@ -2602,7 +2713,60 @@
         `;
             }
 
-            container.innerHTML = html;
+            // Set the HTML content
+            try {
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Error updating invoice container:', error);
+                container.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle"></i> An error occurred while displaying invoices. Please try refreshing the page.
+            </div>
+        `;
+            }
+        }
+
+// Helper method to format currency values safely
+        formatCurrency(amount) {
+            if (amount === null || amount === undefined) return '0.00';
+
+            // Convert strings to numbers if needed
+            let value = amount;
+            if (typeof amount === 'string') {
+                try {
+                    value = parseFloat(amount);
+                } catch (e) {
+                    console.warn('Error parsing currency value:', e);
+                    return '0.00';
+                }
+            }
+
+            // Handle NaN and non-numeric values
+            if (isNaN(value) || typeof value !== 'number') {
+                return '0.00';
+            }
+
+            // Format the number with 2 decimal places and thousands separators
+            try {
+                return value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            } catch (e) {
+                console.warn('Error formatting currency:', e);
+                return '0.00';
+            }
+        }
+
+// Method to refresh the invoice list
+        refreshInvoiceList() {
+            try {
+                // Force reload the invoices data
+                this.loadInvoices();
+
+                // Show a toast notification
+                this.showToast('Invoice list has been refreshed', 'info');
+            } catch (error) {
+                console.error('Error refreshing invoice list:', error);
+                this.showToast('Error refreshing invoice list. Please try again.', 'error');
+            }
         }
 
         viewInvoice(invoiceId) {
@@ -2682,7 +2846,7 @@
                 .then(data => {
                     if (!data) return;
 
-                    console.log('Invoice details loaded:', data); // Debug log
+                    console.log('Invoice details loaded:', data);
 
                     // Update modal with the fetched data
                     this.renderInvoiceModal(data, invoiceId, invoice.paid);
@@ -2701,6 +2865,7 @@
             `;
                 });
         }
+
 
         renderInvoiceModal(data, invoiceId, isPaid) {
             // Get modal container
@@ -3143,23 +3308,7 @@
             return html;
         }
 
-        formatCurrency(amount) {
-            if (amount === null || amount === undefined) return '0.00';
 
-            // Convert strings to numbers if needed
-            let value = amount;
-            if (typeof amount === 'string') {
-                value = parseFloat(amount);
-            }
-
-            // Handle NaN and non-numeric values
-            if (isNaN(value) || typeof value !== 'number') {
-                return '0.00';
-            }
-
-            // Format the number with 2 decimal places and thousands separators
-            return value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-        }
 
         downloadInvoicePDF(invoiceId) {
             const token = this.getAuthToken();
@@ -3206,10 +3355,40 @@
                 return;
             }
 
-            const invoice = this.invoices.find(i => i.invoiceId === invoiceId);
-            if (!invoice || invoice.paid) return;
+            // Store the current invoice ID for use in payment verification
+            this.currentInvoiceId = invoiceId;
 
-            fetch(`${this.apiEndpoints.createPayment.replace('{id}', invoiceId)}`, {
+            const invoice = this.invoices.find(i => i.invoiceId === invoiceId);
+            if (!invoice) return;
+
+            // Check if already paid first
+            if (invoice.paid) {
+                this.showToast('This invoice has already been paid.', 'info');
+                return;
+            }
+
+            // Show loading indicator
+            const payBtn = document.getElementById(`payBtn-${invoiceId}`);
+            if (payBtn) {
+                const originalText = payBtn.innerHTML;
+                payBtn.disabled = true;
+                payBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+                // Restore button after 10 seconds in case of errors
+                setTimeout(() => {
+                    if (payBtn && payBtn.innerHTML.includes('spinner')) {
+                        payBtn.disabled = false;
+                        payBtn.innerHTML = originalText;
+                    }
+                }, 10000);
+            }
+
+            // Make sure we're using the correct endpoint pattern and safely handle errors
+            const paymentEndpoint = this.apiEndpoints.createPayment ?
+                this.apiEndpoints.createPayment.replace('{id}', invoiceId) :
+                `/customer/api/invoices/${invoiceId}/payment`;
+
+            fetch(paymentEndpoint, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -3217,25 +3396,34 @@
                 }
             })
                 .then(response => {
+                    // Reset button state
+                    if (payBtn) {
+                        payBtn.disabled = false;
+                        payBtn.innerHTML = '<i class="fas fa-credit-card"></i> Pay Now';
+                    }
+
                     if (!response.ok) {
-                        if (response.status === 401) {
-                            this.handleUnauthorized();
-                            return null;
-                        }
-                        throw new Error('Failed to create payment');
+                        return response.json().then(data => {
+                            throw new Error(data.message || 'Failed to create payment');
+                        });
                     }
                     return response.json();
                 })
                 .then(data => {
                     if (!data) return;
-
                     this.openRazorpayModal(data);
                 })
                 .catch(error => {
                     console.error('Error creating payment:', error);
-                    this.showToast('Failed to initiate payment. Please try again.', 'error');
+                    this.showToast(error.message || 'Failed to initiate payment. Please try again.', 'error');
+
+                    // If error indicates invoice is paid, refresh the invoices list
+                    if (error.message && error.message.includes('already been paid')) {
+                        this.loadInvoices();
+                    }
                 });
         }
+
 
         openRazorpayModal(paymentData) {
             const options = {
@@ -3246,7 +3434,7 @@
                 description: 'Payment for Invoice #' + paymentData.invoiceId,
                 order_id: paymentData.orderId,
                 handler: (response) => {
-                    this.handlePaymentSuccess(paymentData.paymentId, response);
+                    this.handlePaymentSuccess(paymentData.paymentId, response, paymentData.invoiceId);
                 },
                 prefill: {
                     name: paymentData.name,
@@ -3267,21 +3455,38 @@
             razorpayWindow.open();
         }
 
-        handlePaymentSuccess(paymentId, razorpayResponse) {
+// Method to handle successful payment
+        // Method to handle successful payment
+        handlePaymentSuccess(paymentId, razorpayResponse, invoiceId) {
             const token = this.getAuthToken();
             if (!token) {
                 this.handleUnauthorized();
                 return;
             }
 
+            // Check for valid required parameters
+            if (!paymentId || !razorpayResponse || !razorpayResponse.razorpay_payment_id) {
+                this.showToast('Missing payment information. Please try again.', 'error');
+                return;
+            }
+
+            // Show processing toast
+            this.showToast('Processing your payment...', 'info');
+
             const paymentData = {
                 paymentId: paymentId,
                 razorpayPaymentId: razorpayResponse.razorpay_payment_id,
                 razorpayOrderId: razorpayResponse.razorpay_order_id,
-                razorpaySignature: razorpayResponse.razorpay_signature
+                razorpaySignature: razorpayResponse.razorpay_signature,
+                invoiceId: invoiceId || this.currentInvoiceId
             };
 
-            fetch(this.apiEndpoints.verifyPayment, {
+            console.log('Verifying payment with data:', paymentData);
+
+            // Make sure we're using the correct verify payment endpoint
+            const verifyEndpoint = this.apiEndpoints.verifyPayment || '/customer/api/invoices/verify-payment';
+
+            fetch(verifyEndpoint, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -3291,33 +3496,116 @@
             })
                 .then(response => {
                     if (!response.ok) {
-                        if (response.status === 401) {
-                            this.handleUnauthorized();
-                            return null;
-                        }
-                        throw new Error('Failed to verify payment');
+                        return response.json().then(data => {
+                            throw new Error(data.message || 'Failed to verify payment');
+                        });
                     }
                     return response.json();
                 })
                 .then(data => {
-                    if (!data) return;
+                    if (!data) {
+                        throw new Error('Empty response received from server');
+                    }
 
                     if (data.success) {
-                        this.showToast('Payment successful!', 'success');
-                        this.loadInvoices();
-
+                        // Close any open modals
                         if (document.querySelector('.invoice-detail-modal')) {
                             document.querySelector('.invoice-detail-modal').classList.remove('active');
                         }
+
+                        // Force reload invoices to show updated payment status
+                        this.loadInvoices();
+
+                        // Show success message with more details
+                        this.showPaymentSuccessModal(data);
+
+                        // Show success toast
+                        this.showToast('Payment successful!', 'success');
+
+                        // Update the current invoice in the array to reflect paid status
+                        if (this.invoices && this.currentInvoiceId) {
+                            const index = this.invoices.findIndex(inv => inv.invoiceId === this.currentInvoiceId);
+                            if (index !== -1) {
+                                this.invoices[index].paid = true;
+                                this.renderInvoices(); // Update UI immediately
+                            }
+                        }
                     } else {
+                        // This branch handles the case where the server returns success: false
                         this.showToast(data.message || 'Payment verification failed', 'error');
                     }
                 })
                 .catch(error => {
                     console.error('Error verifying payment:', error);
-                    this.showToast('Failed to verify payment. Please contact support.', 'error');
+
+                    // Check for network errors
+                    if (error.name === 'TypeError' && error.message.includes('NetworkError')) {
+                        this.showToast('Network error. Please check your connection and try again.', 'error');
+                    } else {
+                        this.showToast('Failed to verify payment: ' + (error.message || 'Unknown error'), 'error');
+                    }
+
+                    // Even on error, we should refresh to get the latest payment status from the server
+                    setTimeout(() => this.loadInvoices(), 3000);
                 });
         }
+
+// Method to show a success modal after payment
+        showPaymentSuccessModal(paymentData) {
+            const modalHtml = `
+        <div class="modal-overlay payment-success-modal active">
+            <div class="modal-container">
+                <div class="modal-header" style="background-color: #10b981; color: white;">
+                    <div class="modal-title"><i class="fas fa-check-circle"></i> Payment Successful</div>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="modal-body" style="text-align: center; padding: 2rem;">
+                    <div style="font-size: 3rem; color: #10b981; margin-bottom: 1rem;">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h3>Thank you for your payment!</h3>
+                    <p>Your payment has been processed successfully.</p>
+                    <div style="background-color: #f8f9fa; padding: 1rem; border-radius: 8px; margin: 1.5rem 0; text-align: left;">
+                        <p><strong>Transaction ID:</strong> ${paymentData.transactionId || 'N/A'}</p>
+                        <p><strong>Payment ID:</strong> ${paymentData.paymentId || 'N/A'}</p>
+                        <p><strong>Status:</strong> ${paymentData.status || 'Completed'}</p>
+                    </div>
+                    <p>A confirmation has been sent to your email address.</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" onclick="document.querySelector('.payment-success-modal').classList.remove('active');">
+                        Continue
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+            // Add modal to document if it doesn't exist
+            if (!document.querySelector('.payment-success-modal')) {
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+                document.querySelector('.payment-success-modal .modal-close').addEventListener('click', () => {
+                    document.querySelector('.payment-success-modal').classList.remove('active');
+                });
+            } else {
+                // Update existing modal
+                const modalElement = document.querySelector('.payment-success-modal');
+                modalElement.innerHTML = modalHtml;
+                modalElement.classList.add('active');
+                modalElement.querySelector('.modal-close').addEventListener('click', () => {
+                    modalElement.classList.remove('active');
+                });
+            }
+
+            // Automatically close the modal after 10 seconds
+            setTimeout(() => {
+                const modal = document.querySelector('.payment-success-modal');
+                if (modal && modal.classList.contains('active')) {
+                    modal.classList.remove('active');
+                }
+            }, 10000);
+        }
+
 
         setRandomAvatar() {
             const avatarTypes = ['adventurer', 'bottts', 'avataaars', 'jdenticon', 'identicon', 'gridy', 'micah'];
@@ -3381,6 +3669,7 @@
             }
         }
     }
+
 
     class PDFGenerator {
         constructor() {

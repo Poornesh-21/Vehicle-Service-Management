@@ -9,10 +9,10 @@ import java.util.Optional;
 
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, Integer> {
-    // Use a list-based approach to avoid "unique result" errors
+    // List-based method
     List<Payment> findAllByRequestId(Integer requestId);
 
-    // Safe implementation that returns only the first result
+    // Safe implementation for backward compatibility
     default Optional<Payment> findByRequestId(Integer requestId) {
         List<Payment> payments = findAllByRequestId(requestId);
         return payments.isEmpty() ? Optional.empty() : Optional.of(payments.get(0));

@@ -31,12 +31,13 @@ public class CustomerServiceHistoryController {
     private final ServiceTrackingRepository serviceTrackingRepository;
     private final CustomerRepository customerRepository;
 
-    public CustomerServiceHistoryController(ServiceRequestRepository serviceRequestRepository,
-                                           MaterialUsageRepository materialUsageRepository,
-                                           InvoiceRepository invoiceRepository,
-                                           PaymentRepository paymentRepository,
-                                           ServiceTrackingRepository serviceTrackingRepository,
-                                           CustomerRepository customerRepository) {
+    public CustomerServiceHistoryController(
+            ServiceRequestRepository serviceRequestRepository,
+            MaterialUsageRepository materialUsageRepository,
+            InvoiceRepository invoiceRepository,
+            PaymentRepository paymentRepository,
+            ServiceTrackingRepository serviceTrackingRepository,
+            CustomerRepository customerRepository) {
         this.serviceRequestRepository = serviceRequestRepository;
         this.materialUsageRepository = materialUsageRepository;
         this.invoiceRepository = invoiceRepository;
@@ -54,6 +55,11 @@ public class CustomerServiceHistoryController {
             User user = (User) authentication.getPrincipal();
             logger.info("Fetching service history for user: {}", user.getEmail());
             
+            if (user.getRole() != User.Role.customer) {
+                logger.warn("Non-customer user {} attempted to access customer service history", user.getEmail());
+                return ResponseEntity.ok(Collections.emptyList());
+            }
+            
             // Find all completed service requests for this user
             List<ServiceRequest> completedRequests = serviceRequestRepository.findAll().stream()
                     .filter(req -> req.getUserId().equals(user.getUserId().longValue()))
@@ -64,35 +70,14 @@ public class CustomerServiceHistoryController {
             logger.info("Found {} completed service requests", completedRequests.size());
             
             List<CompletedServiceDTO> serviceDTOs = new ArrayList<>();
-            
             for (ServiceRequest request : completedRequests) {
-                CompletedServiceDTO dto = convertToCompletedServiceDTO(request);
-                
-                // Check if invoice exists
-                Optional<Invoice> invoiceOpt = invoiceRepository.findByRequestId(request.getRequestId());
-                if (invoiceOpt.isPresent()) {
-                    Invoice invoice = invoiceOpt.get();
-                    dto.setHasInvoice(true);
-                    dto.setInvoiceId(invoice.getInvoiceId());
-                    dto.setTotalAmount(invoice.getTotalAmount());
-                    
-                    // Check if payment exists
-                    Optional<Payment> paymentOpt = paymentRepository.findByRequestId(request.getRequestId());
-                    dto.setPaid(paymentOpt.isPresent() && 
-                                paymentOpt.get().getStatus() == Payment.Status.Completed);
+                try {
+                    CompletedServiceDTO dto = convertToCompletedServiceDTOWithExtras(request);
+                    serviceDTOs.add(dto);
+                } catch (Exception e) {
+                    logger.error("Error processing service request {}: {}", request.getRequestId(), e.getMessage());
+                    // Continue with next request
                 }
-                
-                // Get materials used (just basic info for list view)
-                List<MaterialUsage> materials = materialUsageRepository
-                        .findByServiceRequest_RequestIdOrderByUsedAtDesc(request.getRequestId());
-                
-                List<MaterialItemDTO> materialDTOs = materials.stream()
-                        .map(this::convertToBasicMaterialItemDTO)
-                        .collect(Collectors.toList());
-                
-                dto.setMaterials(materialDTOs);
-                
-                serviceDTOs.add(dto);
             }
             
             logger.info("Returning {} service history records", serviceDTOs.size());
@@ -115,6 +100,14 @@ public class CustomerServiceHistoryController {
             User user = (User) authentication.getPrincipal();
             logger.info("Fetching service details for request: {}, user: {}", requestId, user.getEmail());
             
+            if (user.getRole() != User.Role.customer) {
+                logger.warn("Non-customer user {} attempted to access customer service details", user.getEmail());
+                return ResponseEntity.badRequest().body(Map.of(
+                        "success", false,
+                        "message", "Access denied"
+                ));
+            }
+            
             // Find the service request
             Optional<ServiceRequest> requestOpt = serviceRequestRepository.findById(requestId);
             if (requestOpt.isEmpty()) {
@@ -136,11 +129,12 @@ public class CustomerServiceHistoryController {
                 ));
             }
             
-            // Get customer info
-            Optional<CustomerProfile> customerProfile = customerRepository.findByUser_UserId(user.getUserId());
+            // Get customer profile - safely with List instead of expecting unique result
+            List<CustomerProfile> customerProfiles = customerRepository.findAllByUser_UserId(user.getUserId());
+            CustomerProfile customerProfile = customerProfiles.isEmpty() ? null : customerProfiles.get(0);
             
             // Create detailed service DTO
-            CompletedServiceDTO serviceDTO = convertToDetailedServiceDTO(request, user, customerProfile.orElse(null));
+            CompletedServiceDTO serviceDTO = convertToDetailedServiceDTO(request, user, customerProfile);
             
             // Get materials used with full details
             List<MaterialUsage> materials = materialUsageRepository
@@ -163,18 +157,18 @@ public class CustomerServiceHistoryController {
             // Calculate financial details
             calculateFinancialDetails(serviceDTO, user);
             
-            // Add invoice information if available
-            Optional<Invoice> invoiceOpt = invoiceRepository.findByRequestId(request.getRequestId());
-            if (invoiceOpt.isPresent()) {
-                Invoice invoice = invoiceOpt.get();
+            // Add invoice information if available - FIXED: using findAllByRequestId instead
+            List<Invoice> invoices = invoiceRepository.findAllByRequestId(request.getRequestId());
+            if (!invoices.isEmpty()) {
+                Invoice invoice = invoices.get(0);
                 serviceDTO.setHasInvoice(true);
                 serviceDTO.setInvoiceId(invoice.getInvoiceId());
                 serviceDTO.setTotalAmount(invoice.getTotalAmount());
                 
-                // Check if payment exists
-                Optional<Payment> paymentOpt = paymentRepository.findByRequestId(request.getRequestId());
-                serviceDTO.setPaid(paymentOpt.isPresent() && 
-                                  paymentOpt.get().getStatus() == Payment.Status.Completed);
+                // Check if payment exists - FIXED: using findAllByRequestId instead
+                List<Payment> payments = paymentRepository.findAllByRequestId(request.getRequestId());
+                boolean isPaid = !payments.isEmpty() && payments.get(0).getStatus() == Payment.Status.Completed;
+                serviceDTO.setPaid(isPaid);
             }
             
             logger.info("Service details fetched successfully for request: {}", requestId);
@@ -186,6 +180,39 @@ public class CustomerServiceHistoryController {
                     "message", "An error occurred: " + e.getMessage()
             ));
         }
+    }
+
+    /**
+     * Convert ServiceRequest to CompletedServiceDTO with materials and invoice info
+     */
+    private CompletedServiceDTO convertToCompletedServiceDTOWithExtras(ServiceRequest request) {
+        CompletedServiceDTO dto = convertToCompletedServiceDTO(request);
+        
+        // Check if invoice exists - FIXED: using findAllByRequestId instead
+        List<Invoice> invoices = invoiceRepository.findAllByRequestId(request.getRequestId());
+        if (!invoices.isEmpty()) {
+            Invoice invoice = invoices.get(0);
+            dto.setHasInvoice(true);
+            dto.setInvoiceId(invoice.getInvoiceId());
+            dto.setTotalAmount(invoice.getTotalAmount());
+            
+            // Check if payment exists - FIXED: using findAllByRequestId instead
+            List<Payment> payments = paymentRepository.findAllByRequestId(request.getRequestId());
+            boolean isPaid = !payments.isEmpty() && payments.get(0).getStatus() == Payment.Status.Completed;
+            dto.setPaid(isPaid);
+        }
+        
+        // Get materials used (just basic info for list view)
+        List<MaterialUsage> materials = materialUsageRepository
+                .findByServiceRequest_RequestIdOrderByUsedAtDesc(request.getRequestId());
+        
+        List<MaterialItemDTO> materialDTOs = materials.stream()
+                .map(this::convertToBasicMaterialItemDTO)
+                .collect(Collectors.toList());
+        
+        dto.setMaterials(materialDTOs);
+        
+        return dto;
     }
 
     /**
@@ -209,7 +236,7 @@ public class CustomerServiceHistoryController {
         }
         
         // Get service advisor info if available
-        if (request.getServiceAdvisor() != null) {
+        if (request.getServiceAdvisor() != null && request.getServiceAdvisor().getUser() != null) {
             dto.setServiceAdvisorName(request.getServiceAdvisor().getUser().getFirstName() + " " + 
                                      request.getServiceAdvisor().getUser().getLastName());
         }
@@ -347,21 +374,25 @@ public class CustomerServiceHistoryController {
     private void calculateFinancialDetails(CompletedServiceDTO serviceDTO, User user) {
         // Calculate materials total
         BigDecimal materialsTotal = serviceDTO.getMaterials().stream()
+                .filter(Objects::nonNull)
                 .map(item -> {
                     if (item.getQuantity() == null || item.getUnitPrice() == null) return BigDecimal.ZERO;
                     return item.getQuantity().multiply(item.getUnitPrice());
                 })
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(2, RoundingMode.HALF_UP);
         
         serviceDTO.setCalculatedMaterialsTotal(materialsTotal);
         
         // Calculate labor total
         BigDecimal laborTotal = serviceDTO.getLaborCharges().stream()
+                .filter(Objects::nonNull)
                 .map(item -> {
                     if (item.getHours() == null || item.getRate() == null) return BigDecimal.ZERO;
                     return item.getHours().multiply(item.getRate());
                 })
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .setScale(2, RoundingMode.HALF_UP);
         
         serviceDTO.setCalculatedLaborTotal(laborTotal);
         

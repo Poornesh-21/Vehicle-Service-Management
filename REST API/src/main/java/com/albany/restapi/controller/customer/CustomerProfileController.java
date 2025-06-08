@@ -29,9 +29,6 @@ public class CustomerProfileController {
         this.userRepository = userRepository;
     }
 
-    /**
-     * Get current customer profile
-     */
     @GetMapping
     public ResponseEntity<?> getProfile(Authentication authentication) {
         try {
@@ -93,42 +90,90 @@ public class CustomerProfileController {
         }
     }
 
-    /**
-     * Update customer profile
-     */
     @PutMapping
     public ResponseEntity<?> updateProfile(@RequestBody CustomerProfileUpdateDTO updateDTO,
                                            Authentication authentication) {
         try {
             User user = (User) authentication.getPrincipal();
+            logger.info("Updating profile for user ID: {}, email: {}", user.getUserId(), user.getEmail());
+            
             CustomerProfile profile = customerRepository.findByUser_UserId(user.getUserId())
                     .orElse(null);
 
             // Update user details
+            boolean updated = false;
+            
             if (updateDTO.getFirstName() != null && !updateDTO.getFirstName().isEmpty()) {
                 user.setFirstName(updateDTO.getFirstName());
+                updated = true;
+                logger.debug("Updated firstName to: {}", updateDTO.getFirstName());
             }
 
             if (updateDTO.getLastName() != null && !updateDTO.getLastName().isEmpty()) {
                 user.setLastName(updateDTO.getLastName());
+                updated = true;
+                logger.debug("Updated lastName to: {}", updateDTO.getLastName());
+            }
+            
+            // Update phone number if provided
+            if (updateDTO.getPhoneNumber() != null) {
+                user.setPhoneNumber(updateDTO.getPhoneNumber());
+                updated = true;
+                logger.debug("Updated phoneNumber to: {}", updateDTO.getPhoneNumber());
             }
 
             // Update address information
-            user.setStreet(updateDTO.getStreet());
-            user.setCity(updateDTO.getCity());
-            user.setState(updateDTO.getState());
-            user.setPostalCode(updateDTO.getPostalCode());
+            if (updateDTO.getStreet() != null) {
+                user.setStreet(updateDTO.getStreet());
+                updated = true;
+                logger.debug("Updated street to: {}", updateDTO.getStreet());
+            }
+            
+            if (updateDTO.getCity() != null) {
+                user.setCity(updateDTO.getCity());
+                updated = true;
+                logger.debug("Updated city to: {}", updateDTO.getCity());
+            }
+            
+            if (updateDTO.getState() != null) {
+                user.setState(updateDTO.getState());
+                updated = true;
+                logger.debug("Updated state to: {}", updateDTO.getState());
+            }
+            
+            if (updateDTO.getPostalCode() != null) {
+                user.setPostalCode(updateDTO.getPostalCode());
+                updated = true;
+                logger.debug("Updated postalCode to: {}", updateDTO.getPostalCode());
+            }
 
-            userRepository.save(user);
+            if (updated) {
+                userRepository.save(user);
+                logger.info("User details updated successfully for user ID: {}", user.getUserId());
+            } else {
+                logger.info("No changes detected for user ID: {}", user.getUserId());
+            }
 
             // Update customer profile if it exists
             if (profile != null) {
-                profile.setStreet(updateDTO.getStreet());
-                profile.setCity(updateDTO.getCity());
-                profile.setState(updateDTO.getState());
-                profile.setPostalCode(updateDTO.getPostalCode());
+                if (updateDTO.getStreet() != null) {
+                    profile.setStreet(updateDTO.getStreet());
+                }
+                
+                if (updateDTO.getCity() != null) {
+                    profile.setCity(updateDTO.getCity());
+                }
+                
+                if (updateDTO.getState() != null) {
+                    profile.setState(updateDTO.getState());
+                }
+                
+                if (updateDTO.getPostalCode() != null) {
+                    profile.setPostalCode(updateDTO.getPostalCode());
+                }
 
                 customerRepository.save(profile);
+                logger.info("Customer profile updated successfully for customer ID: {}", profile.getCustomerId());
             }
 
             return ResponseEntity.ok(Map.of(
@@ -136,7 +181,7 @@ public class CustomerProfileController {
                     "message", "Profile updated successfully"
             ));
         } catch (Exception e) {
-            logger.error("Error updating customer profile: {}", e.getMessage());
+            logger.error("Error updating customer profile: {}", e.getMessage(), e);
             return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
                     "message", "An error occurred: " + e.getMessage()

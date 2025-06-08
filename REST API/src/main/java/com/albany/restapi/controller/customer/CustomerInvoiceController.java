@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -40,33 +39,34 @@ public class CustomerInvoiceController {
     private final PaymentRepository paymentRepository;
     private final ServiceRequestRepository serviceRequestRepository;
     private final CustomerRepository customerRepository;
+    private final ServiceTrackingRepository serviceTrackingRepository;
+    private final MaterialUsageRepository materialUsageRepository;
 
     public CustomerInvoiceController(InvoiceRepository invoiceRepository,
                                      PaymentRepository paymentRepository,
                                      ServiceRequestRepository serviceRequestRepository,
-                                     CustomerRepository customerRepository) {
+                                     CustomerRepository customerRepository,
+                                     ServiceTrackingRepository serviceTrackingRepository,
+                                     MaterialUsageRepository materialUsageRepository) {
         this.invoiceRepository = invoiceRepository;
         this.paymentRepository = paymentRepository;
         this.serviceRequestRepository = serviceRequestRepository;
         this.customerRepository = customerRepository;
+        this.serviceTrackingRepository = serviceTrackingRepository;
+        this.materialUsageRepository = materialUsageRepository;
     }
 
-    /**
-     * Get invoices for the current customer
-     */
     @GetMapping
     public ResponseEntity<?> getInvoices(Authentication authentication) {
         try {
             User user = (User) authentication.getPrincipal();
             logger.info("Fetching invoices for user: {}", user.getEmail());
 
-            // Check if user is a customer
             if (user.getRole() != User.Role.customer) {
                 logger.warn("Non-customer user {} attempted to access customer invoices", user.getEmail());
                 return ResponseEntity.ok(Collections.emptyList());
             }
 
-            // Find all completed service requests for this user
             List<ServiceRequest> completedRequests = serviceRequestRepository.findAll().stream()
                     .filter(req -> req.getUserId().equals(user.getUserId().longValue()))
                     .filter(req -> req.getStatus() == ServiceRequest.Status.Completed)
@@ -77,20 +77,16 @@ public class CustomerInvoiceController {
             List<Map<String, Object>> invoices = new ArrayList<>();
 
             for (ServiceRequest request : completedRequests) {
-                // Get all invoices for this request - using findAllByRequestId instead
                 List<Invoice> requestInvoices = invoiceRepository.findAllByRequestId(request.getRequestId());
 
-                // If no invoices found, continue to next request
                 if (requestInvoices.isEmpty()) {
                     continue;
                 }
 
-                // Use the most recent invoice (assuming the latest is most relevant)
                 Invoice invoice = requestInvoices.get(0);
 
-                // Check if payment exists - using findAllByRequestId instead
                 List<Payment> payments = paymentRepository.findAllByRequestId(request.getRequestId());
-                boolean isPaid = !payments.isEmpty() && payments.get(0).getStatus() == Payment.Status.Completed;
+                boolean isPaid = !payments.isEmpty() && payments.stream().anyMatch(p -> p.getStatus() == Payment.Status.Completed);
 
                 Map<String, Object> invoiceData = new HashMap<>();
                 invoiceData.put("invoiceId", invoice.getInvoiceId());
@@ -117,16 +113,12 @@ public class CustomerInvoiceController {
         }
     }
 
-    /**
-     * Create payment order for an invoice
-     */
     @PostMapping("/{invoiceId}/payment")
     public ResponseEntity<?> createPaymentOrder(@PathVariable Integer invoiceId, Authentication authentication) {
         try {
             User user = (User) authentication.getPrincipal();
             logger.info("Creating payment order for invoice: {} by user: {}", invoiceId, user.getEmail());
 
-            // Check if user is a customer
             if (user.getRole() != User.Role.customer) {
                 logger.warn("Non-customer user {} attempted to create payment", user.getEmail());
                 return ResponseEntity.badRequest().body(Map.of(
@@ -135,7 +127,6 @@ public class CustomerInvoiceController {
                 ));
             }
 
-            // Find the invoice
             Optional<Invoice> invoiceOpt = invoiceRepository.findById(invoiceId);
             if (invoiceOpt.isEmpty()) {
                 logger.warn("Invoice not found: {}", invoiceId);
@@ -147,7 +138,6 @@ public class CustomerInvoiceController {
 
             Invoice invoice = invoiceOpt.get();
 
-            // Find the service request to verify ownership
             Optional<ServiceRequest> requestOpt = serviceRequestRepository.findById(invoice.getRequestId());
             if (requestOpt.isEmpty()) {
                 logger.warn("Service request not found for invoice: {}", invoiceId);
@@ -159,7 +149,6 @@ public class CustomerInvoiceController {
 
             ServiceRequest request = requestOpt.get();
 
-            // Verify that the request belongs to this user
             if (!request.getUserId().equals(user.getUserId().longValue())) {
                 logger.warn("Invoice {} does not belong to user {}", invoiceId, user.getEmail());
                 return ResponseEntity.badRequest().body(Map.of(
@@ -168,7 +157,6 @@ public class CustomerInvoiceController {
                 ));
             }
 
-            // Check if already paid - using findAllByRequestId instead
             List<Payment> payments = paymentRepository.findAllByRequestId(request.getRequestId());
             boolean isPaid = !payments.isEmpty() && payments.stream()
                     .anyMatch(p -> p.getStatus() == Payment.Status.Completed);
@@ -181,7 +169,6 @@ public class CustomerInvoiceController {
                 ));
             }
 
-            // Get customer profile - using findAllByUser_UserId instead
             List<CustomerProfile> customerProfiles = customerRepository.findAllByUser_UserId(user.getUserId());
             if (customerProfiles.isEmpty()) {
                 logger.warn("Customer profile not found for user: {}", user.getEmail());
@@ -193,50 +180,60 @@ public class CustomerInvoiceController {
 
             CustomerProfile customer = customerProfiles.get(0);
 
-            // Calculate amount in paisa (multiply by 100)
             int amount = invoice.getTotalAmount().multiply(BigDecimal.valueOf(100)).intValue();
 
             try {
-                // Create Razorpay client
                 RazorpayClient razorpay = new RazorpayClient(razorpayKeyId, razorpayKeySecret);
 
-                // Create order request
                 JSONObject orderRequest = new JSONObject();
                 orderRequest.put("amount", amount);
                 orderRequest.put("currency", razorpayCurrency);
                 orderRequest.put("receipt", "rcpt_inv_" + invoiceId);
                 orderRequest.put("payment_capture", true);
 
-                // Create order in Razorpay
                 Order order = razorpay.orders.create(orderRequest);
                 String orderId = order.get("id");
 
-                // Create payment record
-                Payment payment = Payment.builder()
-                        .requestId(request.getRequestId())
-                        .customerId(customer.getCustomerId())
-                        .amount(invoice.getTotalAmount())
-                        .paymentMethod(Payment.PaymentMethod.Card) // Default, will be updated on success
-                        .status(Payment.Status.Pending)
-                        .paymentTimestamp(LocalDateTime.now())
-                        .build();
+                Payment payment;
+                if (!payments.isEmpty()) {
+                    payment = payments.stream()
+                            .filter(p -> p.getStatus() != Payment.Status.Completed)
+                            .findFirst()
+                            .orElseGet(() -> Payment.builder()
+                                    .requestId(request.getRequestId())
+                                    .customerId(customer.getCustomerId())
+                                    .amount(invoice.getTotalAmount())
+                                    .paymentMethod(Payment.PaymentMethod.Card)
+                                    .status(Payment.Status.Pending)
+                                    .paymentTimestamp(LocalDateTime.now())
+                                    .build());
+
+                    payment.setStatus(Payment.Status.Pending);
+                    payment.setPaymentTimestamp(LocalDateTime.now());
+                } else {
+                    payment = Payment.builder()
+                            .requestId(request.getRequestId())
+                            .customerId(customer.getCustomerId())
+                            .amount(invoice.getTotalAmount())
+                            .paymentMethod(Payment.PaymentMethod.Card)
+                            .status(Payment.Status.Pending)
+                            .paymentTimestamp(LocalDateTime.now())
+                            .build();
+                }
 
                 Payment savedPayment = paymentRepository.save(payment);
 
-                // Update invoice with payment ID
                 invoice.setPaymentId(savedPayment.getPaymentId());
                 invoiceRepository.save(invoice);
 
-                // Prepare response
                 Map<String, Object> response = new HashMap<>();
                 response.put("orderId", orderId);
                 response.put("amount", amount);
                 response.put("currency", razorpayCurrency);
                 response.put("razorpayKey", razorpayKeyId);
                 response.put("paymentId", savedPayment.getPaymentId());
-                response.put("invoiceId", invoice.getInvoiceId());
+                response.put("invoiceId", invoiceId);
 
-                // Add user details for Razorpay prefill
                 response.put("email", user.getEmail());
                 response.put("name", user.getFirstName() + " " + user.getLastName());
                 response.put("phone", user.getPhoneNumber() != null ? user.getPhoneNumber() : "");
@@ -259,16 +256,12 @@ public class CustomerInvoiceController {
         }
     }
 
-    /**
-     * Verify payment for an invoice
-     */
     @PostMapping("/verify-payment")
-    @Transactional
     public ResponseEntity<?> verifyPayment(@RequestBody Map<String, String> request, Authentication authentication) {
         try {
             User user = (User) authentication.getPrincipal();
+            logger.info("Verifying payment for user: {}", user.getEmail());
 
-            // Check if user is a customer
             if (user.getRole() != User.Role.customer) {
                 logger.warn("Non-customer user {} attempted to verify payment", user.getEmail());
                 return ResponseEntity.badRequest().body(Map.of(
@@ -282,7 +275,8 @@ public class CustomerInvoiceController {
             String razorpayOrderId = request.get("razorpayOrderId");
             String invoiceIdStr = request.get("invoiceId");
 
-            logger.info("Verifying payment: {}, razorpayPaymentId: {}", paymentId, razorpayPaymentId);
+            logger.info("Verifying payment: {}, razorpayPaymentId: {}, for invoice: {}",
+                    paymentId, razorpayPaymentId, invoiceIdStr);
 
             if (paymentId == null || razorpayPaymentId == null || razorpayOrderId == null) {
                 logger.warn("Missing required parameters for payment verification");
@@ -292,7 +286,6 @@ public class CustomerInvoiceController {
                 ));
             }
 
-            // Find the payment
             Optional<Payment> paymentOpt = paymentRepository.findById(Integer.parseInt(paymentId));
             if (paymentOpt.isEmpty()) {
                 logger.warn("Payment not found: {}", paymentId);
@@ -304,7 +297,6 @@ public class CustomerInvoiceController {
 
             Payment payment = paymentOpt.get();
 
-            // Verify that the payment belongs to this user
             Optional<ServiceRequest> requestOpt = serviceRequestRepository.findById(payment.getRequestId());
             if (requestOpt.isEmpty() || !requestOpt.get().getUserId().equals(user.getUserId().longValue())) {
                 logger.warn("Payment {} does not belong to user {}", paymentId, user.getEmail());
@@ -314,26 +306,23 @@ public class CustomerInvoiceController {
                 ));
             }
 
-            // Update payment status - CRITICAL: This updates the payment in the database
             payment.setStatus(Payment.Status.Completed);
             payment.setTransactionId(razorpayPaymentId);
             payment.setPaymentMethod(getPaymentMethod(request.get("paymentMethod")));
             payment.setPaymentTimestamp(LocalDateTime.now());
 
-            // Save the updated payment to the database
-            Payment updatedPayment = paymentRepository.save(payment);
-            logger.info("Payment {} updated with status: {}", updatedPayment.getPaymentId(), updatedPayment.getStatus());
+            Payment savedPayment = paymentRepository.save(payment);
+            logger.info("Payment {} verified successfully, marked as COMPLETED", paymentId);
 
-            // Also update the invoice if invoiceId is provided
             if (invoiceIdStr != null && !invoiceIdStr.isEmpty()) {
                 try {
                     Integer invoiceId = Integer.parseInt(invoiceIdStr);
                     Optional<Invoice> invoiceOpt = invoiceRepository.findById(invoiceId);
                     if (invoiceOpt.isPresent()) {
                         Invoice invoice = invoiceOpt.get();
-                        invoice.setPaymentId(updatedPayment.getPaymentId());
+                        invoice.setPaymentId(savedPayment.getPaymentId());
                         invoiceRepository.save(invoice);
-                        logger.info("Invoice {} updated with payment ID: {}", invoice.getInvoiceId(), updatedPayment.getPaymentId());
+                        logger.info("Updated invoice {} with payment {}", invoiceId, savedPayment.getPaymentId());
                     }
                 } catch (NumberFormatException e) {
                     logger.warn("Invalid invoice ID format: {}", invoiceIdStr);
@@ -343,9 +332,7 @@ public class CustomerInvoiceController {
             return ResponseEntity.ok(Map.of(
                     "success", true,
                     "message", "Payment successful",
-                    "paymentId", updatedPayment.getPaymentId(),
-                    "status", updatedPayment.getStatus().name(),
-                    "transactionId", updatedPayment.getTransactionId() != null ? updatedPayment.getTransactionId() : ""
+                    "paymentId", savedPayment.getPaymentId()
             ));
         } catch (NumberFormatException e) {
             logger.error("Invalid payment ID format: {}", e.getMessage());
@@ -362,9 +349,6 @@ public class CustomerInvoiceController {
         }
     }
 
-    /**
-     * Map Razorpay payment method to our enum
-     */
     private Payment.PaymentMethod getPaymentMethod(String method) {
         if (method == null) {
             return Payment.PaymentMethod.Card;

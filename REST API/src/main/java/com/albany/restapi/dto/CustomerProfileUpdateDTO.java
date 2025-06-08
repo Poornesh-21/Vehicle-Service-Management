@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class CustomerProfileUpdateDTO {
     private String firstName;
     private String lastName;
+    private String phoneNumber; // Added phone number field
     private String street;
     private String city;
     private String state;

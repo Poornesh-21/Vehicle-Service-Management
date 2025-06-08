@@ -9,7 +9,14 @@ import java.util.Optional;
 
 @Repository
 public interface CustomerRepository extends JpaRepository<CustomerProfile, Integer> {
-    Optional<CustomerProfile> findByUser_UserId(Integer userId);
+    // Change to return a list instead of assuming unique results
+    List<CustomerProfile> findByUser_UserId(Integer userId);
+
+    // Keep the optional version for specific cases
+    default Optional<CustomerProfile> findFirstByUser_UserId(Integer userId) {
+        List<CustomerProfile> profiles = findByUser_UserId(userId);
+        return profiles.isEmpty() ? Optional.empty() : Optional.of(profiles.get(0));
+    }
 
     @Query("SELECT c FROM CustomerProfile c JOIN c.user u WHERE u.isActive = true ORDER BY u.firstName, u.lastName")
     List<CustomerProfile> findAllActiveCustomers();

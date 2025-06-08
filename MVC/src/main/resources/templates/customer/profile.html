@@ -2383,184 +2383,6 @@
             container.innerHTML = html;
         }
 
-        viewServiceDetails(requestId) {
-            const token = this.getAuthToken();
-            if (!token) {
-                this.handleUnauthorized();
-                return;
-            }
-
-            const service = this.serviceHistory.find(s => s.requestId === requestId);
-            if (!service) return;
-
-            fetch(`${this.apiEndpoints.serviceDetails}${requestId}`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        if (response.status === 401) {
-                            this.handleUnauthorized();
-                            return null;
-                        }
-                        throw new Error('Failed to load service details');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    if (!data) return;
-
-                    const modalHtml = `
-            <div class="modal-overlay service-detail-modal active">
-                <div class="modal-container" style="max-width: 700px;">
-                    <div class="modal-header">
-                        <div class="modal-title">
-                            <i class="fas fa-clipboard-list"></i> Service Details
-                        </div>
-                        <button class="modal-close">&times;</button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="service-detail-header">
-                            <h3>${data.vehicleBrand} ${data.vehicleModel}</h3>
-                            <div class="status-badge completed">Completed</div>
-                        </div>
-
-                        <div class="section-title">Vehicle Information</div>
-                        <div class="detail-grid">
-                            <div class="detail-item">
-                                <div class="detail-label">Registration</div>
-                                <div class="detail-value">${data.registrationNumber || 'N/A'}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Year</div>
-                                <div class="detail-value">${data.vehicleYear || 'N/A'}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Type</div>
-                                <div class="detail-value">${data.vehicleType || 'N/A'}</div>
-                            </div>
-                        </div>
-
-                        <div class="section-title">Service Information</div>
-                        <div class="detail-grid">
-                            <div class="detail-item">
-                                <div class="detail-label">Service Type</div>
-                                <div class="detail-value">${data.serviceType || 'General Service'}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Service Date</div>
-                                <div class="detail-value">${data.formattedCompletedDate || 'N/A'}</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Service Advisor</div>
-                                <div class="detail-value">${data.serviceAdvisorName || 'N/A'}</div>
-                            </div>
-                        </div>
-
-                        <div class="section-title">Materials Used</div>
-                        ${this.renderMaterialsTable(data.materials)}
-
-                        <div class="section-title">Charges</div>
-                        <div class="charges-summary">
-                            <div class="charge-row">
-                                <div class="charge-label">Materials Total</div>
-                                <div class="charge-value">₹${this.formatCurrency(data.calculatedMaterialsTotal)}</div>
-                            </div>
-                            <div class="charge-row">
-                                <div class="charge-label">Labor Charges</div>
-                                <div class="charge-value">₹${this.formatCurrency(data.calculatedLaborTotal)}</div>
-                            </div>
-                            ${data.calculatedDiscount > 0 ? `
-                            <div class="charge-row discount">
-                                <div class="charge-label">Premium Discount</div>
-                                <div class="charge-value">-₹${this.formatCurrency(data.calculatedDiscount)}</div>
-                            </div>` : ''}
-                            <div class="charge-row">
-                                <div class="charge-label">Subtotal</div>
-                                <div class="charge-value">₹${this.formatCurrency(data.calculatedSubtotal)}</div>
-                            </div>
-                            <div class="charge-row">
-                                <div class="charge-label">Tax (18% GST)</div>
-                                <div class="charge-value">₹${this.formatCurrency(data.calculatedTax)}</div>
-                            </div>
-                            <div class="charge-row total">
-                                <div class="charge-label">Total Amount</div>
-                                <div class="charge-value">₹${this.formatCurrency(data.calculatedTotal)}</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-outline modal-cancel">Close</button>
-                        <button class="btn btn-primary" onclick="profileManager.downloadServicePDF(${requestId})">
-                            <i class="fas fa-download"></i> Download as PDF
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-
-                    if (!document.querySelector('.service-detail-modal')) {
-                        document.body.insertAdjacentHTML('beforeend', modalHtml);
-
-                        document.querySelectorAll('.service-detail-modal .modal-close, .service-detail-modal .modal-cancel').forEach(btn => {
-                            btn.addEventListener('click', () => document.querySelector('.service-detail-modal').classList.remove('active'));
-                        });
-                    } else {
-                        document.querySelector('.service-detail-modal').innerHTML = document.querySelector('.modal-container').outerHTML;
-                        document.querySelector('.service-detail-modal').classList.add('active');
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading service details:', error);
-                    this.showToast('Failed to load service details. Please try again.', 'error');
-                });
-        }
-
-        renderMaterialsTable(materials) {
-            if (!materials || materials.length === 0) {
-                return `
-            <div class="empty-message">
-                <i class="fas fa-info-circle"></i> No materials were used for this service.
-            </div>
-        `;
-            }
-
-            let html = `
-        <table class="materials-table">
-            <thead>
-                <tr>
-                    <th>Item</th>
-                    <th>Quantity</th>
-                    <th>Unit Price</th>
-                    <th>Total</th>
-                </tr>
-            </thead>
-            <tbody>
-    `;
-
-            materials.forEach(material => {
-                const quantity = material.quantity || 0;
-                const unitPrice = material.unitPrice || 0;
-                const total = quantity * unitPrice;
-
-                html += `
-            <tr>
-                <td>${material.name || 'Unknown'}</td>
-                <td>${quantity}</td>
-                <td>₹${this.formatCurrency(unitPrice)}</td>
-                <td>₹${this.formatCurrency(total)}</td>
-            </tr>
-        `;
-            });
-
-            html += `
-            </tbody>
-        </table>
-    `;
-
-            return html;
-        }
 
         downloadServicePDF(requestId) {
             const token = this.getAuthToken();
@@ -2598,6 +2420,8 @@
                 });
         }
 
+        // Modified methods in ProfileManager class
+
         loadInvoices() {
             const token = this.getAuthToken();
 
@@ -2616,7 +2440,8 @@
 
             fetch(this.apiEndpoints.invoices, {
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'Cache-Control': 'no-cache'
                 }
             })
                 .then(response => {
@@ -2632,18 +2457,22 @@
                 .then(data => {
                     if (!data) return;
 
+                    console.log('Invoices loaded:', data); // Debug log
                     this.invoices = Array.isArray(data) ? data : [];
                     this.renderInvoices();
                 })
                 .catch(error => {
                     console.error('Error loading invoices:', error);
                     container.innerHTML = `
-            <div class="empty-state">
-                <i class="fas fa-exclamation-circle"></i>
-                <h4>Failed to load invoices</h4>
-                <p>${error.message || 'Please try again later'}</p>
-            </div>
-        `;
+                <div class="empty-state">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <h4>Failed to load invoices</h4>
+                    <p>${error.message || 'Please try again later'}</p>
+                    <button class="btn btn-primary mt-3" onclick="profileManager.loadInvoices()">
+                        <i class="fas fa-sync"></i> Retry
+                    </button>
+                </div>
+            `;
                 });
         }
 
@@ -2661,8 +2490,14 @@
                 return;
             }
 
-            const pendingInvoices = this.invoices.filter(invoice => !invoice.paid);
-            const paidInvoices = this.invoices.filter(invoice => invoice.paid);
+            // Sort invoices by paid status and date
+            const pendingInvoices = this.invoices
+                .filter(invoice => !invoice.paid)
+                .sort((a, b) => new Date(b.completedDate || 0) - new Date(a.completedDate || 0));
+
+            const paidInvoices = this.invoices
+                .filter(invoice => invoice.paid)
+                .sort((a, b) => new Date(b.completedDate || 0) - new Date(a.completedDate || 0));
 
             let html = '';
 
@@ -2690,11 +2525,11 @@
                         </div>
                         <div class="invoice-detail">
                             <div class="detail-label">Vehicle:</div>
-                            <div class="detail-value">${invoice.vehicleBrand} ${invoice.vehicleModel}</div>
+                            <div class="detail-value">${invoice.vehicleBrand || ''} ${invoice.vehicleModel || ''}</div>
                         </div>
                         <div class="invoice-detail">
                             <div class="detail-label">Amount:</div>
-                            <div class="detail-value">₹${this.formatCurrency(invoice.totalAmount)}</div>
+                            <div class="detail-value">₹${this.formatCurrency(invoice.totalAmount || 0)}</div>
                         </div>
                         <div class="invoice-actions">
                             <button class="btn btn-outline btn-sm" onclick="profileManager.viewInvoice(${invoice.invoiceId})">
@@ -2742,11 +2577,11 @@
                         </div>
                         <div class="invoice-detail">
                             <div class="detail-label">Vehicle:</div>
-                            <div class="detail-value">${invoice.vehicleBrand} ${invoice.vehicleModel}</div>
+                            <div class="detail-value">${invoice.vehicleBrand || ''} ${invoice.vehicleModel || ''}</div>
                         </div>
                         <div class="invoice-detail">
                             <div class="detail-label">Amount:</div>
-                            <div class="detail-value">₹${this.formatCurrency(invoice.totalAmount)}</div>
+                            <div class="detail-value">₹${this.formatCurrency(invoice.totalAmount || 0)}</div>
                         </div>
                         <div class="invoice-actions">
                             <button class="btn btn-outline btn-sm" onclick="profileManager.viewInvoice(${invoice.invoiceId})">
@@ -2780,9 +2615,58 @@
             const invoice = this.invoices.find(i => i.invoiceId === invoiceId);
             if (!invoice) return;
 
+            // Show loading state in modal before data is fetched
+            const modalHtml = `
+        <div class="modal-overlay invoice-detail-modal active">
+            <div class="modal-container" style="max-width: 700px;">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <i class="fas fa-file-invoice-dollar"></i> Invoice #${invoiceId}
+                    </div>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                        <p>Loading invoice details...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+            if (!document.querySelector('.invoice-detail-modal')) {
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+                document.querySelectorAll('.invoice-detail-modal .modal-close').forEach(btn => {
+                    btn.addEventListener('click', () => document.querySelector('.invoice-detail-modal').classList.remove('active'));
+                });
+            } else {
+                document.querySelector('.invoice-detail-modal').innerHTML = `<div class="modal-container" style="max-width: 700px;">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-file-invoice-dollar"></i> Invoice #${invoiceId}
+                </div>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>Loading invoice details...</p>
+                </div>
+            </div>
+        </div>`;
+                document.querySelector('.invoice-detail-modal').classList.add('active');
+
+                document.querySelectorAll('.invoice-detail-modal .modal-close').forEach(btn => {
+                    btn.addEventListener('click', () => document.querySelector('.invoice-detail-modal').classList.remove('active'));
+                });
+            }
+
+            // Fetch complete details from the API
             fetch(`${this.apiEndpoints.serviceDetails}${invoice.requestId}`, {
                 headers: {
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${token}`,
+                    'Cache-Control': 'no-cache'
                 }
             })
                 .then(response => {
@@ -2798,121 +2682,151 @@
                 .then(data => {
                     if (!data) return;
 
-                    const modalHtml = `
-            <div class="modal-overlay invoice-detail-modal active">
-                <div class="modal-container" style="max-width: 700px;">
-                    <div class="modal-header">
-                        <div class="modal-title">
-                            <i class="fas fa-file-invoice-dollar"></i> Invoice #${invoiceId}
-                        </div>
-                        <button class="modal-close">&times;</button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="invoice-detail-header">
-                            <div class="company-info">
-                                <h3>Albany Vehicle Service</h3>
-                                <p>123 Albany Street, Chennai, India</p>
-                                <p>Phone: +91 98765 43210</p>
-                                <p>Email: support@albanyservice.com</p>
-                            </div>
-                            <div class="invoice-info">
-                                <h4>INVOICE</h4>
-                                <p><strong>Invoice #:</strong> ${invoiceId}</p>
-                                <p><strong>Date:</strong> ${data.formattedCompletedDate || 'N/A'}</p>
-                                <p><strong>Status:</strong> ${invoice.paid ? 'Paid' : 'Pending'}</p>
-                            </div>
-                        </div>
+                    console.log('Invoice details loaded:', data); // Debug log
 
-                        <div class="customer-vehicle-info">
-                            <div class="customer-info">
-                                <h4>Bill To:</h4>
-                                <p><strong>${data.customerName || 'Customer'}</strong></p>
-                                <p>${data.customerEmail || 'N/A'}</p>
-                                <p>${data.customerPhone || 'N/A'}</p>
-                            </div>
-                            <div class="vehicle-info">
-                                <h4>Vehicle Details:</h4>
-                                <p><strong>${data.vehicleBrand} ${data.vehicleModel}</strong></p>
-                                <p>Reg #: ${data.registrationNumber || 'N/A'}</p>
-                                <p>Year: ${data.vehicleYear || 'N/A'}</p>
-                            </div>
-                        </div>
-
-                        <div class="invoice-items">
-                            <h4>Service Details</h4>
-                            <table class="invoice-table">
-                                <thead>
-                                    <tr>
-                                        <th>Description</th>
-                                        <th>Quantity</th>
-                                        <th>Unit Price</th>
-                                        <th>Amount</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${this.renderInvoiceItems(data)}
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <div class="invoice-summary">
-                            <div class="summary-row">
-                                <div class="summary-label">Subtotal:</div>
-                                <div class="summary-value">₹${this.formatCurrency(data.calculatedSubtotal)}</div>
-                            </div>
-                            <div class="summary-row">
-                                <div class="summary-label">GST (18%):</div>
-                                <div class="summary-value">₹${this.formatCurrency(data.calculatedTax)}</div>
-                            </div>
-                            <div class="summary-row total">
-                                <div class="summary-label">Total Amount:</div>
-                                <div class="summary-value">₹${this.formatCurrency(data.calculatedTotal)}</div>
-                            </div>
-                        </div>
-
-                        <div class="invoice-notes">
-                            <p><strong>Note:</strong> This is a computer-generated invoice and does not require a signature.</p>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button class="btn btn-outline modal-cancel">Close</button>
-                        <button class="btn btn-outline" onclick="profileManager.downloadInvoicePDF(${invoiceId})">
-                            <i class="fas fa-download"></i> Download PDF
-                        </button>
-                        ${!invoice.paid ? `
-                        <button class="btn btn-primary" onclick="profileManager.payInvoice(${invoiceId})">
-                            <i class="fas fa-credit-card"></i> Pay Now
-                        </button>` : ''}
-                    </div>
-                </div>
-            </div>
-        `;
-
-                    if (!document.querySelector('.invoice-detail-modal')) {
-                        document.body.insertAdjacentHTML('beforeend', modalHtml);
-
-                        document.querySelectorAll('.invoice-detail-modal .modal-close, .invoice-detail-modal .modal-cancel').forEach(btn => {
-                            btn.addEventListener('click', () => document.querySelector('.invoice-detail-modal').classList.remove('active'));
-                        });
-                    } else {
-                        document.querySelector('.invoice-detail-modal').innerHTML = document.querySelector('.modal-container').outerHTML;
-                        document.querySelector('.invoice-detail-modal').classList.add('active');
-                    }
+                    // Update modal with the fetched data
+                    this.renderInvoiceModal(data, invoiceId, invoice.paid);
                 })
                 .catch(error => {
                     console.error('Error loading invoice details:', error);
-                    this.showToast('Failed to load invoice details. Please try again.', 'error');
+                    document.querySelector('.invoice-detail-modal .modal-body').innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <h4>Failed to load invoice details</h4>
+                    <p>${error.message || 'Please try again later'}</p>
+                    <button class="btn btn-primary mt-3" onclick="profileManager.viewInvoice(${invoiceId})">
+                        <i class="fas fa-sync"></i> Retry
+                    </button>
+                </div>
+            `;
                 });
+        }
+
+        renderInvoiceModal(data, invoiceId, isPaid) {
+            // Get modal container
+            const modalBody = document.querySelector('.invoice-detail-modal .modal-body');
+
+            // Format dates for display
+            const serviceDate = data.formattedCompletedDate ||
+                (data.completedDate ? new Date(data.completedDate).toLocaleDateString() : 'N/A');
+
+            // Create the invoice details HTML
+            const html = `
+        <div class="invoice-detail-header">
+            <div class="company-info">
+                <h3>Albany Vehicle Service</h3>
+                <p>123 Albany Street, Chennai, India</p>
+                <p>Phone: +91 98765 43210</p>
+                <p>Email: support@albanyservice.com</p>
+            </div>
+            <div class="invoice-info">
+                <h4>INVOICE</h4>
+                <p><strong>Invoice #:</strong> ${invoiceId}</p>
+                <p><strong>Date:</strong> ${serviceDate}</p>
+                <p><strong>Status:</strong> ${isPaid ? 'Paid' : 'Pending'}</p>
+            </div>
+        </div>
+
+        <div class="customer-vehicle-info">
+            <div class="customer-info">
+                <h4>Customer</h4>
+                <p>${data.customerName || 'N/A'}</p>
+                <p>${data.customerEmail || 'N/A'}</p>
+                <p>${data.customerPhone || 'N/A'}</p>
+            </div>
+            <div class="vehicle-info">
+                <h4>${data.vehicleBrand || ''} ${data.vehicleModel || ''}</h4>
+                <p>Reg #: ${data.registrationNumber || 'N/A'}</p>
+                <p>Year: ${data.vehicleYear || 'N/A'}</p>
+            </div>
+        </div>
+
+        <div class="service-details">
+            <h4>Service Details</h4>
+            <table class="invoice-table">
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Quantity</th>
+                        <th>Unit Price</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${this.renderInvoiceItems(data)}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="invoice-summary">
+            <div class="summary-row">
+                <div class="summary-label">Subtotal:</div>
+                <div class="summary-value">₹${this.formatCurrency(data.calculatedSubtotal)}</div>
+            </div>
+            <div class="summary-row">
+                <div class="summary-label">GST (18%):</div>
+                <div class="summary-value">₹${this.formatCurrency(data.calculatedTax)}</div>
+            </div>
+            <div class="summary-row total">
+                <div class="summary-label">Total Amount:</div>
+                <div class="summary-value">₹${this.formatCurrency(data.calculatedTotal)}</div>
+            </div>
+        </div>
+
+        <div class="invoice-notes">
+            <p><strong>Note:</strong> This is a computer-generated invoice and does not require a signature.</p>
+        </div>
+    `;
+
+            modalBody.innerHTML = html;
+
+            // Update footer buttons
+            const modalContainer = document.querySelector('.invoice-detail-modal .modal-container');
+            const modalFooter = document.createElement('div');
+            modalFooter.className = 'modal-footer';
+            modalFooter.innerHTML = `
+        <button class="btn btn-outline modal-cancel">Close</button>
+        <button class="btn btn-outline" onclick="profileManager.downloadInvoicePDF(${invoiceId})">
+            <i class="fas fa-download"></i> Download PDF
+        </button>
+        ${!isPaid ? `
+        <button class="btn btn-primary" onclick="profileManager.payInvoice(${invoiceId})">
+            <i class="fas fa-credit-card"></i> Pay Now
+        </button>` : ''}
+    `;
+
+            // Remove existing footer if any
+            const existingFooter = modalContainer.querySelector('.modal-footer');
+            if (existingFooter) {
+                existingFooter.remove();
+            }
+
+            modalContainer.appendChild(modalFooter);
+
+            // Add event listeners
+            modalContainer.querySelectorAll('.modal-cancel').forEach(btn => {
+                btn.addEventListener('click', () => document.querySelector('.invoice-detail-modal').classList.remove('active'));
+            });
         }
 
         renderInvoiceItems(data) {
             let html = '';
 
+            // Add materials used
             if (data.materials && data.materials.length > 0) {
                 data.materials.forEach(material => {
+                    if (!material) return;
+
                     const quantity = material.quantity || 0;
                     const unitPrice = material.unitPrice || 0;
-                    const total = quantity * unitPrice;
+                    let total;
+
+                    // Handle different ways the data might be formatted
+                    if (typeof quantity === 'object' && quantity.multiply) {
+                        total = quantity.multiply(unitPrice);
+                    } else {
+                        total = parseFloat(quantity) * parseFloat(unitPrice);
+                    }
 
                     html += `
                 <tr>
@@ -2925,15 +2839,25 @@
                 });
             }
 
+            // Add labor charges
             if (data.laborCharges && data.laborCharges.length > 0) {
                 data.laborCharges.forEach(labor => {
+                    if (!labor) return;
+
                     const hours = labor.hours || 0;
                     const rate = labor.rate || 0;
-                    const total = hours * rate;
+                    let total;
+
+                    // Handle different ways the data might be formatted
+                    if (typeof hours === 'object' && hours.multiply) {
+                        total = hours.multiply(rate);
+                    } else {
+                        total = parseFloat(hours) * parseFloat(rate);
+                    }
 
                     html += `
                 <tr>
-                    <td>${labor.description || 'Labor'}</td>
+                    <td>${labor.description || 'Service Labor'}</td>
                     <td>${hours} hrs</td>
                     <td>₹${this.formatCurrency(rate)}/hr</td>
                     <td>₹${this.formatCurrency(total)}</td>
@@ -2941,17 +2865,19 @@
             `;
                 });
             } else {
+                // Fallback if no labor charges are provided
                 html += `
             <tr>
                 <td>Service Labor</td>
-                <td>1</td>
-                <td>₹${this.formatCurrency(data.calculatedLaborTotal)}</td>
-                <td>₹${this.formatCurrency(data.calculatedLaborTotal)}</td>
+                <td>2 hrs</td>
+                <td>₹500.00/hr</td>
+                <td>₹1,000.00</td>
             </tr>
         `;
             }
 
-            if (data.calculatedDiscount && data.calculatedDiscount > 0) {
+            // Add premium discount if applicable
+            if (data.calculatedDiscount && parseFloat(data.calculatedDiscount) > 0) {
                 html += `
             <tr class="discount-row">
                 <td colspan="3">Premium Membership Discount (30% off labor)</td>
@@ -2961,6 +2887,278 @@
             }
 
             return html;
+        }
+
+        viewServiceDetails(requestId) {
+            const token = this.getAuthToken();
+            if (!token) {
+                this.handleUnauthorized();
+                return;
+            }
+
+            const service = this.serviceHistory.find(s => s.requestId === requestId);
+            if (!service) return;
+
+            // Show loading state in modal
+            const modalHtml = `
+        <div class="modal-overlay service-detail-modal active">
+            <div class="modal-container" style="max-width: 700px;">
+                <div class="modal-header">
+                    <div class="modal-title">
+                        <i class="fas fa-clipboard-list"></i> Service Details
+                    </div>
+                    <button class="modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="loading-spinner">
+                        <div class="spinner"></div>
+                        <p>Loading service details...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+            if (!document.querySelector('.service-detail-modal')) {
+                document.body.insertAdjacentHTML('beforeend', modalHtml);
+                document.querySelectorAll('.service-detail-modal .modal-close').forEach(btn => {
+                    btn.addEventListener('click', () => document.querySelector('.service-detail-modal').classList.remove('active'));
+                });
+            } else {
+                document.querySelector('.service-detail-modal').innerHTML = `<div class="modal-container" style="max-width: 700px;">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-clipboard-list"></i> Service Details
+                </div>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="loading-spinner">
+                    <div class="spinner"></div>
+                    <p>Loading service details...</p>
+                </div>
+            </div>
+        </div>`;
+                document.querySelector('.service-detail-modal').classList.add('active');
+
+                document.querySelectorAll('.service-detail-modal .modal-close').forEach(btn => {
+                    btn.addEventListener('click', () => document.querySelector('.service-detail-modal').classList.remove('active'));
+                });
+            }
+
+            // Fetch complete details from the API
+            fetch(`${this.apiEndpoints.serviceDetails}${requestId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Cache-Control': 'no-cache'
+                }
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        if (response.status === 401) {
+                            this.handleUnauthorized();
+                            return null;
+                        }
+                        throw new Error('Failed to load service details');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (!data) return;
+
+                    console.log('Service details loaded:', data); // Debug log
+
+                    // Render the service details modal
+                    this.renderServiceDetailsModal(data);
+                })
+                .catch(error => {
+                    console.error('Error loading service details:', error);
+                    document.querySelector('.service-detail-modal .modal-body').innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <h4>Failed to load service details</h4>
+                    <p>${error.message || 'Please try again later'}</p>
+                    <button class="btn btn-primary mt-3" onclick="profileManager.viewServiceDetails(${requestId})">
+                        <i class="fas fa-sync"></i> Retry
+                    </button>
+                </div>
+            `;
+                });
+        }
+
+        renderServiceDetailsModal(data) {
+            // Get modal container
+            const modalBody = document.querySelector('.service-detail-modal .modal-body');
+
+            // Create the service details HTML
+            const html = `
+        <div class="service-detail-header">
+            <h3>${data.vehicleBrand || ''} ${data.vehicleModel || ''}</h3>
+            <div class="status-badge completed">Completed</div>
+        </div>
+
+        <div class="section-title">Vehicle Information</div>
+        <div class="detail-grid">
+            <div class="detail-item">
+                <div class="detail-label">Registration</div>
+                <div class="detail-value">${data.registrationNumber || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Year</div>
+                <div class="detail-value">${data.vehicleYear || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Type</div>
+                <div class="detail-value">${data.vehicleType || 'N/A'}</div>
+            </div>
+        </div>
+
+        <div class="section-title">Service Information</div>
+        <div class="detail-grid">
+            <div class="detail-item">
+                <div class="detail-label">Service Type</div>
+                <div class="detail-value">${data.serviceType || 'General Service'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Service Date</div>
+                <div class="detail-value">${data.formattedCompletedDate || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+                <div class="detail-label">Service Advisor</div>
+                <div class="detail-value">${data.serviceAdvisorName || 'N/A'}</div>
+            </div>
+        </div>
+
+        <div class="section-title">Materials Used</div>
+        ${this.renderMaterialsTable(data.materials)}
+
+        <div class="section-title">Charges</div>
+        <div class="charges-summary">
+            <div class="charge-row">
+                <div class="charge-label">Materials Total</div>
+                <div class="charge-value">₹${this.formatCurrency(data.calculatedMaterialsTotal)}</div>
+            </div>
+            <div class="charge-row">
+                <div class="charge-label">Labor Charges</div>
+                <div class="charge-value">₹${this.formatCurrency(data.calculatedLaborTotal)}</div>
+            </div>
+            ${parseFloat(data.calculatedDiscount) > 0 ? `
+            <div class="charge-row discount">
+                <div class="charge-label">Premium Discount</div>
+                <div class="charge-value">-₹${this.formatCurrency(data.calculatedDiscount)}</div>
+            </div>` : ''}
+            <div class="charge-row">
+                <div class="charge-label">Subtotal</div>
+                <div class="charge-value">₹${this.formatCurrency(data.calculatedSubtotal)}</div>
+            </div>
+            <div class="charge-row">
+                <div class="charge-label">Tax (18% GST)</div>
+                <div class="charge-value">₹${this.formatCurrency(data.calculatedTax)}</div>
+            </div>
+            <div class="charge-row total">
+                <div class="charge-label">Total Amount</div>
+                <div class="charge-value">₹${this.formatCurrency(data.calculatedTotal)}</div>
+            </div>
+        </div>
+    `;
+
+            modalBody.innerHTML = html;
+
+            // Update footer buttons
+            const modalContainer = document.querySelector('.service-detail-modal .modal-container');
+            const modalFooter = document.createElement('div');
+            modalFooter.className = 'modal-footer';
+            modalFooter.innerHTML = `
+        <button class="btn btn-outline modal-cancel">Close</button>
+        <button class="btn btn-primary" onclick="profileManager.downloadServicePDF(${data.requestId})">
+            <i class="fas fa-download"></i> Download as PDF
+        </button>
+    `;
+
+            // Remove existing footer if any
+            const existingFooter = modalContainer.querySelector('.modal-footer');
+            if (existingFooter) {
+                existingFooter.remove();
+            }
+
+            modalContainer.appendChild(modalFooter);
+
+            // Add event listeners
+            modalContainer.querySelectorAll('.modal-cancel').forEach(btn => {
+                btn.addEventListener('click', () => document.querySelector('.service-detail-modal').classList.remove('active'));
+            });
+        }
+
+        renderMaterialsTable(materials) {
+            if (!materials || materials.length === 0) {
+                return `
+            <div class="empty-message">
+                <i class="fas fa-info-circle"></i> No materials were used for this service.
+            </div>
+        `;
+            }
+
+            let html = `
+        <table class="materials-table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                    <th>Unit Price</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+            materials.forEach(material => {
+                if (!material) return;
+
+                const quantity = material.quantity || 0;
+                const unitPrice = material.unitPrice || 0;
+                let total;
+
+                // Handle different ways the data might be formatted
+                if (typeof quantity === 'object' && quantity.multiply) {
+                    total = quantity.multiply(unitPrice);
+                } else {
+                    total = parseFloat(quantity) * parseFloat(unitPrice);
+                }
+
+                html += `
+            <tr>
+                <td>${material.name || 'Unknown'}</td>
+                <td>${quantity}</td>
+                <td>₹${this.formatCurrency(unitPrice)}</td>
+                <td>₹${this.formatCurrency(total)}</td>
+            </tr>
+        `;
+            });
+
+            html += `
+            </tbody>
+        </table>
+    `;
+
+            return html;
+        }
+
+        formatCurrency(amount) {
+            if (amount === null || amount === undefined) return '0.00';
+
+            // Convert strings to numbers if needed
+            let value = amount;
+            if (typeof amount === 'string') {
+                value = parseFloat(amount);
+            }
+
+            // Handle NaN and non-numeric values
+            if (isNaN(value) || typeof value !== 'number') {
+                return '0.00';
+            }
+
+            // Format the number with 2 decimal places and thousands separators
+            return value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
         }
 
         downloadInvoicePDF(invoiceId) {
@@ -3146,10 +3344,6 @@
             window.location.href = '/authentication/login';
         }
 
-        formatCurrency(amount) {
-            if (!amount) return '0.00';
-            return parseFloat(amount).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
-        }
 
         showToast(message, type = 'success') {
             const toastContainer = document.querySelector('.toast-container');

@@ -14,47 +14,59 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CompletedServiceDTO {
+    // Request and identification
     private Integer requestId;
     private Integer serviceId;
+    
+    // Vehicle information
     private String vehicleName;
     private String vehicleBrand;
     private String vehicleModel;
     private String registrationNumber;
     private String vehicleType;
     private String category;
+    private Integer vehicleYear;
+    
+    // Customer information
     private String customerName;
     private String customerEmail;
     private String customerPhone;
     private Integer customerId;
     private String membershipStatus;
+    
+    // Service information
+    private String serviceType;
+    private String serviceDescription;
+    private String additionalDescription;
+    private String serviceAdvisorName;
+    
+    // Date information
     private LocalDateTime completionDate;
     private LocalDateTime completedDate;
     private LocalDateTime updatedAt;
     private String formattedCompletedDate;
+    
+    // Invoice information
     private BigDecimal totalAmount;
     private BigDecimal totalCost;
-    private BigDecimal calculatedTotal;
     private boolean hasInvoice;
     private Integer invoiceId;
     private boolean paid;
     private boolean delivered;
     
-    // These fields were missing and caused the compilation errors
-    private String serviceType;
-    private String serviceAdvisorName;
-
-    // Invoice related fields
+    // Financial calculations
     private BigDecimal calculatedMaterialsTotal;
     private BigDecimal calculatedLaborTotal;
     private BigDecimal calculatedDiscount;
     private BigDecimal calculatedSubtotal;
     private BigDecimal calculatedTax;
+    private BigDecimal calculatedTotal;
     
-    // Materials and labor charges
+    // Service details
     private List<MaterialItemDTO> materials;
     private List<LaborChargeDTO> laborCharges;
     
-    // Backward compatibility getters
+    // Compatibility getters
     public boolean getIsPaid() {
         return paid;
     }

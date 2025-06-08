@@ -12,6 +12,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -27,15 +28,21 @@ public class CustomerServiceHistoryController {
     private final MaterialUsageRepository materialUsageRepository;
     private final InvoiceRepository invoiceRepository;
     private final PaymentRepository paymentRepository;
+    private final ServiceTrackingRepository serviceTrackingRepository;
+    private final CustomerRepository customerRepository;
 
     public CustomerServiceHistoryController(ServiceRequestRepository serviceRequestRepository,
                                            MaterialUsageRepository materialUsageRepository,
                                            InvoiceRepository invoiceRepository,
-                                           PaymentRepository paymentRepository) {
+                                           PaymentRepository paymentRepository,
+                                           ServiceTrackingRepository serviceTrackingRepository,
+                                           CustomerRepository customerRepository) {
         this.serviceRequestRepository = serviceRequestRepository;
         this.materialUsageRepository = materialUsageRepository;
         this.invoiceRepository = invoiceRepository;
         this.paymentRepository = paymentRepository;
+        this.serviceTrackingRepository = serviceTrackingRepository;
+        this.customerRepository = customerRepository;
     }
 
     /**
@@ -45,6 +52,7 @@ public class CustomerServiceHistoryController {
     public ResponseEntity<?> getServiceHistory(Authentication authentication) {
         try {
             User user = (User) authentication.getPrincipal();
+            logger.info("Fetching service history for user: {}", user.getEmail());
             
             // Find all completed service requests for this user
             List<ServiceRequest> completedRequests = serviceRequestRepository.findAll().stream()
@@ -52,6 +60,8 @@ public class CustomerServiceHistoryController {
                     .filter(req -> req.getStatus() == ServiceRequest.Status.Completed)
                     .sorted(Comparator.comparing(ServiceRequest::getUpdatedAt).reversed())
                     .collect(Collectors.toList());
+            
+            logger.info("Found {} completed service requests", completedRequests.size());
             
             List<CompletedServiceDTO> serviceDTOs = new ArrayList<>();
             
@@ -72,12 +82,12 @@ public class CustomerServiceHistoryController {
                                 paymentOpt.get().getStatus() == Payment.Status.Completed);
                 }
                 
-                // Get materials used
+                // Get materials used (just basic info for list view)
                 List<MaterialUsage> materials = materialUsageRepository
                         .findByServiceRequest_RequestIdOrderByUsedAtDesc(request.getRequestId());
                 
                 List<MaterialItemDTO> materialDTOs = materials.stream()
-                        .map(this::convertToMaterialItemDTO)
+                        .map(this::convertToBasicMaterialItemDTO)
                         .collect(Collectors.toList());
                 
                 dto.setMaterials(materialDTOs);
@@ -85,9 +95,10 @@ public class CustomerServiceHistoryController {
                 serviceDTOs.add(dto);
             }
             
+            logger.info("Returning {} service history records", serviceDTOs.size());
             return ResponseEntity.ok(serviceDTOs);
         } catch (Exception e) {
-            logger.error("Error fetching service history: {}", e.getMessage());
+            logger.error("Error fetching service history: {}", e.getMessage(), e);
             return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
                     "message", "An error occurred: " + e.getMessage()
@@ -96,7 +107,89 @@ public class CustomerServiceHistoryController {
     }
 
     /**
-     * Convert ServiceRequest to CompletedServiceDTO
+     * Get service details for a specific completed service
+     */
+    @GetMapping("/{requestId}")
+    public ResponseEntity<?> getServiceDetails(@PathVariable Integer requestId, Authentication authentication) {
+        try {
+            User user = (User) authentication.getPrincipal();
+            logger.info("Fetching service details for request: {}, user: {}", requestId, user.getEmail());
+            
+            // Find the service request
+            Optional<ServiceRequest> requestOpt = serviceRequestRepository.findById(requestId);
+            if (requestOpt.isEmpty()) {
+                logger.warn("Service request not found: {}", requestId);
+                return ResponseEntity.badRequest().body(Map.of(
+                        "success", false,
+                        "message", "Service request not found"
+                ));
+            }
+            
+            ServiceRequest request = requestOpt.get();
+            
+            // Verify that the request belongs to this user
+            if (!request.getUserId().equals(user.getUserId().longValue())) {
+                logger.warn("Service request {} does not belong to user {}", requestId, user.getEmail());
+                return ResponseEntity.badRequest().body(Map.of(
+                        "success", false,
+                        "message", "Service request does not belong to this customer"
+                ));
+            }
+            
+            // Get customer info
+            Optional<CustomerProfile> customerProfile = customerRepository.findByUser_UserId(user.getUserId());
+            
+            // Create detailed service DTO
+            CompletedServiceDTO serviceDTO = convertToDetailedServiceDTO(request, user, customerProfile.orElse(null));
+            
+            // Get materials used with full details
+            List<MaterialUsage> materials = materialUsageRepository
+                    .findByServiceRequest_RequestIdOrderByUsedAtDesc(request.getRequestId());
+            
+            List<MaterialItemDTO> materialDTOs = materials.stream()
+                    .map(this::convertToDetailedMaterialItemDTO)
+                    .collect(Collectors.toList());
+            
+            serviceDTO.setMaterials(materialDTOs);
+            
+            // Get service tracking records to extract labor charges
+            List<ServiceTracking> trackingRecords = serviceTrackingRepository
+                    .findByServiceRequest_RequestIdOrderByUpdatedAtDesc(request.getRequestId());
+            
+            // Extract labor details from tracking records
+            List<LaborChargeDTO> laborCharges = extractLaborCharges(trackingRecords);
+            serviceDTO.setLaborCharges(laborCharges);
+            
+            // Calculate financial details
+            calculateFinancialDetails(serviceDTO, user);
+            
+            // Add invoice information if available
+            Optional<Invoice> invoiceOpt = invoiceRepository.findByRequestId(request.getRequestId());
+            if (invoiceOpt.isPresent()) {
+                Invoice invoice = invoiceOpt.get();
+                serviceDTO.setHasInvoice(true);
+                serviceDTO.setInvoiceId(invoice.getInvoiceId());
+                serviceDTO.setTotalAmount(invoice.getTotalAmount());
+                
+                // Check if payment exists
+                Optional<Payment> paymentOpt = paymentRepository.findByRequestId(request.getRequestId());
+                serviceDTO.setPaid(paymentOpt.isPresent() && 
+                                  paymentOpt.get().getStatus() == Payment.Status.Completed);
+            }
+            
+            logger.info("Service details fetched successfully for request: {}", requestId);
+            return ResponseEntity.ok(serviceDTO);
+        } catch (Exception e) {
+            logger.error("Error fetching service details: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "An error occurred: " + e.getMessage()
+            ));
+        }
+    }
+
+    /**
+     * Convert ServiceRequest to basic CompletedServiceDTO (for list view)
      */
     private CompletedServiceDTO convertToCompletedServiceDTO(ServiceRequest request) {
         CompletedServiceDTO dto = CompletedServiceDTO.builder()
@@ -115,7 +208,7 @@ public class CustomerServiceHistoryController {
             dto.setFormattedCompletedDate(request.getUpdatedAt().format(DATE_FORMATTER));
         }
         
-        // Get user and service advisor info
+        // Get service advisor info if available
         if (request.getServiceAdvisor() != null) {
             dto.setServiceAdvisorName(request.getServiceAdvisor().getUser().getFirstName() + " " + 
                                      request.getServiceAdvisor().getUser().getLastName());
@@ -123,11 +216,68 @@ public class CustomerServiceHistoryController {
         
         return dto;
     }
+    
+    /**
+     * Convert ServiceRequest to detailed CompletedServiceDTO (for detail view)
+     */
+    private CompletedServiceDTO convertToDetailedServiceDTO(ServiceRequest request, User user, CustomerProfile customerProfile) {
+        CompletedServiceDTO dto = convertToCompletedServiceDTO(request);
+        
+        // Add customer details
+        dto.setCustomerName(user.getFirstName() + " " + user.getLastName());
+        dto.setCustomerEmail(user.getEmail());
+        dto.setCustomerPhone(user.getPhoneNumber());
+        
+        if (customerProfile != null) {
+            dto.setCustomerId(customerProfile.getCustomerId());
+            dto.setMembershipStatus(customerProfile.getMembershipStatus());
+        } else {
+            dto.setMembershipStatus(user.getMembershipType().name());
+        }
+        
+        // Add vehicle year
+        dto.setVehicleYear(request.getVehicleYear());
+        
+        // Add more service details
+        dto.setServiceDescription(request.getServiceDescription());
+        dto.setAdditionalDescription(request.getAdditionalDescription());
+        
+        return dto;
+    }
 
     /**
-     * Convert MaterialUsage to MaterialItemDTO
+     * Convert MaterialUsage to basic MaterialItemDTO (for list view)
      */
-    private MaterialItemDTO convertToMaterialItemDTO(MaterialUsage usage) {
+    private MaterialItemDTO convertToBasicMaterialItemDTO(MaterialUsage usage) {
+        if (usage.getInventoryItem() == null) {
+            return MaterialItemDTO.builder()
+                    .itemId(usage.getMaterialUsageId())
+                    .name("Unknown Item")
+                    .quantity(usage.getQuantity())
+                    .build();
+        }
+        
+        return MaterialItemDTO.builder()
+                .itemId(usage.getInventoryItem().getItemId())
+                .name(usage.getInventoryItem().getName())
+                .quantity(usage.getQuantity())
+                .build();
+    }
+
+    /**
+     * Convert MaterialUsage to detailed MaterialItemDTO with all information
+     */
+    private MaterialItemDTO convertToDetailedMaterialItemDTO(MaterialUsage usage) {
+        if (usage.getInventoryItem() == null) {
+            // Handle case where inventory item might be null
+            return MaterialItemDTO.builder()
+                    .itemId(usage.getMaterialUsageId())
+                    .name("Unknown Item")
+                    .quantity(usage.getQuantity())
+                    .unitPrice(BigDecimal.ZERO)
+                    .build();
+        }
+        
         return MaterialItemDTO.builder()
                 .itemId(usage.getInventoryItem().getItemId())
                 .name(usage.getInventoryItem().getName())
@@ -137,111 +287,106 @@ public class CustomerServiceHistoryController {
     }
 
     /**
-     * Get service details for a specific completed service
+     * Extract labor charges from tracking records
      */
-    @GetMapping("/{requestId}")
-    public ResponseEntity<?> getServiceDetails(@PathVariable Integer requestId, Authentication authentication) {
-        try {
-            User user = (User) authentication.getPrincipal();
-            
-            // Find the service request
-            Optional<ServiceRequest> requestOpt = serviceRequestRepository.findById(requestId);
-            if (requestOpt.isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of(
-                        "success", false,
-                        "message", "Service request not found"
-                ));
-            }
-            
-            ServiceRequest request = requestOpt.get();
-            
-            // Verify that the request belongs to this user
-            if (!request.getUserId().equals(user.getUserId().longValue())) {
-                return ResponseEntity.badRequest().body(Map.of(
-                        "success", false,
-                        "message", "Service request does not belong to this customer"
-                ));
-            }
-            
-            // Get complete service details
-            CompletedServiceDTO serviceDTO = convertToCompletedServiceDTO(request);
-            
-            // Get materials used
-            List<MaterialUsage> materials = materialUsageRepository
-                    .findByServiceRequest_RequestIdOrderByUsedAtDesc(request.getRequestId());
-            
-            List<MaterialItemDTO> materialDTOs = materials.stream()
-                    .map(this::convertToMaterialItemDTO)
-                    .collect(Collectors.toList());
-            
-            serviceDTO.setMaterials(materialDTOs);
-            
-            // Calculate materials total
-            BigDecimal materialsTotal = materialDTOs.stream()
-                    .map(item -> item.getQuantity().multiply(item.getUnitPrice()))
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-            
-            serviceDTO.setCalculatedMaterialsTotal(materialsTotal);
-            
-            // Add labor charges (simulated based on tracking records)
-            List<LaborChargeDTO> laborCharges = new ArrayList<>();
-            laborCharges.add(LaborChargeDTO.builder()
+    private List<LaborChargeDTO> extractLaborCharges(List<ServiceTracking> trackingRecords) {
+        List<LaborChargeDTO> charges = new ArrayList<>();
+        
+        // If no tracking records with labor info, create a default one
+        if (trackingRecords.isEmpty() || trackingRecords.stream()
+                .noneMatch(t -> t.getLaborMinutes() != null && t.getLaborMinutes() > 0)) {
+            charges.add(LaborChargeDTO.builder()
                     .description("Service Labor")
-                    .hours(BigDecimal.valueOf(2))
-                    .rate(BigDecimal.valueOf(500))
+                    .hours(BigDecimal.valueOf(2)) // Default 2 hours
+                    .rate(BigDecimal.valueOf(500)) // Default rate ₹500/hr
                     .build());
-            
-            serviceDTO.setLaborCharges(laborCharges);
-            
-            // Calculate labor total
-            BigDecimal laborTotal = laborCharges.stream()
-                    .map(item -> item.getHours().multiply(item.getRate()))
-                    .reduce(BigDecimal.ZERO, BigDecimal::add);
-            
-            serviceDTO.setCalculatedLaborTotal(laborTotal);
-            
-            // Apply discount for premium members
-            BigDecimal discount = BigDecimal.ZERO;
-            if (user.getMembershipType() == User.MembershipType.PREMIUM) {
-                // 30% discount on labor
-                discount = laborTotal.multiply(BigDecimal.valueOf(0.3));
-            }
-            
-            serviceDTO.setCalculatedDiscount(discount);
-            
-            // Calculate subtotal
-            BigDecimal subtotal = materialsTotal.add(laborTotal).subtract(discount);
-            serviceDTO.setCalculatedSubtotal(subtotal);
-            
-            // Calculate tax (18% GST)
-            BigDecimal tax = subtotal.multiply(BigDecimal.valueOf(0.18));
-            serviceDTO.setCalculatedTax(tax);
-            
-            // Calculate total
-            BigDecimal total = subtotal.add(tax);
-            serviceDTO.setCalculatedTotal(total);
-            
-            // Check if invoice exists
-            Optional<Invoice> invoiceOpt = invoiceRepository.findByRequestId(request.getRequestId());
-            if (invoiceOpt.isPresent()) {
-                Invoice invoice = invoiceOpt.get();
-                serviceDTO.setHasInvoice(true);
-                serviceDTO.setInvoiceId(invoice.getInvoiceId());
-                serviceDTO.setTotalAmount(invoice.getTotalAmount());
-                
-                // Check if payment exists
-                Optional<Payment> paymentOpt = paymentRepository.findByRequestId(request.getRequestId());
-                serviceDTO.setPaid(paymentOpt.isPresent() && 
-                                  paymentOpt.get().getStatus() == Payment.Status.Completed);
-            }
-            
-            return ResponseEntity.ok(serviceDTO);
-        } catch (Exception e) {
-            logger.error("Error fetching service details: {}", e.getMessage());
-            return ResponseEntity.badRequest().body(Map.of(
-                    "success", false,
-                    "message", "An error occurred: " + e.getMessage()
-            ));
+            return charges;
         }
+        
+        // Extract labor details from tracking records
+        for (ServiceTracking tracking : trackingRecords) {
+            if (tracking.getLaborMinutes() != null && tracking.getLaborMinutes() > 0) {
+                // Convert minutes to hours
+                BigDecimal hours = BigDecimal.valueOf(tracking.getLaborMinutes())
+                        .divide(BigDecimal.valueOf(60), 2, RoundingMode.HALF_UP);
+                
+                // Calculate rate if available, otherwise use default
+                BigDecimal rate = BigDecimal.valueOf(500); // Default rate
+                if (tracking.getLaborCost() != null && hours.compareTo(BigDecimal.ZERO) > 0) {
+                    rate = tracking.getLaborCost().divide(hours, 2, RoundingMode.HALF_UP);
+                }
+                
+                String description = "Service Labor";
+                if (tracking.getWorkDescription() != null && !tracking.getWorkDescription().isEmpty()) {
+                    description = tracking.getWorkDescription();
+                }
+                
+                charges.add(LaborChargeDTO.builder()
+                        .description(description)
+                        .hours(hours)
+                        .rate(rate)
+                        .build());
+            }
+        }
+        
+        // If no valid labor charges found, add a default one
+        if (charges.isEmpty()) {
+            charges.add(LaborChargeDTO.builder()
+                    .description("Service Labor")
+                    .hours(BigDecimal.valueOf(2)) // Default 2 hours
+                    .rate(BigDecimal.valueOf(500)) // Default rate ₹500/hr
+                    .build());
+        }
+        
+        return charges;
+    }
+
+    /**
+     * Calculate all financial details for the service
+     */
+    private void calculateFinancialDetails(CompletedServiceDTO serviceDTO, User user) {
+        // Calculate materials total
+        BigDecimal materialsTotal = serviceDTO.getMaterials().stream()
+                .map(item -> {
+                    if (item.getQuantity() == null || item.getUnitPrice() == null) return BigDecimal.ZERO;
+                    return item.getQuantity().multiply(item.getUnitPrice());
+                })
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        serviceDTO.setCalculatedMaterialsTotal(materialsTotal);
+        
+        // Calculate labor total
+        BigDecimal laborTotal = serviceDTO.getLaborCharges().stream()
+                .map(item -> {
+                    if (item.getHours() == null || item.getRate() == null) return BigDecimal.ZERO;
+                    return item.getHours().multiply(item.getRate());
+                })
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        
+        serviceDTO.setCalculatedLaborTotal(laborTotal);
+        
+        // Apply discount for premium members
+        BigDecimal discount = BigDecimal.ZERO;
+        if (user.getMembershipType() == User.MembershipType.PREMIUM) {
+            // 30% discount on labor
+            discount = laborTotal.multiply(BigDecimal.valueOf(0.3))
+                    .setScale(2, RoundingMode.HALF_UP);
+        }
+        
+        serviceDTO.setCalculatedDiscount(discount);
+        
+        // Calculate subtotal
+        BigDecimal subtotal = materialsTotal.add(laborTotal).subtract(discount)
+                .setScale(2, RoundingMode.HALF_UP);
+        serviceDTO.setCalculatedSubtotal(subtotal);
+        
+        // Calculate tax (18% GST)
+        BigDecimal tax = subtotal.multiply(BigDecimal.valueOf(0.18))
+                .setScale(2, RoundingMode.HALF_UP);
+        serviceDTO.setCalculatedTax(tax);
+        
+        // Calculate total
+        BigDecimal total = subtotal.add(tax).setScale(2, RoundingMode.HALF_UP);
+        serviceDTO.setCalculatedTotal(total);
     }
 }
